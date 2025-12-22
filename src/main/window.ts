@@ -15,7 +15,6 @@ export class WindowManager {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        enableRemoteModule: false,
         preload: path.join(__dirname, 'preload.js')
       },
       icon: path.join(__dirname, '../../resources/icons/icon.png'),
@@ -25,7 +24,7 @@ export class WindowManager {
 
     // 加载应用
     if (process.env.NODE_ENV === 'development') {
-      this.mainWindow.loadURL('http://localhost:3000');
+      this.mainWindow.loadURL('http://localhost:3001');
       this.mainWindow.webContents.openDevTools();
     } else {
       this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
