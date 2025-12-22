@@ -1,0 +1,47 @@
+{
+  "name": "test",
+  "env": "test",
+  "debug": true,
+  "logLevel": "warn",
+  "api": {
+    "baseUrl": "http://localhost:3001",
+    "timeout": 10000
+  },
+  "services": {
+    "comfyui": {
+      "url": "http://localhost:8189",
+      "timeout": 30000
+    },
+    "n8n": {
+      "url": "http://localhost:5679",
+      "timeout": 30000
+    }
+  },
+  "fileSystem": {
+    "watchInterval": 500,
+    "maxFileSize": 52428800,
+    "allowedExtensions": [".txt", ".md", ".json", ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".avi", ".mov"]
+  },
+  "ui": {
+    "theme": "light",
+    "language": "zh-CN",
+    "autoSave": false,
+    "autoSaveInterval": 0
+  },
+  "security": {
+    "enableCors": true,
+    "allowedOrigins": ["http://localhost:3001"],
+    "enableCsrf": false
+  },
+  "performance": {
+    "enableCache": false,
+    "cacheSize": 0,
+    "compression": false
+  },
+  "testing": {
+    "mockServices": true,
+    "enableCoverage": true,
+    "parallelTests": true,
+    "testTimeout": 5000
+  }
+}

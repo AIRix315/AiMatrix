@@ -1,0 +1,98 @@
+{
+  "appId": "com.matrix.ai-workflow",
+  "productName": "Matrix AI Workflow",
+  "copyright": "Copyright © 2025 Matrix Team",
+  "directories": {
+    "output": "dist",
+    "buildResources": "resources"
+  },
+  "files": [
+    "build/**/*",
+    "node_modules/**/*",
+    "resources/**/*",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": "resources",
+      "to": "resources"
+    }
+  ],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "icon": "resources/icons/icon.icns",
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "resources/entitlements.mac.plist",
+    "entitlementsInherit": "resources/entitlements.mac.plist"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64", "ia32"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64", "ia32"]
+      }
+    ],
+    "icon": "resources/icons/icon.ico",
+    "requestedExecutionLevel": "asInvoker"
+  },
+  "linux": {
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": ["x64"]
+      },
+      {
+        "target": "deb",
+        "arch": ["x64"]
+      },
+      {
+        "target": "rpm",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "resources/icons/icon.png",
+    "category": "Office",
+    "desktop": {
+      "Name": "Matrix AI Workflow",
+      "Comment": "AI视频生成工作流管理平台",
+      "Keywords": "ai;workflow;video;generation;"
+    }
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "allowElevation": true,
+    "installerIcon": "resources/icons/installer.ico",
+    "uninstallerIcon": "resources/icons/uninstaller.ico",
+    "installerHeaderIcon": "resources/icons/header.ico",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Matrix AI Workflow",
+    "include": "resources/installer.nsh"
+  },
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "matrix-ai-workflow",
+      "repo": "matrix-ai-workflow"
+    }
+  ],
+  "compression": "maximum",
+  "removePackageScripts": true,
+  "npmRebuild": false
+}

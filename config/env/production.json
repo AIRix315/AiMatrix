@@ -1,0 +1,41 @@
+{
+  "name": "production",
+  "env": "production",
+  "debug": false,
+  "logLevel": "error",
+  "api": {
+    "baseUrl": "https://api.matrix-ai-workflow.com",
+    "timeout": 30000
+  },
+  "services": {
+    "comfyui": {
+      "url": "http://localhost:8188",
+      "timeout": 60000
+    },
+    "n8n": {
+      "url": "http://localhost:5678",
+      "timeout": 60000
+    }
+  },
+  "fileSystem": {
+    "watchInterval": 2000,
+    "maxFileSize": 104857600,
+    "allowedExtensions": [".txt", ".md", ".json", ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".avi", ".mov"]
+  },
+  "ui": {
+    "theme": "system",
+    "language": "zh-CN",
+    "autoSave": true,
+    "autoSaveInterval": 60000
+  },
+  "security": {
+    "enableCors": false,
+    "allowedOrigins": [],
+    "enableCsrf": true
+  },
+  "performance": {
+    "enableCache": true,
+    "cacheSize": 100,
+    "compression": true
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "development",
+  "env": "development",
+  "debug": true,
+  "logLevel": "debug",
+  "api": {
+    "baseUrl": "http://localhost:3000",
+    "timeout": 30000
+  },
+  "services": {
+    "comfyui": {
+      "url": "http://localhost:8188",
+      "timeout": 60000
+    },
+    "n8n": {
+      "url": "http://localhost:5678",
+      "timeout": 60000
+    }
+  },
+  "fileSystem": {
+    "watchInterval": 1000,
+    "maxFileSize": 104857600,
+    "allowedExtensions": [".txt", ".md", ".json", ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".avi", ".mov"]
+  },
+  "ui": {
+    "theme": "light",
+    "language": "zh-CN",
+    "autoSave": true,
+    "autoSaveInterval": 30000
+  },
+  "security": {
+    "enableCors": true,
+    "allowedOrigins": ["http://localhost:3000"],
+    "enableCsrf": false
+  }
+}
