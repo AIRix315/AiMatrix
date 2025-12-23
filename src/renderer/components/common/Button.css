@@ -1,0 +1,100 @@
+/* =========================================
+   Button 组件样式
+   从 V14.html 提取的 .action-btn 样式
+   ========================================= */
+
+.action-btn {
+  background: #333;
+  border: 1px solid #444;
+  color: var(--text-bright);
+  padding: 6px 12px;
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-xs);
+  transition: all var(--transition-normal);
+  font-family: inherit;
+  outline: none;
+  user-select: none;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
+  border-color: var(--border-light);
+}
+
+.action-btn:active {
+  transform: translateY(1px);
+}
+
+.action-btn-primary {
+  background: var(--accent-color);
+  color: #000;
+  border: none;
+  font-weight: bold;
+}
+
+.action-btn-primary:hover {
+  opacity: 0.9;
+  filter: brightness(1.1);
+}
+
+.action-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  color: var(--text-dim);
+}
+
+.action-btn-ghost:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-bright);
+  border-color: var(--border-light);
+}
+
+.action-btn-secondary {
+  background: var(--bg-sidebar);
+  color: var(--text-dim);
+  border: 1px solid var(--border-color);
+}
+
+.action-btn-secondary:hover {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border-color: var(--border-light);
+}
+
+.action-btn-sm {
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+.action-btn-md {
+  padding: 6px 12px;
+  font-size: var(--font-xs);
+}
+
+.action-btn-lg {
+  padding: 8px 16px;
+  font-size: var(--font-base);
+}
+
+.action-btn.active {
+  background: #555;
+  border-color: #777;
+}
+
+.action-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #222;
+  border-color: #333;
+  color: var(--text-muted);
+}
+
+.action-btn.disabled:hover {
+  opacity: 0.5;
+  border-color: #333;
+  transform: none;
+}

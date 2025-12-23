@@ -22,6 +22,7 @@
 - Electron 25.0+
 - React 18.0+
 - Webpack 5.0+
+- Redux Toolkit（状态管理）
 
 ## 项目初始化
 
@@ -32,6 +33,9 @@
     "electron": "^25.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "@reduxjs/toolkit": "^1.9.0",
+    "react-redux": "^8.0.0",
     "typescript": "^5.0.0"
   },
   "devDependencies": {
@@ -47,41 +51,64 @@
 - 开发环境：webpack-dev-server + electron
 - 生产环境：webpack打包 + electron-builder
 - 代码分割：主进程与渲染进程分离打包
+- 插件系统：动态加载机制
 
 ## 核心模块实现
 
-### 文件系统管理器
+### 项目管理器
 ```typescript
-interface FileManager {
-  createProject(name: string): Promise<string>
-  loadProject(path: string): Promise<ProjectConfig>
+interface ProjectManager {
+  createProject(name: string, template?: string): Promise<ProjectConfig>
+  loadProject(projectId: string): Promise<ProjectConfig>
   saveProject(config: ProjectConfig): Promise<void>
-  watchProject(path: string, callback: FileChangeCallback): void
+  deleteProject(projectId: string): Promise<void>
+  listProjects(): Promise<ProjectConfig[]>
 }
 ```
 
-### 工作流适配器
+### 物料管理器
 ```typescript
-interface WorkflowAdapter {
-  execute(config: WorkflowConfig): Promise<WorkflowResult>
-  getStatus(jobId: string): Promise<JobStatus>
-  cancel(jobId: string): Promise<void>
-}
-
-class ComfyUIAdapter implements WorkflowAdapter {
-  private apiEndpoint: string
-  constructor(endpoint: string) {
-    this.apiEndpoint = endpoint
-  }
+interface AssetManager {
+  addAsset(projectId: string, asset: AssetData): Promise<AssetConfig>
+  removeAsset(projectId: string, assetId: string): Promise<void>
+  updateAsset(projectId: string, assetId: string, updates: Partial<AssetConfig>): Promise<void>
+  searchAssets(projectId: string, query: AssetSearchQuery): Promise<AssetConfig[]>
+  getAssetPreview(projectId: string, assetId: string): Promise<string>
 }
 ```
 
-### MCP服务管理
+### 插件系统
 ```typescript
-interface MCPService {
-  connect(config: MCPConfig): Promise<void>
-  disconnect(): Promise<void>
-  call(method: string, params: any): Promise<any>
+interface PluginManager {
+  loadPlugin(pluginId: string): Promise<Plugin>
+  unloadPlugin(pluginId: string): Promise<void>
+  installPlugin(pluginPackage: PluginPackage): Promise<void>
+  uninstallPlugin(pluginId: string): Promise<void>
+  listPlugins(): Promise<PluginInfo[]>
+  executePluginAction(pluginId: string, action: string, params: any): Promise<any>
+}
+```
+
+### 任务调度器
+```typescript
+interface TaskScheduler {
+  createTask(config: TaskConfig): Promise<string>
+  executeTask(taskId: string): Promise<string>
+  pauseTask(taskId: string): Promise<void>
+  resumeTask(taskId: string): Promise<void>
+  cancelTask(taskId: string): Promise<void>
+  getTaskStatus(taskId: string): Promise<TaskStatus>
+  getTaskResults(taskId: string): Promise<TaskResults>
+}
+```
+
+### API调用管理器
+```typescript
+interface APIManager {
+  registerAPI(name: string, config: APIConfig): void
+  callAPI(name: string, params: any): Promise<any>
+  setAPIKey(name: string, key: string): void
+  getAPIStatus(name: string): Promise<APIStatus>
 }
 ```
 

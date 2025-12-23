@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATRIX Studio - V14.0 (Final Fix)</title>
+    <style>
+        /* =========================================
+           1. 基础变量 (保持一致)
+           ========================================= */
+        :root {
+            --bg-activity-bar: #181818;
+            --bg-sidebar: #1e1e1e;
+            --bg-canvas: #0f0f0f;
+            --bg-header: #141414;
+            --bg-nav: #141414;
+            --bg-card: #1e1e1e;
+            --border-color: #2b2b2b;
+            --accent-color: #00E676; 
+            --accent-dim: rgba(0, 230, 118, 0.1);
+            --text-main: #e0e0e0;
+            --text-muted: #757575;
+            
+            --nav-height: 44px;
+            --left-menu-collapsed: 60px;
+            --left-menu-expanded: 200px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: var(--bg-canvas); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 13px; user-select: none; }
+        .icon-svg { width: 16px; height: 16px; fill: currentColor; pointer-events: none; }
+        .icon-lg { width: 22px; height: 22px; fill: currentColor; }
+
+        /* Window Bar */
+        .window-bar { height: 30px; background: var(--bg-header); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; z-index: 200; }
+        .window-title span { color: var(--text-main); font-weight: bold; }
+        .window-controls { display: flex; gap: 10px; color: var(--text-muted); cursor:pointer; }
+
+        /* Layout */
+        .app-body { flex: 1; display: flex; overflow: hidden; position: relative; }
+        
+        /* Left Menu (Global) */
+        .global-menu { width: var(--left-menu-collapsed); background: var(--bg-activity-bar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; z-index: 100; transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; }
+        .global-menu:hover { width: var(--left-menu-expanded); box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
+        .menu-item { height: 50px; display: flex; align-items: center; cursor: pointer; color: var(--text-muted); white-space: nowrap; transition: background 0.2s; position: relative; flex-shrink: 0; }
+        .menu-item.active { color: var(--accent-color); background: var(--accent-dim); border-left: 3px solid var(--accent-color); }
+        .menu-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .menu-icon-box { width: var(--left-menu-collapsed); height: 100%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .menu-label { font-size: 14px; font-weight: 500; opacity: 0; transform: translateX(10px); transition: all 0.2s ease; }
+        .global-menu:hover .menu-label { opacity: 1; transform: translateX(0); }
+        .menu-spacer { flex: 1; min-height: 20px; } 
+
+        /* =========================================
+           2. VIEW ARCHITECTURE (CRITICAL FIX)
+           ========================================= */
+        .content-wrapper { flex: 1; display: flex; position: relative; overflow: hidden; background: var(--bg-canvas); }
+        
+        /* By default hide ALL views */
+        .view-section { 
+            position: absolute; 
+            inset: 0; 
+            display: none; /* KEY FIX: Must be hidden by default */
+            flex-direction: column; 
+            background: var(--bg-canvas); 
+            z-index: 1;
+        }
+        
+        /* Only show the one with .active class */
+        .view-section.active { 
+            display: flex; 
+            z-index: 10;
+        }
+
+        /* =========================================
+           3. DASHBOARD STYLES (Home/Assets/Plugins)
+           ========================================= */
+        .dashboard-view { padding: 30px; overflow-y: auto; color: #e0e0e0; background: #141414; }
+        
+        /* SETTINGS EXCEPTION: Full height, no padding, flex layout */
+        #view-settings.dashboard-view { padding: 0; display: none; /* hidden by default */ flex-direction: column; overflow: hidden; background: #0f0f0f; }
+        #view-settings.dashboard-view.active { display: flex; }
+
+        .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #333; }
+        .view-title { font-size: 24px; font-weight: 300; display:flex; align-items:center; gap:10px; }
+        .view-title small { font-size:12px; color:#666; font-weight:normal; }
+        
+        .view-actions { display: flex; gap: 10px; }
+        .action-btn { background: #333; border: 1px solid #444; color: #fff; padding: 6px 12px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; transition: all 0.2s; }
+        .action-btn.primary { background: var(--accent-color); color: #000; border: none; font-weight: bold; }
+        .action-btn:hover { opacity: 0.9; border-color: #666; }
+        .action-btn.active { background: #555; border-color: #777; }
+        .action-btn.disabled { opacity: 0.5; cursor: not-allowed; background: #222; border-color: #333; color: #777; }
+
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .project-card { background: #252525; border: 1px solid #333; border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.2s; position: relative; }
+        .project-card:hover { transform: translateY(-4px); border-color: var(--accent-color); }
+        .card-img { height: 120px; background: #333; display: flex; align-items: center; justify-content: center; color: #555; font-size: 30px; }
+        .card-body { padding: 12px; }
+        .card-name { font-weight: bold; font-size: 14px; margin-bottom: 4px; }
+        .card-info { font-size: 11px; color: #888; }
+        .card-tag { position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px; font-size:10px; color:#ccc; border:1px solid #444; }
+
+        /* =========================================
+           4. SETTINGS LAYOUT (The CherryStudio/Browser Style)
+           ========================================= */
+        .settings-layout { display: flex; height: 100%; width: 100%; }
+        
+        /* Settings Sidebar (Left) */
+        .settings-sidebar { width: 260px; background: #1a1a1a; border-right: 1px solid #333; display: flex; flex-direction: column; flex-shrink: 0; }
+        .settings-search-box { padding: 15px; border-bottom: 1px solid #333; }
+        .search-input { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px; }
+        .provider-list { flex: 1; overflow-y: auto; padding: 10px 0; }
+        .provider-item { display: flex; align-items: center; padding: 10px 20px; cursor: pointer; border-left: 3px solid transparent; color: #aaa; transition: background 0.2s; gap: 10px; }
+        .provider-item:hover { background: #222; color: #ddd; }
+        .provider-item.active { background: #252525; border-left-color: var(--accent-color); color: #fff; font-weight: 500; }
+        .provider-icon { width: 20px; height: 20px; border-radius: 4px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color:#ccc; }
+        .provider-status { width: 6px; height: 6px; border-radius: 50%; background: #444; margin-left: auto; }
+        .provider-status.on { background: var(--accent-color); box-shadow: 0 0 5px var(--accent-dim); }
+        .sidebar-bottom-actions { padding: 15px; border-top: 1px solid #333; }
+
+        /* Settings Content (Right) */
+        .settings-content { flex: 1; background: #141414; display: flex; flex-direction: column; min-width: 0; position:relative; }
+        
+        /* Settings Sub-Pages (Tabs) - Hidden by default inside the settings view */
+        .settings-tab-content { display: none; height: 100%; flex-direction: column; width: 100%; }
+        .settings-tab-content.active { display: flex; }
+
+        .settings-content-header { height: 60px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: #1a1a1a; flex-shrink: 0; }
+        .settings-title-lg { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .settings-scroll-area { flex: 1; overflow-y: auto; padding: 30px; max-width: 1000px; margin: 0; }
+        
+        .config-section { margin-bottom: 30px; }
+        .config-label { font-size: 12px; font-weight: bold; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-group { margin-bottom: 15px; }
+        .input-label { display: block; color: #ccc; margin-bottom: 6px; font-size: 13px; }
+        .input-field { width: 100%; background: #0f0f0f; border: 1px solid #333; color: #e0e0e0; padding: 10px; border-radius: 6px; font-family: 'Segoe UI Mono', monospace; font-size: 13px; transition: border 0.2s; }
+        .input-field:focus { border-color: var(--accent-color); outline: none; }
+        
+        /* Model Cards */
+        .model-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .model-item-card { background: #1f1f1f; border: 1px solid #333; border-radius: 6px; padding: 12px; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
+        .model-item-card:hover { border-color: #555; background: #252525; }
+        .model-icon { width: 32px; height: 32px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .model-info { flex: 1; min-width: 0; }
+        .model-id { font-weight: bold; font-size: 13px; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .model-ctx { font-size: 11px; color: #777; }
+        .model-actions { display: flex; gap: 5px; opacity: 0.5; }
+        .model-item-card:hover .model-actions { opacity: 1; }
+        
+        .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        /* =========================================
+           5. EDITOR INTERNALS (Preserved)
+           ========================================= */
+        .editor-container { flex: 1; display: flex; width: 100%; height: 100%; }
+        .sidebar-panel { background: var(--bg-sidebar); display: flex; flex-direction: column; overflow: hidden; transition: width 0.3s ease; }
+        .panel-header { height: 36px; display: flex; align-items: center; padding: 0 12px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border-color); white-space: nowrap; justify-content: space-between; flex-shrink: 0;}
+        .panel-content { padding: 12px; color: var(--text-muted); overflow-y: auto; flex:1; min-height: 0; }
+        .resizer { width: 1px; background: #000; cursor: col-resize; z-index: 10; flex-shrink: 0; }
+        .resizer:hover { background: var(--accent-color); width: 2px; }
+        .main-content { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; min-width: 0; }
+        .nav-container { background: var(--bg-nav); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .nav-row-main { height: var(--nav-height); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-bottom: 1px solid #222; }
+        .layout-btn-group { display: flex; align-items: center; gap: 4px; }
+        .layout-btn { width: 32px; height: 32px; border: 1px solid transparent; background: transparent; color: var(--text-muted); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .layout-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
+        .nav-tabs { display: flex; gap: 4px; }
+        .step-tab { padding: 6px 10px; border-radius: 4px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; }
+        .step-num { font-size: 10px; width: 16px; height: 16px; border:1px solid #444; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+        .step-tab.active { background: var(--accent-dim); color: var(--accent-color); }
+        .step-tab.active .step-num { background: var(--accent-color); color: #000; border-color:var(--accent-color); }
+        .nav-row-sub { height: 32px; display: flex; align-items: center; padding: 0 56px; gap: 24px; font-size: 11px; }
+        .sub-tab { color: var(--text-muted); cursor: pointer; height: 100%; display: flex; align-items: center; position: relative;}
+        .sub-tab.active { color: #fff; border-bottom: 2px solid var(--accent-color); }
+        .view-switch-container { display: flex; background: #222; border-radius: 4px; padding: 2px; margin-right: 16px; border: 1px solid #333; transition: opacity 0.3s; }
+        .view-switch-btn { display: flex; align-items: center; gap: 6px; padding: 4px 10px; cursor: pointer; border-radius: 3px; font-size: 11px; color: #888; transition: all 0.2s; }
+        .view-switch-btn:hover { color: #ccc; }
+        .view-switch-btn.active { background: #333; color: #fff; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .view-switch-container.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(100%); }
+        .canvas-area { flex: 1; background-image: radial-gradient(#2a2a2a 1px, transparent 1px); background-size: 24px 24px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .step-layer { flex: 1; display: none; width: 100%; height: 100%; overflow: hidden; } 
+        .step-layer.active { display: flex; flex-direction: column; }
+        
+        .shot-container { width: 100%; height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #444 #1a1a1a; }
+        .shot-container.mode-storyboard { padding: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 80px; align-content: flex-start; }
+        .shot-card { background-color: var(--bg-card); border: 1px solid #333; border-radius: 10px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .mode-storyboard .shot-card:hover { border-color: #555; transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .mode-storyboard .shot-card::after { content: ''; position: absolute; right: -80px; top: 50%; transform: translateY(-50%); width: 80px; height: 30px; background-image: url("data:image/svg+xml,%3Csvg width='80' height='30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,15 C20,30 60,0 80,15' fill='none' stroke='%23444' stroke-width='2' stroke-dasharray='5,3' /%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; pointer-events: none; opacity: 0.6; }
+        .card-preview { background-color: #000; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 6px; }
+        .mode-storyboard .card-preview { height: 170px; margin-bottom: 10px; border: 1px solid #2a2a2a; }
+        .play-btn { width: 44px; height: 44px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); cursor: pointer; transition: background 0.2s; border: 1px solid rgba(255,255,255,0.1); }
+        .card-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 4px; }
+        .shot-number { font-weight: bold; color: #fff; font-size: 13px; }
+        .shot-time { font-family: monospace; color: #666; font-size: 11px; background: #111; padding: 2px 6px; border-radius: 4px; }
+        .prompt-box { background: #252525; padding: 8px; border-radius: 6px; border: 1px dashed #333; color: #bbb; font-size: 12px; line-height: 1.4; min-height: 50px; margin-bottom: 10px; }
+        .action-row { display: flex; justify-content: flex-start; }
+        .regen-btn { background: transparent; border: 1px solid #333; color: var(--accent-color); padding: 5px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500; transition: all 0.2s; }
+        .shot-container.mode-list { padding: 20px 40px; display: flex; flex-direction: column; gap: 8px; }
+        .mode-list .shot-card { width: 100%; flex-direction: row; align-items: center; height: 64px; padding: 0 16px; border-radius: 6px; }
+        .mode-list .shot-card::after, .mode-list .shot-card::before { display: none; } 
+        .mode-list .card-preview { width: 64px; height: 40px; margin-right: 16px; margin-bottom: 0; border: 1px solid #333; }
+        .mode-list .play-btn { transform: scale(0.5); }
+        .mode-list .card-meta-row { margin-bottom: 0; flex-direction: column-reverse; align-items: flex-start; width: 140px; margin-right: 20px; padding: 0; }
+        .mode-list .prompt-box { border: none; background: transparent; padding: 0; margin-bottom: 0; min-height: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; color: #888; flex: 1; }
+        .mode-list .action-row { margin-left: auto; }
+
+        .panel-divider { height: 1px; border-top: 1px dashed #444; margin: 0; flex-shrink: 0; }
+        .generation-panel { padding: 16px; background: #1a1a1a; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+        .gen-header { color: #888; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+        .gen-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+        .gen-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .gen-label { color: #aaa; font-size: 11px; }
+        .gen-input { background: #222; border: 1px solid #333; color: #fff; padding: 6px; border-radius: 4px; width: 100%; font-family: monospace; }
+        .gen-input:focus { border-color: var(--accent-color); outline: none; }
+        .dice-btn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: #2a2a2a; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #ccc; }
+        .tag-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+        .asset-tag { font-size: 10px; padding: 3px 8px; border-radius: 3px; border: 1px solid; }
+        .tag-global { background: rgba(156, 39, 176, 0.15); border-color: rgba(156, 39, 176, 0.4); color: #ce93d8; }
+        .tag-proj { background: rgba(156, 39, 176, 0.1); border-color: rgba(156, 39, 176, 0.3); color: #ba68c8; }
+        .mode-switch-3 { display: flex; background: #222; border-radius: 4px; padding: 2px; border: 1px solid #333; margin-bottom: 6px; }
+        .ms-opt { flex: 1; text-align: center; font-size: 10px; padding: 5px 0; cursor: pointer; color: #666; transition: all 0.2s; border-radius: 2px; }
+        .ms-opt:hover { color: #999; }
+        .ms-opt.active { background: #333; color: #fff; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .cost-row { display: flex; justify-content: space-between; font-size: 11px; color: #666; margin-bottom: 4px; }
+        .gen-btn-big { width: 100%; background: var(--accent-color); color: #000; border: none; padding: 10px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer; transition: filter 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+        .gen-btn-big:hover { filter: brightness(1.1); box-shadow: 0 0 15px var(--accent-dim); }
+
+        .task-docker { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 44px; height: 88px; border-radius: 44px 0 0 44px; background: #141414; border: 1px solid #444; border-right: none; z-index: 150; cursor: pointer; overflow: hidden; display: none; box-shadow: -5px 0 15px rgba(0,0,0,0.5); transition: transform 0.2s; }
+        .task-docker:hover { transform: translateY(-50%) scale(1.05); border-color: var(--accent-color); }
+        .tide-liquid { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 230, 118, 0.5); height: 0%; transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .tide-liquid::before { content: ''; position: absolute; top: -5px; left: 0; right: 0; height: 10px; background: rgba(0, 230, 118, 0.3); border-radius: 50%; }
+        .docker-num { position: absolute; top: 50%; left: 55%; transform: translate(-50%, -50%); color: #fff; font-size: 16px; font-weight: bold; z-index: 2; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+
+        .right-tabs { display: flex; border-bottom: 1px solid #333; background: #1a1a1a; flex-shrink: 0; }
+        .r-tab { flex: 1; text-align: center; padding: 8px 0; font-size: 11px; color: #888; cursor: pointer; border-bottom: 2px solid transparent; }
+        .r-tab.active { color: #fff; border-bottom-color: var(--accent-color); background: #222; }
+        .status-bar { height: 24px; background: var(--bg-nav); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 10px; color: var(--text-muted); flex-shrink: 0; z-index: 200; }
+        .placeholder-text { color: #555; font-size: 18px; text-align: center; margin-top: 50px; }
+        
+        /* Modal for About */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-box { width: 300px; background: #222; border: 1px solid #444; padding: 20px; text-align: center; border-radius: 8px; box-shadow: 0 10px 30px #000; }
+    </style>
+</head>
+<body>
+
+    <!-- Window Bar -->
+    <div class="window-bar">
+        <div class="window-title"><span>MATRIX</span> Studio <span style="font-weight:normal; opacity:0.5; margin-left:10px;">Platform V14.0</span></div>
+        <div class="window-controls">
+            <span class="control-item">─</span><span class="control-item">□</span><span class="control-item">✕</span>
+        </div>
+    </div>
+
+    <!-- App Body -->
+    <div class="app-body">
+        
+        <!-- Left Menu (Platform Navigation) -->
+        <nav class="global-menu">
+            <!-- 1. Home / Projects -->
+            <div class="menu-item active" id="menu-home" title="首页 (Projects)">
+                <div class="menu-icon-box"><svg class="icon-lg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
+                <span class="menu-label">首页</span>
+            </div>
+            <!-- 2. Assets (Renamed to 素材) -->
+            <div class="menu-item" id="menu-assets" title="素材 (Assets)">
+                <div class="menu-icon-box"><svg class="icon-lg" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+                <span class="menu-label">素材</span>
+            </div>
+            <!-- 3. Plugins -->
+            <div class="menu-item" id="menu-plugins" title="插件 (Market)">
+                <div class="menu-icon-box"><svg class="icon-lg" viewBox="0 0 24 24"><path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5C13 2.12 11.88 1 10.5 1S8 2.12 8 3.5V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7 1.49 0 2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11z"/></svg></div>
+                <span class="menu-label">插件</span>
+            </div>
+            <!-- 4. Workflow (App: Novel to Video) -->
+            <div class="menu-item" id="menu-workflow" title="小说转视频 (Workflow)" style="margin-top:10px; border-top:1px solid #333;">
+                <div class="menu-icon-box" style="color:var(--accent-color);"><svg class="icon-lg" viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg></div>
+                <span class="menu-label">小说转视频</span>
+            </div>
+            
+            <div class="menu-spacer"></div>
+            
+            <!-- 5. Settings -->
+            <div class="menu-item" id="menu-settings" title="设置">
+                <div class="menu-icon-box"><svg class="icon-lg" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.15 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.24.41.48.41h3.84c.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.08-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
+                <span class="menu-label">设置</span>
+            </div>
+            <!-- 6. About -->
+            <div class="menu-item" id="menu-about" title="关于">
+                <div class="menu-icon-box"><svg class="icon-lg" viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg></div>
+                <span class="menu-label">关于</span>
+            </div>
+        </nav>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            
+            <!-- VIEW 1: HOME (默认激活 - 修复: 确保 active class 在此) -->
+            <div id="view-home" class="view-section active dashboard-view">
+                <div class="view-header">
+                    <div class="view-title">首页 <small>| 项目管理 (Project Management)</small></div>
+                </div>
+                <div id="empty-state" class="empty-state" style="display:none;">
+                    <div class="empty-icon">📂</div>
+                    <h2>欢迎使用 MATRIX Studio</h2>
+                    <p>当前工作区为空，开始你的第一个创作吧。</p>
+                    <button class="btn-create-large" onclick="createFirstProject()">+ 新建项目</button>
+                </div>
+                <div id="project-grid-area">
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+                        <button class="action-btn primary">+ 新建项目</button>
+                    </div>
+                    <div class="card-grid">
+                        <div class="project-card" onclick="openProject('Demo_Project')">
+                            <div class="card-tag">Plugin: Novel2Video</div>
+                            <div class="card-img">🎬</div>
+                            <div class="card-body">
+                                <div class="card-name">Demo_Project</div>
+                                <div class="card-info">Path: D:/Work/Matrix/Demo</div>
+                                <div class="card-info" style="margin-top:4px;">Last modified: Just now</div>
+                            </div>
+                        </div>
+                        <div class="project-card" onclick="openProject('Sci-Fi_Short')">
+                            <div class="card-tag">Plugin: Novel2Video</div>
+                            <div class="card-img">🪐</div>
+                            <div class="card-body">
+                                <div class="card-name">Sci-Fi_Short</div>
+                                <div class="card-info">Path: D:/Work/Matrix/SciFi</div>
+                                <div class="card-info" style="margin-top:4px;">Last modified: 2 days ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: ASSETS (Restored V10 + Naming Correction) -->
+            <div id="view-assets" class="view-section dashboard-view">
+                <div class="view-header">
+                    <div class="view-title">素材库 (Assets)</div>
+                    <div class="view-actions">
+                        <button class="action-btn active">Local (本地)</button>
+                        <button class="action-btn disabled" title="即将上线">Cloud (云端)</button>
+                    </div>
+                </div>
+                <div style="display:flex; height:100%;">
+                    <div style="width:200px; border-right:1px solid #333; padding-right:20px;">
+                        <div style="color:#00E676; padding:5px 0;">Scenes</div>
+                        <div style="color:#777; padding:5px 0;">Characters</div>
+                        <div style="color:#777; padding:5px 0;">Props</div>
+                    </div>
+                    <div style="flex:1; padding-left:20px; color:#555; display:flex; align-items:center; justify-content:center;">
+                        Shared Asset Repository
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: PLUGINS (Restored V10) -->
+            <div id="view-plugins" class="view-section dashboard-view">
+                <div class="view-header"><div class="view-title">插件市场 (Plugin Market)</div></div>
+                <div class="card-grid">
+                    <div class="project-card" style="padding:20px; border-color:var(--accent-color);">
+                         <h3 style="color:var(--accent-color);">Novel to Video <span style="font-size:10px; border:1px solid; padding:2px;">INSTALLED</span></h3>
+                         <p style="color:#777; font-size:12px; margin-top:5px;">Core workflow for script visualization.</p>
+                    </div>
+                    <div class="project-card" style="padding:20px;">
+                         <h3>AI Upscaler</h3>
+                         <p style="color:#777; font-size:12px; margin-top:5px;">Upscale video to 4k</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 4: SETTINGS (V14.0 - CherryStudio Architecture) -->
+            <div id="view-settings" class="view-section dashboard-view">
+                <div class="settings-layout">
+                    <!-- 1. Sidebar -->
+                    <div class="settings-sidebar">
+                        <div class="settings-search-box">
+                            <input type="text" class="search-input" placeholder="搜索模型平台...">
+                        </div>
+                        <div class="provider-list">
+                            <div class="provider-item" onclick="openSettingsTab('global', this)">
+                                <div class="provider-icon">G</div><span>Global Defaults</span>
+                            </div>
+                            <div style="height:1px; background:#333; margin:5px 15px;"></div>
+                            
+                            <div class="provider-item active" onclick="openSettingsTab('ollama', this)">
+                                <div class="provider-icon">🦙</div><span>Ollama</span><div class="provider-status on"></div>
+                            </div>
+                            <div class="provider-item" onclick="openSettingsTab('openai', this)">
+                                <div class="provider-icon">OA</div><span>OpenAI</span><div class="provider-status"></div>
+                            </div>
+                            <div class="provider-item" onclick="openSettingsTab('silicon', this)">
+                                <div class="provider-icon">SF</div><span>SiliconFlow</span><div class="provider-status on"></div>
+                            </div>
+                            <div class="provider-item" onclick="openSettingsTab('add', this)">
+                                <div class="provider-icon" style="color:var(--accent-color);">+</div><span style="color:var(--accent-color);">添加服务商</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Content Area (All Tabs Pre-rendered) -->
+                    <div class="settings-content">
+                        
+                        <!-- TAB: Global Defaults -->
+                        <div id="set-global" class="settings-tab-content">
+                            <div class="settings-content-header">
+                                <div class="settings-title-lg">Global Defaults</div>
+                            </div>
+                            <div class="settings-scroll-area">
+                                <div class="config-section">
+                                    <div class="config-label">本地存储 (Storage)</div>
+                                    <div class="input-group">
+                                        <label class="input-label">工作区路径 (Workspace Path)</label>
+                                        <div style="display:flex; gap:10px;">
+                                            <input type="text" class="input-field" value="D:/Work/Matrix_Projects" readonly>
+                                            <button class="action-btn">浏览...</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Ollama -->
+                        <div id="set-ollama" class="settings-tab-content active">
+                            <div class="settings-content-header">
+                                <div class="settings-title-lg">🦙 Ollama <span style="font-size:12px; font-weight:normal; background:#222; padding:2px 8px; border-radius:10px; border:1px solid #333;">Local</span></div>
+                                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="settings-scroll-area">
+                                <div class="config-section">
+                                    <div class="config-label">连接设置 (Connection)</div>
+                                    <div class="input-group">
+                                        <label class="input-label">API 域名 (Base URL)</label>
+                                        <input type="text" class="input-field" value="http://localhost:11434/v1">
+                                    </div>
+                                    <div style="display:flex; gap:10px;">
+                                        <button class="action-btn">测试连接 (Ping)</button>
+                                        <button class="action-btn primary">保存</button>
+                                    </div>
+                                </div>
+                                <div class="config-section">
+                                    <div class="config-label">已添加模型 (Model Library)</div>
+                                    <div class="model-list-grid">
+                                        <div class="model-item-card"><div class="model-icon">L3</div><div class="model-info"><div class="model-id">llama3:8b</div><div class="model-ctx">Chat / 8k</div></div></div>
+                                        <div class="model-item-card"><div class="model-icon">M</div><div class="model-info"><div class="model-id">mistral:latest</div><div class="model-ctx">Chat / 32k</div></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: OpenAI -->
+                        <div id="set-openai" class="settings-tab-content">
+                            <div class="settings-content-header">
+                                <div class="settings-title-lg">OA OpenAI <span style="font-size:12px; font-weight:normal; background:#222; padding:2px 8px; border-radius:10px; border:1px solid #333;">Cloud</span></div>
+                                <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                            </div>
+                            <div class="settings-scroll-area">
+                                <div class="config-section">
+                                    <div class="config-label">鉴权 (Authentication)</div>
+                                    <div class="input-group">
+                                        <label class="input-label">API Key (sk-...)</label>
+                                        <input type="password" class="input-field" placeholder="Paste your OpenAI key here">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="input-label">Base URL (Optional)</label>
+                                        <input type="text" class="input-field" placeholder="https://api.openai.com/v1">
+                                    </div>
+                                    <button class="action-btn primary">保存配置</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: SiliconFlow -->
+                        <div id="set-silicon" class="settings-tab-content">
+                             <div class="settings-content-header">
+                                <div class="settings-title-lg">SF SiliconFlow <span style="font-size:12px; font-weight:normal; background:#222; padding:2px 8px; border-radius:10px; border:1px solid #333;">Cloud / Relay</span></div>
+                                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="settings-scroll-area">
+                                <div class="config-section">
+                                    <div class="config-label">配置 (Configuration)</div>
+                                    <div class="input-group">
+                                        <label class="input-label">API Key</label>
+                                        <input type="password" class="input-field" value="sk-silicon-xxxxxxxx">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="input-label">Base URL</label>
+                                        <input type="text" class="input-field" value="https://api.siliconflow.cn/v1">
+                                    </div>
+                                    <button class="action-btn primary">保存</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Add New -->
+                        <div id="set-add" class="settings-tab-content">
+                            <div class="settings-content-header">
+                                <div class="settings-title-lg" style="color:var(--accent-color);">+ 添加新服务商 (Add Provider)</div>
+                            </div>
+                            <div class="settings-scroll-area">
+                                <div class="config-section">
+                                    <div class="config-label">自定义接入 (Custom Endpoint)</div>
+                                    <div class="input-group">
+                                        <label class="input-label">服务名称 (Display Name)</label>
+                                        <input type="text" class="input-field" placeholder="例如: My Private LLM">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="input-label">接口类型 (Protocol)</label>
+                                        <select class="input-field"><option>OpenAI Compatible (Standard)</option><option>Anthropic</option></select>
+                                    </div>
+                                     <div class="input-group">
+                                        <label class="input-label">Base URL</label>
+                                        <input type="text" class="input-field" placeholder="https://...">
+                                    </div>
+                                    <button class="action-btn primary">确认添加</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 5: WORKFLOW (Restored V10) -->
+            <div id="view-editor" class="view-section">
+                <div class="editor-container">
+                    <!-- Left Sidebar -->
+                    <aside class="sidebar-panel" id="sidebarLeft" style="width: 240px;">
+                        <div class="panel-header">项目资源 (Project Local)</div>
+                        <div class="panel-content">
+                            <div style="color:#00E676; margin-bottom:8px; cursor:pointer">📂 剧本文件</div>
+                            <div style="padding-left:15px; margin-bottom:10px; color:#ccc;">📄 剧本_V1.txt</div>
+                            <div style="color:#2196F3; margin-bottom:8px; cursor:pointer">📂 场景库</div>
+                            <div style="padding-left:15px; margin-bottom:4px; color:#888;">▼ Scene 01</div>
+                            <div style="padding-left:30px; margin-bottom:4px;">• 概念图_A</div>
+                            <div style="color:#FF9800; margin-bottom:8px; cursor:pointer">📂 音频库</div>
+                        </div>
+                    </aside>
+                    <div class="resizer" id="resizerLeft"></div>
+
+                    <!-- MAIN CONTENT -->
+                    <main class="main-content">
+                        <div class="nav-container">
+                            <div class="nav-row-main">
+                                <div class="layout-btn-group">
+                                    <button class="layout-btn" id="btnToggleLeft"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 20H4V4h4v16zm12 0h-10V4h10v16z"/></svg></button>
+                                </div>
+                                <div class="nav-tabs">
+                                    <div class="step-tab" onclick="switchStep(1)"><span class="step-num">1</span> 剧本分析</div>
+                                    <div class="step-tab" onclick="switchStep(2)"><span class="step-num">2</span> 场景角色</div>
+                                    <div class="step-tab active" onclick="switchStep(3)"><span class="step-num">3</span> 分镜生成</div>
+                                    <div class="step-tab" onclick="switchStep(4)"><span class="step-num">4</span> 配音合成</div>
+                                    <div class="step-tab" onclick="switchStep(5)"><span class="step-num">5</span> 导出</div>
+                                </div>
+                                <div class="layout-btn-group">
+                                    <div class="view-switch-container" id="viewSwitcher">
+                                        <div class="view-switch-btn active" id="btn-mode-story" onclick="setCanvasMode('storyboard')"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4zm6 6h4v-4h-4zm0 6h4v-4h-4z"/></svg> 分镜</div>
+                                        <div class="view-switch-btn" id="btn-mode-list" onclick="setCanvasMode('list')"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg> 列表</div>
+                                    </div>
+                                    <button class="layout-btn" id="btnMaximize"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3h-6zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3v6zm6 12l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6h6zm12-6l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6v-6z"/></svg></button>
+                                    <button class="layout-btn" id="btnToggleRight"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM14 20H4V4h10v16zm6 0h-4V4h4v16z"/></svg></button>
+                                </div>
+                            </div>
+                            <div class="nav-row-sub" id="subNav">
+                                <div class="sub-tab active">3.1 分镜生成</div>
+                                <div class="sub-tab">3.2 运镜控制</div>
+                            </div>
+                        </div>
+
+                        <div class="canvas-area">
+                            <div id="page-1" class="step-layer"><div class="placeholder-text">Step 1: 剧本分析界面</div></div>
+                            <div id="page-2" class="step-layer"><div class="placeholder-text">Step 2: 场景与角色设定</div></div>
+                            <div id="page-3" class="step-layer active">
+                                <div class="shot-container mode-storyboard" id="shot-container">
+                                    <div class="shot-card">
+                                        <div class="card-preview"><div style="position:absolute; inset:0; background:linear-gradient(45deg, #1a1a1a, #333);"></div><div class="play-btn" style="z-index:2">▶</div></div>
+                                        <div class="card-meta-row"><span class="shot-number">#1 镜头01</span><span class="shot-time">00:00:00</span></div>
+                                        <div class="prompt-box">赛博朋克城市夜景，霓虹灯，湿漉漉的路面...</div>
+                                        <div class="action-row"><button class="regen-btn">⚡ 重绘</button></div>
+                                    </div>
+                                    <div class="shot-card">
+                                        <div class="card-preview"><div style="position:absolute; inset:0; background:linear-gradient(45deg, #222, #444);"></div><div class="play-btn" style="z-index:2">▶</div></div>
+                                        <div class="card-meta-row"><span class="shot-number">#2 镜头02</span><span class="shot-time">00:00:04</span></div>
+                                        <div class="prompt-box">主角特写...</div>
+                                        <div class="action-row"><button class="regen-btn">⚡ 重绘</button></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="page-4" class="step-layer"><div class="placeholder-text">Step 4: 配音与音效合成</div></div>
+                            <div id="page-5" class="step-layer"><div class="placeholder-text">Step 5: 视频导出与编码</div></div>
+                        </div>
+                    </main>
+
+                    <div class="resizer" id="resizerRight"></div>
+
+                    <!-- Right Sidebar -->
+                    <aside class="sidebar-panel" id="sidebarRight" style="width: 280px;">
+                        <div class="right-tabs">
+                            <div class="r-tab active" onclick="switchRightTab('prop')" id="rtab-prop">属性</div>
+                            <div class="r-tab" onclick="switchRightTab('tool')" id="rtab-tool">工具</div>
+                        </div>
+                        <div class="panel-header">检查器</div>
+                        <div class="panel-content">
+                            <div id="panel-prop" style="display:block;">
+                                <div style="margin-bottom:10px; font-weight:bold; color:#e0e0e0;">当前选中: 镜头01</div>
+                                <div style="margin-bottom:5px;">Prompt</div>
+                                <textarea style="width:100%; height:80px; background:#0f0f0f; border:1px solid #333; color:#ccc; padding:8px; border-radius:4px; resize:none;">Cyberpunk city...</textarea>
+                            </div>
+                            <div id="panel-tool" style="display:none;">
+                                <button style="width:100%; padding:8px; background:#333; border:1px solid #444; color:#ccc;">加载 ComfyUI 流程</button>
+                            </div>
+                        </div>
+
+                        <!-- Docker & Panel -->
+                        <div class="panel-divider"></div>
+                        <div class="generation-panel" id="genPanel">
+                            <div class="mode-switch-3">
+                                <div class="ms-opt active" onclick="setGenMode(this, 0)">当前选择</div>
+                                <div class="ms-opt" onclick="setGenMode(this, 1)">自动补全</div>
+                                <div class="ms-opt" onclick="setGenMode(this, 2)">全流程</div>
+                            </div>
+                            <div class="gen-header">生成设置 (GENERATION SETTINGS)</div>
+                            <div class="gen-row">
+                                <div class="gen-col"><label class="gen-label">模型</label><select class="gen-input"><option>Sora v2 (Cloud)</option><option>SVD XT (Local)</option></select></div>
+                            </div>
+                            <div id="dynamic-gen-options">
+                                <div class="gen-row">
+                                    <div class="gen-col"><label class="gen-label">步数</label><input type="number" class="gen-input" value="30"></div>
+                                    <div class="gen-col"><label class="gen-label">CFG</label><input type="number" class="gen-input" value="7.0"></div>
+                                </div>
+                                <div class="gen-row">
+                                    <div class="gen-col"><label class="gen-label">种子 (Seed)</label><div style="display:flex; gap:5px;"><input type="text" class="gen-input" value="-1"><div class="dice-btn">🎲</div></div></div>
+                                </div>
+                            </div>
+                            <div class="gen-header" style="margin-top:4px;">关联资产 (LINKED ASSETS)</div>
+                            <div class="tag-container">
+                                <div class="asset-tag tag-global">Global: CyberStyle_v2</div>
+                                <div class="asset-tag tag-proj">Proj: Hero_Face</div>
+                            </div>
+                            <div style="margin-top:auto;">
+                                <div class="cost-row"><span>预估消耗:</span><span>$0.04</span></div>
+                                <button class="gen-btn-big" id="btnGenerate" onclick="startGeneration()">生成 (GENERATE)</button>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Docker Button -->
+                    <div class="task-docker" id="taskDocker" title="点击展开任务面板">
+                        <div class="tide-liquid" id="tideLiquid"></div>
+                        <div class="docker-num" id="dockerNum">0</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="status-bar">
+        <div style="display:flex; gap:15px;"><span id="footer-status-project">工作区: D:/Work/Matrix</span></div>
+        <div style="display:flex; gap:15px;"><span>系统就绪</span></div>
+    </footer>
+
+    <!-- About Modal -->
+    <div class="modal-overlay" id="modal-about" onclick="toggleAbout()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <h2 style="margin-bottom:10px; color:#00E676;">MATRIX Studio</h2>
+            <p style="color:#aaa; font-size:12px; margin-bottom:20px;">Version 14.0 (Final Fix)</p>
+            <p style="color:#666; font-size:11px; margin-bottom:20px;">All systems operational.</p>
+            <button class="action-btn" onclick="toggleAbout()" style="margin:0 auto;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // ===========================================
+        // GLOBAL NAVIGATION (FIXED LOGIC)
+        // ===========================================
+        const views = {
+            'home': document.getElementById('view-home'),
+            'assets': document.getElementById('view-assets'),
+            'plugins': document.getElementById('view-plugins'),
+            'settings': document.getElementById('view-settings'),
+            'workflow': document.getElementById('view-editor')
+        };
+        const menuItems = {
+            'home': document.getElementById('menu-home'),
+            'assets': document.getElementById('menu-assets'),
+            'plugins': document.getElementById('menu-plugins'),
+            'settings': document.getElementById('menu-settings'),
+            'workflow': document.getElementById('menu-workflow'),
+            'about': document.getElementById('menu-about')
+        };
+        
+        let currentProject = null;
+
+        function switchMainView(viewName) {
+            // 1. Hide ALL views first
+            Object.values(views).forEach(el => {
+                if(el) el.classList.remove('active');
+            });
+
+            // 2. Show TARGET view
+            if(views[viewName]) {
+                views[viewName].classList.add('active');
+            }
+
+            // 3. Update Menu Selection
+            Object.values(menuItems).forEach(el => {
+                if(el) el.classList.remove('active');
+            });
+            if(menuItems[viewName]) {
+                menuItems[viewName].classList.add('active');
+            }
+
+            // Special check for Workflow
+            if(viewName === 'workflow' && !currentProject) {
+                alert("请先在首页选择或新建一个项目 (Please open a project first)");
+                switchMainView('home'); // Go back to home
+                return;
+            }
+        }
+
+        // Navigation Handlers
+        menuItems['home'].onclick = () => switchMainView('home');
+        menuItems['assets'].onclick = () => switchMainView('assets');
+        menuItems['plugins'].onclick = () => switchMainView('plugins');
+        menuItems['settings'].onclick = () => switchMainView('settings');
+        menuItems['workflow'].onclick = () => switchMainView('workflow');
+        menuItems['about'].onclick = toggleAbout;
+
+        window.openProject = (name) => {
+            currentProject = name;
+            document.getElementById('footer-status-project').innerText = `当前项目: ${name}`;
+            switchMainView('workflow');
+        };
+
+        window.createFirstProject = () => {
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('project-grid-area').style.display = 'block';
+        };
+
+        function toggleAbout() {
+            const m = document.getElementById('modal-about');
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        // ===========================================
+        // SETTINGS PAGE INTERACTION (FIXED)
+        // ===========================================
+        function openSettingsTab(tabId, btnElement) {
+            // 1. Sidebar Active State
+            if (btnElement) {
+                const list = btnElement.parentNode.children;
+                for(let item of list) { 
+                    if(item.classList.contains('provider-item')) item.classList.remove('active'); 
+                }
+                btnElement.classList.add('active');
+            }
+
+            // 2. Tab Content Switching (DOM based)
+            // Hide all settings tabs
+            const tabs = document.querySelectorAll('.settings-tab-content');
+            tabs.forEach(t => t.classList.remove('active'));
+
+            // Show target tab
+            const target = document.getElementById('set-' + tabId);
+            if(target) target.classList.add('active');
+        }
+
+        // ===========================================
+        // EDITOR LOGIC (Preserved from V10)
+        // ===========================================
+        const sidebarLeft = document.getElementById('sidebarLeft');
+        const sidebarRight = document.getElementById('sidebarRight');
+        const taskDocker = document.getElementById('taskDocker');
+        function checkDockerVisibility() {
+            const w = sidebarRight.getBoundingClientRect().width;
+            if (w < 10) taskDocker.style.display = 'block'; else taskDocker.style.display = 'none';
+        }
+        const makeResizable = (resizer, prev, next) => {
+            let x = 0; let w = 0;
+            const mouseDown = (e) => {
+                x = e.clientX; const el = prev || next; w = el.getBoundingClientRect().width;
+                document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
+                document.addEventListener('mousemove', mouseMove); document.addEventListener('mouseup', mouseUp);
+            };
+            const mouseMove = (e) => {
+                const dx = e.clientX - x; const newW = prev ? Math.max(0, w+dx) : Math.max(0, w-dx);
+                if(prev) prev.style.width = `${newW}px`; else next.style.width = `${newW}px`;
+                if (!prev) checkDockerVisibility();
+            };
+            const mouseUp = () => { document.body.style.cursor=''; document.body.style.userSelect=''; document.removeEventListener('mousemove', mouseMove); document.removeEventListener('mouseup', mouseUp); };
+            resizer.addEventListener('mousedown', mouseDown);
+        };
+        makeResizable(document.getElementById('resizerLeft'), sidebarLeft, null);
+        makeResizable(document.getElementById('resizerRight'), null, sidebarRight);
+        document.getElementById('btnToggleLeft').onclick = () => { sidebarLeft.style.width = (sidebarLeft.style.width === '0px') ? '240px' : '0px'; };
+        document.getElementById('btnToggleRight').onclick = () => { const isClosed = (sidebarRight.style.width === '0px'); sidebarRight.style.width = isClosed ? '280px' : '0px'; setTimeout(checkDockerVisibility, 310); };
+        taskDocker.onclick = () => { sidebarRight.style.width = '280px'; checkDockerVisibility(); };
+        document.getElementById('btnMaximize').onclick = () => { const isMax = (sidebarLeft.style.width === '0px' && sidebarRight.style.width === '0px'); sidebarLeft.style.width = isMax ? '240px' : '0px'; sidebarRight.style.width = isMax ? '280px' : '0px'; setTimeout(checkDockerVisibility, 310); };
+        function setCanvasMode(mode) {
+            const container = document.getElementById('shot-container');
+            const btnStory = document.getElementById('btn-mode-story');
+            const btnList = document.getElementById('btn-mode-list');
+            if (mode === 'storyboard') { container.classList.remove('mode-list'); container.classList.add('mode-storyboard'); btnStory.classList.add('active'); btnList.classList.remove('active'); } 
+            else { container.classList.remove('mode-storyboard'); container.classList.add('mode-list'); btnList.classList.add('active'); btnStory.classList.remove('active'); }
+        }
+        const subSteps = { 1: ['1.1 章节拆分', '1.2 剧情梗概提取', '1.3 影视风格生成'], 2: ['2.1 场景提取', '2.2 全局风格', '2.3 主要角色', '2.4 服化道'], 3: ['3.1 分镜生成', '3.2 运镜控制'], 4: ['4.1 角色音色', '4.2 环境音效', '4.3 背景音乐'], 5: ['5.1 导出设置', '5.2 渲染队列'] };
+        function switchStep(step) {
+            document.querySelectorAll('.step-tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.step-tab')[step-1].classList.add('active');
+            document.querySelectorAll('.step-layer').forEach(el => el.classList.remove('active'));
+            document.getElementById('page-' + step).classList.add('active');
+            const subNav = document.getElementById('subNav'); const items = subSteps[step] || [];
+            subNav.innerHTML = items.map((text, index) => `<div class="sub-tab ${index===0?'active':''}">${text}</div>`).join('');
+            const switcher = document.getElementById('viewSwitcher');
+            step === 3 ? switcher.classList.remove('disabled') : switcher.classList.add('disabled');
+        }
+        function switchRightTab(tab) {
+            document.getElementById('rtab-prop').classList.remove('active'); document.getElementById('rtab-tool').classList.remove('active'); document.getElementById('rtab-' + tab).classList.add('active');
+            document.getElementById('panel-prop').style.display = (tab === 'prop') ? 'block' : 'none'; document.getElementById('panel-tool').style.display = (tab === 'tool') ? 'block' : 'none';
+        }
+        function setGenMode(el, modeIndex) {
+            const opts = el.parentNode.children; for(let opt of opts) opt.classList.remove('active'); el.classList.add('active');
+            const dynArea = document.getElementById('dynamic-gen-options'); const btn = document.getElementById('btnGenerate');
+            if (modeIndex === 1) { dynArea.style.display = 'none'; btn.innerText = "补全缺失 (AUTO-FILL)"; } 
+            else if (modeIndex === 2) { dynArea.style.display = 'block'; btn.innerText = "全流程生成 (GENERATE ALL)"; } 
+            else { dynArea.style.display = 'block'; btn.innerText = "生成当前 (GENERATE)"; }
+        }
+        let activeTasks = 0;
+        function startGeneration() { activeTasks += 2; updateDocker(); }
+        function updateDocker() {
+            const numEl = document.getElementById('dockerNum'); const liquid = document.getElementById('tideLiquid');
+            numEl.innerText = activeTasks;
+            if (activeTasks > 0) liquid.style.height = "60%"; else liquid.style.height = "0%";
+        }
+        checkDockerVisibility();
+
+    </script>
+</body>
+</html>

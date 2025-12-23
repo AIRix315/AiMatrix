@@ -2,26 +2,29 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import { WindowManager } from './window';
 import { IPCManager } from './ipc/channels';
-import { FileManager } from './services/file-manager';
-import { WorkflowManager } from './services/workflow-manager';
-import { MCPService } from './services/mcp-service';
-import { LocalServiceManager } from './services/local-service';
+import { ProjectManager } from './services/project-manager';
+import { AssetManager } from './services/asset-manager';
+import { PluginManager } from './services/plugin-manager';
+import { TaskScheduler } from './services/task-scheduler';
+import { APIManager } from './services/api-manager';
 
 class MatrixApp {
   private windowManager: WindowManager;
   private ipcManager: IPCManager;
-  private fileManager: FileManager;
-  private workflowManager: WorkflowManager;
-  private mcpService: MCPService;
-  private localServiceManager: LocalServiceManager;
+  private projectManager: ProjectManager;
+  private assetManager: AssetManager;
+  private pluginManager: PluginManager;
+  private taskScheduler: TaskScheduler;
+  private apiManager: APIManager;
 
   constructor() {
     this.windowManager = new WindowManager();
     this.ipcManager = new IPCManager();
-    this.fileManager = new FileManager();
-    this.workflowManager = new WorkflowManager();
-    this.mcpService = new MCPService();
-    this.localServiceManager = new LocalServiceManager();
+    this.projectManager = new ProjectManager();
+    this.assetManager = new AssetManager();
+    this.pluginManager = new PluginManager();
+    this.taskScheduler = new TaskScheduler();
+    this.apiManager = new APIManager();
 
     this.initializeEventListeners();
   }
@@ -71,39 +74,56 @@ class MatrixApp {
   }
 
   private async initializeServices(): Promise<void> {
-    await this.fileManager.initialize();
-    await this.workflowManager.initialize();
-    await this.mcpService.initialize();
-    await this.localServiceManager.initialize();
+    await this.projectManager.initialize();
+    await this.assetManager.initialize();
+    await this.pluginManager.initialize();
+    await this.taskScheduler.initialize();
+    await this.apiManager.initialize();
   }
 
   private setupIPCHandlers(): void {
     // 项目相关IPC处理
-    ipcMain.handle('project:create', (_, name) => this.fileManager.createProject(name));
-    ipcMain.handle('project:load', (_, path) => this.fileManager.loadProject(path));
-    ipcMain.handle('project:save', (_, config) => this.fileManager.saveProject(config));
+    ipcMain.handle('project:create', (_, name, template) => this.projectManager.createProject(name, template));
+    ipcMain.handle('project:load', (_, projectId) => this.projectManager.loadProject(projectId));
+    ipcMain.handle('project:save', (_, projectId, config) => this.projectManager.saveProject(projectId, config));
+    ipcMain.handle('project:delete', (_, projectId) => this.projectManager.deleteProject(projectId));
+    ipcMain.handle('project:list', () => this.projectManager.listProjects());
 
-    // 工作流相关IPC处理
-    ipcMain.handle('workflow:execute', (_, config) => this.workflowManager.execute(config));
-    ipcMain.handle('workflow:status', (_, jobId) => this.workflowManager.getStatus(jobId));
-    ipcMain.handle('workflow:cancel', (_, jobId) => this.workflowManager.cancel(jobId));
+    // 物料相关IPC处理
+    ipcMain.handle('asset:add', (_, projectId, assetData) => this.assetManager.addAsset(projectId, assetData));
+    ipcMain.handle('asset:remove', (_, projectId, assetId) => this.assetManager.removeAsset(projectId, assetId));
+    ipcMain.handle('asset:update', (_, projectId, assetId, updates) => this.assetManager.updateAsset(projectId, assetId, updates));
+    ipcMain.handle('asset:search', (_, projectId, query) => this.assetManager.searchAssets(projectId, query));
+    ipcMain.handle('asset:preview', (_, projectId, assetId) => this.assetManager.getAssetPreview(projectId, assetId));
 
-    // MCP服务相关IPC处理
-    ipcMain.handle('mcp:connect', (_, config) => this.mcpService.connect(config));
-    ipcMain.handle('mcp:disconnect', () => this.mcpService.disconnect());
-    ipcMain.handle('mcp:call', (_, method, params) => this.mcpService.call(method, params));
+    // 插件相关IPC处理
+    ipcMain.handle('plugin:install', (_, pluginPackage) => this.pluginManager.installPlugin(pluginPackage));
+    ipcMain.handle('plugin:uninstall', (_, pluginId) => this.pluginManager.uninstallPlugin(pluginId));
+    ipcMain.handle('plugin:load', (_, pluginId) => this.pluginManager.loadPlugin(pluginId));
+    ipcMain.handle('plugin:execute', (_, pluginId, action, params) => this.pluginManager.executePluginAction(pluginId, action, params));
+    ipcMain.handle('plugin:list', () => this.pluginManager.listPlugins());
 
-    // 本地服务相关IPC处理
-    ipcMain.handle('local:start', (_, serviceType) => this.localServiceManager.startService(serviceType));
-    ipcMain.handle('local:stop', (_, serviceType) => this.localServiceManager.stopService(serviceType));
-    ipcMain.handle('local:status', (_, serviceType) => this.localServiceManager.getServiceStatus(serviceType));
+    // 任务相关IPC处理
+    ipcMain.handle('task:create', (_, config) => this.taskScheduler.createTask(config));
+    ipcMain.handle('task:execute', (_, taskId, inputs) => this.taskScheduler.executeTask(taskId, inputs));
+    ipcMain.handle('task:status', (_, executionId) => this.taskScheduler.getTaskStatus(executionId));
+    ipcMain.handle('task:cancel', (_, executionId) => this.taskScheduler.cancelTask(executionId));
+    ipcMain.handle('task:results', (_, executionId) => this.taskScheduler.getTaskResults(executionId));
+
+    // API相关IPC处理
+    ipcMain.handle('api:call', (_, name, params) => this.apiManager.callAPI(name, params));
+    ipcMain.handle('api:set-key', (_, name, key) => this.apiManager.setAPIKey(name, key));
+    ipcMain.handle('api:get-status', (_, name) => this.apiManager.getAPIStatus(name));
+    ipcMain.handle('api:get-usage', (_, name) => this.apiManager.getAPIUsage(name));
   }
 
   private async cleanup(): Promise<void> {
     try {
-      await this.mcpService.disconnect();
-      await this.localServiceManager.stopAllServices();
-      await this.fileManager.cleanup();
+      await this.projectManager.cleanup();
+      await this.assetManager.cleanup();
+      await this.pluginManager.cleanup();
+      await this.taskScheduler.cleanup();
+      await this.apiManager.cleanup();
       console.log('应用清理完成');
     } catch (error) {
       console.error('应用清理失败:', error);

@@ -1,0 +1,81 @@
+# MATRIX Studio
+
+AI视频生成工作流管理平台
+
+## 项目简介
+
+MATRIX Studio 是一个基于 Electron 的 AI 视频生成工作流管理平台，定位为中间件，不直接参与视频渲染，而是提供统一的工作流管理和物料管理功能。
+
+## 当前状态
+
+- **版本**: v0.0.1 (Project Initialized)
+- **阶段**: Phase 1 - 视觉与组件拆解
+- **架构依据**: `/docs/00-06` 文档集
+
+## 快速开始
+
+### 环境要求
+
+- Node.js 18.0+
+- npm 9.0+
+- Git 2.30+
+
+### 安装依赖
+
+```bash
+npm install
+```
+
+### 开发模式
+
+```bash
+npm run dev
+```
+
+### 构建项目
+
+```bash
+npm run build
+```
+
+### 打包应用
+
+```bash
+npm run package
+```
+
+## 项目结构
+
+```
+matrix/
+├── src/                    # 源代码目录
+│   ├── main/               # 主进程代码
+│   └── renderer/           # 渲染进程代码
+├── docs/                   # 项目文档
+├── tests/                  # 测试文件
+├── build/                  # 构建输出
+├── config/                 # 配置文件
+├── resources/              # 应用资源
+└── assets/                 # 静态资源
+```
+
+## 开发计划
+
+详细的开发计划请参考 [TODO.md](TODO.md)
+
+## 文档
+
+- [全局要求](docs/00-global-requirements-v1.0.0.md)
+- [架构设计](docs/01-architecture-design-v1.0.0.md)
+- [技术蓝图](docs/02-technical-blueprint-v1.0.0.md)
+- [初始化指南](docs/04-initialization-guidelines-v1.0.0.md)
+- [项目结构](docs/05-project-structure-v1.0.1.md)
+- [核心服务设计](docs/06-core-services-design-v1.0.1.md)
+
+## UI设计参考
+
+UI设计参考文件位于 [docs/reference/V14.html](docs/reference/V14.html)
+
+## 许可证
+
+MIT License

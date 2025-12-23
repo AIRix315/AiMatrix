@@ -1,6 +1,6 @@
 {
   "name": "matrix-ai-workflow",
-  "version": "1.0.0",
+  "version": "0.0.3",
   "description": "AI视频生成工作流管理平台",
   "main": "build/main/index.js",
   "homepage": "./",
@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@types/react-router-dom": "^5.3.3",
-    "electron": "^25.0.0",
+    "electron": "^25.9.8",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^7.11.0",
