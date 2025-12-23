@@ -33,7 +33,7 @@
 ## 🚧 Phase 1: V14 原型拆解与样式提取 (当前焦点)
 **目标**: 将 `docs/references/V14.html` 的视觉风格移植到 React 代码中。
 
-### [ ] [B01] 视觉系统提取 (Theme Extraction)
+### [x] [B01] 视觉系统提取 (Theme Extraction)
 *   **输入**: `docs/references/V14.html` (style 标签), `src/renderer/styles/`
 *   **步骤**:
     1.  创建 `src/renderer/styles/theme.css`: 提取 V14 的 `:root` 颜色变量。
@@ -42,7 +42,7 @@
     4.  在 `src/renderer/index.tsx` 或 `App.tsx` 中引入这些 CSS。
 *   **检验**: 启动应用，窗口背景色应变为深色 (#0f0f0f)，字体应与原型一致。
 
-### [ ] [B02] 基础组件原子化 (Atomization)
+### [x] [B02] 基础组件原子化 (Atomization)
 *   **输入**: `docs/references/V14.html` (DOM 结构)
 *   **步骤**:
     1.  **Button**: 封装 `<Button variant="primary|ghost">` (参考 `.action-btn`).
