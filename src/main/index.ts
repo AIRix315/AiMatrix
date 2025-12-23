@@ -4,6 +4,7 @@ import { WindowManager } from './window';
 import { IPCManager } from './ipc/channels';
 import { ProjectManager } from './services/ProjectManager';
 import { AssetManager } from './services/AssetManager';
+// 暂时注释掉尚未创建的服务，后续任务中创建
 // import { PluginManager } from './services/plugin-manager';
 // import { TaskScheduler } from './services/task-scheduler';
 // import { APIManager } from './services/api-manager';
@@ -273,11 +274,14 @@ class MatrixApp {
       try {
         const fs = require('fs').promises;
         const items = await fs.readdir(dirPath, { withFileTypes: true });
-        return items.map(item => ({
-          name: item.name,
-          isDirectory: item.isDirectory(),
-          isFile: item.isFile()
-        }));
+        return items.map((item: any) => {
+          console.log('[DEBUG] Processing file item:', item.name, 'isDirectory:', item.isDirectory(), 'isFile:', item.isFile());
+          return {
+            name: item.name,
+            isDirectory: item.isDirectory(),
+            isFile: item.isFile()
+          };
+        });
       } catch (error) {
         return [];
       }

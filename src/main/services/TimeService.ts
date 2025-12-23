@@ -190,7 +190,12 @@ export class TimeServiceImpl implements TimeService {
    * 确保被装饰的方法在执行前验证时间有效性
    */
   public static requireValidTime() {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor | undefined) {
+      if (!descriptor) {
+        // 处理没有描述符的情况（如访问器属性）
+        return;
+      }
+      
       const originalMethod = descriptor.value;
       
       descriptor.value = async function (...args: any[]) {
@@ -201,7 +206,7 @@ export class TimeServiceImpl implements TimeService {
           // 尝试重新同步时间
           const syncSuccess = await timeService.syncWithNTP();
           if (!syncSuccess) {
-            throw new Error(`时间验证失败，无法执行操作: ${propertyKey}`);
+            throw new Error(`时间验证失败，无法执行操作: ${String(propertyKey)}`);
           }
         }
         

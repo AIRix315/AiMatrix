@@ -59,7 +59,7 @@ export declare class TimeServiceImpl implements TimeService {
      * 强制时间查询装饰器
      * 确保被装饰的方法在执行前验证时间有效性
      */
-    static requireValidTime(): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
+    static requireValidTime(): (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor | undefined) => PropertyDescriptor | undefined;
 }
 /**
  * 时间监控服务

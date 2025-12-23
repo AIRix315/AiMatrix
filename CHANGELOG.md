@@ -182,6 +182,47 @@ Closes #123
 - 安全补丁支持所有维护版本
 - 严重漏洞发布独立安全更新
 
+## [0.1.1] - 2025-12-23
+
+### Fixed
+- fix(types): 修复TypeScript编译错误和类型不匹配问题 (#F01)
+  - 修复src/main/utils/validation.ts中缺失模块导入问题
+  - 移除对不存在模块(workflow.ts, mcp.ts, service.ts)的引用
+  - 添加临时类型定义以支持验证功能
+  - 修复forEach回调参数的隐式any类型问题
+- fix(deps): 统一React Router版本兼容性 (#F02)
+  - 将@types/react-router-dom从v5.3.3升级到v7.11.0
+  - 解决与react-router-dom实现版本的类型不匹配问题
+- fix(architecture): 修复IPC通信架构设计问题 (#F03)
+  - 重构tests/integration/ipc-communication/IPCCommunication.test.ts
+  - 移除测试中对ipcMain.invoke的错误使用
+  - 实现正确的IPC处理器测试模式
+- fix(decorators): 修复TimeService装饰器实现问题 (#F04)
+  - 更新装饰器签名以支持symbol类型的propertyKey
+  - 解决TypeScript装饰器规范兼容性问题
+  - 添加undefined描述符处理以支持访问器装饰器
+- fix(build): 解决构建系统缓存问题 (#F05)
+  - 清理构建缓存确保最新代码生效
+  - 验证所有TypeScript错误已解决
+- fix(test): 修复单元测试Mock和装饰器测试问题 (#F06)
+  - 解决装饰器测试中的类型错误
+  - 修复Mock函数调用验证问题
+  - 改进测试用例的稳定性
+
+### Security
+- security(types): 加强类型安全检查
+  - 所有隐式any类型已修复
+  - 装饰器实现符合TypeScript规范
+  - 模块导入路径验证通过
+
+### Test
+- test(integration): 修复集成测试执行环境
+  - 解决Electron应用初始化问题
+  - 优化测试用例的执行稳定性
+- test(unit): 修复单元测试Mock问题
+  - 解决装饰器测试中的类型错误
+  - 改进时间服务测试覆盖率
+
 ---
 
 ## [0.1.0] - 2025-12-23

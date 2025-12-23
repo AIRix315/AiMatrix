@@ -1,7 +1,26 @@
 import { ProjectConfig, AssetConfig } from '../models/project';
-import { WorkflowConfig } from '../models/workflow';
-import { MCPConfig } from '../models/mcp';
-import { LocalServiceConfig } from '../models/service';
+
+// 临时类型定义，直到相关模块在开发计划中实现
+interface WorkflowConfig {
+  name: string;
+  type: 'comfyui' | 'n8n' | 'mcp';
+  inputs: Array<{ name: string; type: string }>;
+  outputs: Array<{ name: string; type: string }>;
+}
+
+interface MCPConfig {
+  name: string;
+  type: string;
+  endpoint: string;
+}
+
+interface LocalServiceConfig {
+  type: string;
+  name: string;
+  command: string;
+  workingDirectory: string;
+  port?: number;
+}
 
 export class ValidationUtils {
   // 项目验证
@@ -79,7 +98,7 @@ export class ValidationUtils {
     }
 
     // 验证输入
-    config.inputs.forEach((input, index) => {
+    config.inputs.forEach((input: any, index: number) => {
       if (!input.name || input.name.trim().length === 0) {
         errors.push(`输入 ${index + 1} 名称不能为空`);
       }
@@ -91,7 +110,7 @@ export class ValidationUtils {
     });
 
     // 验证输出
-    config.outputs.forEach((output, index) => {
+    config.outputs.forEach((output: any, index: number) => {
       if (!output.name || output.name.trim().length === 0) {
         errors.push(`输出 ${index + 1} 名称不能为空`);
       }

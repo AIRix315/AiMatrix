@@ -31,7 +31,7 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "@types/react-router-dom": "^5.3.3",
+    "@types/react-router-dom": "^7.11.0",
     "electron": "^25.9.8",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",

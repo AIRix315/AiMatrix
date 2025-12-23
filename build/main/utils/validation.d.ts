@@ -1,7 +1,28 @@
 import { ProjectConfig, AssetConfig } from '../models/project';
-import { WorkflowConfig } from '../models/workflow';
-import { MCPConfig } from '../models/mcp';
-import { LocalServiceConfig } from '../models/service';
+interface WorkflowConfig {
+    name: string;
+    type: 'comfyui' | 'n8n' | 'mcp';
+    inputs: Array<{
+        name: string;
+        type: string;
+    }>;
+    outputs: Array<{
+        name: string;
+        type: string;
+    }>;
+}
+interface MCPConfig {
+    name: string;
+    type: string;
+    endpoint: string;
+}
+interface LocalServiceConfig {
+    type: string;
+    name: string;
+    command: string;
+    workingDirectory: string;
+    port?: number;
+}
 export declare class ValidationUtils {
     static validateProject(config: ProjectConfig): ValidationResult;
     static validateAsset(config: AssetConfig): ValidationResult;
@@ -15,3 +36,4 @@ export interface ValidationResult {
     isValid: boolean;
     errors: string[];
 }
+export {};
