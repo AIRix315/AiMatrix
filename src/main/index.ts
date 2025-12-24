@@ -1,33 +1,29 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
+import { promises as fs } from 'fs';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import { WindowManager } from './window';
 import { IPCManager } from './ipc/channels';
 import { ProjectManager } from './services/ProjectManager';
 import { AssetManager } from './services/AssetManager';
-// 暂时注释掉尚未创建的服务，后续任务中创建
-// import { PluginManager } from './services/plugin-manager';
-// import { TaskScheduler } from './services/task-scheduler';
-// import { APIManager } from './services/api-manager';
+import { getSafePath } from './utils/security';
+import { logger } from './services/Logger';
+import { pluginManager } from './services/PluginManager';
+import { taskScheduler } from './services/TaskScheduler';
+import { apiManager } from './services/APIManager';
 
 class MatrixApp {
   private windowManager: WindowManager;
   private ipcManager: IPCManager;
   private projectManager: ProjectManager;
   private assetManager: AssetManager;
-  // 暂时注释掉尚未创建的服务，后续任务中创建
-  // private pluginManager: PluginManager;
-  // private taskScheduler: TaskScheduler;
-  // private apiManager: APIManager;
+  private fileWatchers: Map<string, fsSync.FSWatcher> = new Map();
 
   constructor() {
     this.windowManager = new WindowManager();
     this.ipcManager = new IPCManager();
     this.projectManager = new ProjectManager();
     this.assetManager = new AssetManager();
-    // 暂时注释掉尚未创建的服务，后续任务中创建
-    // this.pluginManager = new PluginManager();
-    // this.taskScheduler = new TaskScheduler();
-    // this.apiManager = new APIManager();
 
     this.initializeEventListeners();
   }
@@ -77,13 +73,15 @@ class MatrixApp {
   }
 
   private async initializeServices(): Promise<void> {
+    await logger.info('Initializing Matrix services', 'MatrixApp');
+
     await this.projectManager.initialize();
     await this.assetManager.initialize();
-    // 暂时注释掉尚未创建的服务，后续任务中创建
-    // await this.pluginManager.initialize();
-    // await this.taskScheduler.initialize();
-    // await this.apiManager.initialize();
-    console.log('服务初始化完成（暂时跳过未创建的服务）');
+    await pluginManager.initialize();
+    await taskScheduler.initialize();
+    await apiManager.initialize();
+
+    await logger.info('All Matrix services initialized successfully', 'MatrixApp');
   }
 
   private setupIPCHandlers(): void {
@@ -138,106 +136,119 @@ class MatrixApp {
     ipcMain.handle('asset:preview', (_, scope, containerId, assetId) => this.assetManager.getAssetPreview(scope, containerId, assetId));
 
     // 工作流相关IPC处理
-    ipcMain.handle('workflow:execute', (_, config) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`模拟执行工作流: ${JSON.stringify(config)}`);
+    ipcMain.handle('workflow:execute', async (_, config) => {
+      // 创建工作流任务并执行
+      const taskId = await taskScheduler.createTask({
+        type: 'workflow' as any,
+        name: config.name || 'Workflow Execution',
+        description: config.description,
+        metadata: config
+      });
+      return await taskScheduler.executeTask(taskId, config);
     });
-    ipcMain.handle('workflow:status', (_, jobId) => {
-      // 暂时返回模拟结果
-      return Promise.resolve({ jobId, status: 'completed', progress: 100 });
+    ipcMain.handle('workflow:status', async (_, executionId) => {
+      return await taskScheduler.getTaskStatus(executionId);
     });
-    ipcMain.handle('workflow:cancel', (_, jobId) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`取消工作流: ${jobId}`);
+    ipcMain.handle('workflow:cancel', async (_, executionId) => {
+      await taskScheduler.cancelTask(executionId);
+      return { success: true };
     });
-    ipcMain.handle('workflow:list', () => {
-      // 暂时返回模拟结果
-      return Promise.resolve([
-        { id: 'workflow1', name: '默认工作流', type: 'comfyui' },
-        { id: 'workflow2', name: '视频生成', type: 'n8n' }
-      ]);
+    ipcMain.handle('workflow:list', async () => {
+      // 读取 library/workflows 目录
+      try {
+        const workflowsDir = path.join(app.getPath('userData'), 'library', 'workflows');
+        const files = await fs.readdir(workflowsDir);
+        const workflows = [];
+
+        for (const file of files) {
+          if (file.endsWith('.json')) {
+            const content = await fs.readFile(path.join(workflowsDir, file), 'utf-8');
+            const workflow = JSON.parse(content);
+            workflows.push(workflow);
+          }
+        }
+
+        return workflows;
+      } catch (error) {
+        // 目录不存在或为空，返回默认工作流
+        return [
+          { id: 'workflow1', name: '默认工作流', type: 'comfyui' },
+          { id: 'workflow2', name: '视频生成', type: 'n8n' }
+        ];
+      }
     });
-    ipcMain.handle('workflow:save', (_, workflowId, config) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`保存工作流: ${workflowId}`);
+    ipcMain.handle('workflow:save', async (_, workflowId, config) => {
+      const workflowsDir = path.join(app.getPath('userData'), 'library', 'workflows');
+      await fs.mkdir(workflowsDir, { recursive: true });
+      const filePath = path.join(workflowsDir, `${workflowId}.json`);
+      await fs.writeFile(filePath, JSON.stringify(config, null, 2), 'utf-8');
+      return { success: true };
     });
-    ipcMain.handle('workflow:load', (_, workflowId) => {
-      // 暂时返回模拟结果
-      return Promise.resolve({ id: workflowId, name: '加载的工作流', config: {} });
+    ipcMain.handle('workflow:load', async (_, workflowId) => {
+      const workflowsDir = path.join(app.getPath('userData'), 'library', 'workflows');
+      const filePath = path.join(workflowsDir, `${workflowId}.json`);
+      const content = await fs.readFile(filePath, 'utf-8');
+      return JSON.parse(content);
     });
 
     // 插件相关IPC处理
-    ipcMain.handle('plugin:install', (_, pluginPackage) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`安装插件: ${JSON.stringify(pluginPackage)}`);
+    ipcMain.handle('plugin:install', async (_, pluginId) => {
+      return await pluginManager.loadPlugin(pluginId);
     });
-    ipcMain.handle('plugin:uninstall', (_, pluginId) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`卸载插件: ${pluginId}`);
+    ipcMain.handle('plugin:uninstall', async (_, pluginId) => {
+      await pluginManager.unloadPlugin(pluginId);
+      return { success: true };
     });
-    ipcMain.handle('plugin:load', (_, pluginId) => {
-      // 暂时返回模拟结果
-      return Promise.resolve({ id: pluginId, name: '加载的插件', isEnabled: true });
+    ipcMain.handle('plugin:load', async (_, pluginId) => {
+      return await pluginManager.loadPlugin(pluginId);
     });
-    ipcMain.handle('plugin:execute', (_, pluginId, action, params) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`执行插件动作: ${pluginId}.${action}(${JSON.stringify(params)})`);
+    ipcMain.handle('plugin:execute', async (_, pluginId, action, params) => {
+      return await pluginManager.executePlugin(pluginId, action, params);
     });
-    ipcMain.handle('plugin:list', () => {
-      // 暂时返回模拟结果
-      return Promise.resolve([
-        { id: 'plugin1', name: 'OpenAI插件', type: 'official', isEnabled: true },
-        { id: 'plugin2', name: '社区插件', type: 'community', isEnabled: false }
-      ]);
+    ipcMain.handle('plugin:list', async () => {
+      return await pluginManager.listPlugins();
     });
 
     // 任务相关IPC处理
-    ipcMain.handle('task:create', (_, config) => {
-      // 暂时返回模拟结果
-      const taskId = `task_${Date.now()}`;
-      return Promise.resolve(taskId);
+    ipcMain.handle('task:create', async (_, config) => {
+      return await taskScheduler.createTask(config);
     });
-    ipcMain.handle('task:execute', (_, taskId, inputs) => {
-      // 暂时返回模拟结果
-      const executionId = `exec_${Date.now()}`;
-      return Promise.resolve(executionId);
+    ipcMain.handle('task:execute', async (_, taskId, inputs) => {
+      return await taskScheduler.executeTask(taskId, inputs);
     });
-    ipcMain.handle('task:status', (_, executionId) => {
-      // 暂时返回模拟结果
-      return Promise.resolve({ executionId, status: 'running', progress: 50 });
+    ipcMain.handle('task:status', async (_, executionId) => {
+      return await taskScheduler.getTaskStatus(executionId);
     });
-    ipcMain.handle('task:cancel', (_, executionId) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`取消任务: ${executionId}`);
+    ipcMain.handle('task:cancel', async (_, executionId) => {
+      await taskScheduler.cancelTask(executionId);
+      return { success: true };
     });
-    ipcMain.handle('task:results', (_, executionId) => {
-      // 暂时返回模拟结果
-      return Promise.resolve({ executionId, results: { output: '模拟结果' } });
+    ipcMain.handle('task:results', async (_, executionId) => {
+      return await taskScheduler.getTaskResults(executionId);
     });
 
     // API相关IPC处理
-    ipcMain.handle('api:call', (_, name, params) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`调用API: ${name}(${JSON.stringify(params)})`);
+    ipcMain.handle('api:call', async (_, name, params) => {
+      return await apiManager.callAPI(name, params);
     });
-    ipcMain.handle('api:set-key', (_, name, key) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`设置API密钥: ${name}`);
+    ipcMain.handle('api:set-key', async (_, name, key) => {
+      await apiManager.setAPIKey(name, key);
+      return { success: true };
     });
-    ipcMain.handle('api:get-status', (_, name) => {
-      // 暂时返回模拟结果
-      return Promise.resolve({ name, status: 'available', lastChecked: new Date().toISOString() });
+    ipcMain.handle('api:get-status', async (_, name) => {
+      return await apiManager.getAPIStatus(name);
     });
-    ipcMain.handle('api:get-usage', (_, name) => {
-      // 暂时返回模拟结果
-      return Promise.resolve({ name, usage: { requests: 100, cost: 0.5 } });
+    ipcMain.handle('api:get-usage', async (_, name) => {
+      // MVP: 暂时返回模拟使用量数据（后续迭代实现）
+      return Promise.resolve({ name, usage: { requests: 0, cost: 0 } });
     });
 
     // 文件系统相关IPC处理
     ipcMain.handle('file:read', async (_, filePath) => {
       try {
-        const fs = require('fs').promises;
-        const content = await fs.readFile(filePath, 'utf-8');
+        // 验证路径安全性
+        const safePath = getSafePath(filePath);
+        const content = await fs.readFile(safePath, 'utf-8');
         return { success: true, content };
       } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : String(error) };
@@ -245,8 +256,9 @@ class MatrixApp {
     });
     ipcMain.handle('file:write', async (_, filePath, content) => {
       try {
-        const fs = require('fs').promises;
-        await fs.writeFile(filePath, content, 'utf-8');
+        // 验证路径安全性
+        const safePath = getSafePath(filePath);
+        await fs.writeFile(safePath, content, 'utf-8');
         return { success: true };
       } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : String(error) };
@@ -254,8 +266,9 @@ class MatrixApp {
     });
     ipcMain.handle('file:delete', async (_, filePath) => {
       try {
-        const fs = require('fs').promises;
-        await fs.unlink(filePath);
+        // 验证路径安全性
+        const safePath = getSafePath(filePath);
+        await fs.unlink(safePath);
         return { success: true };
       } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : String(error) };
@@ -263,8 +276,9 @@ class MatrixApp {
     });
     ipcMain.handle('file:exists', async (_, filePath) => {
       try {
-        const fs = require('fs').promises;
-        await fs.access(filePath);
+        // 验证路径安全性
+        const safePath = getSafePath(filePath);
+        await fs.access(safePath);
         return true;
       } catch {
         return false;
@@ -272,9 +286,11 @@ class MatrixApp {
     });
     ipcMain.handle('file:list', async (_, dirPath) => {
       try {
-        const fs = require('fs').promises;
-        const items = await fs.readdir(dirPath, { withFileTypes: true });
-        return items.map((item: any) => {
+        // 验证路径安全性
+        const safePath = getSafePath(dirPath);
+        const items = await fs.readdir(safePath, { withFileTypes: true });
+        return items.map((item) => {
+          // eslint-disable-next-line no-console
           console.log('[DEBUG] Processing file item:', item.name, 'isDirectory:', item.isDirectory(), 'isFile:', item.isFile());
           return {
             name: item.name,
@@ -287,12 +303,60 @@ class MatrixApp {
       }
     });
     ipcMain.handle('file:watch', async (_, filePath) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`监视文件: ${filePath}`);
+      try {
+        // 验证路径安全性
+        const safePath = getSafePath(filePath);
+
+        // 如果已经在监视，先关闭旧的监视器
+        if (this.fileWatchers.has(safePath)) {
+          this.fileWatchers.get(safePath)?.close();
+        }
+
+        // 创建新的文件监视器
+        const watcher = fsSync.watch(safePath, (eventType, filename) => {
+          // 发送文件变化事件到渲染进程
+          const mainWindow = this.windowManager.getMainWindow();
+          if (mainWindow) {
+            mainWindow.webContents.send('event:file:changed', {
+              path: safePath,
+              eventType,
+              filename
+            });
+          }
+        });
+
+        this.fileWatchers.set(safePath, watcher);
+
+        await logger.info(`File watcher started: ${safePath}`, 'MatrixApp');
+
+        return { success: true, path: safePath };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error)
+        };
+      }
     });
     ipcMain.handle('file:unwatch', async (_, filePath) => {
-      // 暂时返回模拟结果
-      return Promise.resolve(`取消监视文件: ${filePath}`);
+      try {
+        // 验证路径安全性
+        const safePath = getSafePath(filePath);
+
+        const watcher = this.fileWatchers.get(safePath);
+        if (watcher) {
+          watcher.close();
+          this.fileWatchers.delete(safePath);
+          await logger.info(`File watcher stopped: ${safePath}`, 'MatrixApp');
+          return { success: true };
+        } else {
+          return { success: false, error: 'No watcher found for this path' };
+        }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error)
+        };
+      }
     });
 
     // MCP服务相关IPC处理
@@ -321,7 +385,7 @@ class MatrixApp {
     });
 
     // 本地服务相关IPC处理
-    ipcMain.handle('local:start', (_, serviceId, config) => {
+    ipcMain.handle('local:start', (_, serviceId) => {
       // 暂时返回模拟结果
       return Promise.resolve(`启动本地服务: ${serviceId}`);
     });
@@ -343,13 +407,15 @@ class MatrixApp {
 
   private async cleanup(): Promise<void> {
     try {
+      await logger.info('Cleaning up Matrix application', 'MatrixApp');
+
       await this.projectManager.cleanup();
       await this.assetManager.cleanup();
-      // 暂时注释掉尚未创建的服务清理，后续任务中创建
-      // await this.pluginManager.cleanup();
-      // await this.taskScheduler.cleanup();
-      // await this.apiManager.cleanup();
-      console.log('应用清理完成（暂时跳过未创建的服务）');
+      await pluginManager.cleanup();
+      await taskScheduler.cleanup();
+      await apiManager.cleanup();
+
+      await logger.info('Matrix application cleanup completed', 'MatrixApp');
     } catch (error) {
       console.error('应用清理失败:', error);
     }
@@ -357,4 +423,5 @@ class MatrixApp {
 }
 
 // 创建应用实例
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const matrixApp = new MatrixApp();

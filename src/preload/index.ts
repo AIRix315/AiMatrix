@@ -9,12 +9,15 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import { timeService } from '../main/services/TimeService';
 
 /**
  * 暴露给渲染进程的API接口
  */
 contextBridge.exposeInMainWorld('electronAPI', {
+  // 暴露 require 函数给 webpack HMR 使用
+  require: (id: string) => {
+    return (window as any).require(id);
+  },
   // ==================== 应用相关 ====================
   
   /**
@@ -465,4 +468,5 @@ declare global {
 }
 
 // 初始化日志
+// eslint-disable-next-line no-console
 console.log('[Preload] Preload script loaded successfully at', new Date().toISOString());

@@ -1,13 +1,54 @@
 /**
  * IPC通信集成测试
  * 验证主进程与渲染进程之间的通信是否正常工作
- * 
+ *
  * 遵循全局时间处理要求：
  * 任何涉及时间的文字写入、记录，必须先查询系统时间，
  * 使用函数查询或者MCP服务查询确认后，方可写入
- * 
+ *
  * 参考：docs/02-technical-blueprint-v1.0.0.md
  */
+
+// Mock Electron 模块（必须在 import 之前）
+jest.mock('electron', () => {
+  const mockApp = {
+    whenReady: jest.fn().mockResolvedValue(true),
+    getVersion: jest.fn().mockReturnValue('0.1.0'),
+    quit: jest.fn().mockResolvedValue(true),
+    on: jest.fn(),
+    isReady: jest.fn().mockReturnValue(true)
+  };
+
+  const mockBrowserWindow = jest.fn().mockImplementation(() => ({
+    loadURL: jest.fn().mockResolvedValue(true),
+    on: jest.fn(),
+    webContents: {
+      send: jest.fn()
+    },
+    close: jest.fn(),
+    show: jest.fn(),
+    hide: jest.fn()
+  }));
+
+  const mockIpcMain = {
+    handle: jest.fn(),
+    on: jest.fn(),
+    removeHandler: jest.fn(),
+    removeAllListeners: jest.fn(),
+    listenerCount: jest.fn().mockReturnValue(1)
+  };
+
+  return {
+    app: mockApp,
+    BrowserWindow: mockBrowserWindow,
+    ipcMain: mockIpcMain,
+    ipcRenderer: {
+      invoke: jest.fn(),
+      on: jest.fn(),
+      removeListener: jest.fn()
+    }
+  };
+});
 
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';

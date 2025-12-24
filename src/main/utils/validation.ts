@@ -195,6 +195,7 @@ export class ValidationUtils {
     }
 
     // 检查非法字符
+    // eslint-disable-next-line no-control-regex
     const illegalChars = /[<>:"/\\|?*\x00-\x1f]/;
     if (illegalChars.test(fileName)) {
       errors.push('文件名包含非法字符');

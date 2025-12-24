@@ -1,0 +1,32 @@
+/* =========================================
+   About Component Styles
+   从设计原型提取的关于页样式
+   ========================================= */
+
+.about-page {
+    padding: 30px;
+    overflow-y: auto;
+    color: var(--text-main);
+    background: var(--bg-canvas);
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60%;
+}
+
+.about-content h2 {
+    margin-bottom: 10px;
+    color: var(--accent-color);
+}
+
+.about-content p {
+    margin-bottom: 20px;
+}
+
+.about-content button {
+    margin-top: 20px;
+}

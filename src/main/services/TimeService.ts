@@ -1,14 +1,13 @@
 /**
  * 时间服务与合规层
- * 
+ *
  * 遵循全局时间处理要求：
  * 任何涉及时间的文字写入、记录，必须先查询系统时间，
  * 使用函数查询或者MCP服务查询确认后，方可写入
- * 
+ *
  * 参考：docs/00-global-requirements-v1.0.0.md
  */
 
-import { app } from 'electron';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
@@ -146,17 +145,33 @@ export class TimeServiceImpl implements TimeService {
       const platform = process.platform;
       
       if (platform === 'win32') {
-        // Windows使用w32tm
-        await execAsync(`w32tm /resync /force`);
+        // Windows使用w32tm - 可能需要管理员权限，捕获错误后继续
+        try {
+          await execAsync(`w32tm /resync /force`, { timeout: 5000 });
+        } catch (error) {
+          console.warn(`Windows NTP同步失败（可能需要管理员权限）: ${server}`, error);
+          // 不抛出错误，让系统使用系统时间
+          return false;
+        }
       } else if (platform === 'darwin') {
         // macOS使用sntp
-        await execAsync(`sntp -sS ${server}`);
+        try {
+          await execAsync(`sntp -sS ${server}`, { timeout: 5000 });
+        } catch (error) {
+          console.warn(`macOS NTP同步失败: ${server}`, error);
+          return false;
+        }
       } else if (platform === 'linux') {
         // Linux使用ntpdate或chrony
         try {
-          await execAsync(`ntpdate -u ${server}`);
+          await execAsync(`ntpdate -u ${server}`, { timeout: 5000 });
         } catch {
-          await execAsync(`chronyc sources || chronyc makestep`);
+          try {
+            await execAsync(`chronyc sources || chronyc makestep`, { timeout: 5000 });
+          } catch (error) {
+            console.warn(`Linux NTP同步失败: ${server}`, error);
+            return false;
+          }
         }
       }
       

@@ -1,52 +1,46 @@
-.layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100%;
+/* =========================================
+   Layout Component Styles
+   主应用布局容器
+   从设计原型提取的布局样式
+   ========================================= */
+
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background: var(--bg-canvas);
 }
 
-.layout-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-  height: 60px;
-  background-color: #2c3e50;
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* App Body Layout */
+.app-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
 }
 
-.logo h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
+/* Content Wrapper */
+.content-wrapper {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-canvas);
 }
 
-.layout-nav {
-  display: flex;
-  gap: 20px;
-}
-
-.nav-item {
-  color: #ecf0f1;
-  text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
-
-.nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-item.active {
-  background-color: #3498db;
-  color: white;
-}
-
-.layout-main {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  background-color: #f5f5f5;
+/* Status Bar */
+.status-bar {
+    height: var(--status-bar-height);
+    background: var(--bg-nav);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    font-size: 10px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    z-index: 200;
 }

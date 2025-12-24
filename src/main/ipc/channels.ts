@@ -63,17 +63,19 @@ export const IPC_CHANNELS = {
 
 export type IPCChannel = typeof IPC_CHANNELS[keyof typeof IPC_CHANNELS];
 
-export class IPCManager {
-  private channels: Map<string, Function[]> = new Map();
+type IPCHandler = (...args: unknown[]) => unknown;
 
-  public register(channel: IPCChannel, handler: Function): void {
+export class IPCManager {
+  private channels: Map<string, IPCHandler[]> = new Map();
+
+  public register(channel: IPCChannel, handler: IPCHandler): void {
     if (!this.channels.has(channel)) {
       this.channels.set(channel, []);
     }
     this.channels.get(channel)!.push(handler);
   }
 
-  public unregister(channel: IPCChannel, handler: Function): void {
+  public unregister(channel: IPCChannel, handler: IPCHandler): void {
     const handlers = this.channels.get(channel);
     if (handlers) {
       const index = handlers.indexOf(handler);
@@ -83,7 +85,7 @@ export class IPCManager {
     }
   }
 
-  public getHandlers(channel: IPCChannel): Function[] {
+  public getHandlers(channel: IPCChannel): IPCHandler[] {
     return this.channels.get(channel) || [];
   }
 

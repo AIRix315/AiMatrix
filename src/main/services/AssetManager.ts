@@ -12,17 +12,14 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { timeService } from './TimeService';
-import { 
+import {
   AssetManager as IAssetManager,
   AssetConfig,
   AssetScope,
   AssetType,
-  AssetMetadata,
-  AIAssetAttributes,
   AssetSearchQuery,
   ServiceError,
-  LogEntry,
-  LibraryCategory
+  LogEntry
 } from '../../common/types';
 
 /**
@@ -654,14 +651,7 @@ export class AssetManager implements IAssetManager {
    * @private
    */
   private log(level: LogEntry['level'], message: string, data?: any): void {
-    const logEntry: LogEntry = {
-      level,
-      message,
-      timestamp: new Date(),
-      service: 'AssetManager',
-      data
-    };
-    
+    // eslint-disable-next-line no-console
     console.log(`[AssetManager] ${level.toUpperCase()}: ${message}`, data || '');
   }
 }

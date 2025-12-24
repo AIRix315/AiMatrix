@@ -1,0 +1,43 @@
+/* =========================================
+   Window Bar Component Styles
+   从设计原型提取的窗口栏样式
+   ========================================= */
+
+.window-bar {
+    height: var(--window-bar-height);
+    background: var(--bg-header);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    z-index: 200;
+    -webkit-app-region: drag; /* 允许拖拽窗口 */
+}
+
+.window-title span {
+    color: var(--text-main);
+    font-weight: bold;
+}
+
+.window-controls {
+    display: flex;
+    gap: 10px;
+    color: var(--text-muted);
+    -webkit-app-region: no-drag; /* 按钮区域不可拖拽 */
+}
+
+.window-controls .control-item {
+    cursor: pointer;
+    padding: 0 5px;
+    transition: color 0.2s;
+}
+
+.window-controls .control-item:hover {
+    color: var(--text-main);
+}
+
+.window-controls .control-item:last-child:hover {
+    color: #ff5555;
+}

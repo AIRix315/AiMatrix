@@ -1,0 +1,70 @@
+.confirm-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.confirm-title {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.confirm-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border-left: 3px solid var(--border-color);
+}
+
+.confirm-message.confirm-warning,
+.confirm-message.confirm-danger {
+  border-left-color: #ff9800;
+  background: rgba(255, 152, 0, 0.05);
+}
+
+.confirm-message.confirm-info {
+  border-left-color: #2196f3;
+  background: rgba(33, 150, 243, 0.05);
+}
+
+.confirm-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.confirm-message.confirm-warning .confirm-icon,
+.confirm-message.confirm-danger .confirm-icon {
+  color: #ff9800;
+}
+
+.confirm-message.confirm-info .confirm-icon {
+  color: #2196f3;
+}
+
+.confirm-text {
+  flex: 1;
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.confirm-actions button {
+  min-width: 80px;
+}

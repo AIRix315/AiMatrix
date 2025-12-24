@@ -12,22 +12,23 @@ export class WindowManager {
       height: Math.min(800, height - 100),
       minWidth: 800,
       minHeight: 600,
+      frame: false, // 使用自定义标题栏
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js')
+        preload: path.join(__dirname, '../preload/index.js'),
+        devTools: true // 启用开发者工具
       },
-      icon: path.join(__dirname, '../../resources/icons/icon.png'),
-      show: false,
-      titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default'
+      // icon: path.join(__dirname, '../../resources/icons/icon.png'), // 图标文件暂不存在，注释掉
+      show: false
     });
 
     // 加载应用
-    if (process.env.NODE_ENV === 'development') {
-      this.mainWindow.loadURL('http://localhost:3001');
+    this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+
+    // 开发模式下打开开发者工具
+    if (process.env.ELECTRON_IS_DEV === 'true') {
       this.mainWindow.webContents.openDevTools();
-    } else {
-      this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
     }
 
     // 窗口准备显示时才显示，避免视觉闪烁

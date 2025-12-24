@@ -1,41 +1,105 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, Button } from '../../components/common';
 import './Workflows.css';
 
+interface Workflow {
+  id: string;
+  name: string;
+  description: string;
+  type: 'comfyui' | 'n8n' | 'custom';
+  lastModified: string;
+  status: 'draft' | 'running' | 'completed';
+}
+
 const Workflows: React.FC = () => {
+  const navigate = useNavigate();
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+
+  useEffect(() => {
+    loadWorkflows();
+  }, []);
+
+  const loadWorkflows = async () => {
+    try {
+      // 模拟加载工作流数据
+      const mockWorkflows: Workflow[] = [
+        {
+          id: '1',
+          name: '默认工作流',
+          description: '标准AI视频生成流程',
+          type: 'comfyui',
+          lastModified: '2 days ago',
+          status: 'completed',
+        },
+        {
+          id: '2',
+          name: '快速生成',
+          description: '快速AI内容生成',
+          type: 'n8n',
+          lastModified: '1 week ago',
+          status: 'running',
+        },
+        {
+          id: '3',
+          name: '自定义流程',
+          description: '用户自定义的工作流',
+          type: 'custom',
+          lastModified: '3 days ago',
+          status: 'draft',
+        },
+      ];
+      setWorkflows(mockWorkflows);
+    } catch (error) {
+      console.error('Failed to load workflows:', error);
+    }
+  };
+
+  const handleCreateWorkflow = () => {
+    // TODO: 实现新建工作流模态框
+    console.log('Create workflow clicked');
+  };
+
+  const handleOpenWorkflow = (workflowId: string) => {
+    navigate(`/workflows/${workflowId}`);
+  };
+
   return (
-    <div className="workflows">
-      <div className="workflows-header">
-        <h2>工作流管理</h2>
-        <button className="btn-primary">新建工作流</button>
+    <div className="dashboard">
+      <div className="dashboard-header">
+        <div className="view-title">工作流 <small>| 流程管理 (Workflow Management)</small></div>
+        <div className="view-actions">
+          <Button variant="primary" onClick={handleCreateWorkflow}>
+            + 新建工作流
+          </Button>
+        </div>
       </div>
-      
-      <div className="workflows-content">
-        <div className="workflows-filters">
-          <input 
-            type="text" 
-            placeholder="搜索工作流..." 
-            className="search-input"
-          />
-          <select className="filter-select">
-            <option value="">全部类型</option>
-            <option value="comfyui">ComfyUI</option>
-            <option value="mcp">MCP</option>
-            <option value="n8n">n8n</option>
-          </select>
-          <select className="filter-select">
-            <option value="">全部状态</option>
-            <option value="active">运行中</option>
-            <option value="stopped">已停止</option>
-            <option value="error">错误</option>
-          </select>
-        </div>
-        
-        <div className="workflows-list">
+
+      <div className="dashboard-content">
+        {workflows.length === 0 ? (
           <div className="empty-state">
-            <h3>暂无工作流</h3>
-            <p>点击"新建工作流"按钮创建您的第一个工作流</p>
+            <div className="empty-icon">⚙️</div>
+            <h2>暂无工作流</h2>
+            <p>创建你的第一个工作流吧。</p>
+            <Button variant="primary" onClick={handleCreateWorkflow}>
+              + 新建工作流
+            </Button>
           </div>
-        </div>
+        ) : (
+          <div className="project-grid">
+            {workflows.map((workflow) => (
+              <Card
+                key={workflow.id}
+                tag={workflow.type}
+                image={workflow.type === 'comfyui' ? '🔄' : workflow.type === 'n8n' ? '🔗' : '⚙️'}
+                title={workflow.name}
+                info={`Type: ${workflow.type} | ${workflow.lastModified}`}
+                hoverable
+                onClick={() => handleOpenWorkflow(workflow.id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

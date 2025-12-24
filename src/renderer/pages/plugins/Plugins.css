@@ -1,0 +1,87 @@
+/* =========================================
+   Plugins Component Styles
+   从设计原型提取的插件页样式
+   ========================================= */
+
+.plugin-section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    color: var(--text-main);
+}
+
+.plugin-card-wrapper {
+    position: relative;
+}
+
+.plugin-card-wrapper .delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.plugin-card-wrapper:hover .delete-btn {
+    opacity: 1;
+}
+
+.plugin-card-wrapper .delete-btn:hover {
+    background: #ff9800;
+    color: white;
+    border-color: #ff9800;
+}
+
+.plugin-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.plugin-details .plugin-icon {
+    font-size: 64px;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.plugin-info-group {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.plugin-info-group label {
+    min-width: 80px;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.plugin-info-group span {
+    flex: 1;
+    color: var(--text-main);
+}
+
+.plugin-info-group .path-text {
+    font-size: 12px;
+    word-break: break-all;
+    font-family: monospace;
+    color: var(--text-muted);
+}

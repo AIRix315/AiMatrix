@@ -399,10 +399,9 @@ export class ProjectManager implements IProjectManager {
         
         for (const file of linkFiles) {
           if (file.endsWith('.json')) {
-            const linkData = JSON.parse(
-              await fs.readFile(path.join(linksPath, file), 'utf-8')
-            );
-            
+            // 读取链接文件
+            await fs.readFile(path.join(linksPath, file), 'utf-8');
+
             // 这里应该调用AssetManager获取实际资产信息
             // 暂时返回空数组
             linkedAssets.push({} as AssetConfig);
@@ -492,14 +491,7 @@ export class ProjectManager implements IProjectManager {
    * @private
    */
   private log(level: LogEntry['level'], message: string, data?: any): void {
-    const logEntry: LogEntry = {
-      level,
-      message,
-      timestamp: new Date(),
-      service: 'ProjectManager',
-      data
-    };
-    
+    // eslint-disable-next-line no-console
     console.log(`[ProjectManager] ${level.toUpperCase()}: ${message}`, data || '');
   }
 }

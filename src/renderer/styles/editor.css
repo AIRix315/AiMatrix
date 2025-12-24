@@ -1,0 +1,628 @@
+/* =========================================
+   Editor Styles (编辑器样式)
+   从 docs/references/UI/matrix 提取
+   ========================================= */
+
+/* =========================================
+   Editor Container
+   ========================================= */
+.editor-container {
+    flex: 1;
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* =========================================
+   Sidebar Panels
+   ========================================= */
+.sidebar-panel {
+    background: var(--bg-sidebar);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+.panel-header {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.panel-content {
+    padding: 12px;
+    color: var(--text-muted);
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+/* =========================================
+   Resizer
+   ========================================= */
+.resizer {
+    width: 1px;
+    background: #000;
+    cursor: col-resize;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.resizer:hover {
+    background: var(--accent-color);
+    width: 2px;
+}
+
+/* =========================================
+   Main Content Area
+   ========================================= */
+.main-content {
+    flex: 1;
+    background: var(--bg-canvas);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* =========================================
+   Navigation Container
+   ========================================= */
+.nav-container {
+    background: var(--bg-nav);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-row-main {
+    height: var(--nav-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    border-bottom: 1px solid #222;
+}
+
+.nav-row-sub {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    padding: 0 56px;
+    gap: 24px;
+    font-size: 11px;
+}
+
+/* =========================================
+   Navigation Tabs
+   ========================================= */
+.nav-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.step-tab {
+    padding: 6px 10px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.step-num {
+    font-size: 10px;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #444;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.step-tab.active {
+    background: var(--accent-dim);
+    color: var(--accent-color);
+}
+
+.step-tab.active .step-num {
+    background: var(--accent-color);
+    color: #000;
+    border-color: var(--accent-color);
+}
+
+/* =========================================
+   Sub Tabs
+   ========================================= */
+.sub-tab {
+    color: var(--text-muted);
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.sub-tab.active {
+    color: #fff;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+/* =========================================
+   Canvas Area
+   ========================================= */
+.canvas-area {
+    flex: 1;
+    background-image: radial-gradient(#2a2a2a 1px, transparent 1px);
+    background-size: 24px 24px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   Step Layers
+   ========================================= */
+.step-layer {
+    flex: 1;
+    display: none;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.step-layer.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   Shot Container
+   ========================================= */
+.shot-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #444 #1a1a1a;
+}
+
+.shot-container.mode-storyboard {
+    padding: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 80px;
+    align-content: flex-start;
+}
+
+.shot-container.mode-list {
+    padding: 20px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* =========================================
+   Shot Cards
+   ========================================= */
+.shot-card {
+    background-color: var(--bg-card);
+    border: 1px solid #333;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.mode-storyboard .shot-card:hover {
+    border-color: #555;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.mode-list .shot-card {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    height: 64px;
+    padding: 0 16px;
+    border-radius: 6px;
+}
+
+/* =========================================
+   Card Preview
+   ========================================= */
+.card-preview {
+    background-color: #000;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 6px;
+}
+
+.mode-storyboard .card-preview {
+    height: 170px;
+    margin-bottom: 10px;
+    border: 1px solid #2a2a2a;
+}
+
+.mode-list .card-preview {
+    width: 64px;
+    height: 40px;
+    margin-right: 16px;
+    margin-bottom: 0;
+    border: 1px solid #333;
+}
+
+/* =========================================
+   Play Button
+   ========================================= */
+.play-btn {
+    width: 44px;
+    height: 44px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    cursor: pointer;
+    transition: background 0.2s;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.mode-list .play-btn {
+    transform: scale(0.5);
+}
+
+/* =========================================
+   Card Meta Row
+   ========================================= */
+.card-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 0 4px;
+}
+
+.shot-number {
+    font-weight: bold;
+    color: #fff;
+    font-size: 13px;
+}
+
+.shot-time {
+    font-family: monospace;
+    color: #666;
+    font-size: 11px;
+    background: #111;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.mode-list .card-meta-row {
+    margin-bottom: 0;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    width: 140px;
+    margin-right: 20px;
+    padding: 0;
+}
+
+/* =========================================
+   Prompt Box
+   ========================================= */
+.prompt-box {
+    background: #252525;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px dashed #333;
+    color: #bbb;
+    font-size: 12px;
+    line-height: 1.4;
+    min-height: 50px;
+    margin-bottom: 10px;
+}
+
+.mode-list .prompt-box {
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 0;
+    min-height: auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 40%;
+    color: #888;
+    flex: 1;
+}
+
+/* =========================================
+   Action Row
+   ========================================= */
+.action-row {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.mode-list .action-row {
+    margin-left: auto;
+}
+
+/* =========================================
+   Regenerate Button
+   ========================================= */
+.regen-btn {
+    background: transparent;
+    border: 1px solid #333;
+    color: var(--accent-color);
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+/* =========================================
+   Panel Divider
+   ========================================= */
+.panel-divider {
+    height: 1px;
+    border-top: 1px dashed #444;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/* =========================================
+   Generation Panel
+   ========================================= */
+.generation-panel {
+    padding: 16px;
+    background: #1a1a1a;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gen-header {
+    color: #888;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.gen-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.gen-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.gen-label {
+    color: #aaa;
+    font-size: 11px;
+}
+
+.gen-input {
+    background: #222;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 6px;
+    border-radius: 4px;
+    width: 100%;
+    font-family: monospace;
+}
+
+.gen-input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+/* =========================================
+   Dice Button
+   ========================================= */
+.dice-btn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #2a2a2a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #ccc;
+}
+
+/* =========================================
+   Mode Switch (3 options)
+   ========================================= */
+.mode-switch-3 {
+    display: flex;
+    background: #222;
+    border-radius: 4px;
+    padding: 2px;
+    border: 1px solid #333;
+    margin-bottom: 6px;
+}
+
+.ms-opt {
+    flex: 1;
+    text-align: center;
+    font-size: 10px;
+    padding: 5px 0;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s;
+    border-radius: 2px;
+}
+
+.ms-opt:hover {
+    color: #999;
+}
+
+.ms-opt.active {
+    background: #333;
+    color: #fff;
+    font-weight: bold;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* =========================================
+   Cost Row
+   ========================================= */
+.cost-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+/* =========================================
+   Generate Button (Big)
+   ========================================= */
+.gen-btn-big {
+    width: 100%;
+    background: var(--accent-color);
+    color: #000;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 13px;
+    cursor: pointer;
+    transition: filter 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gen-btn-big:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 0 15px var(--accent-dim);
+}
+
+/* =========================================
+   Task Docker
+   ========================================= */
+.task-docker {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 88px;
+    border-radius: 44px 0 0 44px;
+    background: #141414;
+    border: 1px solid #444;
+    border-right: none;
+    z-index: 150;
+    cursor: pointer;
+    overflow: hidden;
+    display: none;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+    transition: transform 0.2s;
+}
+
+.task-docker:hover {
+    transform: translateY(-50%) scale(1.05);
+    border-color: var(--accent-color);
+}
+
+/* =========================================
+   Tide Liquid (Animation)
+   ========================================= */
+.tide-liquid {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 230, 118, 0.5);
+    height: 0%;
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tide-liquid::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: rgba(0, 230, 118, 0.3);
+    border-radius: 50%;
+}
+
+/* =========================================
+   Docker Number
+   ========================================= */
+.docker-num {
+    position: absolute;
+    top: 50%;
+    left: 55%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 2;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* =========================================
+   Right Tabs
+   ========================================= */
+.right-tabs {
+    display: flex;
+    border-bottom: 1px solid #333;
+    background: #1a1a1a;
+    flex-shrink: 0;
+}
+
+.r-tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 11px;
+    color: #888;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.r-tab.active {
+    color: #fff;
+    border-bottom-color: var(--accent-color);
+    background: #222;
+}

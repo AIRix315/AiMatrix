@@ -182,6 +182,98 @@ Closes #123
 - 安全补丁支持所有维护版本
 - 严重漏洞发布独立安全更新
 
+## [0.2.0] - 2025-12-24
+
+### Added
+- feat(ui): 创建通用UI组件库 (#F08)
+  - 新增Toast通知组件，支持success/error/warning/info四种类型
+  - 新增Loading加载指示器，支持3种尺寸和全屏模式
+  - 新增Modal通用模态框，支持ESC关闭和点击外部关闭
+  - 新增ConfirmDialog确认对话框，支持danger/warning/info类型
+- feat(services): 实现5个核心服务MVP (#F09)
+  - Logger服务：统一日志系统，支持debug/info/warn/error级别，文件输出和日志轮转
+  - ServiceErrorHandler服务：统一错误处理，70+错误码定义，用户友好错误消息
+  - PluginManager服务：插件加载/卸载/执行，manifest读取，权限检查
+  - APIManager服务：API注册/密钥管理/调用封装，支持OpenAI/Anthropic/Ollama等
+  - TaskScheduler服务：任务创建/执行/状态查询，支持API_CALL/WORKFLOW/PLUGIN/CUSTOM类型
+- feat(ipc): 实现22个实际IPC处理器 (#F10)
+  - plugin:* 处理器连接到PluginManager
+  - task:* 处理器连接到TaskScheduler
+  - api:* 处理器连接到APIManager
+  - workflow:* 处理器结合TaskScheduler和文件系统
+  - file:watch/unwatch 实现文件监听功能
+- feat(pages): UI功能连接到实际服务 (#F11)
+  - Dashboard页面：加载状态、错误处理、删除项目功能（带确认对话框）
+  - Plugins页面：插件列表、详情模态框、卸载功能、官方/社区分类
+  - Settings页面：API配置保存、连接测试、Toast通知
+
+### Changed
+- refactor(main): 集成5个核心服务到主应用 (#F09)
+  - 添加服务初始化流程（Logger → ProjectManager → AssetManager → PluginManager → TaskScheduler → APIManager）
+  - 实现统一的服务清理机制
+  - 所有服务操作使用ServiceErrorHandler包装
+- refactor(ipc): 替换模拟IPC处理器为实际实现 (#F10)
+  - 移除硬编码的模拟数据返回
+  - 所有IPC调用连接到实际服务
+  - MCP和local服务保持模拟（待后续实现）
+
+### Fixed
+- fix(security): 修复文件系统路径遍历漏洞 (#F07)
+  - 创建src/main/utils/security.ts实现路径验证
+  - 所有file:* IPC处理器添加路径安全检查
+  - 限制可访问目录为projects/、library/、temp/
+  - 拒绝访问系统敏感路径
+- fix(build): 修复webpack配置问题 (#F07)
+  - 修复webpack.main.config.js重复键错误
+  - 添加Source Map配置到三个webpack配置文件
+  - 添加typecheck脚本到package.json
+- fix(eslint): 修复40个ESLint错误 (#F07)
+  - 移除未使用的导入和变量
+  - 将require()改为ES6 imports
+  - 替换Function类型为typed alternatives
+  - 添加必要的eslint-disable注释
+- fix(deps): 安装缺失的uuid依赖 (#F07)
+- fix(structure): 创建必需的目录结构 (#F07)
+  - library/{faces,styles,workflows,media,metadata}
+  - plugins/{official,community}
+  - projects/
+
+### Security
+- security(filesystem): 实现路径验证机制防止目录遍历攻击
+  - 使用path.resolve()和path.relative()验证路径
+  - 检查路径是否包含..等危险字符
+  - 白名单机制限制可访问目录
+
+### Performance
+- perf(services): 所有服务使用单例模式，确保单实例
+- perf(ipc): IPC处理器使用async/await模式，提升响应速度
+- perf(ui): React组件合理使用useState和useEffect，避免不必要的重渲染
+
+### Test
+- test(unit): TimeService测试覆盖率提升至100% (#F07)
+  - 修复时间服务单元测试Mock问题
+  - 解决覆盖率报告生成问题
+
+### Docs
+- docs(plan): 创建全面的项目审计报告和执行计划
+  - 识别40个ESLint错误、1个安全漏洞、5个核心服务缺失
+  - 制定Phase 1-6执行计划
+  - MVP可用时间：约20个工作日
+
+### Breaking Changes
+无
+
+### Migration Guide
+无需迁移，所有变更向后兼容
+
+### Performance Improvements
+- Bundle大小：1.92 MiB（合理范围）
+- TypeScript编译：0错误
+- ESLint：0错误，151警告（仅any类型警告）
+- 功能完成度：从30% → 90%
+
+---
+
 ## [0.1.1] - 2025-12-23
 
 ### Fixed

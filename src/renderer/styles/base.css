@@ -1,0 +1,72 @@
+/* =========================================
+   Base Styles (基础样式)
+   从 docs/references/UI/matrix 提取
+   ========================================= */
+
+/* =========================================
+   Reset & Base
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background: var(--bg-canvas);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 13px;
+    user-select: none;
+}
+
+/* =========================================
+   Icon Styles
+   ========================================= */
+.icon-svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    pointer-events: none;
+}
+
+.icon-lg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+}
+
+/* =========================================
+   Placeholder Text
+   ========================================= */
+.placeholder-text {
+    color: #555;
+    font-size: 18px;
+    text-align: center;
+    margin-top: 50px;
+}
+
+/* =========================================
+   Scrollbar Styles
+   ========================================= */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

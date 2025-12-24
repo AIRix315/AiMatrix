@@ -1,0 +1,172 @@
+<!-- matrix-studio-electron/src/renderer/views/settings.html -->
+<div class="settings-layout">
+    <!-- 侧边栏 -->
+    <div class="settings-sidebar">
+        <div class="settings-search-box">
+            <input type="text" class="search-input" placeholder="搜索模型平台...">
+        </div>
+        <div class="provider-list">
+            <div class="provider-item" data-tab="global">
+                <div class="provider-icon">G</div><span>Global Defaults</span>
+            </div>
+            <div style="height:1px; background:#333; margin:5px 15px;"></div>
+            
+            <div class="provider-item active" data-tab="ollama">
+                <div class="provider-icon">🦙</div><span>Ollama</span>
+                <div class="provider-status on"></div>
+            </div>
+            <div class="provider-item" data-tab="openai">
+                <div class="provider-icon">OA</div><span>OpenAI</span>
+            </div>
+            <div class="provider-item" data-tab="silicon">
+                <div class="provider-icon">SF</div><span>SiliconFlow</span>
+                <div class="provider-status on"></div>
+            </div>
+            <div class="provider-item" data-tab="add">
+                <div class="provider-icon" style="color:var(--accent-color);">+</div><span style="color:var(--accent-color);">添加服务商</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="settings-content">
+        <!-- Global Defaults -->
+        <div id="set-global" class="settings-tab-content active">
+            <div class="settings-content-header">
+                <div class="settings-title-lg">Global Defaults</div>
+            </div>
+            <div class="settings-scroll-area">
+                <div class="config-section">
+                    <div class="config-label">本地存储 (Storage)</div>
+                    <div class="input-group">
+                        <label class="input-label">工作区路径 (Workspace Path)</label>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" class="input-field" value="D:/Work/Matrix_Projects" readonly>
+                            <button class="action-btn">浏览...</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ollama -->
+        <div id="set-ollama" class="settings-tab-content">
+            <div class="settings-content-header">
+                <div class="settings-title-lg">🦙 Ollama <span style="font-size:12px; font-weight:normal; background:#222; padding:2px 8px; border-radius:10px; border:1px solid #333;">Local</span></div>
+                <label class="switch">
+                    <input type="checkbox" checked="checked" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-scroll-area">
+                <div class="config-section">
+                    <div class="config-label">连接设置 (Connection)</div>
+                    <div class="input-group">
+                        <label class="input-label">API 域名 (Base URL)</label>
+                        <input type="text" class="input-field" value="http://localhost:11434/v1">
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="action-btn">测试连接 (Ping)</button>
+                        <button class="action-btn primary">保存</button>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <div class="config-label">已添加模型 (Model Library)</div>
+                    <div class="model-list-grid">
+                        <div class="model-item-card">
+                            <div class="model-icon">L3</div>
+                            <div class="model-info">
+                                <div class="model-id">llama3:8b</div>
+                                <div class="model-ctx">Chat / 8k</div>
+                            </div>
+                        </div>
+                        <div class="model-item-card">
+                            <div class="model-icon">M</div>
+                            <div class="model-info">
+                                <div class="model-id">mistral:latest</div>
+                                <div class="model-ctx">Chat / 32k</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OpenAI -->
+        <div id="set-openai" class="settings-tab-content">
+            <div class="settings-content-header">
+                <div class="settings-title-lg">OA OpenAI <span style="font-size:12px; font-weight:normal; background:#222; padding:2px 8px; border-radius:10px; border:1px solid #333;">Cloud</span></div>
+                <label class="switch">
+                    <input type="checkbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-scroll-area">
+                <div class="config-section">
+                    <div class="config-label">鉴权 (Authentication)</div>
+                    <div class="input-group">
+                        <label class="input-label">API Key (sk-...)</label>
+                        <input type="password" class="input-field" placeholder="Paste your OpenAI key here">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Base URL (Optional)</label>
+                        <input type="text" class="input-field" placeholder="https://api.openai.com/v1">
+                    </div>
+                    <button class="action-btn primary">保存配置</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SiliconFlow -->
+        <div id="set-silicon" class="settings-tab-content">
+            <div class="settings-content-header">
+                <div class="settings-title-lg">SF SiliconFlow <span style="font-size:12px; font-weight:normal; background:#222; padding:2px 8px; border-radius:10px; border:1px solid #333;">Cloud / Relay</span></div>
+                <label class="switch">
+                    <input type="checkbox" checked="checked" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-scroll-area">
+                <div class="config-section">
+                    <div class="config-label">配置 (Configuration)</div>
+                    <div class="input-group">
+                        <label class="input-label">API Key</label>
+                        <input type="password" class="input-field" value="sk-silicon-xxxxxxxx">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Base URL</label>
+                        <input type="text" class="input-field" value="https://api.siliconflow.cn/v1">
+                    </div>
+                    <button class="action-btn primary">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New -->
+        <div id="set-add" class="settings-tab-content">
+            <div class="settings-content-header">
+                <div class="settings-title-lg" style="color:var(--accent-color);">+ 添加新服务商 (Add Provider)</div>
+            </div>
+            <div class="settings-scroll-area">
+                <div class="config-section">
+                    <div class="config-label">自定义接入 (Custom Endpoint)</div>
+                    <div class="input-group">
+                        <label class="input-label">服务名称 (Display Name)</label>
+                        <input type="text" class="input-field" placeholder="例如: My Private LLM">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">接口类型 (Protocol)</label>
+                        <select class="input-field">
+                            <option>OpenAI Compatible (Standard)</option>
+                            <option>Anthropic</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Base URL</label>
+                        <input type="text" class="input-field" placeholder="https://...">
+                    </div>
+                    <button class="action-btn primary">确认添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
