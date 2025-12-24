@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Loading, Toast } from '../../components/common';
+import React, { useState } from 'react';
+import { Button, Toast } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import './Settings.css';
 
@@ -38,7 +38,6 @@ const providers: Provider[] = [
 
 const Settings: React.FC = () => {
   const [currentTab, setCurrentTab] = useState('ollama');
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);

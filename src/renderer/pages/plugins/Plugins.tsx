@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Loading, Toast, ConfirmDialog, Modal } from '../../components/common';
+import { Card, Loading, Toast, ConfirmDialog, Modal } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import './Plugins.css';
 
