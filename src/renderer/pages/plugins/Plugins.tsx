@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Loading, Toast, ConfirmDialog, Modal } from '../../components/common';
+import { Card, Button, Loading, Toast, ConfirmDialog, Modal } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import './Plugins.css';
 
@@ -23,6 +23,7 @@ const Plugins: React.FC = () => {
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [uninstallConfirm, setUninstallConfirm] = useState<{ pluginId: string; pluginName: string } | null>(null);
   const [selectedPlugin, setSelectedPlugin] = useState<PluginInfo | null>(null);
+  const [isInstalling, setIsInstalling] = useState(false);
 
   useEffect(() => {
     loadPlugins();
@@ -50,6 +51,48 @@ const Plugins: React.FC = () => {
     setSelectedPlugin(plugin);
   };
 
+  const handleInstallPlugin = async () => {
+    try {
+      if (!window.electronAPI?.selectFiles) return;
+
+      // 打开文件选择对话框
+      const result = await window.electronAPI.selectFiles({
+        filters: [{ name: '插件包', extensions: ['zip'] }]
+      });
+
+      if (result.canceled || !result.filePaths.length) return;
+
+      setIsInstalling(true);
+
+      // 安装插件（默认为社区插件）
+      if (window.electronAPI?.installPluginFromZip) {
+        const pluginInfo = await window.electronAPI.installPluginFromZip(
+          result.filePaths[0],
+          'community'
+        );
+
+        setToast({
+          type: 'success',
+          message: `插件 "${pluginInfo.name}" 安装成功`
+        });
+
+        // 重新加载插件列表
+        await loadPlugins();
+
+        // 切换到已安装视图
+        setShowInstallModal(false);
+      }
+    } catch (error) {
+      console.error('Failed to install plugin:', error);
+      setToast({
+        type: 'error',
+        message: `插件安装失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    } finally {
+      setIsInstalling(false);
+    }
+  };
+
   const handleUninstallPlugin = async (pluginId: string) => {
     try {
       if (window.electronAPI?.uninstallPlugin) {
@@ -66,6 +109,8 @@ const Plugins: React.FC = () => {
         type: 'error',
         message: `卸载插件失败: ${error instanceof Error ? error.message : String(error)}`
       });
+    } finally {
+      setUninstallConfirm(null);
     }
   };
 
@@ -91,6 +136,9 @@ const Plugins: React.FC = () => {
               插件市场
             </div>
           </div>
+          <Button variant="primary" onClick={handleInstallPlugin} disabled={isInstalling}>
+            {isInstalling ? '安装中...' : '+ 从ZIP安装'}
+          </Button>
         </div>
       </div>
 
@@ -102,6 +150,9 @@ const Plugins: React.FC = () => {
             <div className="empty-icon">🧩</div>
             <h2>插件市场</h2>
             <p>浏览和安装社区插件（功能开发中）</p>
+            <Button variant="primary" onClick={handleInstallPlugin} disabled={isInstalling}>
+              {isInstalling ? '安装中...' : '从ZIP文件安装插件'}
+            </Button>
           </div>
         ) : (
           <>

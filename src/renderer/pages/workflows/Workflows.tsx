@@ -22,42 +22,28 @@ const Workflows: React.FC = () => {
 
   const loadWorkflows = async () => {
     try {
-      // 模拟加载工作流数据
-      const mockWorkflows: Workflow[] = [
-        {
-          id: '1',
-          name: '默认工作流',
-          description: '标准AI视频生成流程',
-          type: 'comfyui',
-          lastModified: '2 days ago',
-          status: 'completed',
-        },
-        {
-          id: '2',
-          name: '快速生成',
-          description: '快速AI内容生成',
-          type: 'n8n',
-          lastModified: '1 week ago',
-          status: 'running',
-        },
-        {
-          id: '3',
-          name: '自定义流程',
-          description: '用户自定义的工作流',
-          type: 'custom',
-          lastModified: '3 days ago',
-          status: 'draft',
-        },
-      ];
-      setWorkflows(mockWorkflows);
+      if (window.electronAPI?.listWorkflows) {
+        const workflowList = await window.electronAPI.listWorkflows();
+        // 转换后端数据格式为前端格式
+        const formattedWorkflows: Workflow[] = workflowList.map((w: any) => ({
+          id: w.id,
+          name: w.name,
+          description: w.description || '暂无描述',
+          type: w.type || 'custom',
+          lastModified: w.lastModified || '未知',
+          status: w.status || 'draft'
+        }));
+        setWorkflows(formattedWorkflows);
+      }
     } catch (error) {
       console.error('Failed to load workflows:', error);
+      // 加载失败时显示空状态
+      setWorkflows([]);
     }
   };
 
   const handleCreateWorkflow = () => {
-    // TODO: 实现新建工作流模态框
-    console.log('Create workflow clicked');
+    navigate('/workflows/new');
   };
 
   const handleOpenWorkflow = (workflowId: string) => {

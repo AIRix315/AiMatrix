@@ -14,10 +14,6 @@ import { contextBridge, ipcRenderer } from 'electron';
  * 暴露给渲染进程的API接口
  */
 contextBridge.exposeInMainWorld('electronAPI', {
-  // 暴露 require 函数给 webpack HMR 使用
-  require: (id: string) => {
-    return (window as any).require(id);
-  },
   // ==================== 应用相关 ====================
   
   /**
@@ -188,8 +184,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出插件
    */
-  listPlugins: (): Promise<any[]> => 
+  listPlugins: (): Promise<any[]> =>
     ipcRenderer.invoke('plugin:list'),
+
+  /**
+   * 从ZIP文件安装插件
+   */
+  installPluginFromZip: (zipPath: string, type?: 'official' | 'community'): Promise<any> =>
+    ipcRenderer.invoke('plugin:installFromZip', zipPath, type),
 
   // ==================== 任务相关 ====================
   
@@ -290,8 +292,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 取消监视文件
    */
-  unwatchFile: (filePath: string): Promise<void> => 
+  unwatchFile: (filePath: string): Promise<void> =>
     ipcRenderer.invoke('file:unwatch', filePath),
+
+  /**
+   * 打开文件选择对话框
+   */
+  selectFiles: (options?: { filters?: Array<{ name: string; extensions: string[] }> }): Promise<{ canceled: boolean; filePaths: string[] }> =>
+    ipcRenderer.invoke('dialog:selectFiles', options),
 
   // ==================== MCP服务相关 ====================
   
@@ -432,6 +440,7 @@ declare global {
       loadPlugin: (pluginId: string) => Promise<any>;
       executePluginAction: (pluginId: string, action: string, params: any) => Promise<any>;
       listPlugins: () => Promise<any[]>;
+      installPluginFromZip: (zipPath: string, type?: 'official' | 'community') => Promise<any>;
       createTask: (config: any) => Promise<string>;
       executeTask: (taskId: string, inputs: any) => Promise<string>;
       getTaskStatus: (executionId: string) => Promise<any>;
@@ -448,6 +457,7 @@ declare global {
       listFiles: (dirPath: string) => Promise<any[]>;
       watchFile: (filePath: string) => Promise<void>;
       unwatchFile: (filePath: string) => Promise<void>;
+      selectFiles: (options?: { filters?: Array<{ name: string; extensions: string[] }> }) => Promise<{ canceled: boolean; filePaths: string[] }>;
       connectMCP: (config: any) => Promise<void>;
       disconnectMCP: (serviceId: string) => Promise<void>;
       callMCP: (serviceId: string, method: string, params: any) => Promise<any>;

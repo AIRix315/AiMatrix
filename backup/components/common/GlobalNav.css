@@ -1,0 +1,71 @@
+/* =========================================
+   GlobalNav Component Styles
+   从 V14.html 提取的左侧导航栏样式
+   ========================================= */
+
+.global-menu {
+  width: var(--left-menu-collapsed);
+  background: var(--bg-activity-bar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: var(--z-dropdown);
+  transition: width var(--transition-spring);
+  overflow: hidden;
+}
+
+.global-menu:hover {
+  width: var(--left-menu-expanded);
+  box-shadow: var(--shadow-medium);
+}
+
+.menu-item {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: background var(--transition-normal);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.menu-item.active {
+  color: var(--accent-color);
+  background: var(--accent-dim);
+  border-left: 3px solid var(--accent-color);
+}
+
+.menu-item:hover {
+  color: var(--text-bright);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-icon-box {
+  width: var(--left-menu-collapsed);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.menu-label {
+  font-size: var(--font-md);
+  font-weight: 500;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all var(--transition-normal) ease;
+}
+
+.global-menu:hover .menu-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.menu-spacer {
+  flex: 1;
+  min-height: 20px;
+}

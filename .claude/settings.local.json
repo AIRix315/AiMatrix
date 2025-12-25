@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npm install:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nrelease: V0.2.0 - 核心服务实现与UI功能连接\n\n主要变更：\n- 实现5个核心服务MVP \\(Logger, ServiceErrorHandler, PluginManager, APIManager, TaskScheduler\\)\n- 创建4个通用UI组件 \\(Toast, Loading, Modal, ConfirmDialog\\)\n- 连接3个核心页面到实际服务 \\(Dashboard, Plugins, Settings\\)\n- 实现22个实际IPC处理器替换模拟实现\n- 修复文件系统路径遍历安全漏洞\n- 修复40个ESLint错误和webpack配置问题\n- 功能完成度从30%提升至90%\n\n详细变更记录请查看 CHANGELOG.md\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git tag:*)",
+      "Bash(wc:*)",
+      "Bash(npm test)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix\\(eslint\\): 修复未使用导入的ESLint错误\n\n修复内容：\n- Plugins.tsx: 移除未使用的 Button 导入\n- Settings.tsx: 移除未使用的 useEffect 和 Loading 导入\n- Settings.tsx: 移除未使用的 isLoading 状态变量\n- 添加 CLAUDE.md 项目协作指南\n\n测试状态：\n- ✅ 所有测试通过 \\(28/28\\)\n- ✅ 构建成功 \\(主进程、渲染进程、预加载脚本\\)\n- ✅ ESLint错误清零 \\(0 errors, 154 warnings\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(cat:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "mcp__plugin_playwright_playwright__browser_close",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(lsof:*)",
+      "Bash(rimraf:*)",
+      "Bash(npx rimraf:*)"
+    ]
+  }
+}

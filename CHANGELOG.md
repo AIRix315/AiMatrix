@@ -420,6 +420,35 @@ Closes #123
 - ⚠️ 集成测试中部分类型定义问题
 - ⚠️ 某些边界条件下的错误处理待完善
 
+---
+
+## [0.2.1] - 2025-12-25
+
+### Fixed
+- fix(electron): 修复Electron白屏问题 (#F12)
+  - 修复路由配置：将BrowserRouter改为HashRouter，适配file://协议
+  - 修复webPreferences配置：设置nodeIntegration: false和contextIsolation: true
+  - 修复webpack HtmlWebpackPlugin配置：使用blocking方式加载脚本
+  - 修复webpack配置文件eslint错误：添加eslint-disable注释
+
+### Security
+- security(electron): 增强Electron安全配置
+  - 使用contextIsolation: true隔离渲染进程上下文
+  - 通过preload脚本安全暴露API，避免直接Node集成
+
+### Performance
+- perf(build): 优化webpack配置
+  - 修复script标签生成问题，确保bundle.js正确加载
+  - 优化publicPath配置，使用相对路径适配file://协议
+
+### Docs
+- docs(troubleshooting): 添加白屏问题诊断和修复记录
+  - 参考docs/references/Electron常见白屏问题及解决.md
+  - 记录导致白屏的核心原因和解决方案
+
+### Migration Guide
+无需迁移，所有变更向后兼容
+
 ### 后续计划
 - 🔄 实现剩余的核心管理器
 - 🔄 完善IPC处理器的实际业务逻辑

@@ -16,8 +16,10 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
+import AdmZip from 'adm-zip';
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
+import { timeService } from './TimeService';
 
 /**
  * 插件类型
@@ -406,6 +408,176 @@ export class PluginManager {
       'togglePlugin',
       ErrorCode.OPERATION_FAILED
     );
+  }
+
+  /**
+   * 从本地ZIP文件安装插件
+   */
+  public async installPluginFromZip(
+    zipPath: string,
+    type: PluginType = PluginType.COMMUNITY
+  ): Promise<PluginInfo> {
+    return errorHandler.wrapAsync(
+      async () => {
+        // 验证时间
+        const isValid = await timeService.validateTimeIntegrity();
+        if (!isValid) {
+          throw new Error('系统时间验证失败，无法安装插件');
+        }
+
+        await logger.info(`Installing plugin from ZIP: ${zipPath}`, 'PluginManager', { type });
+
+        // 验证ZIP文件存在
+        try {
+          await fs.access(zipPath);
+        } catch {
+          throw new Error(`ZIP文件不存在: ${zipPath}`);
+        }
+
+        // 创建临时目录
+        const tempDir = path.join(app.getPath('temp'), `plugin-install-${Date.now()}`);
+        await fs.mkdir(tempDir, { recursive: true });
+
+        try {
+          // 解压ZIP到临时目录
+          await this.extractZip(zipPath, tempDir);
+
+          // 读取并验证manifest.json
+          const manifestPath = path.join(tempDir, 'manifest.json');
+          try {
+            await fs.access(manifestPath);
+          } catch {
+            throw new Error('插件包中缺少manifest.json文件');
+          }
+
+          const manifestContent = await fs.readFile(manifestPath, 'utf-8');
+          const manifest: PluginManifest = JSON.parse(manifestContent);
+
+          // 验证manifest完整性
+          this.validateManifest(manifest);
+
+          // 检查插件是否已存在
+          const targetPluginDir = path.join(this.pluginsDir, type, manifest.id);
+          const pluginExists = await fs
+            .access(targetPluginDir)
+            .then(() => true)
+            .catch(() => false);
+
+          if (pluginExists) {
+            // 如果已卸载，先删除旧版本
+            if (this.loadedPlugins.has(manifest.id)) {
+              await this.unloadPlugin(manifest.id);
+            }
+            await fs.rm(targetPluginDir, { recursive: true, force: true });
+          }
+
+          // 复制到插件目录
+          await fs.mkdir(targetPluginDir, { recursive: true });
+          await this.copyDirectory(tempDir, targetPluginDir);
+
+          await logger.info(`Plugin installed: ${manifest.id}`, 'PluginManager', {
+            version: manifest.version,
+            type
+          });
+
+          // 加载插件
+          return await this.loadPlugin(manifest.id);
+        } finally {
+          // 清理临时目录
+          try {
+            await fs.rm(tempDir, { recursive: true, force: true });
+          } catch (error) {
+            await logger.warn('Failed to clean up temp directory', 'PluginManager', {
+              tempDir,
+              error
+            });
+          }
+        }
+      },
+      'PluginManager',
+      'installPluginFromZip',
+      ErrorCode.PLUGIN_INSTALL_ERROR
+    );
+  }
+
+  /**
+   * 验证manifest完整性
+   */
+  private validateManifest(manifest: PluginManifest): void {
+    const required = ['id', 'name', 'version', 'description', 'author', 'main', 'type', 'permissions'];
+
+    for (const field of required) {
+      if (!manifest[field as keyof PluginManifest]) {
+        throw new Error(`manifest.json缺少必需字段: ${field}`);
+      }
+    }
+
+    // 验证版本格式（semver）
+    if (!/^\d+\.\d+\.\d+$/.test(manifest.version)) {
+      throw new Error('版本号格式无效，应为x.y.z格式（如1.0.0）');
+    }
+
+    // 验证插件ID格式
+    if (!/^[a-z0-9-]+$/.test(manifest.id)) {
+      throw new Error('插件ID格式无效，只能包含小写字母、数字和连字符');
+    }
+  }
+
+  /**
+   * 解压ZIP文件
+   */
+  private async extractZip(zipPath: string, targetDir: string): Promise<void> {
+    try {
+      const zip = new AdmZip(zipPath);
+      const zipEntries = zip.getEntries();
+
+      // 安全检查：防止路径遍历攻击
+      for (const entry of zipEntries) {
+        const entryPath = path.normalize(entry.entryName);
+        if (entryPath.includes('..') || path.isAbsolute(entryPath)) {
+          throw new Error(`检测到不安全的文件路径: ${entry.entryName}`);
+        }
+      }
+
+      // 检查解压后的大小（防止ZIP炸弹）
+      const totalSize = zipEntries.reduce((sum, entry) => sum + entry.header.size, 0);
+      const maxSize = 100 * 1024 * 1024; // 100MB限制
+      if (totalSize > maxSize) {
+        throw new Error(`插件包过大（${(totalSize / 1024 / 1024).toFixed(2)}MB），最大允许100MB`);
+      }
+
+      // 解压
+      zip.extractAllTo(targetDir, true);
+
+      await logger.info('ZIP extracted successfully', 'PluginManager', {
+        zipPath,
+        targetDir,
+        fileCount: zipEntries.length
+      });
+    } catch (error) {
+      throw new Error(
+        `ZIP文件解压失败: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  /**
+   * 递归复制目录
+   */
+  private async copyDirectory(src: string, dest: string): Promise<void> {
+    await fs.mkdir(dest, { recursive: true });
+    const entries = await fs.readdir(src, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const srcPath = path.join(src, entry.name);
+      const destPath = path.join(dest, entry.name);
+
+      if (entry.isDirectory()) {
+        await this.copyDirectory(srcPath, destPath);
+      } else {
+        await fs.copyFile(srcPath, destPath);
+      }
+    }
   }
 
   /**

@@ -1,4 +1,4 @@
-import { BrowserWindow, screen } from 'electron';
+import { BrowserWindow, screen, app } from 'electron';
 import * as path from 'path';
 
 export class WindowManager {
@@ -14,8 +14,8 @@ export class WindowManager {
       minHeight: 600,
       frame: false, // 使用自定义标题栏
       webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
+        nodeIntegration: false, // 关闭 Node 集成（更安全），通过 preload 脚本暴露 API
+        contextIsolation: true, // 开启上下文隔离（Electron 官方推荐的安全做法）
         preload: path.join(__dirname, '../preload/index.js'),
         devTools: true // 启用开发者工具
       },
@@ -24,10 +24,11 @@ export class WindowManager {
     });
 
     // 加载应用
+    // 开发和生产模式都使用 loadFile，避免 webpack-dev-server 的兼容性问题
     this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
 
     // 开发模式下打开开发者工具
-    if (process.env.ELECTRON_IS_DEV === 'true') {
+    if (!app.isPackaged) {
       this.mainWindow.webContents.openDevTools();
     }
 

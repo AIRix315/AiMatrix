@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 
 const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';

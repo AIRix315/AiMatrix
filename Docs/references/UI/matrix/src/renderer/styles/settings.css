@@ -1,0 +1,231 @@
+/* matrix-studio-electron/src/renderer/styles/settings.css */
+
+/* =========================================
+   Settings Layout (CherryStudio Style)
+   ========================================= */
+.settings-layout {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+/* =========================================
+   Settings Sidebar (Left)
+   ========================================= */
+.settings-sidebar {
+    width: 260px;
+    background: #1a1a1a;
+    border-right: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.settings-search-box {
+    padding: 15px;
+    border-bottom: 1px solid #333;
+}
+
+.provider-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.provider-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    color: #aaa;
+    transition: background 0.2s;
+    gap: 10px;
+}
+
+.provider-item:hover {
+    background: #222;
+    color: #ddd;
+}
+
+.provider-item.active {
+    background: #252525;
+    border-left-color: var(--accent-color);
+    color: #fff;
+    font-weight: 500;
+}
+
+.provider-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    color: #ccc;
+}
+
+.provider-status {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #444;
+    margin-left: auto;
+}
+
+.provider-status.on {
+    background: var(--accent-color);
+    box-shadow: 0 0 5px var(--accent-dim);
+}
+
+.sidebar-bottom-actions {
+    padding: 15px;
+    border-top: 1px solid #333;
+}
+
+/* =========================================
+   Settings Content (Right)
+   ========================================= */
+.settings-content {
+    flex: 1;
+    background: #141414;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+}
+
+/* Settings Sub-Pages (Tabs) */
+.settings-tab-content {
+    display: none;
+    height: 100%;
+    flex-direction: column;
+    width: 100%;
+}
+
+.settings-tab-content.active {
+    display: flex;
+}
+
+.settings-content-header {
+    height: 60px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    background: #1a1a1a;
+    flex-shrink: 0;
+}
+
+.settings-title-lg {
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px;
+    max-width: 1000px;
+    margin: 0;
+}
+
+/* =========================================
+   Config Sections
+   ========================================= */
+.config-section {
+    margin-bottom: 30px;
+}
+
+.config-label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #888;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-label {
+    display: block;
+    color: #ccc;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+/* =========================================
+   Model Cards
+   ========================================= */
+.model-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.model-item-card {
+    background: #1f1f1f;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+.model-item-card:hover {
+    border-color: #555;
+    background: #252525;
+}
+
+.model-icon {
+    width: 32px;
+    height: 32px;
+    background: #333;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.model-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.model-id {
+    font-weight: bold;
+    font-size: 13px;
+    color: #fff;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.model-ctx {
+    font-size: 11px;
+    color: #777;
+}
+
+.model-actions {
+    display: flex;
+    gap: 5px;
+    opacity: 0.5;
+}
+
+.model-item-card:hover .model-actions {
+    opacity: 1;
+}

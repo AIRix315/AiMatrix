@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
@@ -9,10 +10,14 @@ module.exports = {
   mode,
   devtool: mode === 'development' ? 'eval-source-map' : 'source-map',
   entry: './src/renderer/index.tsx',
+  externalsPresets: { electronRenderer: true },
+  externals: {
+    'events': 'commonjs events'
+  },
   output: {
     path: path.resolve(__dirname, '../build/renderer'),
     filename: 'bundle.js',
-    publicPath: './'
+    publicPath: './' // 使用相对路径，适合 Electron file:// 协议
   },
   module: {
     rules: [
@@ -39,24 +44,16 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/renderer/index.html',
-      filename: 'index.html'
+      filename: 'index.html',
+      inject: 'body',
+      scriptLoading: 'blocking' // 使用阻塞方式加载脚本，确保在 DOM 加载前执行
     }),
     new webpack.ProvidePlugin({
-      process: 'process/browser'
+      process: 'process/browser',
+      Buffer: ['buffer', 'Buffer'],
+      global: 'globalThis'
     })
   ],
-  devServer: {
-    port: 3001,
-    hot: true,
-    historyApiFallback: true,
-    static: {
-      directory: path.resolve(__dirname, '../build/renderer'),
-      publicPath: '/'
-    },
-    devMiddleware: {
-      writeToDisk: true
-    }
-  },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     alias: {
@@ -64,10 +61,13 @@ module.exports = {
     },
     fallback: {
       "fs": false,
-      "path": false,
-      "crypto": false,
+      "path": require.resolve('path-browserify'),
+      "crypto": require.resolve('crypto-browserify'),
+      "stream": require.resolve('stream-browserify'),
+      "buffer": require.resolve('buffer'),
+      "events": false,
       "child_process": false,
-      "util": false,
+      "util": require.resolve('util'),
       "process": require.resolve('process/browser')
     }
   }

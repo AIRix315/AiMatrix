@@ -1,0 +1,283 @@
+.workflow-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-primary);
+}
+
+.editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+}
+
+.workflow-name-input {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 300px;
+  transition: border-color 0.2s;
+}
+
+.workflow-name-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.editor-panels {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 节点库样式 */
+.node-library,
+.properties-panel {
+  height: 100%;
+  padding: 16px;
+  background: var(--bg-secondary);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.node-library h3,
+.properties-panel h3 {
+  margin: 0 0 16px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.node-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.node-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary-color);
+  transform: translateX(2px);
+}
+
+.node-item:active {
+  transform: translateX(0);
+}
+
+.node-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.node-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 属性面板样式 */
+.property-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.property-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.property-group label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.property-group span {
+  font-size: 13px;
+  color: var(--text-primary);
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.no-selection {
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* 拖拽手柄样式 */
+.resize-handle {
+  width: 2px;
+  background: var(--border-color);
+  cursor: col-resize;
+  transition: background 0.2s;
+}
+
+.resize-handle:hover {
+  background: var(--primary-color);
+}
+
+/* React Flow 样式覆盖 */
+.react-flow {
+  background: var(--bg-primary);
+}
+
+.react-flow__node {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.react-flow__node.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.react-flow__node:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.react-flow__edge-path {
+  stroke: var(--primary-color);
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--accent-color);
+  stroke-width: 3;
+}
+
+.react-flow__controls {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.react-flow__controls-button {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: background 0.2s;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--bg-hover);
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.react-flow__minimap {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.react-flow__minimap-mask {
+  fill: var(--primary-color);
+  fill-opacity: 0.2;
+}
+
+.react-flow__minimap-node {
+  fill: var(--text-secondary);
+}
+
+.react-flow__handle {
+  background: var(--primary-color);
+  border: 2px solid var(--bg-primary);
+  width: 10px;
+  height: 10px;
+}
+
+.react-flow__handle:hover {
+  background: var(--accent-color);
+  transform: scale(1.2);
+}
+
+/* 工作流信息面板 */
+.workflow-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-item span {
+  font-weight: 500;
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+  .workflow-name-input {
+    width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .editor-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .workflow-name-input {
+    width: 100%;
+  }
+
+  .toolbar-actions {
+    justify-content: flex-end;
+  }
+}

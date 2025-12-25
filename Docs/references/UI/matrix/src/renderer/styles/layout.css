@@ -1,0 +1,195 @@
+/* matrix-studio-electron/src/renderer/styles/layout.css */
+
+/* =========================================
+   Window Bar (自定义标题栏)
+   ========================================= */
+.window-bar {
+    height: var(--window-bar-height);
+    background: var(--bg-header);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    z-index: 200;
+    -webkit-app-region: drag; /* 允许拖拽窗口 */
+}
+
+.window-title span {
+    color: var(--text-main);
+    font-weight: bold;
+}
+
+.window-controls {
+    display: flex;
+    gap: 10px;
+    color: var(--text-muted);
+    -webkit-app-region: no-drag; /* 按钮区域不可拖拽 */
+}
+
+.window-controls .control-item {
+    cursor: pointer;
+    padding: 0 5px;
+    transition: color 0.2s;
+}
+
+.window-controls .control-item:hover {
+    color: var(--text-main);
+}
+
+.window-controls .control-item:last-child:hover {
+    color: #ff5555;
+}
+
+/* =========================================
+   App Body Layout
+   ========================================= */
+.app-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
+/* =========================================
+   Left Menu (Global Navigation)
+   ========================================= */
+.global-menu {
+    width: var(--left-menu-collapsed);
+    background: var(--bg-activity-bar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    z-index: 100;
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden;
+}
+
+.global-menu:hover {
+    width: var(--left-menu-expanded);
+    box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+}
+
+.menu-item {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    white-space: nowrap;
+    transition: background 0.2s;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.menu-item.active {
+    color: var(--accent-color);
+    background: var(--accent-dim);
+    border-left: 3px solid var(--accent-color);
+}
+
+.menu-item:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.05);
+}
+
+.menu-icon-box {
+    width: var(--left-menu-collapsed);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.menu-label {
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.2s ease;
+}
+
+.global-menu:hover .menu-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.menu-spacer {
+    flex: 1;
+    min-height: 20px;
+}
+
+/* =========================================
+   Content Wrapper & Views
+   ========================================= */
+.content-wrapper {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-canvas);
+}
+
+/* By default hide ALL views */
+.view-section {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--bg-canvas);
+    z-index: 1;
+}
+
+/* Only show the one with .active class */
+.view-section.active {
+    display: flex;
+    z-index: 10;
+}
+
+/* =========================================
+   Status Bar (Footer)
+   ========================================= */
+.status-bar {
+    height: var(--status-bar-height);
+    background: var(--bg-nav);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    font-size: 10px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    z-index: 200;
+}
+
+/* =========================================
+   Modal Overlay
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-box {
+    width: 300px;
+    background: #222;
+    border: 1px solid #444;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px #000;
+}

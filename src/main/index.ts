@@ -208,6 +208,9 @@ class MatrixApp {
     ipcMain.handle('plugin:list', async () => {
       return await pluginManager.listPlugins();
     });
+    ipcMain.handle('plugin:installFromZip', async (_, zipPath, type) => {
+      return await pluginManager.installPluginFromZip(zipPath, type);
+    });
 
     // 任务相关IPC处理
     ipcMain.handle('task:create', async (_, config) => {
@@ -357,6 +360,22 @@ class MatrixApp {
           error: error instanceof Error ? error.message : String(error)
         };
       }
+    });
+
+    // 文件选择对话框
+    ipcMain.handle('dialog:selectFiles', async (_, options) => {
+      const { dialog } = await import('electron');
+      const mainWindow = this.windowManager.getMainWindow();
+      if (!mainWindow) {
+        throw new Error('主窗口未找到');
+      }
+
+      const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openFile', 'multiSelections'],
+        filters: options?.filters || [{ name: '所有文件', extensions: ['*'] }]
+      });
+
+      return result;
     });
 
     // MCP服务相关IPC处理

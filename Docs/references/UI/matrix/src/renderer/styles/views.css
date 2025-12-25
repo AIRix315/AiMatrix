@@ -1,0 +1,98 @@
+/* matrix-studio-electron/src/renderer/styles/views.css */
+
+/* =========================================
+   Dashboard Views (Home/Assets/Plugins)
+   ========================================= */
+.dashboard-view {
+    padding: 30px;
+    overflow-y: auto;
+    color: #e0e0e0;
+    background: #141414;
+}
+
+/* SETTINGS EXCEPTION: Full height, no padding, flex layout */
+#view-settings.dashboard-view {
+    padding: 0;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    background: #0f0f0f;
+}
+
+#view-settings.dashboard-view.active {
+    display: flex;
+}
+
+/* =========================================
+   View Header
+   ========================================= */
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.view-title {
+    font-size: 24px;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.view-title small {
+    font-size: 12px;
+    color: #666;
+    font-weight: normal;
+}
+
+.view-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* =========================================
+   Empty State
+   ========================================= */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60%;
+    color: #666;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.empty-state h2 {
+    margin-bottom: 10px;
+    color: #888;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+}
+
+.btn-create-large {
+    background: var(--accent-color);
+    color: #000;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-create-large:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 0 20px var(--accent-dim);
+}

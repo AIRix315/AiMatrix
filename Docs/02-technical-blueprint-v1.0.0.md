@@ -5,10 +5,34 @@
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
 | 1.0.0 | 2025-12-22 | 初始版本 | 创建技术蓝图文档，包含开发环境配置、核心模块实现、数据模型设计、IPC通信协议、错误处理机制和测试策略 |
+| 1.0.1 | 2025-12-24 | 更新 | 添加代码规范标准：Electron 模块导入规范、TypeScript 类型检查、测试规范 |
 
 ## 全局要求
 
 **重要提醒：本文档遵循全局时间处理要求，任何涉及时间的操作必须先查询系统时间或使用MCP服务确认后方可执行。详细规范请参考 [00-global-requirements-v1.0.0.md](00-global-requirements-v1.0.0.md)**
+
+## 代码规范标准
+
+### Electron 模块导入规范
+```typescript
+// ✅ 正确 - 使用命名导入
+import { app, BrowserWindow, ipcMain } from 'electron';
+
+// ❌ 错误 - 禁止默认导入
+import electron from 'electron';
+```
+
+**ESLint 规则**：`.eslintrc.json` 中配置 `no-restricted-imports` 强制使用命名导入。
+
+### TypeScript 类型检查
+- 启用严格模式：`"strict": true`
+- 所有代码必须通过类型检查
+- 禁止使用 `any` 类型（警告级别）
+
+### 测试规范
+- 使用 Jest mock 模拟 Electron 模块
+- 单元测试覆盖核心功能
+- 测试文件命名：`*.test.ts`
 
 ## 开发环境配置
 

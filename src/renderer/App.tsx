@@ -1,10 +1,11 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/common/Layout';
 import Dashboard from './pages/dashboard/Dashboard';
 import Assets from './pages/assets/Assets';
 import Plugins from './pages/plugins/Plugins';
 import Workflows from './pages/workflows/Workflows';
+import WorkflowEditor from './pages/workflows/WorkflowEditor';
 import Settings from './pages/settings/Settings';
 import About from './pages/about/About';
 
@@ -20,6 +21,7 @@ const App: React.FC = () => {
           <Route path="plugins" element={<Plugins />} />
           <Route path="workflow" element={<Workflows />} />
           <Route path="workflows" element={<Workflows />} />
+          <Route path="workflows/:workflowId" element={<WorkflowEditor />} />
           <Route path="settings" element={<Settings />} />
           <Route path="about" element={<About />} />
         </Route>
