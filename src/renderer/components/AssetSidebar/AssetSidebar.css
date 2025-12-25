@@ -7,7 +7,10 @@
 .asset-sidebar {
   display: flex;
   flex-direction: column;
-  width: 220px;
+  width: var(--sidebar-width); /* 使用 CSS 变量实现响应式 */
+  min-width: var(--sidebar-min-width);
+  max-width: var(--sidebar-max-width);
+  flex-shrink: 0;
   height: 100%;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border-primary);

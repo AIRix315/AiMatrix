@@ -337,6 +337,92 @@ export class APIManager {
   }
 
   /**
+   * 测试 API 连接
+   *
+   * @param params - 测试参数
+   * @returns 测试结果，包括连接状态和可用模型列表
+   */
+  public async testConnection(params: {
+    type: 'ollama' | 'openai' | 'siliconflow' | string;
+    baseUrl: string;
+    apiKey?: string;
+  }): Promise<{ success: boolean; models?: string[]; error?: string }> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const { type, baseUrl, apiKey } = params;
+
+        try {
+          let modelsUrl: string;
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json'
+          };
+
+          // 根据不同类型构造请求
+          if (type === 'ollama') {
+            // Ollama: GET /api/tags
+            modelsUrl = `${baseUrl}/api/tags`;
+          } else {
+            // OpenAI / SiliconFlow: GET /v1/models
+            modelsUrl = `${baseUrl}/models`;
+            if (apiKey) {
+              headers['Authorization'] = `Bearer ${apiKey}`;
+            }
+          }
+
+          await logger.info(`Testing connection to ${type}`, 'APIManager', { url: modelsUrl });
+
+          const response = await fetch(modelsUrl, {
+            method: 'GET',
+            headers,
+            signal: AbortSignal.timeout(10000) // 10秒超时
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => 'Unknown error');
+            return {
+              success: false,
+              error: `HTTP ${response.status}: ${errorText}`
+            };
+          }
+
+          const data = await response.json();
+
+          // 解析模型列表
+          let models: string[] = [];
+          if (type === 'ollama') {
+            // Ollama 返回格式: { models: [{ name: "..." }, ...] }
+            models = data.models?.map((m: any) => m.name || m.model) || [];
+          } else {
+            // OpenAI/SiliconFlow 返回格式: { data: [{ id: "..." }, ...] }
+            models = data.data?.map((m: any) => m.id) || [];
+          }
+
+          await logger.info(`Connection test successful: ${type}`, 'APIManager', {
+            modelsCount: models.length
+          });
+
+          return {
+            success: true,
+            models
+          };
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          await logger.error(`Connection test failed: ${type}`, 'APIManager', {
+            error: errorMessage
+          });
+          return {
+            success: false,
+            error: errorMessage
+          };
+        }
+      },
+      'APIManager',
+      'testConnection',
+      ErrorCode.API_CALL_ERROR
+    );
+  }
+
+  /**
    * 列出所有 API
    */
   public async listAPIs(): Promise<APIConfig[]> {

@@ -160,6 +160,21 @@ export function Assets() {
 
       {/* 主内容区 */}
       <div className="assets-main">
+        {/* 视图头部 */}
+        <div className="view-header">
+          <div className="view-title">素材库 (Assets)</div>
+          <div className="view-actions">
+            <button className="action-btn active">Local (本地)</button>
+            <button
+              className="action-btn disabled"
+              title="云端库即将上线"
+              disabled
+            >
+              Cloud (云端)
+            </button>
+          </div>
+        </div>
+
         {/* 顶部工具栏 */}
         <div className="assets-toolbar">
           {/* 搜索框 */}

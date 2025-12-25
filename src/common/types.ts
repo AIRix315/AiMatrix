@@ -407,3 +407,68 @@ export interface APIProviderConfig {
   headers?: Record<string, string>;
   timeout?: number;
 }
+
+// ============ 应用配置类型 (Settings) ============
+
+/**
+ * 日志配置接口
+ */
+export interface ILogSettings {
+  enabled: boolean;
+  savePath: string; // 日志保存文件夹路径
+  retentionDays: number; // 日志保留天数
+}
+
+/**
+ * AI模型配置接口
+ */
+export interface IModelConfig {
+  id: string;
+  name: string;
+  ctx?: string; // 上下文信息，如 "Chat / 8k"
+  enabled?: boolean;
+}
+
+/**
+ * AI服务提供商配置接口
+ */
+export interface IProviderConfig {
+  id: string;
+  name: string;
+  type: 'local' | 'cloud' | 'relay';
+  enabled: boolean;
+  baseUrl: string;
+  apiKey?: string;
+  models?: IModelConfig[];
+}
+
+/**
+ * MCP服务器配置接口
+ */
+export interface IMCPServerConfig {
+  id: string;
+  name: string;
+  command: string;
+  args?: string[];
+  env?: Record<string, string>;
+  enabled: boolean;
+}
+
+/**
+ * 通用设置接口
+ */
+export interface IGeneralSettings {
+  language: string;
+  theme: 'dark' | 'light';
+  workspacePath: string; // 资源库路径
+  logging: ILogSettings;
+}
+
+/**
+ * 应用完整配置接口
+ */
+export interface IAppSettings {
+  general: IGeneralSettings;
+  providers: IProviderConfig[];
+  mcpServers: IMCPServerConfig[];
+}

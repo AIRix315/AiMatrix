@@ -4,7 +4,7 @@
    ========================================= */
 
 .dashboard {
-    padding: 30px;
+    padding: var(--page-padding); /* 使用 CSS 变量 */
     overflow-y: auto;
     color: var(--text-main);
     background: var(--bg-canvas);
@@ -20,7 +20,7 @@
 }
 
 .dashboard-content {
-    padding: 20px 0;
+    padding: var(--section-padding) 0; /* 使用 CSS 变量 */
 }
 
 .empty-state {
@@ -48,8 +48,8 @@
 
 .project-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr)); /* 使用 CSS 变量 */
+    gap: var(--card-gap); /* 使用 CSS 变量 */
 }
 
 .project-card-wrapper {

@@ -5,6 +5,8 @@
  * - 日志级别（debug/info/warn/error）
  * - 日志输出到文件
  * - 日志轮转（按大小）
+ * - 新命名格式：YYYY-MM-DD_HH-mm-ss_{SessionID}.log
+ * - 动态路径切换（通过 ConfigManager 监听）
  *
  * 后续迭代：
  * - 远程日志上报
@@ -14,7 +16,9 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
+import * as crypto from 'crypto';
 import { LogEntry } from '../../common/types';
+import type { ConfigManager } from './ConfigManager';
 
 /**
  * 日志级别
@@ -39,6 +43,7 @@ export interface LoggerConfig {
   maxFileSize?: number; // 单位：字节
   enableConsole?: boolean;
   minLevel?: LogLevel;
+  configManager?: ConfigManager; // ConfigManager 实例，用于监听配置变更
 }
 
 /**
@@ -50,6 +55,8 @@ export class Logger {
   private enableConsole: boolean;
   private minLevel: LogLevel;
   private currentLogFile: string;
+  private sessionId: string;
+  private configManager?: ConfigManager;
 
   // 日志级别优先级映射
   private static levelPriority: Record<LogLevel, number> = {
@@ -64,12 +71,29 @@ export class Logger {
     this.maxFileSize = config.maxFileSize || 5 * 1024 * 1024; // 默认 5MB
     this.enableConsole = config.enableConsole !== false; // 默认开启
     this.minLevel = config.minLevel || LogLevel.INFO;
+    this.configManager = config.configManager;
+
+    // 生成 Session ID（8位随机字符串）
+    this.sessionId = crypto.randomBytes(4).toString('hex');
+
     this.currentLogFile = this.getLogFilePath();
 
     // 确保日志目录存在
     this.ensureLogDir().catch(error => {
       console.error('[Logger] Failed to create log directory:', error);
     });
+
+    // 如果传入了 ConfigManager，监听配置变更
+    if (this.configManager) {
+      this.configManager.onConfigChange((newConfig) => {
+        const newLogPath = newConfig.general.logging.savePath;
+        if (newLogPath !== this.logDir) {
+          this.switchLogDirectory(newLogPath).catch(error => {
+            console.error('[Logger] Failed to switch log directory:', error);
+          });
+        }
+      });
+    }
   }
 
   /**
@@ -85,11 +109,37 @@ export class Logger {
 
   /**
    * 获取当前日志文件路径
+   * 格式：YYYY-MM-DD_HH-mm-ss_{SessionID}.log
    */
   private getLogFilePath(): string {
     const date = new Date();
-    const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
-    return path.join(this.logDir, `matrix-${dateStr}.log`);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    const fileName = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${this.sessionId}.log`;
+    return path.join(this.logDir, fileName);
+  }
+
+  /**
+   * 切换日志目录
+   */
+  private async switchLogDirectory(newLogDir: string): Promise<void> {
+    await this.info('日志路径变更，切换到新目录', 'Logger', {
+      oldPath: this.logDir,
+      newPath: newLogDir
+    });
+
+    this.logDir = newLogDir;
+    await this.ensureLogDir();
+
+    // 生成新的日志文件路径（保持同一个 sessionId）
+    this.currentLogFile = this.getLogFilePath();
+
+    await this.info('日志路径切换完成', 'Logger', { newPath: newLogDir });
   }
 
   /**
@@ -258,7 +308,9 @@ export class Logger {
 }
 
 // 导出单例实例
+// 注意：在主进程中应该使用 configManager 重新初始化 Logger
 export const logger = new Logger({
   enableConsole: true,
   minLevel: LogLevel.INFO
+  // configManager 将在主进程初始化时设置
 });

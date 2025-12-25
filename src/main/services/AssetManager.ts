@@ -45,10 +45,48 @@ export class AssetManagerClass {
   private watchers: Map<string, FSWatcher> = new Map();
   private indexCache: Map<string, AssetIndex> = new Map();
   private isInitialized = false;
+  private configManager?: any; // ConfigManager 实例（避免循环依赖）
+  private currentWorkspacePath?: string;
 
   constructor(fsService: FileSystemService) {
     this.fsService = fsService;
     this.logger = new Logger();
+  }
+
+  /**
+   * 设置 ConfigManager 并监听配置变更
+   */
+  setConfigManager(configManager: any): void {
+    this.configManager = configManager;
+
+    // 获取当前工作区路径
+    const config = configManager.getConfig();
+    this.currentWorkspacePath = config.general.workspacePath;
+
+    // 监听配置变更
+    configManager.onConfigChange((newConfig: any) => {
+      const newWorkspacePath = newConfig.general.workspacePath;
+
+      // 如果工作区路径发生变化，重新扫描资源
+      if (newWorkspacePath !== this.currentWorkspacePath) {
+        this.logger.info('资源库路径变更，开始重新扫描...', 'AssetManager', {
+          oldPath: this.currentWorkspacePath,
+          newPath: newWorkspacePath
+        }).catch(() => {});
+
+        this.currentWorkspacePath = newWorkspacePath;
+
+        // 清空全局资产索引缓存
+        this.indexCache.delete('global');
+
+        // 重新构建全局索引
+        this.buildIndex().then(() => {
+          this.logger.info('资源库重新扫描完成', 'AssetManager').catch(() => {});
+        }).catch((error) => {
+          this.logger.error('资源库重新扫描失败', 'AssetManager', { error }).catch(() => {});
+        });
+      }
+    });
   }
 
   /**

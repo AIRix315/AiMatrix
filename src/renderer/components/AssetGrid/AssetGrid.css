@@ -11,8 +11,8 @@
   width: 100%;
   height: 100%;
   overflow: auto;
-  padding: 20px;
-  gap: 20px;
+  padding: var(--section-padding); /* 使用 CSS 变量 */
+  gap: var(--content-gap); /* 使用 CSS 变量 */
 }
 
 /* 滚动条样式 */
@@ -56,62 +56,13 @@
 /* 资产网格 */
 .asset-grid {
   display: grid;
-  gap: 20px;
+  gap: var(--card-gap); /* 使用 CSS 变量 */
   width: 100%;
 }
 
-/* 自动响应式列数 */
+/* 自动响应式列数 - 使用 CSS 变量统一管理 */
 .asset-grid.auto-columns {
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-}
-
-/* 响应式断点 */
-@media (min-width: 1920px) {
-  .asset-grid.auto-columns {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-}
-
-@media (max-width: 1400px) {
-  .asset-grid.auto-columns {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  }
-}
-
-@media (max-width: 1024px) {
-  .asset-grid.auto-columns {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .asset-grid.auto-columns {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  }
-
-  .asset-grid-container {
-    padding: 16px;
-    gap: 16px;
-  }
-
-  .asset-grid {
-    gap: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .asset-grid.auto-columns {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
-
-  .asset-grid-container {
-    padding: 12px;
-    gap: 12px;
-  }
-
-  .asset-grid {
-    gap: 12px;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
 }
 
 /* 加载更多触发器 */

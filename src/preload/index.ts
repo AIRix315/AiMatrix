@@ -289,8 +289,34 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 获取API使用情况
    */
-  getAPIUsage: (name: string): Promise<any> => 
+  getAPIUsage: (name: string): Promise<any> =>
     ipcRenderer.invoke('api:get-usage', name),
+
+  /**
+   * 测试API连接
+   */
+  testAPIConnection: (params: { type: string; baseUrl: string; apiKey?: string }): Promise<{ success: boolean; models?: string[]; error?: string }> =>
+    ipcRenderer.invoke('api:test-connection', params),
+
+  // ==================== Settings相关 ====================
+
+  /**
+   * 获取所有配置
+   */
+  getAllSettings: (): Promise<any> =>
+    ipcRenderer.invoke('settings:get-all'),
+
+  /**
+   * 保存配置
+   */
+  saveSettings: (config: any): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke('settings:save', config),
+
+  /**
+   * 打开目录选择对话框
+   */
+  openDirectoryDialog: (): Promise<string | null> =>
+    ipcRenderer.invoke('dialog:open-directory'),
 
   // ==================== 文件系统相关 ====================
   
@@ -497,6 +523,10 @@ declare global {
       setAPIKey: (name: string, key: string) => Promise<void>;
       getAPIStatus: (name: string) => Promise<any>;
       getAPIUsage: (name: string) => Promise<any>;
+      testAPIConnection: (params: { type: string; baseUrl: string; apiKey?: string }) => Promise<{ success: boolean; models?: string[]; error?: string }>;
+      getAllSettings: () => Promise<any>;
+      saveSettings: (config: any) => Promise<{ success: boolean }>;
+      openDirectoryDialog: () => Promise<string | null>;
       readFile: (filePath: string) => Promise<any>;
       writeFile: (filePath: string, content: any) => Promise<void>;
       deleteFile: (filePath: string) => Promise<void>;

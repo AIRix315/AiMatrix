@@ -182,6 +182,46 @@ Closes #123
 - 安全补丁支持所有维护版本
 - 严重漏洞发布独立安全更新
 
+## [0.2.4] - 2025-12-26
+
+### Added
+- feat(settings): 完整实现设置模块与配置管理系统
+  - ConfigManager服务：配置文件读写、API Key加密存储（Electron safeStorage）、配置变更事件通知（EventEmitter）
+  - Logger服务升级：新日志命名格式（YYYY-MM-DD_HH-mm-ss_{SessionID}.log）、动态路径切换、SessionID生成
+  - Settings IPC通道：settings:get-all、settings:save、dialog:open-directory
+  - API连通性测试：api:test-connection 支持 Ollama、OpenAI、SiliconFlow，返回连接状态和模型列表
+  - Settings页面完整实现：配置加载、保存、测试连接、路径选择、模型列表自动更新
+  - AssetManager监听配置变更：工作区路径变更时自动重新扫描资源库
+
+### Changed
+- refactor(logger): 重构日志文件命名规范，从 matrix-YYYY-MM-DD.log 改为 YYYY-MM-DD_HH-mm-ss_{SessionID}.log
+- refactor(main): 优化服务初始化顺序（ConfigManager → Logger → FileSystemService → AssetManager）
+
+### Added - 类型定义
+- ILogSettings：日志配置（启用状态、保存路径、保留天数）
+- IGeneralSettings：通用设置（语言、主题、工作区路径、日志设置）
+- IProviderConfig：AI服务商配置（id、名称、类型、启用状态、baseUrl、apiKey、模型列表）
+- IMCPServerConfig：MCP服务器配置
+- IAppSettings：完整应用配置（通用设置、服务商配置、MCP服务器配置）
+
+### Technical Details
+- 新增文件：src/main/services/ConfigManager.ts (289行)
+- 修改文件：
+  - src/common/types.ts (+74行) - Settings类型定义
+  - src/main/services/Logger.ts (+45行) - 命名格式和动态路径
+  - src/main/services/APIManager.ts (+85行) - testConnection方法
+  - src/main/services/AssetManager.ts (+46行) - 配置监听
+  - src/main/index.ts (+35行) - ConfigManager集成和Settings IPC
+  - src/preload/index.ts (+21行) - 暴露新API
+  - src/renderer/pages/settings/Settings.tsx (完全重写，393行)
+
+### Benefits
+- ✅ 完整的配置管理系统：支持加密存储、热重载、事件通知
+- ✅ 升级的日志系统：符合规范的命名格式，用户可自定义路径
+- ✅ 实时API测试：支持Ollama、OpenAI、SiliconFlow的连通性验证
+- ✅ 动态资源库管理：配置变更时自动重新扫描资源
+- ✅ 完全激活的设置页面：从静态UI变为可交互的功能模块
+
 ## [0.2.3] - 2025-12-25
 
 ### Added

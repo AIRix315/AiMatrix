@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol, dialog } from 'electron';
 import { promises as fs } from 'fs';
 import * as fsSync from 'fs';
 import * as path from 'path';
@@ -9,10 +9,11 @@ import { ProjectManager } from './services/ProjectManager';
 import { FileSystemService, fileSystemService } from './services/FileSystemService';
 import { AssetManager, getAssetManager } from './services/AssetManager';
 import { getSafePath } from './utils/security';
-import { logger } from './services/Logger';
+import { logger, Logger, LogLevel } from './services/Logger';
 import { pluginManager } from './services/PluginManager';
 import { taskScheduler } from './services/TaskScheduler';
 import { apiManager } from './services/APIManager';
+import { configManager } from './services/ConfigManager';
 
 // 注册自定义协议为特权协议（必须在 app.ready 之前）
 protocol.registerSchemesAsPrivileged([
@@ -93,14 +94,33 @@ class MatrixApp {
   }
 
   private async initializeServices(): Promise<void> {
+    // 1. 首先初始化 ConfigManager
+    await configManager.initialize();
+    console.log('[MatrixApp] ConfigManager initialized');
+
+    // 2. 使用配置重新初始化 Logger（支持动态路径）
+    const logSettings = configManager.getLogSettings();
+    const enhancedLogger = new Logger({
+      logDir: logSettings.savePath,
+      enableConsole: true,
+      minLevel: LogLevel.INFO,
+      configManager: configManager
+    });
+    // 替换全局 logger 实例
+    Object.assign(logger, enhancedLogger);
+
     await logger.info('Initializing Matrix services', 'MatrixApp');
 
-    // 优先初始化文件系统服务
+    // 3. 初始化文件系统服务
     await this.fileSystemService.initialize();
 
-    // 初始化其他服务
+    // 4. 初始化其他服务
     await this.projectManager.initialize();
     await this.assetManager.initialize();
+
+    // 5. 设置 AssetManager 的 ConfigManager（用于监听配置变更）
+    this.assetManager.setConfigManager(configManager);
+
     await pluginManager.initialize();
     await taskScheduler.initialize();
     await apiManager.initialize();
@@ -384,6 +404,38 @@ class MatrixApp {
     ipcMain.handle('api:get-usage', async (_, name) => {
       // MVP: 暂时返回模拟使用量数据（后续迭代实现）
       return Promise.resolve({ name, usage: { requests: 0, cost: 0 } });
+    });
+    ipcMain.handle('api:test-connection', async (_, params: { type: string; baseUrl: string; apiKey?: string }) => {
+      return await apiManager.testConnection(params);
+    });
+
+    // Settings相关IPC处理
+    ipcMain.handle('settings:get-all', async () => {
+      return configManager.getConfig();
+    });
+
+    ipcMain.handle('settings:save', async (_, config) => {
+      await configManager.saveConfig(config);
+      await logger.info('配置已保存', 'Settings');
+      return { success: true };
+    });
+
+    ipcMain.handle('dialog:open-directory', async () => {
+      const mainWindow = this.windowManager.getMainWindow();
+      if (!mainWindow) {
+        throw new Error('Main window not available');
+      }
+
+      const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openDirectory'],
+        title: '选择目录'
+      });
+
+      if (result.canceled) {
+        return null;
+      }
+
+      return result.filePaths[0];
     });
 
     // 文件系统相关IPC处理

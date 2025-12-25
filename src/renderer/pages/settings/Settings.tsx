@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Toast } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import './Settings.css';
@@ -29,7 +29,7 @@ const providers: Provider[] = [
     status: 'off',
   },
   {
-    id: 'silicon',
+    id: 'siliconflow',
     icon: 'SF',
     name: 'SiliconFlow',
     status: 'on',
@@ -37,66 +37,101 @@ const providers: Provider[] = [
 ];
 
 const Settings: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState('ollama');
+  const [currentTab, setCurrentTab] = useState('global');
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
-  const [config, setConfig] = useState({
-    global: {
-      workspacePath: 'D:/Work/Matrix_Projects',
-    },
-    ollama: {
-      enabled: true,
-      baseUrl: 'http://localhost:11434/v1',
-      apiKey: '',
-      models: [
-        { id: 'llama3:8b', name: 'llama3:8b', ctx: 'Chat / 8k' },
-        { id: 'mistral:latest', name: 'mistral:latest', ctx: 'Chat / 32k' },
-      ],
-    },
-    openai: {
-      enabled: false,
-      apiKey: '',
-      baseUrl: 'https://api.openai.com/v1',
-    },
-    silicon: {
-      enabled: true,
-      apiKey: '',
-      baseUrl: 'https://api.siliconflow.cn/v1',
-    },
-  });
+  const [config, setConfig] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 加载配置
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      setIsLoading(true);
+      const settings = await window.electronAPI.getAllSettings();
+      setConfig(settings);
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+      setToast({
+        type: 'error',
+        message: `加载配置失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleTabChange = (tabId: string) => {
     setCurrentTab(tabId);
   };
 
-  const handleConfigChange = (provider: string, field: string, value: string | boolean) => {
-    setConfig((prev) => ({
-      ...prev,
-      [provider]: {
-        ...prev[provider as keyof typeof prev],
-        [field]: value,
-      },
-    }));
+  const handleConfigChange = (section: string, field: string, value: string | boolean | number) => {
+    setConfig((prev: any) => {
+      if (section === 'general') {
+        return {
+          ...prev,
+          general: {
+            ...prev.general,
+            [field]: value
+          }
+        };
+      } else if (section === 'logging') {
+        return {
+          ...prev,
+          general: {
+            ...prev.general,
+            logging: {
+              ...prev.general.logging,
+              [field]: value
+            }
+          }
+        };
+      } else {
+        // Provider 配置
+        return {
+          ...prev,
+          providers: prev.providers.map((p: any) => {
+            if (p.id === section) {
+              return { ...p, [field]: value };
+            }
+            return p;
+          })
+        };
+      }
+    });
   };
 
-  const handleSaveConfig = async (provider: string) => {
+  const handleSelectDirectory = async (field: 'workspacePath' | 'logPath') => {
+    try {
+      const path = await window.electronAPI.openDirectoryDialog();
+      if (path) {
+        if (field === 'workspacePath') {
+          handleConfigChange('general', 'workspacePath', path);
+        } else if (field === 'logPath') {
+          handleConfigChange('logging', 'savePath', path);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to select directory:', error);
+      setToast({
+        type: 'error',
+        message: `选择目录失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    }
+  };
+
+  const handleSaveConfig = async () => {
     try {
       setIsSaving(true);
-      const providerConfig = config[provider as keyof typeof config];
-
-      if ('apiKey' in providerConfig && providerConfig.apiKey && window.electronAPI?.setAPIKey) {
-        await window.electronAPI.setAPIKey(provider, providerConfig.apiKey);
-        setToast({
-          type: 'success',
-          message: `${provider} 配置保存成功`
-        });
-      } else {
-        setToast({
-          type: 'info',
-          message: '配置已更新（本地）'
-        });
-      }
+      await window.electronAPI.saveSettings(config);
+      setToast({
+        type: 'success',
+        message: '配置保存成功'
+      });
     } catch (error) {
       console.error('Failed to save config:', error);
       setToast({
@@ -108,22 +143,48 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleTestConnection = async (provider: string) => {
+  const handleTestConnection = async (providerId: string) => {
     try {
       setIsTesting(true);
-      if (window.electronAPI?.getAPIStatus) {
-        const status = await window.electronAPI.getAPIStatus(provider);
-        if (status.status === 'available') {
-          setToast({
-            type: 'success',
-            message: `${provider} 连接成功`
-          });
-        } else {
-          setToast({
-            type: 'error',
-            message: `${provider} 连接失败: ${status.error || '未知错误'}`
-          });
-        }
+      const provider = config.providers.find((p: any) => p.id === providerId);
+      if (!provider) {
+        throw new Error('Provider not found');
+      }
+
+      const result = await window.electronAPI.testAPIConnection({
+        type: providerId,
+        baseUrl: provider.baseUrl,
+        apiKey: provider.apiKey
+      });
+
+      if (result.success) {
+        // 更新模型列表
+        setConfig((prev: any) => ({
+          ...prev,
+          providers: prev.providers.map((p: any) => {
+            if (p.id === providerId) {
+              return {
+                ...p,
+                models: result.models?.map((modelId: string) => ({
+                  id: modelId,
+                  name: modelId,
+                  ctx: 'Available'
+                })) || []
+              };
+            }
+            return p;
+          })
+        }));
+
+        setToast({
+          type: 'success',
+          message: `${provider.name} 连接成功！找到 ${result.models?.length || 0} 个模型`
+        });
+      } else {
+        setToast({
+          type: 'error',
+          message: `${provider.name} 连接失败: ${result.error || '未知错误'}`
+        });
       }
     } catch (error) {
       console.error('Failed to test connection:', error);
@@ -135,6 +196,18 @@ const Settings: React.FC = () => {
       setIsTesting(false);
     }
   };
+
+  if (isLoading || !config) {
+    return (
+      <div className="settings-layout">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+          <div>加载配置中...</div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentProvider = config.providers.find((p: any) => p.id === currentTab);
 
   return (
     <div className="settings-layout">
@@ -148,24 +221,23 @@ const Settings: React.FC = () => {
           />
         </div>
         <div className="provider-list">
-          {providers.map((provider) => (
-            <div
-              key={provider.id}
-              className={`provider-item ${currentTab === provider.id ? 'active' : ''}`}
-              onClick={() => handleTabChange(provider.id)}
-            >
-              <div className="provider-icon">{provider.icon}</div>
-              <span>{provider.name}</span>
-              {provider.status && <div className={`provider-status ${provider.status}`}></div>}
-            </div>
-          ))}
-          <div
-            className={`provider-item ${currentTab === 'add' ? 'active' : ''}`}
-            onClick={() => handleTabChange('add')}
-          >
-            <div className="provider-icon" style={{ color: 'var(--accent-color)' }}>+</div>
-            <span style={{ color: 'var(--accent-color)' }}>添加服务商</span>
-          </div>
+          {providers.map((provider) => {
+            const providerConfig = config.providers.find((p: any) => p.id === provider.id);
+            const isEnabled = providerConfig?.enabled ?? true;
+            return (
+              <div
+                key={provider.id}
+                className={`provider-item ${currentTab === provider.id ? 'active' : ''}`}
+                onClick={() => handleTabChange(provider.id)}
+              >
+                <div className="provider-icon">{provider.icon}</div>
+                <span>{provider.name}</span>
+                {provider.id !== 'global' && (
+                  <div className={`provider-status ${isEnabled ? 'on' : 'off'}`}></div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -186,181 +258,120 @@ const Settings: React.FC = () => {
                     <input
                       type="text"
                       className="input-field"
-                      value={config.global.workspacePath}
-                      onChange={(e) => handleConfigChange('global', 'workspacePath', e.target.value)}
+                      value={config.general.workspacePath}
                       readOnly
                     />
-                    <Button>浏览...</Button>
+                    <Button onClick={() => handleSelectDirectory('workspacePath')}>浏览...</Button>
                   </div>
                 </div>
+              </div>
+
+              <div className="config-section">
+                <div className="config-label">日志设置 (Logging)</div>
+                <div className="input-group">
+                  <label className="input-label">日志路径 (Log Directory)</label>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input
+                      type="text"
+                      className="input-field"
+                      value={config.general.logging.savePath}
+                      readOnly
+                    />
+                    <Button onClick={() => handleSelectDirectory('logPath')}>浏览...</Button>
+                  </div>
+                </div>
+                <div className="input-group">
+                  <label className="input-label">保留天数 (Retention Days)</label>
+                  <input
+                    type="number"
+                    className="input-field"
+                    value={config.general.logging.retentionDays}
+                    onChange={(e) => handleConfigChange('logging', 'retentionDays', parseInt(e.target.value))}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginTop: '20px' }}>
+                <Button variant="primary" onClick={handleSaveConfig} disabled={isSaving}>
+                  {isSaving ? '保存中...' : '保存设置'}
+                </Button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Ollama */}
-        {currentTab === 'ollama' && (
+        {/* Provider Tabs */}
+        {currentTab !== 'global' && currentProvider && (
           <div className="settings-tab-content active">
             <div className="settings-content-header">
-              <div className="settings-title-lg">🦙 Ollama <span style={{ fontSize: '12px', fontWeight: 'normal', background: '#222', padding: '2px 8px', borderRadius: '10px', border: '1px solid #333' }}>Local</span></div>
+              <div className="settings-title-lg">
+                {currentProvider.name}
+                <span style={{ fontSize: '12px', fontWeight: 'normal', background: '#222', padding: '2px 8px', borderRadius: '10px', border: '1px solid #333', marginLeft: '10px' }}>
+                  {currentProvider.type === 'local' ? 'Local' : currentProvider.type === 'cloud' ? 'Cloud' : 'Relay'}
+                </span>
+              </div>
               <label className="switch">
-                <input type="checkbox" checked={config.ollama.enabled !== false} onChange={() => {}} />
+                <input
+                  type="checkbox"
+                  checked={currentProvider.enabled}
+                  onChange={(e) => handleConfigChange(currentTab, 'enabled', e.target.checked)}
+                />
                 <span className="slider"></span>
               </label>
             </div>
             <div className="settings-scroll-area">
               <div className="config-section">
-                <div className="config-label">连接设置 (Connection)</div>
+                <div className="config-label">{currentProvider.type === 'local' ? '连接设置 (Connection)' : '鉴权 (Authentication)'}</div>
+
+                {currentProvider.apiKey !== undefined && (
+                  <div className="input-group">
+                    <label className="input-label">API Key</label>
+                    <input
+                      type="password"
+                      className="input-field"
+                      placeholder={`输入 ${currentProvider.name} API Key`}
+                      value={currentProvider.apiKey || ''}
+                      onChange={(e) => handleConfigChange(currentTab, 'apiKey', e.target.value)}
+                    />
+                  </div>
+                )}
+
                 <div className="input-group">
-                  <label className="input-label">API 域名 (Base URL)</label>
+                  <label className="input-label">Base URL</label>
                   <input
                     type="text"
                     className="input-field"
-                    value={config.ollama.baseUrl}
-                    onChange={(e) => handleConfigChange('ollama', 'baseUrl', e.target.value)}
+                    value={currentProvider.baseUrl}
+                    onChange={(e) => handleConfigChange(currentTab, 'baseUrl', e.target.value)}
                   />
                 </div>
+
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <Button onClick={() => handleTestConnection('ollama')} disabled={isTesting}>
+                  <Button onClick={() => handleTestConnection(currentTab)} disabled={isTesting}>
                     {isTesting ? '测试中...' : '测试连接 (Ping)'}
                   </Button>
-                  <Button variant="primary" onClick={() => handleSaveConfig('ollama')} disabled={isSaving}>
+                  <Button variant="primary" onClick={handleSaveConfig} disabled={isSaving}>
                     {isSaving ? '保存中...' : '保存'}
                   </Button>
                 </div>
               </div>
-              <div className="config-section">
-                <div className="config-label">已添加模型 (Model Library)</div>
-                <div className="model-list-grid">
-                  {config.ollama.models?.map((model) => (
-                    <div key={model.id} className="model-item-card">
-                      <div className="model-icon">{model.name.substring(0, 2)}</div>
-                      <div className="model-info">
-                        <div className="model-id">{model.id}</div>
-                        <div className="model-ctx">{model.ctx}</div>
+
+              {currentProvider.models && currentProvider.models.length > 0 && (
+                <div className="config-section">
+                  <div className="config-label">已添加模型 (Model Library)</div>
+                  <div className="model-list-grid">
+                    {currentProvider.models.map((model: any) => (
+                      <div key={model.id} className="model-item-card">
+                        <div className="model-icon">{model.name.substring(0, 2).toUpperCase()}</div>
+                        <div className="model-info">
+                          <div className="model-id">{model.id}</div>
+                          <div className="model-ctx">{model.ctx || 'Available'}</div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* OpenAI */}
-        {currentTab === 'openai' && (
-          <div className="settings-tab-content active">
-            <div className="settings-content-header">
-              <div className="settings-title-lg">OA OpenAI <span style={{ fontSize: '12px', fontWeight: 'normal', background: '#222', padding: '2px 8px', borderRadius: '10px', border: '1px solid #333' }}>Cloud</span></div>
-              <label className="switch">
-                <input type="checkbox" checked={config.openai.enabled !== false} onChange={() => {}} />
-                <span className="slider"></span>
-              </label>
-            </div>
-            <div className="settings-scroll-area">
-              <div className="config-section">
-                <div className="config-label">鉴权 (Authentication)</div>
-                <div className="input-group">
-                  <label className="input-label">API Key (sk-...)</label>
-                  <input
-                    type="password"
-                    className="input-field"
-                    placeholder="Paste your OpenAI key here"
-                    value={config.openai.apiKey}
-                    onChange={(e) => handleConfigChange('openai', 'apiKey', e.target.value)}
-                  />
-                </div>
-                <div className="input-group">
-                  <label className="input-label">Base URL (Optional)</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="https://api.openai.com/v1"
-                    value={config.openai.baseUrl}
-                    onChange={(e) => handleConfigChange('openai', 'baseUrl', e.target.value)}
-                  />
-                </div>
-                <Button variant="primary" onClick={() => handleSaveConfig('openai')} disabled={isSaving}>
-                  {isSaving ? '保存中...' : '保存配置'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* SiliconFlow */}
-        {currentTab === 'silicon' && (
-          <div className="settings-tab-content active">
-            <div className="settings-content-header">
-              <div className="settings-title-lg">SF SiliconFlow <span style={{ fontSize: '12px', fontWeight: 'normal', background: '#222', padding: '2px 8px', borderRadius: '10px', border: '1px solid #333' }}>Cloud / Relay</span></div>
-              <label className="switch">
-                <input type="checkbox" checked={config.silicon.enabled !== false} onChange={() => {}} />
-                <span className="slider"></span>
-              </label>
-            </div>
-            <div className="settings-scroll-area">
-              <div className="config-section">
-                <div className="config-label">配置 (Configuration)</div>
-                <div className="input-group">
-                  <label className="input-label">API Key</label>
-                  <input
-                    type="password"
-                    className="input-field"
-                    value={config.silicon.apiKey}
-                    onChange={(e) => handleConfigChange('silicon', 'apiKey', e.target.value)}
-                  />
-                </div>
-                <div className="input-group">
-                  <label className="input-label">Base URL</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    value={config.silicon.baseUrl}
-                    onChange={(e) => handleConfigChange('silicon', 'baseUrl', e.target.value)}
-                  />
-                </div>
-                <Button variant="primary" onClick={() => handleSaveConfig('silicon')} disabled={isSaving}>
-                  {isSaving ? '保存中...' : '保存'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Add New */}
-        {currentTab === 'add' && (
-          <div className="settings-tab-content active">
-            <div className="settings-content-header">
-              <div className="settings-title-lg" style={{ color: 'var(--accent-color)' }}>+ 添加新服务商 (Add Provider)</div>
-            </div>
-            <div className="settings-scroll-area">
-              <div className="config-section">
-                <div className="config-label">自定义接入 (Custom Endpoint)</div>
-                <div className="input-group">
-                  <label className="input-label">服务名称 (Display Name)</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="例如: My Private LLM"
-                  />
-                </div>
-                <div className="input-group">
-                  <label className="input-label">接口类型 (Protocol)</label>
-                  <select className="input-field">
-                    <option>OpenAI Compatible (Standard)</option>
-                    <option>Anthropic</option>
-                  </select>
-                </div>
-                <div className="input-group">
-                  <label className="input-label">Base URL</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="https://..."
-                  />
-                </div>
-                <Button variant="primary">确认添加</Button>
-              </div>
+              )}
             </div>
           </div>
         )}
