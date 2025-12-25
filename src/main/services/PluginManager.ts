@@ -20,39 +20,14 @@ import AdmZip from 'adm-zip';
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
 import { timeService } from './TimeService';
+import { configManager } from './ConfigManager';
+import { PluginType, PluginPermission, PluginManifest as BasePluginManifest } from '../../common/types';
 
 /**
- * 插件类型
+ * 插件 Manifest 接口（扩展基础定义，添加main字段）
  */
-export enum PluginType {
-  OFFICIAL = 'official',
-  COMMUNITY = 'community'
-}
-
-/**
- * 插件权限
- */
-export enum PluginPermission {
-  FILE_READ = 'file:read',
-  FILE_WRITE = 'file:write',
-  NETWORK = 'network',
-  API_CALL = 'api:call',
-  WORKFLOW_EXECUTE = 'workflow:execute'
-}
-
-/**
- * 插件 Manifest 接口
- */
-export interface PluginManifest {
-  id: string;
-  name: string;
-  version: string;
-  description: string;
-  author: string;
-  icon?: string;
+export interface PluginManifest extends BasePluginManifest {
   main: string; // 入口文件路径
-  type: PluginType;
-  permissions: PluginPermission[];
   dependencies?: Record<string, string>;
 }
 
@@ -113,8 +88,9 @@ export class PluginManager {
       await fs.access(this.pluginsDir);
     } catch {
       await fs.mkdir(this.pluginsDir, { recursive: true });
-      // 创建 official 和 community 子目录
+      // 创建 official、partner 和 community 子目录
       await fs.mkdir(path.join(this.pluginsDir, 'official'), { recursive: true });
+      await fs.mkdir(path.join(this.pluginsDir, 'partner'), { recursive: true });
       await fs.mkdir(path.join(this.pluginsDir, 'community'), { recursive: true });
     }
   }
@@ -228,11 +204,12 @@ export class PluginManager {
           return loaded.info;
         }
 
-        // 尝试从 official 和 community 目录查找
+        // 尝试从 official、partner 和 community 目录查找
         let pluginPath: string | null = null;
         let pluginType: PluginType = PluginType.COMMUNITY;
 
         const officialPath = path.join(this.pluginsDir, 'official', pluginId);
+        const partnerPath = path.join(this.pluginsDir, 'partner', pluginId);
         const communityPath = path.join(this.pluginsDir, 'community', pluginId);
 
         try {
@@ -241,11 +218,17 @@ export class PluginManager {
           pluginType = PluginType.OFFICIAL;
         } catch {
           try {
-            await fs.access(communityPath);
-            pluginPath = communityPath;
-            pluginType = PluginType.COMMUNITY;
+            await fs.access(partnerPath);
+            pluginPath = partnerPath;
+            pluginType = PluginType.PARTNER;
           } catch {
-            throw new Error(`Plugin not found: ${pluginId}`);
+            try {
+              await fs.access(communityPath);
+              pluginPath = communityPath;
+              pluginType = PluginType.COMMUNITY;
+            } catch {
+              throw new Error(`Plugin not found: ${pluginId}`);
+            }
           }
         }
 
@@ -263,6 +246,11 @@ export class PluginManager {
           await instance.activate();
         }
 
+        // 从配置中读取启用状态（默认为true）
+        const config = configManager.getConfig();
+        const pluginConfig = config.plugins?.[manifest.id];
+        const isEnabled = pluginConfig?.enabled !== undefined ? pluginConfig.enabled : true;
+
         // 创建插件信息
         const info: PluginInfo = {
           id: manifest.id,
@@ -272,7 +260,7 @@ export class PluginManager {
           author: manifest.author,
           icon: manifest.icon,
           type: pluginType,
-          isEnabled: true,
+          isEnabled,
           permissions: manifest.permissions,
           path: pluginPath
         };
@@ -282,7 +270,7 @@ export class PluginManager {
           info,
           manifest,
           instance,
-          enabled: true
+          enabled: isEnabled
         });
 
         await logger.info(`Plugin loaded: ${pluginId}`, 'PluginManager', { info });
@@ -349,6 +337,16 @@ export class PluginManager {
 
         const result = await loaded.instance.execute(action, params);
 
+        // 更新 lastUsed 时间
+        const timestamp = await timeService.getCurrentTime();
+        const config = configManager.getConfig();
+        const plugins = config.plugins || {};
+        plugins[pluginId] = {
+          enabled: plugins[pluginId]?.enabled !== undefined ? plugins[pluginId].enabled : true,
+          lastUsed: new Date(timestamp).toISOString()
+        };
+        await configManager.updateConfig({ plugins });
+
         await logger.debug(
           `Plugin action executed: ${pluginId}.${action}`,
           'PluginManager',
@@ -398,6 +396,16 @@ export class PluginManager {
 
         loaded.enabled = enabled;
         loaded.info.isEnabled = enabled;
+
+        // 保存到配置文件
+        const config = configManager.getConfig();
+        const plugins = config.plugins || {};
+        plugins[pluginId] = {
+          enabled,
+          lastUsed: plugins[pluginId]?.lastUsed // 保留原有的 lastUsed
+        };
+
+        await configManager.updateConfig({ plugins });
 
         await logger.info(
           `Plugin ${enabled ? 'enabled' : 'disabled'}: ${pluginId}`,

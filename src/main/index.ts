@@ -11,6 +11,7 @@ import { AssetManager, getAssetManager } from './services/AssetManager';
 import { getSafePath } from './utils/security';
 import { logger, Logger, LogLevel } from './services/Logger';
 import { pluginManager } from './services/PluginManager';
+import { pluginMarketService } from './services/PluginMarketService';
 import { taskScheduler } from './services/TaskScheduler';
 import { apiManager } from './services/APIManager';
 import { configManager } from './services/ConfigManager';
@@ -123,6 +124,7 @@ class MatrixApp {
     this.assetManager.setConfigManager(configManager);
 
     await pluginManager.initialize();
+    await pluginMarketService.initialize();
     await taskScheduler.initialize();
     await apiManager.initialize();
 
@@ -377,6 +379,18 @@ class MatrixApp {
     });
     ipcMain.handle('plugin:installFromZip', async (_, zipPath, type) => {
       return await pluginManager.installPluginFromZip(zipPath, type);
+    });
+    ipcMain.handle('plugin:toggle', async (_, pluginId, enabled) => {
+      await pluginManager.togglePlugin(pluginId, enabled);
+      return { success: true };
+    });
+
+    // 插件市场相关IPC处理
+    ipcMain.handle('plugin:market:list', async (_, filter) => {
+      return await pluginMarketService.fetchMarketPlugins(filter);
+    });
+    ipcMain.handle('plugin:market:search', async (_, keyword) => {
+      return await pluginMarketService.searchPlugins(keyword);
     });
 
     // 任务相关IPC处理

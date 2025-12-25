@@ -184,6 +184,96 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.6] - 2025-12-26
+
+### Added
+- feat(plugin): 完整实现插件管理系统 (Phase 4 E03)
+  - 插件类型分级：支持official/partner/community三级分类体系
+  - 插件市场UI：搜索框、标签筛选、排序功能（按下载量/评分/更新时间）
+  - MarketPluginCard组件：显示插件徽章（官方认证、内置）、评分、下载量、标签
+  - 硬编码示例数据：3个示例插件（小说转视频、图片增强、音频混音）
+  - PluginMarketService：支持类型/标签/关键词筛选和排序
+  - 插件启用/禁用：CSS动画开关组件，支持状态切换
+  - 配置持久化：集成ConfigManager，插件状态保存到config.json
+  - 官方插件：novel-to-video（小说转视频），包含4个动作（剧本拆解、分镜生成、图片生成、素材匹配）
+  - 使用统计：executePlugin时自动更新lastUsed时间戳
+
+### Changed
+- refactor(plugin): 统一类型定义系统
+  - 删除PluginManager.ts中的本地枚举定义
+  - 统一使用src/common/types.ts中的PluginType和PluginPermission
+  - PluginType新增PARTNER类型（官方/合作伙伴/社区三级）
+  - PluginPermission符合文档规范（file-system:*, network:*, shell:exec）
+- refactor(plugin): 插件目录结构调整
+  - 创建plugins/partner/目录
+  - PluginManager自动扫描official/partner/community三个目录
+
+### Added - 类型定义
+- IPluginConfig：插件配置（enabled: boolean, lastUsed?: string）
+- IAppSettings.plugins：插件配置字典（pluginId -> IPluginConfig）
+- MarketPluginInfo：市场插件信息（downloads, rating, reviewCount, tags, verified等）
+- MarketFilter：市场筛选器（type, tag, search, sortBy）
+- POPULAR_TAGS：热门标签常量（7个标签）
+
+### Added - IPC通道
+- plugin:toggle：切换插件启用/禁用状态
+- plugin:market:list：获取市场插件列表（支持筛选）
+- plugin:market:search：搜索市场插件
+
+### Added - Preload API
+- togglePlugin(pluginId, enabled)：切换插件状态
+- getMarketPlugins(filter)：获取市场数据
+- searchMarketPlugins(keyword)：搜索插件
+
+### Technical Details
+- 新增文件：
+  - src/shared/types/plugin-market.ts (60行) - 市场类型定义
+  - src/main/services/PluginMarketService.ts (195行) - 市场服务
+  - src/renderer/pages/plugins/components/MarketPluginCard.tsx (65行) - 市场卡片组件
+  - plugins/official/novel-to-video/manifest.json (39行) - 插件清单
+  - plugins/official/novel-to-video/index.js (254行) - 插件实现
+- 修改文件：
+  - src/common/types.ts (+15行) - 插件配置类型
+  - src/main/services/PluginManager.ts (+80行) - 类型统一、配置集成
+  - src/main/index.ts (+25行) - 市场IPC处理器
+  - src/preload/index.ts (+35行) - 市场API暴露
+  - src/renderer/pages/plugins/Plugins.tsx (+150行) - 市场UI实现
+  - src/renderer/pages/plugins/Plugins.css (+315行) - 完整样式
+- 新增目录：plugins/official/, plugins/partner/, plugins/community/
+
+### Security
+- security(plugin): 权限声明规范化
+  - 所有插件manifest必须声明permissions数组
+  - 支持细粒度权限控制（file-system:read/write分离）
+  - 网络访问权限分级（network:any vs network:official-api）
+
+### Benefits
+- ✅ 完整的三级插件分类系统（官方/合作伙伴/社区）
+- ✅ 功能完备的插件市场UI（搜索/筛选/排序/展示）
+- ✅ 插件状态持久化（启用/禁用、使用时间）
+- ✅ 官方插件示例（小说转视频MVP实现）
+- ✅ 为Phase 5 小说转视频功能奠定基础
+- ✅ 插件生态建设标准确立
+
+### Migration Guide
+无需迁移，所有变更向后兼容。新增功能自动生效。
+
+### 完成度
+- ✅ E03 插件管理系统完善：100% 完成
+- ✅ 插件类型分级显示（官方/合作伙伴/社区）
+- ✅ 插件市场集成（硬编码数据+完整UI）
+- ✅ 插件安装流程（统一通过ZIP安装）
+- ✅ 插件启用/禁用切换（含持久化）
+- ✅ 小说转视频官方插件（manifest + MVP实现）
+
+### 后续计划
+- Phase 5 [F01-F03]: 小说转视频插件AI增强
+  - F01: 智能场景识别算法
+  - F02: AI分镜生成（集成大模型）
+  - F03: 图片生成API集成（Stable Diffusion/DALL-E）
+
+---
+
 ## [0.2.5] - 2025-12-26
 
 ### Added

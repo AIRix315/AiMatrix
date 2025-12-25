@@ -465,10 +465,19 @@ export interface IGeneralSettings {
 }
 
 /**
+ * 插件配置接口
+ */
+export interface IPluginConfig {
+  enabled: boolean;
+  lastUsed?: string; // ISO 8601 时间字符串
+}
+
+/**
  * 应用完整配置接口
  */
 export interface IAppSettings {
   general: IGeneralSettings;
   providers: IProviderConfig[];
   mcpServers: IMCPServerConfig[];
+  plugins?: Record<string, IPluginConfig>; // 插件配置（插件ID -> 配置）
 }

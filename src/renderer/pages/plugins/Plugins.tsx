@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Loading, Toast, ConfirmDialog, Modal } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
+import MarketPluginCard from './components/MarketPluginCard';
+import { MarketPluginInfo, POPULAR_TAGS } from '../../../shared/types/plugin-market';
 import './Plugins.css';
 
 interface PluginInfo {
@@ -25,6 +27,13 @@ const Plugins: React.FC = () => {
   const [selectedPlugin, setSelectedPlugin] = useState<PluginInfo | null>(null);
   const [isInstalling, setIsInstalling] = useState(false);
 
+  // 市场相关状态
+  const [marketPlugins, setMarketPlugins] = useState<MarketPluginInfo[]>([]);
+  const [marketLoading, setMarketLoading] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'downloads' | 'rating' | 'updated'>('downloads');
+
   useEffect(() => {
     loadPlugins();
   }, []);
@@ -46,6 +55,36 @@ const Plugins: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // 加载市场插件列表
+  const loadMarketPlugins = async () => {
+    try {
+      setMarketLoading(true);
+      if (window.electronAPI?.getMarketPlugins) {
+        const plugins = await window.electronAPI.getMarketPlugins({
+          tag: selectedTag || undefined,
+          search: searchKeyword || undefined,
+          sortBy
+        });
+        setMarketPlugins(plugins || []);
+      }
+    } catch (error) {
+      console.error('Failed to load market plugins:', error);
+      setToast({
+        type: 'error',
+        message: `加载市场插件失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    } finally {
+      setMarketLoading(false);
+    }
+  };
+
+  // 当切换到市场视图或筛选条件改变时，加载市场数据
+  useEffect(() => {
+    if (showInstallModal) {
+      loadMarketPlugins();
+    }
+  }, [showInstallModal, selectedTag, searchKeyword, sortBy]);
 
   const handleOpenPlugin = (plugin: PluginInfo) => {
     setSelectedPlugin(plugin);
@@ -114,6 +153,31 @@ const Plugins: React.FC = () => {
     }
   };
 
+  // 查看市场插件详情
+  const handleViewPluginDetails = (plugin: MarketPluginInfo) => {
+    // 检查是否为内置插件
+    if (!plugin.downloadUrl) {
+      setToast({
+        type: 'info',
+        message: `${plugin.name} 是系统内置插件，已预装在 plugins/${plugin.type}/ 目录`
+      });
+      return;
+    }
+
+    // 外部插件，显示仓库链接（如果有）
+    if (plugin.repository) {
+      setToast({
+        type: 'info',
+        message: `插件仓库: ${plugin.repository}。请访问仓库页面下载ZIP文件，然后使用"从ZIP安装"功能安装。`
+      });
+    } else {
+      setToast({
+        type: 'info',
+        message: '该插件暂无仓库信息。请从开发者处获取ZIP文件后使用"从ZIP安装"功能。'
+      });
+    }
+  };
+
   const officialPlugins = plugins.filter(p => p.type === 'official');
   const communityPlugins = plugins.filter(p => p.type === 'community');
 
@@ -146,13 +210,73 @@ const Plugins: React.FC = () => {
         {isLoading ? (
           <Loading size="lg" message="加载插件列表..." fullscreen={false} />
         ) : showInstallModal ? (
-          <div className="empty-state">
-            <div className="empty-icon">🧩</div>
-            <h2>插件市场</h2>
-            <p>浏览和安装社区插件（功能开发中）</p>
-            <Button variant="primary" onClick={handleInstallPlugin} disabled={isInstalling}>
-              {isInstalling ? '安装中...' : '从ZIP文件安装插件'}
-            </Button>
+          <div className="market-view">
+            {/* 搜索和筛选栏 */}
+            <div className="market-filters">
+              <div className="search-box">
+                <span className="search-icon">🔍</span>
+                <input
+                  type="text"
+                  placeholder="搜索插件..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'downloads' | 'rating' | 'updated')}
+                className="sort-select"
+              >
+                <option value="downloads">按下载量</option>
+                <option value="rating">按评分</option>
+                <option value="updated">按更新时间</option>
+              </select>
+            </div>
+
+            {/* 标签筛选 */}
+            <div className="tag-filter">
+              {POPULAR_TAGS.map((tag) => (
+                <button
+                  key={tag}
+                  className={`tag-button ${selectedTag === tag ? 'active' : ''}`}
+                  onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+
+            {/* 插件卡片网格 */}
+            {marketLoading ? (
+              <Loading size="lg" message="加载插件市场..." fullscreen={false} />
+            ) : marketPlugins.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">🔍</div>
+                <h2>未找到匹配的插件</h2>
+                <p>尝试使用不同的搜索关键词或筛选条件</p>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setSearchKeyword('');
+                    setSelectedTag(null);
+                  }}
+                >
+                  清除筛选
+                </Button>
+              </div>
+            ) : (
+              <div className="card-grid market-grid">
+                {marketPlugins.map((plugin) => (
+                  <MarketPluginCard
+                    key={plugin.id}
+                    plugin={plugin}
+                    onViewDetails={handleViewPluginDetails}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -256,8 +380,36 @@ const Plugins: React.FC = () => {
               <span>{selectedPlugin.type === 'official' ? '官方' : '社区'}</span>
             </div>
             <div className="plugin-info-group">
-              <label>状态:</label>
-              <span>{selectedPlugin.isEnabled ? '已启用' : '已禁用'}</span>
+              <label>启用状态:</label>
+              <label className="plugin-toggle">
+                <input
+                  type="checkbox"
+                  checked={selectedPlugin.isEnabled}
+                  onChange={async (e) => {
+                    try {
+                      await window.electronAPI?.togglePlugin(selectedPlugin.id, e.target.checked);
+                      // 更新本地状态
+                      setSelectedPlugin({
+                        ...selectedPlugin,
+                        isEnabled: e.target.checked
+                      });
+                      // 刷新插件列表
+                      await loadPlugins();
+                      setToast({
+                        type: 'success',
+                        message: `插件已${e.target.checked ? '启用' : '禁用'}`
+                      });
+                    } catch (error) {
+                      setToast({
+                        type: 'error',
+                        message: `切换失败: ${error instanceof Error ? error.message : String(error)}`
+                      });
+                    }
+                  }}
+                  className="toggle-checkbox"
+                />
+                <span className="toggle-slider"></span>
+              </label>
             </div>
             <div className="plugin-info-group">
               <label>权限:</label>

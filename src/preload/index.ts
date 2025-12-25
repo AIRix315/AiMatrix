@@ -244,6 +244,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   installPluginFromZip: (zipPath: string, type?: 'official' | 'community'): Promise<any> =>
     ipcRenderer.invoke('plugin:installFromZip', zipPath, type),
 
+  /**
+   * 获取插件市场列表
+   */
+  getMarketPlugins: (filter?: any): Promise<any[]> =>
+    ipcRenderer.invoke('plugin:market:list', filter),
+
+  /**
+   * 搜索插件市场
+   */
+  searchMarketPlugins: (keyword: string): Promise<any[]> =>
+    ipcRenderer.invoke('plugin:market:search', keyword),
+
+  /**
+   * 切换插件启用/禁用状态
+   */
+  togglePlugin: (pluginId: string, enabled: boolean): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke('plugin:toggle', pluginId, enabled),
+
   // ==================== 任务相关 ====================
   
   /**
@@ -525,6 +543,9 @@ declare global {
       executePluginAction: (pluginId: string, action: string, params: any) => Promise<any>;
       listPlugins: () => Promise<any[]>;
       installPluginFromZip: (zipPath: string, type?: 'official' | 'community') => Promise<any>;
+      getMarketPlugins: (filter?: any) => Promise<any[]>;
+      searchMarketPlugins: (keyword: string) => Promise<any[]>;
+      togglePlugin: (pluginId: string, enabled: boolean) => Promise<{ success: boolean }>;
       createTask: (config: any) => Promise<string>;
       executeTask: (taskId: string, inputs: any) => Promise<string>;
       getTaskStatus: (executionId: string) => Promise<any>;
