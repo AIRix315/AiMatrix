@@ -182,6 +182,66 @@ Closes #123
 - 安全补丁支持所有维护版本
 - 严重漏洞发布独立安全更新
 
+--------------------------------------------
+
+## [0.2.5] - 2025-12-26
+
+### Added
+- feat(workflow): 完整实现工作流编辑器核心功能
+  - 工作流验证系统：循环依赖检测（DFS算法）、孤立节点警告、悬空连接检测、自连接检测
+  - 执行进度监控：实时状态轮询、进度百分比显示、自动状态清理
+  - 节点删除功能：支持 Delete/Backspace 快捷键、属性面板删除按钮、自动清理相关连接
+  - TimeService IPC集成：time:getCurrentTime 处理器、preload API暴露、全局类型声明
+
+### Fixed
+- fix(workflow): 修复时间处理违规问题（CRITICAL）
+  - 替换 WorkflowEditor.tsx 中的 Date.now() 为 TimeService.getCurrentTime()
+  - 符合全局架构约束（docs/00-global-requirements-v1.0.0.md）
+  - 保证工作流 ID 和节点 ID 的时间一致性
+- fix(workflow): 修复 Button 组件类型错误
+  - 移除不支持的 style 属性，改用 CSS 类
+
+### Changed
+- refactor(workflow): 统一工作流编辑器样式系统
+  - 使用标准 CSS 变量（--accent-color, --bg-canvas, --text-main）
+  - 统一字体大小（12px 主体，11px 辅助）
+  - 统一动画时间（0.2s）
+  - 与 Dashboard、Assets、Settings 保持一致
+- refactor(workflow): 优化工作流保存和执行流程
+  - 保存前强制验证，阻止无效工作流
+  - 执行前验证，提供详细错误信息
+  - 添加 createdAt/updatedAt 时间戳
+
+### Performance
+- perf(workflow): 优化执行状态轮询
+  - 1秒轮询间隔
+  - 完成后自动停止轮询
+  - 避免内存泄漏
+
+### Security
+- security(time): 强化时间处理安全性
+  - 所有时间戳通过 TimeService 获取
+  - 支持 NTP 同步和时间验证
+  - 防止客户端时间篡改
+
+### Migration Guide
+无需迁移，所有变更向后兼容。新增功能自动生效。
+
+### 技术细节
+- **新增文件**: src/renderer/pages/workflows/utils/workflowValidator.ts (173行)
+- **修改文件**: src/main/index.ts (+6), src/preload/index.ts (+10), WorkflowEditor.tsx (+80), WorkflowEditor.css (~50)
+- **构建状态**: ✅ 成功（0错误，2个非关键警告）
+- **代码质量**: ✅ 通过 TypeScript 严格检查
+
+### 完成度
+- ✅ E02 工作流编辑器：100% 完成
+- ✅ 三栏可拖拽布局（react-resizable-panels）
+- ✅ 节点拖拽和连接（ReactFlow + 删除功能）
+- ✅ 工作流执行引擎（TaskScheduler + 进度监控）
+- ✅ 工作流保存和加载（带验证）
+
+---
+
 ## [0.2.4] - 2025-12-26
 
 ### Added

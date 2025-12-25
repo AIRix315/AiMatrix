@@ -14,6 +14,7 @@ import { pluginManager } from './services/PluginManager';
 import { taskScheduler } from './services/TaskScheduler';
 import { apiManager } from './services/APIManager';
 import { configManager } from './services/ConfigManager';
+import { timeService } from './services/TimeService';
 
 // 注册自定义协议为特权协议（必须在 app.ready 之前）
 protocol.registerSchemesAsPrivileged([
@@ -199,6 +200,12 @@ class MatrixApp {
     ipcMain.handle('app:restart', () => {
       app.relaunch();
       app.exit();
+    });
+
+    // 时间服务相关IPC处理
+    ipcMain.handle('time:getCurrentTime', async () => {
+      const currentTime = await timeService.getCurrentTime();
+      return currentTime.getTime(); // 返回时间戳（毫秒）
     });
 
     // 窗口相关IPC处理

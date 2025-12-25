@@ -31,6 +31,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
    */
   restartApp: (): Promise<void> => ipcRenderer.invoke('app:restart'),
 
+  // ==================== 时间服务相关 ====================
+
+  /**
+   * 获取当前时间戳（毫秒）
+   *
+   * 遵循全局时间处理要求：任何涉及时间的文字写入、记录，
+   * 必须先通过此函数查询系统时间，确认后方可写入
+   */
+  getCurrentTime: (): Promise<number> => ipcRenderer.invoke('time:getCurrentTime'),
+
   // ==================== 窗口相关 ====================
   
   /**
@@ -482,6 +492,7 @@ declare global {
       getAppVersion: () => Promise<string>;
       quitApp: () => Promise<void>;
       restartApp: () => Promise<void>;
+      getCurrentTime: () => Promise<number>;
       minimizeWindow: () => Promise<void>;
       maximizeWindow: () => Promise<void>;
       closeWindow: () => Promise<void>;

@@ -15,6 +15,7 @@ import 'reactflow/dist/style.css';
 import { Button, Toast, Loading } from '../../components/common';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import type { ToastType } from '../../components/common/Toast';
+import { validateWorkflow } from './utils/workflowValidator';
 import './WorkflowEditor.css';
 
 const WorkflowEditor: React.FC = () => {
@@ -29,6 +30,10 @@ const WorkflowEditor: React.FC = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+
+  // 执行监控相关状态
+  const [executionStatus, setExecutionStatus] = useState<string>('idle');
+  const [executionProgress, setExecutionProgress] = useState<number>(0);
 
   // 加载工作流
   useEffect(() => {
@@ -61,13 +66,33 @@ const WorkflowEditor: React.FC = () => {
     try {
       setIsSaving(true);
 
+      // 验证工作流完整性
+      const validation = validateWorkflow(nodes, edges);
+      if (!validation.valid) {
+        setToast({
+          type: 'error',
+          message: `验证失败：${validation.errors.join('; ')}`
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      // 如果有警告，也显示给用户（但不阻塞保存）
+      if (validation.warnings.length > 0) {
+        console.warn('工作流警告:', validation.warnings);
+      }
+
+      // 遵循全局时间处理要求：使用 TimeService 获取时间戳
+      const timestamp = await window.electronAPI.getCurrentTime();
       const config = {
-        id: workflowId === 'new' || !workflowId ? `workflow-${Date.now()}` : workflowId,
+        id: workflowId === 'new' || !workflowId ? `workflow-${timestamp}` : workflowId,
         name: workflowName,
         type: 'custom',
         nodes,
         edges,
-        config: {}
+        config: {},
+        createdAt: new Date(timestamp).toISOString(),
+        updatedAt: new Date(timestamp).toISOString()
       };
 
       if (window.electronAPI?.saveWorkflow) {
@@ -93,9 +118,72 @@ const WorkflowEditor: React.FC = () => {
     }
   };
 
+  // 状态轮询函数
+  const startStatusPolling = useCallback((jobId: string) => {
+    const interval = setInterval(async () => {
+      try {
+        if (window.electronAPI?.getWorkflowStatus) {
+          const status = await window.electronAPI.getWorkflowStatus(jobId);
+          setExecutionStatus(status.status || 'running');
+          setExecutionProgress(status.progress || 0);
+
+          // 如果执行完成或失败，停止轮询
+          if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
+            clearInterval(interval);
+            setIsExecuting(false);
+
+            if (status.status === 'completed') {
+              setToast({
+                type: 'success',
+                message: '工作流执行完成'
+              });
+            } else if (status.status === 'failed') {
+              setToast({
+                type: 'error',
+                message: `工作流执行失败: ${status.error || '未知错误'}`
+              });
+            } else {
+              setToast({
+                type: 'info',
+                message: '工作流执行已取消'
+              });
+            }
+
+            // 重置状态
+            setExecutionStatus('idle');
+            setExecutionProgress(0);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to get workflow status:', error);
+        clearInterval(interval);
+        setIsExecuting(false);
+      }
+    }, 1000); // 每秒轮询一次
+
+    // 保存 interval ID 用于清理
+    return interval;
+  }, []);
+
   const handleExecute = async () => {
     try {
       setIsExecuting(true);
+
+      // 验证工作流完整性
+      const validation = validateWorkflow(nodes, edges);
+      if (!validation.valid) {
+        setToast({
+          type: 'error',
+          message: `无法执行：${validation.errors.join('; ')}`
+        });
+        setIsExecuting(false);
+        return;
+      }
+
+      // 如果有警告，显示但继续执行
+      if (validation.warnings.length > 0) {
+        console.warn('工作流警告:', validation.warnings);
+      }
 
       const config = {
         id: workflowId,
@@ -108,10 +196,14 @@ const WorkflowEditor: React.FC = () => {
 
       if (window.electronAPI?.executeWorkflow) {
         const jobId = await window.electronAPI.executeWorkflow(config);
+        setExecutionStatus('running');
         setToast({
           type: 'success',
           message: `工作流已开始执行，任务ID: ${jobId}`
         });
+
+        // 开始轮询执行状态
+        startStatusPolling(jobId);
       }
     } catch (error) {
       console.error('Failed to execute workflow:', error);
@@ -119,7 +211,6 @@ const WorkflowEditor: React.FC = () => {
         type: 'error',
         message: `执行失败: ${error instanceof Error ? error.message : String(error)}`
       });
-    } finally {
       setIsExecuting(false);
     }
   };
@@ -139,9 +230,11 @@ const WorkflowEditor: React.FC = () => {
     { type: 'transform', label: '数据转换', icon: '🔄' }
   ];
 
-  const handleAddNode = (nodeType: string, label: string) => {
+  const handleAddNode = async (nodeType: string, label: string) => {
+    // 遵循全局时间处理要求：使用 TimeService 获取时间戳
+    const timestamp = await window.electronAPI.getCurrentTime();
     const newNode: Node = {
-      id: `${nodeType}-${Date.now()}`,
+      id: `${nodeType}-${timestamp}`,
       type: nodeType === 'input' ? 'input' : nodeType === 'output' ? 'output' : 'default',
       position: {
         x: Math.random() * 400 + 100,
@@ -159,6 +252,30 @@ const WorkflowEditor: React.FC = () => {
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
   }, []);
+
+  // 删除节点处理函数
+  const handleDeleteNode = useCallback(() => {
+    if (selectedNode) {
+      setNodes((nds) => nds.filter((node) => node.id !== selectedNode.id));
+      setEdges((eds) => eds.filter((edge) =>
+        edge.source !== selectedNode.id && edge.target !== selectedNode.id
+      ));
+      setSelectedNode(null);
+      setToast({ type: 'success', message: '节点已删除' });
+    }
+  }, [selectedNode, setNodes, setEdges]);
+
+  // 监听键盘Delete/Backspace键
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNode) {
+        e.preventDefault();
+        handleDeleteNode();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNode, handleDeleteNode]);
 
   if (isLoading) {
     return <Loading size="lg" message="加载工作流..." fullscreen />;
@@ -237,6 +354,14 @@ const WorkflowEditor: React.FC = () => {
               <div className="info-item">
                 <span>连接: {edges.length}</span>
               </div>
+              {executionStatus !== 'idle' && (
+                <div className="info-item execution-status">
+                  <span>状态: {executionStatus}</span>
+                  {executionProgress > 0 && (
+                    <span> ({Math.round(executionProgress)}%)</span>
+                  )}
+                </div>
+              )}
             </FlowPanel>
           </ReactFlow>
         </Panel>
@@ -267,6 +392,14 @@ const WorkflowEditor: React.FC = () => {
                     X: {Math.round(selectedNode.position.x)},
                     Y: {Math.round(selectedNode.position.y)}
                   </span>
+                </div>
+                <div className="property-action">
+                  <Button
+                    variant="ghost"
+                    onClick={handleDeleteNode}
+                  >
+                    删除节点
+                  </Button>
                 </div>
               </div>
             ) : (

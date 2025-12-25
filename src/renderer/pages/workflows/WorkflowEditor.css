@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--bg-primary);
+  background: var(--bg-canvas);
 }
 
 .editor-toolbar {
@@ -10,25 +10,25 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
-  background: var(--bg-secondary);
+  background: var(--bg-header);
   border-bottom: 1px solid var(--border-color);
   gap: 16px;
 }
 
 .workflow-name-input {
-  background: var(--bg-tertiary);
+  background: var(--bg-canvas);
   border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  padding: 8px 12px;
+  color: var(--text-main);
+  padding: 6px 12px;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 12px;
   width: 300px;
   transition: border-color 0.2s;
 }
 
 .workflow-name-input:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--accent-color);
 }
 
 .toolbar-actions {
@@ -46,7 +46,7 @@
 .properties-panel {
   height: 100%;
   padding: 16px;
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -54,8 +54,8 @@
 .node-library h3,
 .properties-panel h3 {
   margin: 0 0 16px 0;
-  color: var(--text-primary);
-  font-size: 14px;
+  color: var(--text-main);
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -72,18 +72,18 @@
   align-items: center;
   gap: 10px;
   padding: 12px;
-  background: var(--bg-tertiary);
+  background: var(--bg-header);
   border: 1px solid var(--border-color);
   border-radius: 4px;
   cursor: pointer;
-  color: var(--text-primary);
+  color: var(--text-main);
   transition: all 0.2s;
   user-select: none;
 }
 
 .node-item:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary-color);
+  background: #1a1a1a;
+  border-color: var(--accent-color);
   transform: translateX(2px);
 }
 
@@ -115,70 +115,79 @@
 }
 
 .property-group label {
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 11px;
+  color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 .property-group span {
-  font-size: 13px;
-  color: var(--text-primary);
+  font-size: 12px;
+  color: var(--text-main);
   padding: 8px;
-  background: var(--bg-tertiary);
+  background: var(--bg-header);
   border: 1px solid var(--border-color);
   border-radius: 4px;
 }
 
 .no-selection {
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--text-muted);
+  font-size: 12px;
   text-align: center;
   margin-top: 20px;
 }
 
+.property-action {
+  margin-top: 10px;
+}
+
+.property-action button {
+  width: 100%;
+  color: #ff5555;
+}
+
 /* 拖拽手柄样式 */
 .resize-handle {
-  width: 2px;
+  width: 1px;
   background: var(--border-color);
   cursor: col-resize;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
 }
 
 .resize-handle:hover {
-  background: var(--primary-color);
+  background: var(--accent-color);
 }
 
 /* React Flow 样式覆盖 */
 .react-flow {
-  background: var(--bg-primary);
+  background: var(--bg-canvas);
 }
 
 .react-flow__node {
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
-  color: var(--text-primary);
+  color: var(--text-main);
   padding: 10px 15px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
 }
 
 .react-flow__node.selected {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px var(--primary-color);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
 }
 
 .react-flow__node:hover {
-  border-color: var(--primary-color);
+  border-color: var(--accent-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .react-flow__edge-path {
-  stroke: var(--primary-color);
+  stroke: var(--accent-color);
   stroke-width: 2;
 }
 
@@ -188,21 +197,21 @@
 }
 
 .react-flow__controls {
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   overflow: hidden;
 }
 
 .react-flow__controls-button {
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
-  color: var(--text-primary);
+  color: var(--text-main);
   transition: background 0.2s;
 }
 
 .react-flow__controls-button:hover {
-  background: var(--bg-hover);
+  background: #252525;
 }
 
 .react-flow__controls-button:last-child {
@@ -210,24 +219,24 @@
 }
 
 .react-flow__minimap {
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   overflow: hidden;
 }
 
 .react-flow__minimap-mask {
-  fill: var(--primary-color);
+  fill: var(--accent-color);
   fill-opacity: 0.2;
 }
 
 .react-flow__minimap-node {
-  fill: var(--text-secondary);
+  fill: var(--text-muted);
 }
 
 .react-flow__handle {
-  background: var(--primary-color);
-  border: 2px solid var(--bg-primary);
+  background: var(--accent-color);
+  border: 2px solid var(--bg-canvas);
   width: 10px;
   height: 10px;
 }
@@ -243,11 +252,11 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  font-size: 12px;
-  color: var(--text-primary);
+  font-size: 11px;
+  color: var(--text-main);
 }
 
 .info-item {
