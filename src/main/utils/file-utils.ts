@@ -3,50 +3,25 @@ import * as path from 'path';
 
 export class FileUtils {
   public static async ensureDirectory(dirPath: string): Promise<void> {
-    try {
-      await fs.mkdir(dirPath, { recursive: true });
-    } catch (error) {
-      console.error(`创建目录 ${dirPath} 失败:`, error);
-      throw error;
-    }
+    await fs.mkdir(dirPath, { recursive: true });
   }
 
   public static async copyFile(source: string, destination: string): Promise<void> {
-    try {
-      await FileUtils.ensureDirectory(path.dirname(destination));
-      await fs.copyFile(source, destination);
-    } catch (error) {
-      console.error(`复制文件 ${source} 到 ${destination} 失败:`, error);
-      throw error;
-    }
+    await FileUtils.ensureDirectory(path.dirname(destination));
+    await fs.copyFile(source, destination);
   }
 
   public static async moveFile(source: string, destination: string): Promise<void> {
-    try {
-      await FileUtils.ensureDirectory(path.dirname(destination));
-      await fs.rename(source, destination);
-    } catch (error) {
-      console.error(`移动文件 ${source} 到 ${destination} 失败:`, error);
-      throw error;
-    }
+    await FileUtils.ensureDirectory(path.dirname(destination));
+    await fs.rename(source, destination);
   }
 
   public static async deleteFile(filePath: string): Promise<void> {
-    try {
-      await fs.unlink(filePath);
-    } catch (error) {
-      console.error(`删除文件 ${filePath} 失败:`, error);
-      throw error;
-    }
+    await fs.unlink(filePath);
   }
 
   public static async deleteDirectory(dirPath: string): Promise<void> {
-    try {
-      await fs.rmdir(dirPath, { recursive: true });
-    } catch (error) {
-      console.error(`删除目录 ${dirPath} 失败:`, error);
-      throw error;
-    }
+    await fs.rmdir(dirPath, { recursive: true });
   }
 
   public static async fileExists(filePath: string): Promise<boolean> {
@@ -59,13 +34,8 @@ export class FileUtils {
   }
 
   public static async getFileSize(filePath: string): Promise<number> {
-    try {
-      const stats = await fs.stat(filePath);
-      return stats.size;
-    } catch (error) {
-      console.error(`获取文件大小 ${filePath} 失败:`, error);
-      throw error;
-    }
+    const stats = await fs.stat(filePath);
+    return stats.size;
   }
 
   public static async getFileStats(filePath: string): Promise<{
@@ -75,19 +45,14 @@ export class FileUtils {
     isFile: boolean;
     isDirectory: boolean;
   }> {
-    try {
-      const stats = await fs.stat(filePath);
-      return {
-        size: stats.size,
-        created: stats.birthtime,
-        modified: stats.mtime,
-        isFile: stats.isFile(),
-        isDirectory: stats.isDirectory()
-      };
-    } catch (error) {
-      console.error(`获取文件统计信息 ${filePath} 失败:`, error);
-      throw error;
-    }
+    const stats = await fs.stat(filePath);
+    return {
+      size: stats.size,
+      created: stats.birthtime,
+      modified: stats.mtime,
+      isFile: stats.isFile(),
+      isDirectory: stats.isDirectory()
+    };
   }
 
   public static formatFileSize(bytes: number): string {

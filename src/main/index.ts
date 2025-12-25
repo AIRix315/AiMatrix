@@ -88,9 +88,9 @@ class MatrixApp {
       // 设置IPC处理器
       this.setupIPCHandlers();
 
-      console.log('Matrix AI Workflow 应用启动成功');
+      await logger.info('Matrix AI Workflow 应用启动成功', 'MatrixApp');
     } catch (error) {
-      console.error('应用启动失败:', error);
+      await logger.error('应用启动失败', 'MatrixApp', { error });
       app.quit();
     }
   }
@@ -98,7 +98,7 @@ class MatrixApp {
   private async initializeServices(): Promise<void> {
     // 1. 首先初始化 ConfigManager
     await configManager.initialize();
-    console.log('[MatrixApp] ConfigManager initialized');
+    await logger.debug('ConfigManager initialized', 'MatrixApp');
 
     // 2. 使用配置重新初始化 Logger（支持动态路径）
     const logSettings = configManager.getLogSettings();
@@ -203,6 +203,23 @@ class MatrixApp {
       app.relaunch();
       app.exit();
     });
+    ipcMain.handle('app:log', async (_, level: string, message: string, context?: string, data?: unknown) => {
+      const loggerInstance = Logger.getInstance();
+      switch (level) {
+        case 'debug':
+          await loggerInstance.debug(message, context || 'Renderer', data);
+          break;
+        case 'info':
+          await loggerInstance.info(message, context || 'Renderer', data);
+          break;
+        case 'warn':
+          await loggerInstance.warn(message, context || 'Renderer', data);
+          break;
+        case 'error':
+          await loggerInstance.error(message, context || 'Renderer', data);
+          break;
+      }
+    });
 
     // 时间服务相关IPC处理
     ipcMain.handle('time:getCurrentTime', async () => {
@@ -290,7 +307,6 @@ class MatrixApp {
 
     // === 打开文件选择对话框 ===
     ipcMain.handle('asset:show-import-dialog', async () => {
-      const { dialog } = require('electron');
       const result = await dialog.showOpenDialog({
         properties: ['openFile', 'multiSelections'],
         filters: [
@@ -506,8 +522,6 @@ class MatrixApp {
         const safePath = getSafePath(dirPath);
         const items = await fs.readdir(safePath, { withFileTypes: true });
         return items.map((item) => {
-          // eslint-disable-next-line no-console
-          console.log('[DEBUG] Processing file item:', item.name, 'isDirectory:', item.isDirectory(), 'isFile:', item.isFile());
           return {
             name: item.name,
             isDirectory: item.isDirectory(),
@@ -634,7 +648,7 @@ class MatrixApp {
       return Promise.resolve(`重启本地服务: ${serviceId}`);
     });
 
-    console.log('IPC处理器设置完成');
+    await logger.debug('IPC处理器设置完成', 'MatrixApp');
   }
 
   private async cleanup(): Promise<void> {
@@ -649,7 +663,7 @@ class MatrixApp {
 
       await logger.info('Matrix application cleanup completed', 'MatrixApp');
     } catch (error) {
-      console.error('应用清理失败:', error);
+      await logger.error('应用清理失败', 'MatrixApp', { error });
     }
   }
 }

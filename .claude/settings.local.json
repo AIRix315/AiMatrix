@@ -28,7 +28,8 @@
       "Bash(npx rimraf:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(asset\\): Phase 4 E01 Step 1 - 基础服务层完成\n\n主要变更：\n✅ FileSystemService 创建完成 \\(370行\\)\n  - 统一路径管理（数据目录、资产目录）\n  - 文件操作封装（复制、移动、删除）\n  - JSON读写支持\n  - 文件信息获取（大小、MIME类型、时间）\n\n✅ 共享类型定义完成 \\(217行\\)\n  - AssetMetadata 标准Schema（25个字段）\n  - AssetFilter 查询过滤器\n  - AssetIndex 索引结构\n  - AssetScanResult 分页结果\n  - AssetImportParams 等辅助类型\n\n✅ AssetManager 重构完成 \\(957行\\)\n  - JSON索引系统（快速查询统计）\n  - 文件监听（chokidar实时监控）\n  - 分页查询（支持大量资产）\n  - Sidecar元数据管理\n  - 导入/删除功能（级联删除）\n  - 宽高比检测\n\n✅ IPC通道和预加载脚本更新\n  - 11个新IPC通道实现\n  - 预加载脚本API完整暴露\n  - TypeScript类型声明完整\n\n✅ 编译错误修复\n  - 安装@types/mime-types\n  - 修复Logger调用格式\n  - 构建成功 \\(0错误\\)\n\n新增文件：\n- src/main/services/FileSystemService.ts\n- src/shared/types/asset.ts\n\n修改文件：\n- src/main/services/AssetManager.ts \\(完全重构\\)\n- src/main/index.ts \\(集成新服务\\)\n- src/preload/index.ts \\(新增资产API\\)\n- src/renderer/pages/Assets/Assets.tsx \\(临时占位\\)\n\n技术栈：\n- chokidar: 文件监听\n- mime-types: MIME类型检测\n- JSON索引: 高效资产查询\n\n下一步：Phase 2 - 前端UI实现\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git commit:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

@@ -3,6 +3,7 @@
 
 // 检查预加载脚本是否成功加载
 if (!window.electronAPI) {
+    // eslint-disable-next-line no-console
     console.error('[Renderer] FATAL: electronAPI is not defined! Preload script failed to load.');
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -26,8 +27,6 @@ if (!window.electronAPI) {
     throw new Error('electronAPI is not defined - preload script failed');
 }
 
-console.log('[Renderer] electronAPI loaded successfully');
-
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
@@ -41,17 +40,16 @@ import './styles/settings.css';
 
 const container = document.getElementById('root');
 if (!container) {
+    // eslint-disable-next-line no-console
     console.error('[Renderer] FATAL: Root element not found');
     throw new Error('Root element not found');
 }
 
-console.log('[Renderer] Starting React application...');
-
 try {
     const root = createRoot(container);
     root.render(<App />);
-    console.log('[Renderer] React application started successfully');
 } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('[Renderer] FATAL: Failed to start React application:', error);
 
     container.innerHTML = `

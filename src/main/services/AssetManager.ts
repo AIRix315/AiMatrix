@@ -32,8 +32,7 @@ import {
   AssetCategory,
   AssetImportParams,
   AssetFileChangeEvent,
-  AspectRatio,
-  ResourceStatus
+  AspectRatio
 } from '../../shared/types/asset';
 
 /**
@@ -316,8 +315,9 @@ export class AssetManagerClass {
    */
   async scanAssets(filter: AssetFilter): Promise<AssetScanResult> {
     try {
+      /* eslint-disable @typescript-eslint/no-unused-vars */
       const {
-        scope = 'all',
+        scope: _scope = 'all', // 解构但当前未使用，保留供未来使用
         projectId,
         category,
         type,
@@ -329,6 +329,7 @@ export class AssetManagerClass {
         page = 1,
         pageSize = 100
       } = filter;
+      /* eslint-enable @typescript-eslint/no-unused-vars */
 
       await this.logger.debug('扫描资产: ' + JSON.stringify({ filter }), 'AssetManager');
 
@@ -459,12 +460,14 @@ export class AssetManagerClass {
    * 扫描目录中的资产
    * @private
    */
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   private async scanDirectory(
     dirPath: string,
-    scope: AssetScope,
-    projectId?: string,
-    category?: string
+    _scope: AssetScope, // 参数保留供未来使用
+    _projectId?: string, // 参数保留供未来使用
+    _category?: string // 参数保留供未来使用
   ): Promise<AssetMetadata[]> {
+    /* eslint-enable @typescript-eslint/no-unused-vars */
     const assets: AssetMetadata[] = [];
 
     try {

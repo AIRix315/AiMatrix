@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './WindowBar.css';
+import { logger } from '../../utils/logger';
 
 interface WindowBarProps {
   title?: string;
@@ -21,7 +22,7 @@ const WindowBar: React.FC<WindowBarProps> = ({
           setIsMaximized(maximized);
         }
       } catch (error) {
-        console.error('Failed to check window maximized state:', error);
+        await logger.error('Failed to check window maximized state', 'WindowBar', { error });
       }
     };
 
@@ -42,7 +43,7 @@ const WindowBar: React.FC<WindowBarProps> = ({
         await window.electronAPI.minimizeWindow();
       }
     } catch (error) {
-      console.error('Failed to minimize window:', error);
+      await logger.error('Failed to minimize window', 'WindowBar', { error });
     }
   };
 
@@ -53,7 +54,7 @@ const WindowBar: React.FC<WindowBarProps> = ({
         setIsMaximized(!isMaximized);
       }
     } catch (error) {
-      console.error('Failed to maximize window:', error);
+      await logger.error('Failed to maximize window', 'WindowBar', { error });
     }
   };
 
@@ -63,7 +64,7 @@ const WindowBar: React.FC<WindowBarProps> = ({
         await window.electronAPI.closeWindow();
       }
     } catch (error) {
-      console.error('Failed to close window:', error);
+      await logger.error('Failed to close window', 'WindowBar', { error });
     }
   };
 

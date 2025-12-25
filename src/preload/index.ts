@@ -31,6 +31,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
    */
   restartApp: (): Promise<void> => ipcRenderer.invoke('app:restart'),
 
+  /**
+   * 发送日志到主进程
+   */
+  log: (level: string, message: string, context?: string, data?: any): Promise<void> =>
+    ipcRenderer.invoke('app:log', level, message, context, data),
+
   // ==================== 时间服务相关 ====================
 
   /**
@@ -510,6 +516,7 @@ declare global {
       getAppVersion: () => Promise<string>;
       quitApp: () => Promise<void>;
       restartApp: () => Promise<void>;
+      log: (level: string, message: string, context?: string, data?: any) => Promise<void>;
       getCurrentTime: () => Promise<number>;
       minimizeWindow: () => Promise<void>;
       maximizeWindow: () => Promise<void>;

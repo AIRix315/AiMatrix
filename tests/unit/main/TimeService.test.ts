@@ -5,6 +5,18 @@
 
 import { TimeServiceImpl, TimeMonitor, timeService } from '../../../src/main/services/TimeService';
 
+// Mock Logger
+jest.mock('../../../src/main/services/Logger', () => ({
+  Logger: {
+    getInstance: jest.fn(() => ({
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn()
+    }))
+  }
+}));
+
 // Mock child_process 模块
 jest.mock('child_process', () => ({
   exec: jest.fn()

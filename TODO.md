@@ -143,7 +143,7 @@
 - 预期结果: 往项目文件夹里随便丢一张图，Assets 页面在 1 秒内自动刷新显示该图。
 - CHANGELOG: feat(assets): implemented real-time asset grid with file system watcher
 
-### [ ] [E02] 工作流编辑器 (Workflows页面)
+### [*] [E02] 工作流编辑器 (Workflows页面)
 *   **任务**:
     1.  实现三栏可拖拽布局 (Resizer)。
     2.  实现节点拖拽和连接。

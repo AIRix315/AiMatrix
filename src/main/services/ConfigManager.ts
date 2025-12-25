@@ -16,6 +16,7 @@ import * as path from 'path';
 import { app, safeStorage } from 'electron';
 import { EventEmitter } from 'events';
 import type { IAppSettings, IProviderConfig, IGeneralSettings, ILogSettings } from '../../common/types';
+import { Logger } from './Logger';
 
 /**
  * 配置文件名称
@@ -72,11 +73,13 @@ export class ConfigManager extends EventEmitter {
   private configPath: string;
   private config: IAppSettings;
   private isInitialized: boolean = false;
+  private logger: Logger;
 
   constructor() {
     super();
     this.configPath = path.join(app.getPath('userData'), CONFIG_FILE_NAME);
     this.config = DEFAULT_CONFIG;
+    this.logger = Logger.getInstance();
   }
 
   /**
@@ -92,13 +95,13 @@ export class ConfigManager extends EventEmitter {
       await this.loadConfig();
     } catch (error) {
       // 配置文件不存在或无效，使用默认配置并保存
-      console.log('[ConfigManager] Config file not found, creating default config');
+      await this.logger.info('Config file not found, creating default config', 'ConfigManager');
       this.config = DEFAULT_CONFIG;
       await this.saveConfig(this.config);
     }
 
     this.isInitialized = true;
-    console.log('[ConfigManager] Initialized successfully');
+    await this.logger.info('Initialized successfully', 'ConfigManager');
   }
 
   /**
@@ -133,7 +136,7 @@ export class ConfigManager extends EventEmitter {
     // 发出配置变更事件
     this.emit('config-changed', this.config, oldConfig);
 
-    console.log('[ConfigManager] Config saved successfully');
+    await this.logger.debug('Config saved successfully', 'ConfigManager');
   }
 
   /**
@@ -254,13 +257,15 @@ export class ConfigManager extends EventEmitter {
           try {
             const buffer = Buffer.from(provider.apiKey, 'base64');
             const decryptedKey = safeStorage.decryptString(buffer);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { _encrypted, ...rest } = provider;
             return {
               ...rest,
               apiKey: decryptedKey
             };
           } catch (error) {
-            console.error(`[ConfigManager] Failed to decrypt API key for ${provider.id}:`, error);
+            // 解密失败，使用空密钥
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { _encrypted, ...rest } = provider;
             return {
               ...rest,
@@ -280,7 +285,7 @@ export class ConfigManager extends EventEmitter {
    */
   async cleanup(): Promise<void> {
     this.removeAllListeners();
-    console.log('[ConfigManager] Cleaned up');
+    await this.logger.debug('Cleaned up', 'ConfigManager');
   }
 }
 
