@@ -103,6 +103,7 @@ export interface AssetScanResult {
   page: number;
   pageSize: number;
   totalPages: number;
+  hasMore: boolean;                      // 是否还有更多数据
   assets: AssetMetadata[];
   errors?: Array<{
     path: string;

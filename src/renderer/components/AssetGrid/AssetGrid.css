@@ -1,0 +1,284 @@
+/**
+ * 资产网格样式
+ *
+ * 响应式网格布局，支持自动列数调整
+ * 参考：docs/references/UI/matrix 的设计风格
+ */
+
+.asset-grid-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 20px;
+  gap: 20px;
+}
+
+/* 滚动条样式 */
+.asset-grid-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.asset-grid-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.asset-grid-container::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+.asset-grid-container::-webkit-scrollbar-thumb:hover {
+  background: var(--border-secondary);
+}
+
+/* 头部统计 */
+.grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.assets-count {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.selected-count {
+  color: var(--accent-primary);
+}
+
+/* 资产网格 */
+.asset-grid {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+}
+
+/* 自动响应式列数 */
+.asset-grid.auto-columns {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* 响应式断点 */
+@media (min-width: 1920px) {
+  .asset-grid.auto-columns {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 1400px) {
+  .asset-grid.auto-columns {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .asset-grid.auto-columns {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .asset-grid.auto-columns {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .asset-grid-container {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .asset-grid {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .asset-grid.auto-columns {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .asset-grid-container {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .asset-grid {
+    gap: 12px;
+  }
+}
+
+/* 加载更多触发器 */
+.load-more-trigger {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-more {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 初始加载状态 */
+.grid-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 加载动画 */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-primary);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 错误状态 */
+.asset-grid-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  padding: 40px;
+}
+
+.error-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  max-width: 400px;
+}
+
+.error-icon {
+  font-size: 64px;
+  opacity: 0.5;
+}
+
+.error-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.retry-button {
+  padding: 10px 24px;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.retry-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.retry-button:active {
+  transform: translateY(0);
+}
+
+/* 空状态 */
+.asset-grid-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  padding: 40px;
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  max-width: 400px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  opacity: 0.3;
+}
+
+.empty-message {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.empty-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 优化性能 - 使用 will-change */
+.asset-grid {
+  will-change: transform;
+}
+
+/* 骨架屏加载效果（可选） */
+.asset-grid.loading .asset-card {
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 平滑滚动 */
+.asset-grid-container {
+  scroll-behavior: smooth;
+}
+
+/* 无缝加载过渡 */
+.asset-grid {
+  transition: opacity 0.2s ease;
+}
+
+.asset-grid.loading-transition {
+  opacity: 0.6;
+}

@@ -1,30 +1,213 @@
-/* =========================================
-   Assets Component Styles
-   从设计原型提取的素材页样式
-   ========================================= */
+/**
+ * Assets 页面样式
+ *
+ * 布局：左侧边栏 + 右侧主内容区
+ * 参考：docs/references/UI/matrix 的设计风格
+ */
 
-.tag-container {
-    display: flex;
+.assets-page {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+/* 主内容区 */
+.assets-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 顶部工具栏 */
+.assets-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+/* 搜索框 */
+.search-box {
+  flex: 1;
+  max-width: 400px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 16px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 40px 10px 40px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.search-input:focus {
+  border-color: var(--accent-primary);
+  background: var(--bg-primary);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.clear-button {
+  position: absolute;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.clear-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* 工具按钮组 */
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 排序下拉 */
+.sort-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sort-select {
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.sort-select:hover {
+  background: var(--bg-hover);
+}
+
+.sort-order-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sort-order-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* 导入按钮 */
+.import-button {
+  padding: 8px 16px;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.import-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.import-button:active {
+  transform: translateY(0);
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .assets-toolbar {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .search-box {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .assets-toolbar {
     flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 4px;
+    padding: 12px;
+  }
+
+  .search-box {
+    max-width: 100%;
+    order: -1;
+    flex-basis: 100%;
+  }
+
+  .toolbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sort-dropdown {
+    flex: 1;
+  }
 }
 
-.asset-tag {
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 3px;
-    border: 1px solid;
-}
+/* 暗色主题适配 */
+@media (prefers-color-scheme: dark) {
+  .search-input {
+    background: rgba(255, 255, 255, 0.05);
+  }
 
-.tag-global {
-    background: rgba(156, 39, 176, 0.15);
-    border-color: rgba(156, 39, 176, 0.4);
-    color: #ce93d8;
-}
-
-.tag-proj {
-    background: rgba(156, 39, 176, 0.1);
-    border-color: rgba(156, 39, 176, 0.3);
-    color: #ba68c8;
+  .search-input:focus {
+    background: rgba(255, 255, 255, 0.08);
+  }
 }

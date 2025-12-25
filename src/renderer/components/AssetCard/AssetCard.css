@@ -1,0 +1,322 @@
+/**
+ * 资产卡片样式
+ *
+ * 支持4种宽高比：3:4, 4:3, 16:9, 9:16
+ * 参考：docs/references/UI/matrix 的设计风格
+ */
+
+.asset-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  border: 2px solid transparent;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.asset-card:hover {
+  border-color: var(--border-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.asset-card.selected {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb, 0, 255, 159), 0.2);
+}
+
+/* 缩略图容器 - 支持4种宽高比 */
+.card-thumbnail {
+  position: relative;
+  width: 100%;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+/* 3:4 纵向 (portrait) */
+.card-thumbnail.ratio-3-4 {
+  aspect-ratio: 3 / 4;
+}
+
+/* 4:3 横向 (landscape classic) */
+.card-thumbnail.ratio-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+/* 16:9 宽屏 (widescreen) */
+.card-thumbnail.ratio-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+/* 9:16 竖屏 (mobile vertical) */
+.card-thumbnail.ratio-9-16 {
+  aspect-ratio: 9 / 16;
+}
+
+/* 自定义比例 - 默认正方形 */
+.card-thumbnail.ratio-custom {
+  aspect-ratio: 1 / 1;
+}
+
+/* 缩略图 */
+.thumbnail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 占位符 */
+.thumbnail-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+}
+
+.file-icon {
+  font-size: 48px;
+  opacity: 0.5;
+  line-height: 1;
+}
+
+/* 状态徽章 */
+.status-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(8px);
+  z-index: 2;
+}
+
+.status-badge.status-generating {
+  background: rgba(255, 159, 0, 0.9);
+  color: #000;
+}
+
+.status-badge.status-success {
+  background: rgba(0, 255, 159, 0.9);
+  color: #000;
+}
+
+.status-badge.status-failed {
+  background: rgba(255, 59, 48, 0.9);
+  color: #fff;
+}
+
+/* AI生成指示器 */
+.ai-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(138, 43, 226, 0.9);
+  border-radius: 50%;
+  font-size: 14px;
+  backdrop-filter: blur(8px);
+  z-index: 2;
+  cursor: help;
+}
+
+/* 删除按钮 */
+.delete-button {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 59, 48, 0.9);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s ease;
+  z-index: 3;
+  backdrop-filter: blur(8px);
+}
+
+.asset-card:hover .delete-button {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.delete-button:hover {
+  background: rgba(255, 59, 48, 1);
+  transform: scale(1.1);
+}
+
+.delete-button:active {
+  transform: scale(0.95);
+}
+
+/* 资产信息区 */
+.card-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.asset-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.asset-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* 类型标签 */
+.type-tag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+}
+
+.type-tag.type-image {
+  background: rgba(0, 122, 255, 0.15);
+  color: rgb(0, 122, 255);
+}
+
+.type-tag.type-video {
+  background: rgba(255, 59, 48, 0.15);
+  color: rgb(255, 59, 48);
+}
+
+.type-tag.type-audio {
+  background: rgba(255, 149, 0, 0.15);
+  color: rgb(255, 149, 0);
+}
+
+.type-tag.type-text {
+  background: rgba(52, 199, 89, 0.15);
+  color: rgb(52, 199, 89);
+}
+
+.type-tag.type-other {
+  background: rgba(142, 142, 147, 0.15);
+  color: rgb(142, 142, 147);
+}
+
+/* 分类标签 */
+.category-tag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .asset-card {
+    border-width: 1px;
+  }
+
+  .card-info {
+    padding: 10px;
+  }
+
+  .asset-name {
+    font-size: 12px;
+  }
+
+  .file-icon {
+    font-size: 36px;
+  }
+}
+
+/* 加载动画 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.asset-card.loading .thumbnail-placeholder {
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-hover) 50%,
+    var(--bg-tertiary) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* 选中状态的动画 */
+.asset-card.selected .card-thumbnail::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-primary);
+  color: #000;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 16px;
+  z-index: 4;
+  animation: checkmark-pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes checkmark-pop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 当有AI指示器时，调整选中标记位置 */
+.asset-card.selected .ai-indicator {
+  display: none;
+}

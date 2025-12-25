@@ -407,6 +407,7 @@ class AssetManagerClass {
         page,
         pageSize,
         totalPages,
+        hasMore: page < totalPages,
         assets: paginatedAssets,
         errors: errors.length > 0 ? errors : undefined
       };
