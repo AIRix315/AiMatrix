@@ -119,7 +119,7 @@
 ---
 
 ## ⏳ Phase 4: MVP 核心功能
-**目标**: 最小可行性产品，能跑通"新建项目 -> 导入资源 -> 查看"流程。
+**目标**: 构建 Matrix 的通用“文件管理”与“逻辑编排”能力，最小可行性产品；能跑通"新建项目 -> 导入资源 -> 查看"流程。
 **状态**: 🔴 20% (资产库和工作流编辑器待实现)
 
 ### [ ] [E01] 资产库视图 (Assets页面)
@@ -128,6 +128,20 @@
     2.  实现资产导入功能。
     3.  实现资产预览功能。
     4.  连接到AssetManager服务。
+- 文件路径: src/renderer/pages/Assets/, src/main/services/AssetManager.ts
+- 核心目的: 实现“文件即资产”的统一视图。 无论是用户导入的图，还是 AI 生成的图，都必须在这里被索引和管理。
+- 执行动作:
+    1. 后端 (Backend): 完善 AssetManager.scan(path)。
+        - 要求: 必须递归扫描，识别 .png, .jpg, .txt, .json (Sidecar)。
+        - 要求: 必须集成 chokidar 实现文件系统监听，文件变动实时推送到前端。
+    2. 前端 (UI): 实现 AssetsPage 的 Grid 布局。
+        - 要求: 复用 Card 组件展示素材。
+        - 要求: 实现“懒加载 (Virtual Scroll)”，防止几千张图卡死界面。
+        - 要求: 实现“导入按钮”，调用 dialog.showOpenDialog 并复制文件到项目目录。
+    3. 预览 (Preview): 实现点击卡片弹出大图预览 Modal。
+- 修改标准: 界面不应包含任何“小说”特定的逻辑，它只是一个通用的素材管理器。
+- 预期结果: 往项目文件夹里随便丢一张图，Assets 页面在 1 秒内自动刷新显示该图。
+- CHANGELOG: feat(assets): implemented real-time asset grid with file system watcher
 
 ### [ ] [E02] 工作流编辑器 (Workflows页面)
 *   **任务**:
@@ -135,22 +149,73 @@
     2.  实现节点拖拽和连接。
     3.  集成工作流执行引擎。
     4.  工作流保存和加载。
+- 文件路径: src/renderer/pages/Workflows/, src/renderer/features/flow/
+- 核心目的: 实现可视化逻辑编排 UI。 虽然小说插件初期可能硬编码，但编辑器必须准备好，用于后续展示或修改逻辑。
+- 执行动作:
+    1. 集成引擎: 安装并配置 ReactFlow (或类似库)。
+    2. 节点开发: 封装基础节点组件 BaseNode (Input, Output, Handle)。
+    3. 布局实现: 实现左侧“工具箱 (Toolbox)”，中间“画布 (Canvas)”，右侧“属性面板 (Properties)”。
+    4. 数据流: 实现 nodes 和 edges 状态管理 (Zustand/Redux)，支持保存为 JSON。
+- 修改标准: 能拖拽节点、连线、删除、保存布局数据。暂不需要实现真实的后端执行引擎（由 Phase 6 完成）。
+- 预期结果: 打开页面，拖入一个“Start”节点和一个“End”节点，连上线，刷新页面后连线依然存在。
+- CHANGELOG: feat(workflow): integrated react-flow with drag-and-drop node editing
 
-### [ ] [E03] 插件管理完善 (Plugins页面)
+### [ ] [E03] 插件管理系统完善 (Plugins页面)
 *   **任务**:
     1.  实现插件安装流程。
     2.  插件市场集成。
     3.  官方/社区插件分级显示。
+- 文件路径: src/main/services/PluginManager.ts, src/renderer/pages/Plugins/
+- 核心目的: 确立插件加载标准。 “小说转视频”本身就是一个插件，必须通过标准方式加载，而不是写死在代码里。
+- 执行动作:
+    1. 定义协议: 制定 manifest.json 规范 (id, version, entryPoint)。
+    2. 加载器: 实现 PluginManager.loadPlugins()，扫描 plugins/ 目录。
+    3. UI展示: 在 Plugins 页面列出已安装插件（包括内置的 Novel 插件）。
+- 预期结果: 系统启动时，Console 输出 "Loaded plugin: novel-to-video"。
+- CHANGELOG: feat(core): implemented plugin loading system and manifest validation
 
 ---
 
-## ⏳ Phase 5: 交付前验证
+## Phase 5: 纵向业务整合 - 小说转视频 (Novel Plugin)
+目标: 作为第一个“官方插件”，调用 Phase 4 建立的 Asset/Workflow/Plugin 能力，跑通业务闭环。
+
+### [ ] [F01] 剧本解析逻辑 (Script Logic Integration)
+- 文件路径: src/main/features/novel/ (作为插件逻辑)
+- 核心目的: 验证 API 调用能力和文本处理能力。
+- 执行动作:
+    1. 调用 APIManager 进行剧本拆解 (Splitter)。
+    2. 关键: 拆解生成的文件夹结构 (Chapter/Scene) 必须能被 [E01] 资产库 自动识别并显示。
+- 验证: 运行解析后，去 Assets 页面搜索 "Scene"，能看到新生成的文件夹。
+- CHANGELOG: feat(novel): implemented script splitter utilizing core api services
+
+### [ ] [F02] 分镜生图与元数据 (Generation & Sidecar)
+- 文件路径: src/main/features/novel/generation/
+- 核心目的: 验证 TaskScheduler 和“伴生文件”规范。
+- 执行动作:
+    1. 提交 TXT2IMG 任务到 TaskScheduler。
+    2. 生成图片时，同步写入 .json Sidecar。
+    3. 关键: [E01] 资产库 的卡片必须能读取这个 .json，在 Tooltip 中显示 Prompt。
+- 验证: 只要小说插件生了图，Assets 页面的图片卡片上就应该出现一个小图标，提示“包含元数据”。
+- CHANGELOG: feat(novel): integrated image generation with sidecar metadata standard
+
+### [ ] [F03] 专用界面绑定 (Novel UI)
+- 文件路径: src/renderer/features/novel/
+- 核心目的: 提供特定业务的高效操作界面（区别于通用的 Workflow Editor）。
+- 执行动作:
+    1. 移植 V14 的 Sidebar 和 Storyboard。
+    2. 数据源替换: 强制让 Sidebar 读取 AssetManager 的索引数据，而不是私有 State。
+    3. 操作绑定: "生成"按钮不再直接调 API，而是通过 IPC 发送任务给 TaskScheduler。
+- CHANGELOG: ui(novel): ported specific novel interface utilizing platform managers
+
+---
+
+## ⏳ Phase 6: 交付前验证
 **状态**: ⏳ 待Phase 4完成后启动
 
-- [ ] **[F01] 规范自查**: 检查是否满足 docs/00-global-requirements-v1.0.0.md 的所有强制要求。
-- [ ] **[F02] 构建打包**: 生成 Windows 安装包 (.exe)。
-- [ ] **[F03] 端到端测试**: 完整用户流程验证。
-- [ ] **[F04] 性能优化**: 启动时间、内存占用、响应速度优化。
+- [ ] **[G01] 规范自查**: 检查是否满足 docs/00-global-requirements-v1.0.0.md 的所有强制要求。
+- [ ] **[G02] 构建打包**: 生成 Windows 安装包 (.exe)。
+- [ ] **[G03] 端到端测试**: 完整用户流程验证。
+- [ ] **[G04] 性能优化**: 启动时间、内存占用、响应速度优化。
 
 ---
 
@@ -158,35 +223,35 @@
 **目标**: 完善MVP服务的高级特性
 **预计时间**: 约10个工作日
 
-### [ ] [G01] PluginManager 增强
+### [ ] [H01] PluginManager 增强
 *   **任务**:
     1.  实现插件沙箱执行环境。
     2.  添加插件签名验证机制。
     3.  实现插件市场API集成。
     4.  完善官方/社区插件权限分级。
 
-### [ ] [G02] TaskScheduler 增强
+### [ ] [H02] TaskScheduler 增强
 *   **任务**:
     1.  实现任务队列持久化。
     2.  添加成本估算功能 (estimateCost)。
     3.  实现智能优先级调度算法。
     4.  支持任务断点续传。
 
-### [ ] [G03] APIManager 增强
+### [ ] [H03] APIManager 增强
 *   **任务**:
     1.  实现API使用量实时跟踪。
     2.  添加成本统计和分析功能。
     3.  实现智能路由选择机制。
     4.  支持更多AI服务提供商。
 
-### [ ] [G04] MCP和本地服务集成
+### [ ] [H04] MCP和本地服务集成
 *   **任务**:
     1.  替换mcp:* IPC处理器的模拟实现。
     2.  替换local:* IPC处理器的模拟实现。
     3.  实现真实的MCP协议通信。
     4.  集成本地服务管理功能。
 
-### [ ] [G05] 工作流执行引擎
+### [ ] [H05] 工作流执行引擎
 *   **任务**:
     1.  替换workflow:execute的演示数据。
     2.  实现真实的工作流执行逻辑。
@@ -199,7 +264,7 @@
 **目标**: 提升测试覆盖率至80%+
 **预计时间**: 约5个工作日
 
-### [ ] [H01] 服务层单元测试
+### [ ] [I01] 服务层单元测试
 *   **任务**:
     1.  ProjectManager单元测试。
     2.  AssetManager单元测试。
@@ -207,13 +272,13 @@
     4.  TaskScheduler单元测试。
     5.  APIManager单元测试。
 
-### [ ] [H02] IPC通信集成测试
+### [ ] [I02] IPC通信集成测试
 *   **任务**:
     1.  扩展IPC通信集成测试覆盖。
     2.  测试所有实际IPC处理器。
     3.  错误处理和边界条件测试。
 
-### [ ] [H03] 端到端测试
+### [ ] [I03] 端到端测试
 *   **任务**:
     1.  创建E2E测试框架。
     2.  完整用户流程测试。

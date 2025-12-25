@@ -1,660 +1,956 @@
 /**
- * 资产管理器实现
- * 
+ * 资产管理器（重构版）
+ *
+ * 核心功能：
+ * - JSON索引系统：快速查询和统计
+ * - 文件监听：自动检测文件变化并更新索引
+ * - 分页查询：支持大量资产的高效加载
+ * - 元数据管理：Sidecar JSON文件存储元数据
+ * - 导入/删除：支持级联删除
+ *
  * 遵循全局时间处理要求：
- * 任何涉及时间的文字写入、记录，必须先查询系统时间，
- * 使用函数查询或者MCP服务查询确认后，方可写入
- * 
- * 参考：docs/06-core-services-design-v1.0.1.md
+ * 任何涉及时间的文字写入、记录，必须先查询系统时间
+ *
+ * 参考：phase4-e01-asset-library-implementation-plan.md
  */
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { watch, FSWatcher } from 'chokidar';
 import { v4 as uuidv4 } from 'uuid';
+import { BrowserWindow } from 'electron';
+import { FileSystemService } from './FileSystemService';
+import { Logger } from './Logger';
 import { timeService } from './TimeService';
 import {
-  AssetManager as IAssetManager,
-  AssetConfig,
-  AssetScope,
+  AssetMetadata,
   AssetType,
-  AssetSearchQuery,
-  ServiceError,
-  LogEntry
-} from '../../common/types';
+  AssetScope,
+  AssetFilter,
+  AssetScanResult,
+  AssetIndex,
+  AssetCategory,
+  AssetImportParams,
+  AssetFileChangeEvent,
+  AspectRatio,
+  ResourceStatus
+} from '../../shared/types/asset';
 
 /**
- * 资产管理器实现类
+ * 资产管理器类（新实现）
  */
-export class AssetManager implements IAssetManager {
-  private projectAssets: Map<string, Map<string, AssetConfig>> = new Map(); // projectId -> assetId -> AssetConfig
-  private globalAssets: Map<string, AssetConfig> = new Map(); // assetId -> AssetConfig
-  private projectsPath: string;
-  private globalAssetsPath: string;
+class AssetManagerClass {
+  private fsService: FileSystemService;
+  private logger: Logger;
+  private watchers: Map<string, FSWatcher> = new Map();
+  private indexCache: Map<string, AssetIndex> = new Map();
   private isInitialized = false;
 
-  constructor() {
-    // 设置存储路径
-    this.projectsPath = path.join(process.cwd(), 'projects');
-    this.globalAssetsPath = path.join(process.cwd(), 'global-assets');
+  constructor(fsService: FileSystemService) {
+    this.fsService = fsService;
+    this.logger = new Logger();
   }
 
   /**
    * 初始化资产管理器
    */
-  public async initialize(): Promise<void> {
+  async initialize(): Promise<void> {
     try {
-      // 确保目录存在
-      await fs.mkdir(this.projectsPath, { recursive: true });
-      await fs.mkdir(this.globalAssetsPath, { recursive: true });
-      
-      // 加载现有资产
-      await this.loadAllAssets();
-      
+      await this.logger.info('初始化资产管理器', 'AssetManager');
+
+      // 确保FileSystemService已初始化
+      // 这里假设fsService在传入时已初始化
+
+      // 确保资产目录存在
+      await this.fsService.ensureDir(this.fsService.getGlobalAssetDir());
+
+      // 初始化全局资产的分类目录
+      const assetTypes: AssetType[] = ['image', 'video', 'audio', 'text', 'other'];
+      for (const type of assetTypes) {
+        await this.fsService.ensureDir(this.fsService.getGlobalAssetDir(type));
+      }
+
       this.isInitialized = true;
-      this.log('info', '资产管理器初始化完成');
+      await this.logger.info('资产管理器初始化完成', 'AssetManager');
     } catch (error) {
-      const serviceError: ServiceError = {
-        code: 'ASSET_MANAGER_INIT_FAILED',
-        message: `资产管理器初始化失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
-        service: 'AssetManager',
-        operation: 'initialize'
-      };
-      this.log('error', serviceError.message, serviceError);
-      throw serviceError;
+      await this.logger.error('资产管理器初始化失败', 'AssetManager', { error });
+      throw error;
     }
   }
 
   /**
    * 清理资产管理器
    */
-  public async cleanup(): Promise<void> {
+  async cleanup(): Promise<void> {
     try {
-      // 保存所有资产
-      await this.saveAllAssets();
-      
-      this.projectAssets.clear();
-      this.globalAssets.clear();
+      await this.logger.info('清理资产管理器', 'AssetManager');
+
+      // 停止所有文件监听
+      for (const [key, watcher] of this.watchers.entries()) {
+        await watcher.close();
+        await this.logger.debug('停止文件监听', 'AssetManager', { key });
+      }
+
+      this.watchers.clear();
+      this.indexCache.clear();
       this.isInitialized = false;
-      this.log('info', '资产管理器清理完成');
+
+      await this.logger.info('资产管理器清理完成', 'AssetManager');
     } catch (error) {
-      const serviceError: ServiceError = {
-        code: 'ASSET_MANAGER_CLEANUP_FAILED',
-        message: `资产管理器清理失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
-        service: 'AssetManager',
-        operation: 'cleanup'
-      };
-      this.log('error', serviceError.message, serviceError);
-      throw serviceError;
+      await this.logger.error('资产管理器清理失败', 'AssetManager', { error });
+      throw error;
     }
   }
 
+  // ========================================
+  // 索引管理
+  // ========================================
+
   /**
-   * 添加资产
+   * 构建资产索引
+   * @param projectId 可选的项目ID（不提供则构建全局索引）
    */
-  public async addAsset(
-    target: { scope: AssetScope; id: string },
-    assetData: Partial<AssetConfig>
-  ): Promise<AssetConfig> {
-    // 验证时间有效性
-    const isTimeValid = await timeService.validateTimeIntegrity();
-    if (!isTimeValid) {
-      const syncSuccess = await timeService.syncWithNTP();
-      if (!syncSuccess) {
-        throw new Error('时间验证失败，无法执行操作: addAsset');
-      }
-    }
-
-    if (!this.isInitialized) {
-      throw new Error('资产管理器未初始化');
-    }
-
+  async buildIndex(projectId?: string): Promise<AssetIndex> {
     try {
-      const assetId = assetData.id || uuidv4();
+      await this.logger.info('开始构建资产索引: ' + JSON.stringify({ projectId: projectId || 'global' }), 'AssetManager');
+
+      const indexPath = this.fsService.getAssetIndexPath(projectId);
+      const baseDir = projectId
+        ? this.fsService.getProjectAssetDir(projectId)
+        : this.fsService.getGlobalAssetDir();
+
+      // 确保基础目录存在
+      await this.fsService.ensureDir(baseDir);
+
+      // 初始化索引结构
       const currentTime = await timeService.getCurrentTime();
-      
-      const assetConfig: AssetConfig = {
-        id: assetId,
-        scope: target.scope,
-        type: assetData.type || AssetType.TEXT,
-        path: assetData.path || '',
-        metadata: assetData.metadata || {},
-        aiAttributes: assetData.aiAttributes,
-        tags: assetData.tags || [],
-        createdAt: currentTime,
-        updatedAt: currentTime,
-        ...assetData
+      const index: AssetIndex = {
+        projectId,
+        version: '1.0',
+        lastUpdated: currentTime.toISOString(),
+        statistics: {
+          total: 0,
+          byType: {},
+          byCategory: {}
+        },
+        categories: []
       };
 
-      // 保存到文件系统
-      await this.saveAssetConfig(target.scope, target.id, assetConfig);
-      
-      // 添加到内存
-      if (target.scope === AssetScope.PROJECT) {
-        if (!this.projectAssets.has(target.id)) {
-          this.projectAssets.set(target.id, new Map());
+      // 如果是项目索引，读取项目名称
+      if (projectId) {
+        const projectJsonPath = path.join(
+          path.dirname(path.dirname(baseDir)),
+          'project.json'
+        );
+        const projectData = await this.fsService.readJSON<{ name: string }>(projectJsonPath);
+        if (projectData) {
+          index.projectName = projectData.name;
         }
-        this.projectAssets.get(target.id)!.set(assetId, assetConfig);
-      } else {
-        this.globalAssets.set(assetId, assetConfig);
       }
-      
-      this.log('info', `资产添加成功: ${assetId} (${target.scope}:${target.id})`);
-      return assetConfig;
+
+      // 扫描所有子目录
+      const entries = await this.fsService.readDirWithFileTypes(baseDir);
+
+      for (const entry of entries) {
+        if (!entry.isDirectory) continue;
+
+        const categoryName = entry.name;
+        const categoryPath = path.join(baseDir, categoryName);
+
+        // 跳过特殊目录
+        if (categoryName === 'index.json' || categoryName.startsWith('.')) {
+          continue;
+        }
+
+        // 扫描该分类下的文件
+        const files = await this.scanDirectory(
+          categoryPath,
+          projectId ? 'project' : 'global',
+          projectId,
+          categoryName
+        );
+
+        if (files.length > 0) {
+          // 统计分类信息
+          const category: AssetCategory = {
+            name: categoryName,
+            count: files.length,
+            items: projectId ? files.map(f => f.name) : undefined
+          };
+
+          // 检测分类的主要类型
+          const typeCount: Partial<Record<AssetType, number>> = {};
+          files.forEach(file => {
+            typeCount[file.type] = (typeCount[file.type] || 0) + 1;
+          });
+          const dominantType = Object.entries(typeCount).sort((a, b) => b[1] - a[1])[0];
+          if (dominantType) {
+            category.type = dominantType[0] as AssetType;
+          }
+
+          index.categories.push(category);
+
+          // 更新统计信息
+          index.statistics.total += files.length;
+          index.statistics.byCategory = index.statistics.byCategory || {};
+          index.statistics.byCategory[categoryName] = files.length;
+
+          // 按类型统计
+          files.forEach(file => {
+            index.statistics.byType[file.type] =
+              (index.statistics.byType[file.type] || 0) + 1;
+          });
+        }
+      }
+
+      // 保存索引到文件
+      await this.fsService.saveJSON(indexPath, index);
+
+      // 缓存索引
+      const cacheKey = projectId || 'global';
+      this.indexCache.set(cacheKey, index);
+
+      await this.logger.info('资产索引构建完成', 'AssetManager', {
+        projectId: projectId || 'global',
+        total: index.statistics.total,
+        categories: index.categories.length
+      });
+
+      return index;
     } catch (error) {
-      const serviceError: ServiceError = {
-        code: 'ASSET_ADD_FAILED',
-        message: `添加资产失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
-        service: 'AssetManager',
-        operation: 'addAsset'
-      };
-      this.log('error', serviceError.message, serviceError);
-      throw serviceError;
+      await this.logger.error('构建资产索引失败: ' + JSON.stringify({ projectId, error }), 'AssetManager');
+      throw error;
     }
   }
 
   /**
-   * 获取资产
+   * 获取资产索引
+   * @param projectId 可选的项目ID
    */
-  public async getAsset(scope: AssetScope, containerId: string, assetId: string): Promise<AssetConfig> {
-    // 验证时间有效性
-    const isTimeValid = await timeService.validateTimeIntegrity();
-    if (!isTimeValid) {
-      const syncSuccess = await timeService.syncWithNTP();
-      if (!syncSuccess) {
-        throw new Error('时间验证失败，无法执行操作: getAsset');
-      }
-    }
-
-    if (!this.isInitialized) {
-      throw new Error('资产管理器未初始化');
-    }
-
+  async getIndex(projectId?: string): Promise<AssetIndex> {
     try {
-      // 检查内存中是否已存在
-      if (scope === AssetScope.PROJECT) {
-        const projectAssets = this.projectAssets.get(containerId);
-        if (projectAssets && projectAssets.has(assetId)) {
-          return projectAssets.get(assetId)!;
-        }
-      } else {
-        if (this.globalAssets.has(assetId)) {
-          return this.globalAssets.get(assetId)!;
-        }
+      const cacheKey = projectId || 'global';
+
+      // 尝试从缓存获取
+      if (this.indexCache.has(cacheKey)) {
+        return this.indexCache.get(cacheKey)!;
       }
 
-      // 从文件加载
-      const assetConfig = await this.loadAssetConfig(scope, containerId, assetId);
-      
-      // 添加到内存
-      if (scope === AssetScope.PROJECT) {
-        if (!this.projectAssets.has(containerId)) {
-          this.projectAssets.set(containerId, new Map());
-        }
-        this.projectAssets.get(containerId)!.set(assetId, assetConfig);
-      } else {
-        this.globalAssets.set(assetId, assetConfig);
+      // 尝试从文件读取
+      const indexPath = this.fsService.getAssetIndexPath(projectId);
+      const index = await this.fsService.readJSON<AssetIndex>(indexPath);
+
+      if (index) {
+        this.indexCache.set(cacheKey, index);
+        return index;
       }
-      
-      this.log('info', `资产获取成功: ${assetId} (${scope}:${containerId})`);
-      return assetConfig;
+
+      // 索引不存在，构建新索引
+      await this.logger.info('索引不存在，开始构建: ' + JSON.stringify({ projectId: cacheKey }), 'AssetManager');
+      return await this.buildIndex(projectId);
     } catch (error) {
-      const serviceError: ServiceError = {
-        code: 'ASSET_GET_FAILED',
-        message: `获取资产失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
-        service: 'AssetManager',
-        operation: 'getAsset'
-      };
-      this.log('error', serviceError.message, serviceError);
-      throw serviceError;
+      await this.logger.error('获取资产索引失败: ' + JSON.stringify({ projectId, error }), 'AssetManager');
+      throw error;
     }
   }
 
   /**
-   * 提升项目资产为全局资产
+   * 更新资产索引
+   * @param projectId 可选的项目ID
    */
-  public async promoteAssetToGlobal(projectId: string, assetId: string, category: string): Promise<AssetConfig> {
-    // 验证时间有效性
-    const isTimeValid = await timeService.validateTimeIntegrity();
-    if (!isTimeValid) {
-      const syncSuccess = await timeService.syncWithNTP();
-      if (!syncSuccess) {
-        throw new Error('时间验证失败，无法执行操作: promoteAssetToGlobal');
-      }
-    }
-
-    if (!this.isInitialized) {
-      throw new Error('资产管理器未初始化');
-    }
-
+  async updateIndex(projectId?: string): Promise<void> {
     try {
-      // 获取项目资产
-      const projectAsset = await this.getAsset(AssetScope.PROJECT, projectId, assetId);
-      
-      // 创建全局资产副本
-      const globalAsset: AssetConfig = {
-        ...projectAsset,
-        scope: AssetScope.GLOBAL,
-        updatedAt: await timeService.getCurrentTime()
-      };
-      
-      // 保存到全局资产
-      await this.saveAssetConfig(AssetScope.GLOBAL, category, globalAsset);
-      
-      // 添加到内存
-      this.globalAssets.set(assetId, globalAsset);
-      
-      // 创建提升记录
-      const promotionPath = path.join(this.globalAssetsPath, 'promotions', `${assetId}.json`);
-      await fs.mkdir(path.dirname(promotionPath), { recursive: true });
-      await fs.writeFile(promotionPath, JSON.stringify({
-        assetId,
+      await this.logger.debug('更新资产索引: ' + JSON.stringify({ projectId: projectId || 'global' }), 'AssetManager');
+      await this.buildIndex(projectId);
+    } catch (error) {
+      await this.logger.error('更新资产索引失败: ' + JSON.stringify({ projectId, error }), 'AssetManager');
+      // 不抛出错误，允许继续运行
+    }
+  }
+
+  // ========================================
+  // 扫描和查询
+  // ========================================
+
+  /**
+   * 扫描资产（分页）
+   * @param filter 过滤条件
+   */
+  async scanAssets(filter: AssetFilter): Promise<AssetScanResult> {
+    try {
+      const {
+        scope = 'all',
         projectId,
         category,
-        promotedAt: globalAsset.updatedAt.toISOString()
-      }), 'utf-8');
-      
-      this.log('info', `资产提升成功: ${assetId} (${projectId} -> global:${category})`);
-      return globalAsset;
-    } catch (error) {
-      const serviceError: ServiceError = {
-        code: 'ASSET_PROMOTE_FAILED',
-        message: `提升资产失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
-        service: 'AssetManager',
-        operation: 'promoteAssetToGlobal'
-      };
-      this.log('error', serviceError.message, serviceError);
-      throw serviceError;
-    }
-  }
+        type,
+        tags,
+        status,
+        search,
+        sortBy = 'modifiedAt',
+        sortOrder = 'desc',
+        page = 1,
+        pageSize = 100
+      } = filter;
 
-  /**
-   * 移除资产
-   */
-  public async removeAsset(scope: AssetScope, containerId: string, assetId: string): Promise<void> {
-    // 验证时间有效性
-    const isTimeValid = await timeService.validateTimeIntegrity();
-    if (!isTimeValid) {
-      const syncSuccess = await timeService.syncWithNTP();
-      if (!syncSuccess) {
-        throw new Error('时间验证失败，无法执行操作: removeAsset');
-      }
-    }
+      await this.logger.debug('扫描资产: ' + JSON.stringify({ filter }), 'AssetManager');
 
-    if (!this.isInitialized) {
-      throw new Error('资产管理器未初始化');
-    }
+      // 读取索引
+      const index = await this.getIndex(projectId);
 
-    try {
-      const asset = await this.getAsset(scope, containerId, assetId);
-      
-      // 删除文件
-      await fs.rm(asset.path, { recursive: true, force: true });
-      
-      // 从内存中移除
-      if (scope === AssetScope.PROJECT) {
-        const projectAssets = this.projectAssets.get(containerId);
-        if (projectAssets) {
-          projectAssets.delete(assetId);
-        }
-      } else {
-        this.globalAssets.delete(assetId);
-      }
-      
-      this.log('info', `资产删除成功: ${assetId} (${scope}:${containerId})`);
-    } catch (error) {
-      const serviceError: ServiceError = {
-        code: 'ASSET_REMOVE_FAILED',
-        message: `删除资产失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
-        service: 'AssetManager',
-        operation: 'removeAsset'
-      };
-      this.log('error', serviceError.message, serviceError);
-      throw serviceError;
-    }
-  }
-
-  /**
-   * 更新资产
-   */
-  public async updateAsset(scope: AssetScope, containerId: string, assetId: string, updates: Partial<AssetConfig>): Promise<void> {
-    // 验证时间有效性
-    const isTimeValid = await timeService.validateTimeIntegrity();
-    if (!isTimeValid) {
-      const syncSuccess = await timeService.syncWithNTP();
-      if (!syncSuccess) {
-        throw new Error('时间验证失败，无法执行操作: updateAsset');
-      }
-    }
-
-    if (!this.isInitialized) {
-      throw new Error('资产管理器未初始化');
-    }
-
-    try {
-      const asset = await this.getAsset(scope, containerId, assetId);
-      
-      // 更新资产
-      const updatedAsset: AssetConfig = {
-        ...asset,
-        ...updates,
-        updatedAt: await timeService.getCurrentTime()
-      };
-      
-      // 保存到文件系统
-      await this.saveAssetConfig(scope, containerId, updatedAsset);
-      
-      // 更新内存
-      if (scope === AssetScope.PROJECT) {
-        const projectAssets = this.projectAssets.get(containerId);
-        if (projectAssets) {
-          projectAssets.set(assetId, updatedAsset);
-        }
-      } else {
-        this.globalAssets.set(assetId, updatedAsset);
-      }
-      
-      this.log('info', `资产更新成功: ${assetId} (${scope}:${containerId})`);
-    } catch (error) {
-      const serviceError: ServiceError = {
-        code: 'ASSET_UPDATE_FAILED',
-        message: `更新资产失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
-        service: 'AssetManager',
-        operation: 'updateAsset'
-      };
-      this.log('error', serviceError.message, serviceError);
-      throw serviceError;
-    }
-  }
-
-  /**
-   * 搜索资产
-   */
-  public async searchAssets(scope: AssetScope, containerId: string, query: AssetSearchQuery): Promise<AssetConfig[]> {
-    // 验证时间有效性
-    const isTimeValid = await timeService.validateTimeIntegrity();
-    if (!isTimeValid) {
-      const syncSuccess = await timeService.syncWithNTP();
-      if (!syncSuccess) {
-        throw new Error('时间验证失败，无法执行操作: searchAssets');
-      }
-    }
-
-    if (!this.isInitialized) {
-      throw new Error('资产管理器未初始化');
-    }
-
-    try {
-      let allAssets: AssetConfig[] = [];
-      
-      if (scope === AssetScope.PROJECT) {
-        const projectAssets = this.projectAssets.get(containerId);
-        if (projectAssets) {
-          allAssets = Array.from(projectAssets.values());
-        }
-      } else {
-        allAssets = Array.from(this.globalAssets.values());
-      }
-      
-      // 应用搜索过滤
-      let filteredAssets = allAssets;
-      
-      if (query.type) {
-        filteredAssets = filteredAssets.filter(asset => asset.type === query.type);
-      }
-      
-      if (query.tags && query.tags.length > 0) {
-        filteredAssets = filteredAssets.filter(asset => 
-          query.tags!.some(tag => asset.tags.includes(tag))
+      // 筛选分类
+      let targetCategories = index.categories;
+      if (category) {
+        const categoryArray = Array.isArray(category) ? category : [category];
+        targetCategories = targetCategories.filter(c =>
+          categoryArray.includes(c.name)
         );
       }
-      
-      if (query.text) {
-        const searchText = query.text.toLowerCase();
-        filteredAssets = filteredAssets.filter(asset => 
-          asset.path.toLowerCase().includes(searchText) ||
-          asset.tags.some(tag => tag.toLowerCase().includes(searchText))
-        );
-      }
-      
-      if (query.dateRange) {
-        filteredAssets = filteredAssets.filter(asset => 
-          asset.createdAt >= query.dateRange!.start &&
-          asset.createdAt <= query.dateRange!.end
-        );
-      }
-      
-      // 应用分页
-      const offset = query.offset || 0;
-      const limit = query.limit || filteredAssets.length;
-      const paginatedAssets = filteredAssets.slice(offset, offset + limit);
-      
-      this.log('info', `资产搜索完成: ${scope}:${containerId}, 结果数量: ${paginatedAssets.length}`);
-      return paginatedAssets;
-    } catch (error) {
-      const serviceError: ServiceError = {
-        code: 'ASSET_SEARCH_FAILED',
-        message: `搜索资产失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
-        service: 'AssetManager',
-        operation: 'searchAssets'
-      };
-      this.log('error', serviceError.message, serviceError);
-      throw serviceError;
-    }
-  }
 
-  /**
-   * 获取资产预览
-   */
-  public async getAssetPreview(scope: AssetScope, containerId: string, assetId: string): Promise<string> {
-    // 验证时间有效性
-    const isTimeValid = await timeService.validateTimeIntegrity();
-    if (!isTimeValid) {
-      const syncSuccess = await timeService.syncWithNTP();
-      if (!syncSuccess) {
-        throw new Error('时间验证失败，无法执行操作: getAssetPreview');
-      }
-    }
+      // 加载资产元数据（分页）
+      const allAssets: AssetMetadata[] = [];
+      const errors: Array<{ path: string; error: string }> = [];
 
-    if (!this.isInitialized) {
-      throw new Error('资产管理器未初始化');
-    }
+      const baseDir = projectId
+        ? this.fsService.getProjectAssetDir(projectId)
+        : this.fsService.getGlobalAssetDir();
 
-    try {
-      const asset = await this.getAsset(scope, containerId, assetId);
-      
-      // 根据资产类型生成预览
-      let previewPath: string;
-      
-      switch (asset.type) {
-        case AssetType.IMAGE:
-          previewPath = asset.path.replace(/(\.[^.]+)$/, '_preview$1');
-          break;
-        case AssetType.VIDEO:
-          previewPath = asset.path.replace(/(\.[^.]+)$/, '_preview.jpg');
-          break;
-        case AssetType.AUDIO:
-          previewPath = asset.path.replace(/(\.[^.]+)$/, '_preview.jpg');
-          break;
-        default:
-          previewPath = asset.path;
-      }
-      
-      // 检查预览文件是否存在
-      try {
-        await fs.access(previewPath);
-        return previewPath;
-      } catch {
-        // 预览文件不存在，返回原文件
-        return asset.path;
-      }
-    } catch (error) {
-      const serviceError: ServiceError = {
-        code: 'ASSET_PREVIEW_FAILED',
-        message: `获取资产预览失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
-        service: 'AssetManager',
-        operation: 'getAssetPreview'
-      };
-      this.log('error', serviceError.message, serviceError);
-      throw serviceError;
-    }
-  }
+      for (const cat of targetCategories) {
+        const categoryPath = path.join(baseDir, cat.name);
+        const items = cat.items || [];
 
-  /**
-   * 加载所有资产
-   * @private
-   */
-  private async loadAllAssets(): Promise<void> {
-    try {
-      // 加载项目资产
-      const projectDirs = await fs.readdir(this.projectsPath, { withFileTypes: true });
-      
-      for (const dir of projectDirs) {
-        if (dir.isDirectory()) {
+        for (const fileName of items) {
           try {
-            const assetsPath = path.join(this.projectsPath, dir.name, 'assets');
-            const assetFiles = await fs.readdir(assetsPath);
-            
-            if (!this.projectAssets.has(dir.name)) {
-              this.projectAssets.set(dir.name, new Map());
-            }
-            
-            for (const file of assetFiles) {
-              if (file.endsWith('.json')) {
-                try {
-                  const assetData = JSON.parse(
-                    await fs.readFile(path.join(assetsPath, file), 'utf-8')
-                  );
-                  const assetConfig: AssetConfig = {
-                    ...assetData,
-                    createdAt: new Date(assetData.createdAt),
-                    updatedAt: new Date(assetData.updatedAt)
-                  };
-                  this.projectAssets.get(dir.name)!.set(assetConfig.id, assetConfig);
-                } catch (error) {
-                  this.log('warn', `跳过无效资产文件: ${file}, 错误: ${error}`);
-                }
+            const filePath = path.join(categoryPath, fileName);
+            const metadata = await this.getMetadata(filePath);
+
+            if (metadata) {
+              // 应用过滤器
+              let match = true;
+
+              if (type) {
+                const typeArray = Array.isArray(type) ? type : [type];
+                match = match && typeArray.includes(metadata.type);
+              }
+
+              if (tags && tags.length > 0) {
+                match = match && tags.some(tag => metadata.tags.includes(tag));
+              }
+
+              if (status) {
+                match = match && metadata.status === status;
+              }
+
+              if (search) {
+                const searchLower = search.toLowerCase();
+                match = match && (
+                  metadata.name.toLowerCase().includes(searchLower) ||
+                  metadata.tags.some(tag => tag.toLowerCase().includes(searchLower)) ||
+                  (metadata.description?.toLowerCase().includes(searchLower) || false)
+                );
+              }
+
+              if (match) {
+                allAssets.push(metadata);
               }
             }
           } catch (error) {
-            this.log('warn', `加载项目资产失败: ${dir.name}, 错误: ${error}`);
+            errors.push({
+              path: fileName,
+              error: error instanceof Error ? error.message : String(error)
+            });
           }
         }
       }
-      
-      // 加载全局资产
-      try {
-        const assetFiles = await fs.readdir(this.globalAssetsPath);
-        
-        for (const file of assetFiles) {
-          if (file.endsWith('.json')) {
-            try {
-              const assetData = JSON.parse(
-                await fs.readFile(path.join(this.globalAssetsPath, file), 'utf-8')
-              );
-              const assetConfig: AssetConfig = {
-                ...assetData,
-                createdAt: new Date(assetData.createdAt),
-                updatedAt: new Date(assetData.updatedAt)
-              };
-              this.globalAssets.set(assetConfig.id, assetConfig);
-            } catch (error) {
-              this.log('warn', `跳过无效全局资产文件: ${file}, 错误: ${error}`);
-            }
-          }
+
+      // 排序
+      allAssets.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortBy) {
+          case 'name':
+            aValue = a.name;
+            bValue = b.name;
+            break;
+          case 'createdAt':
+            aValue = new Date(a.createdAt);
+            bValue = new Date(b.createdAt);
+            break;
+          case 'modifiedAt':
+            aValue = new Date(a.modifiedAt);
+            bValue = new Date(b.modifiedAt);
+            break;
+          case 'size':
+            aValue = a.size;
+            bValue = b.size;
+            break;
+          default:
+            return 0;
         }
-      } catch (error) {
-        this.log('warn', `加载全局资产失败: ${error}`);
-      }
+
+        if (sortOrder === 'asc') {
+          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+        } else {
+          return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+        }
+      });
+
+      // 分页
+      const total = allAssets.length;
+      const totalPages = Math.ceil(total / pageSize);
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, total);
+      const paginatedAssets = allAssets.slice(startIndex, endIndex);
+
+      return {
+        total,
+        page,
+        pageSize,
+        totalPages,
+        assets: paginatedAssets,
+        errors: errors.length > 0 ? errors : undefined
+      };
     } catch (error) {
-      this.log('error', `加载资产失败: ${error}`);
+      await this.logger.error('扫描资产失败: ' + JSON.stringify({ filter, error }), 'AssetManager');
+      throw error;
     }
   }
 
   /**
-   * 保存所有资产
+   * 扫描目录中的资产
    * @private
    */
-  private async saveAllAssets(): Promise<void> {
+  private async scanDirectory(
+    dirPath: string,
+    scope: AssetScope,
+    projectId?: string,
+    category?: string
+  ): Promise<AssetMetadata[]> {
+    const assets: AssetMetadata[] = [];
+
     try {
-      // 保存项目资产
-      for (const [projectId, assets] of this.projectAssets.entries()) {
-        const assetsPath = path.join(this.projectsPath, projectId, 'assets');
-        await fs.mkdir(assetsPath, { recursive: true });
-        
-        const savePromises = Array.from(assets.values()).map(
-          asset => this.saveAssetConfig(AssetScope.PROJECT, projectId, asset)
-        );
-        await Promise.all(savePromises);
+      const files = await this.fsService.readDir(dirPath);
+
+      for (const file of files) {
+        // 跳过元数据文件和隐藏文件
+        if (this.shouldIgnoreFile(file)) {
+          continue;
+        }
+
+        const filePath = path.join(dirPath, file);
+        const stats = await fs.stat(filePath);
+
+        if (stats.isFile()) {
+          try {
+            const metadata = await this.getMetadata(filePath);
+            if (metadata) {
+              assets.push(metadata);
+            }
+          } catch (error) {
+            await this.logger.warn('读取资产元数据失败: ' + JSON.stringify({ filePath, error }), 'AssetManager');
+          }
+        }
       }
-      
-      // 保存全局资产
-      const savePromises = Array.from(this.globalAssets.values()).map(
-        asset => this.saveAssetConfig(AssetScope.GLOBAL, 'global', asset)
-      );
-      await Promise.all(savePromises);
     } catch (error) {
-      this.log('error', `批量保存资产失败: ${error}`);
+      await this.logger.error('扫描目录失败: ' + JSON.stringify({ dirPath, error }), 'AssetManager');
+    }
+
+    return assets;
+  }
+
+  // ========================================
+  // 元数据管理
+  // ========================================
+
+  /**
+   * 获取资产元数据
+   * @param filePath 文件路径
+   */
+  async getMetadata(filePath: string): Promise<AssetMetadata | null> {
+    try {
+      const normalizedPath = this.fsService.normalizePath(filePath);
+      const metadataPath = this.fsService.getAssetMetadataPath(normalizedPath);
+
+      // 尝试读取Sidecar元数据文件
+      const metadata = await this.fsService.readJSON<AssetMetadata>(metadataPath);
+
+      if (metadata) {
+        return metadata;
+      }
+
+      // 元数据不存在，创建默认元数据
+      await this.logger.debug('元数据不存在，创建默认元数据: ' + JSON.stringify({ filePath: normalizedPath }), 'AssetManager');
+
+      // 根据文件路径推断作用域和项目ID
+      const scope = normalizedPath.includes('/projects/') ? 'project' : 'global';
+      let projectId: string | undefined;
+      let category: string | undefined;
+
+      if (scope === 'project') {
+        const match = normalizedPath.match(/\/projects\/([^/]+)\//);
+        if (match) {
+          projectId = match[1];
+        }
+
+        const assetMatch = normalizedPath.match(/\/assets\/([^/]+)\//);
+        if (assetMatch) {
+          category = assetMatch[1];
+        }
+      } else {
+        const globalMatch = normalizedPath.match(/\/assets\/([^/]+)\//);
+        if (globalMatch) {
+          category = globalMatch[1];
+        }
+      }
+
+      return await this.createDefaultMetadata(
+        normalizedPath,
+        scope,
+        projectId,
+        category
+      );
+    } catch (error) {
+      await this.logger.error('获取资产元数据失败: ' + JSON.stringify({ filePath, error }), 'AssetManager');
+      return null;
     }
   }
 
   /**
-   * 保存资产配置
-   * @private
+   * 更新资产元数据
+   * @param filePath 文件路径
+   * @param updates 要更新的字段
    */
-  private async saveAssetConfig(scope: AssetScope, containerId: string, config: AssetConfig): Promise<void> {
-    let configPath: string;
-    
-    if (scope === AssetScope.PROJECT) {
-      configPath = path.join(this.projectsPath, containerId, 'assets', `${config.id}.json`);
-    } else {
-      configPath = path.join(this.globalAssetsPath, `${config.id}.json`);
+  async updateMetadata(
+    filePath: string,
+    updates: Partial<AssetMetadata>
+  ): Promise<AssetMetadata> {
+    try {
+      const normalizedPath = this.fsService.normalizePath(filePath);
+      const currentMetadata = await this.getMetadata(normalizedPath);
+
+      if (!currentMetadata) {
+        throw new Error(`资产不存在: ${normalizedPath}`);
+      }
+
+      // 合并更新
+      const currentTime = await timeService.getCurrentTime();
+      const updatedMetadata: AssetMetadata = {
+        ...currentMetadata,
+        ...updates,
+        modifiedAt: currentTime.toISOString()
+      };
+
+      // 保存更新后的元数据
+      const metadataPath = this.fsService.getAssetMetadataPath(normalizedPath);
+      await this.fsService.saveJSON(metadataPath, updatedMetadata);
+
+      await this.logger.info('资产元数据更新成功: ' + JSON.stringify({ filePath: normalizedPath }), 'AssetManager');
+
+      // 触发索引更新
+      await this.updateIndex(updatedMetadata.projectId);
+
+      return updatedMetadata;
+    } catch (error) {
+      await this.logger.error('更新资产元数据失败: ' + JSON.stringify({ filePath, updates, error }), 'AssetManager');
+      throw error;
     }
-    
-    await fs.mkdir(path.dirname(configPath), { recursive: true });
-    await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
   }
 
   /**
-   * 加载资产配置
+   * 创建默认元数据
    * @private
    */
-  private async loadAssetConfig(scope: AssetScope, containerId: string, assetId: string): Promise<AssetConfig> {
-    let configPath: string;
-    
-    if (scope === AssetScope.PROJECT) {
-      configPath = path.join(this.projectsPath, containerId, 'assets', `${assetId}.json`);
-    } else {
-      configPath = path.join(this.globalAssetsPath, `${assetId}.json`);
+  private async createDefaultMetadata(
+    filePath: string,
+    scope: AssetScope,
+    projectId?: string,
+    category?: string
+  ): Promise<AssetMetadata> {
+    const fileName = path.basename(filePath);
+    const fileInfo = await this.fsService.getFileInfo(filePath);
+    const assetType = this.detectAssetType(filePath);
+    const currentTime = await timeService.getCurrentTime();
+
+    const metadata: AssetMetadata = {
+      id: uuidv4(),
+      name: fileName,
+      filePath,
+      type: assetType,
+      category,
+      scope,
+      createdAt: fileInfo.createdAt,
+      modifiedAt: fileInfo.modifiedAt,
+      importedAt: currentTime.toISOString(),
+      size: fileInfo.size,
+      mimeType: fileInfo.mimeType,
+      extension: fileInfo.extension,
+      projectId,
+      tags: [],
+      status: 'none'
+    };
+
+    // 保存元数据
+    const metadataPath = this.fsService.getAssetMetadataPath(filePath);
+    await this.fsService.saveJSON(metadataPath, metadata);
+
+    return metadata;
+  }
+
+  // ========================================
+  // 导入和删除
+  // ========================================
+
+  /**
+   * 导入资产
+   * @param params 导入参数
+   */
+  async importAsset(params: AssetImportParams): Promise<AssetMetadata> {
+    try {
+      const {
+        sourcePath,
+        scope,
+        projectId,
+        category,
+        type,
+        tags = [],
+        metadata: extraMetadata = {}
+      } = params;
+
+      await this.logger.info('开始导入资产: ' + JSON.stringify({ sourcePath, scope, projectId, category }), 'AssetManager');
+
+      // 检查源文件是否存在
+      if (!(await this.fsService.exists(sourcePath))) {
+        throw new Error(`源文件不存在: ${sourcePath}`);
+      }
+
+      // 检测或验证资产类型
+      const assetType = type || this.detectAssetType(sourcePath);
+
+      // 确定目标目录
+      let targetDir: string;
+      if (scope === 'project') {
+        if (!projectId) {
+          throw new Error('项目作用域必须提供projectId');
+        }
+        targetDir = this.fsService.getProjectAssetDir(
+          projectId,
+          category || (assetType === 'image' ? 'images' : assetType + 's')
+        );
+      } else {
+        targetDir = this.fsService.getGlobalAssetDir(assetType);
+      }
+
+      // 确保目标目录存在
+      await this.fsService.ensureDir(targetDir);
+
+      // 复制文件到目标目录
+      const fileName = path.basename(sourcePath);
+      const targetPath = path.join(targetDir, fileName);
+
+      // 检查目标文件是否已存在
+      if (await this.fsService.exists(targetPath)) {
+        // 生成新文件名（添加时间戳）
+        const ext = path.extname(fileName);
+        const nameWithoutExt = path.basename(fileName, ext);
+        const timestamp = Date.now();
+        const newFileName = `${nameWithoutExt}_${timestamp}${ext}`;
+        const newTargetPath = path.join(targetDir, newFileName);
+
+        await this.fsService.copyFile(sourcePath, newTargetPath);
+        await this.logger.info(`文件已存在，使用新文件名: ${fileName} -> ${newFileName}`, 'AssetManager');
+
+        // 使用新路径创建元数据
+        return await this.createImportedMetadata(
+          newTargetPath,
+          scope,
+          projectId,
+          category,
+          assetType,
+          tags,
+          extraMetadata
+        );
+      } else {
+        await this.fsService.copyFile(sourcePath, targetPath);
+
+        // 创建元数据
+        return await this.createImportedMetadata(
+          targetPath,
+          scope,
+          projectId,
+          category,
+          assetType,
+          tags,
+          extraMetadata
+        );
+      }
+    } catch (error) {
+      await this.logger.error('导入资产失败: ' + JSON.stringify({ params, error }), 'AssetManager');
+      throw error;
     }
-    
-    const configData = await fs.readFile(configPath, 'utf-8');
-    const assetConfig: AssetConfig = JSON.parse(configData);
-    
-    // 转换日期字符串为Date对象
-    assetConfig.createdAt = new Date(assetConfig.createdAt);
-    assetConfig.updatedAt = new Date(assetConfig.updatedAt);
-    
-    return assetConfig;
   }
 
   /**
-   * 记录日志
+   * 创建导入资产的元数据
    * @private
    */
-  private log(level: LogEntry['level'], message: string, data?: any): void {
-    // eslint-disable-next-line no-console
-    console.log(`[AssetManager] ${level.toUpperCase()}: ${message}`, data || '');
+  private async createImportedMetadata(
+    filePath: string,
+    scope: AssetScope,
+    projectId: string | undefined,
+    category: string | undefined,
+    assetType: AssetType,
+    tags: string[],
+    extraMetadata: Partial<AssetMetadata>
+  ): Promise<AssetMetadata> {
+    const defaultMetadata = await this.createDefaultMetadata(
+      filePath,
+      scope,
+      projectId,
+      category
+    );
+
+    const metadata: AssetMetadata = {
+      ...defaultMetadata,
+      type: assetType,
+      tags,
+      ...extraMetadata
+    };
+
+    // 保存元数据
+    const metadataPath = this.fsService.getAssetMetadataPath(filePath);
+    await this.fsService.saveJSON(metadataPath, metadata);
+
+    // 更新索引
+    await this.updateIndex(projectId);
+
+    await this.logger.info('资产导入成功: ' + JSON.stringify({ filePath }), 'AssetManager');
+
+    return metadata;
+  }
+
+  /**
+   * 删除资产（级联删除）
+   * @param filePath 文件路径
+   * @param deleteMetadata 是否删除元数据文件（默认true）
+   */
+  async deleteAsset(filePath: string, deleteMetadata = true): Promise<void> {
+    try {
+      const normalizedPath = this.fsService.normalizePath(filePath);
+
+      await this.logger.info('开始删除资产: ' + JSON.stringify({ filePath: normalizedPath, deleteMetadata }), 'AssetManager');
+
+      // 获取元数据以便后续更新索引
+      const metadata = await this.getMetadata(normalizedPath);
+
+      // 删除文件
+      if (await this.fsService.exists(normalizedPath)) {
+        await this.fsService.deleteFile(normalizedPath);
+      }
+
+      // 删除元数据文件
+      if (deleteMetadata) {
+        const metadataPath = this.fsService.getAssetMetadataPath(normalizedPath);
+        if (await this.fsService.exists(metadataPath)) {
+          await this.fsService.deleteFile(metadataPath);
+        }
+      }
+
+      // 删除缩略图（如果存在）
+      if (metadata?.thumbnailPath) {
+        if (await this.fsService.exists(metadata.thumbnailPath)) {
+          await this.fsService.deleteFile(metadata.thumbnailPath);
+        }
+      }
+
+      await this.logger.info('资产删除成功: ' + JSON.stringify({ filePath: normalizedPath }), 'AssetManager');
+
+      // 更新索引
+      if (metadata) {
+        await this.updateIndex(metadata.projectId);
+      }
+    } catch (error) {
+      await this.logger.error('删除资产失败: ' + JSON.stringify({ filePath, error }), 'AssetManager');
+      throw error;
+    }
+  }
+
+  // ========================================
+  // 文件监听
+  // ========================================
+
+  /**
+   * 开始监听文件变化
+   * @param projectId 可选的项目ID
+   */
+  async startWatching(projectId?: string): Promise<void> {
+    try {
+      const watchKey = projectId || 'global';
+
+      // 检查是否已经在监听
+      if (this.watchers.has(watchKey)) {
+        await this.logger.warn('已经在监听该目录: ' + JSON.stringify({ watchKey }), 'AssetManager');
+        return;
+      }
+
+      const watchPath = projectId
+        ? this.fsService.getProjectAssetDir(projectId)
+        : this.fsService.getGlobalAssetDir();
+
+      await this.logger.info('开始文件监听: ' + JSON.stringify({ watchPath, watchKey }), 'AssetManager');
+
+      const watcher = watch(watchPath, {
+        ignored: this.shouldIgnoreFile.bind(this),
+        persistent: true,
+        ignoreInitial: true,
+        awaitWriteFinish: {
+          stabilityThreshold: 500,
+          pollInterval: 100
+        }
+      });
+
+      watcher
+        .on('add', (filePath: string) => {
+          this.handleFileChange('add', filePath, projectId);
+        })
+        .on('change', (filePath: string) => {
+          this.handleFileChange('change', filePath, projectId);
+        })
+        .on('unlink', (filePath: string) => {
+          this.handleFileChange('unlink', filePath, projectId);
+        })
+        .on('error', (error: Error) => {
+          this.logger.error('文件监听错误', 'AssetManager', { watchKey, error });
+        });
+
+      this.watchers.set(watchKey, watcher);
+    } catch (error) {
+      await this.logger.error('启动文件监听失败: ' + JSON.stringify({ projectId, error }), 'AssetManager');
+      throw error;
+    }
+  }
+
+  /**
+   * 停止监听文件变化
+   * @param projectId 可选的项目ID
+   */
+  async stopWatching(projectId?: string): Promise<void> {
+    try {
+      const watchKey = projectId || 'global';
+
+      const watcher = this.watchers.get(watchKey);
+      if (watcher) {
+        await watcher.close();
+        this.watchers.delete(watchKey);
+        await this.logger.info('停止文件监听: ' + JSON.stringify({ watchKey }), 'AssetManager');
+      }
+    } catch (error) {
+      await this.logger.error('停止文件监听失败: ' + JSON.stringify({ projectId, error }), 'AssetManager');
+      throw error;
+    }
+  }
+
+  /**
+   * 处理文件变化事件
+   * @private
+   */
+  private handleFileChange(
+    eventType: 'add' | 'change' | 'unlink',
+    filePath: string,
+    projectId?: string
+  ): void {
+    // 跳过元数据文件
+    if (this.shouldIgnoreFile(filePath)) {
+      return;
+    }
+
+    this.logger.debug('文件变化', 'AssetManager', { eventType, filePath, projectId });
+
+    // 更新索引（异步，不阻塞）
+    this.updateIndex(projectId).catch(error => {
+      this.logger.error('更新索引失败', 'AssetManager', { eventType, filePath, error });
+    });
+
+    // 通知渲染进程
+    const event: AssetFileChangeEvent = {
+      eventType,
+      filePath,
+      projectId
+    };
+
+    BrowserWindow.getAllWindows().forEach(window => {
+      window.webContents.send('asset:file-changed', event);
+    });
+  }
+
+  // ========================================
+  // 辅助方法
+  // ========================================
+
+  /**
+   * 检测资产类型
+   * @private
+   */
+  private detectAssetType(filePath: string): AssetType {
+    const ext = path.extname(filePath).toLowerCase();
+
+    const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
+    const videoExts = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv'];
+    const audioExts = ['.mp3', '.wav', '.aac', '.m4a', '.ogg', '.flac'];
+    const textExts = ['.txt', '.md', '.json', '.xml', '.csv', '.log'];
+
+    if (imageExts.includes(ext)) return 'image';
+    if (videoExts.includes(ext)) return 'video';
+    if (audioExts.includes(ext)) return 'audio';
+    if (textExts.includes(ext)) return 'text';
+
+    return 'other';
+  }
+
+  /**
+   * 检测宽高比
+   * @private
+   */
+  private detectAspectRatio(width: number, height: number): AspectRatio {
+    const ratio = width / height;
+    if (Math.abs(ratio - 0.75) < 0.01) return '3:4';
+    if (Math.abs(ratio - 1.33) < 0.01) return '4:3';
+    if (Math.abs(ratio - 1.78) < 0.01) return '16:9';
+    if (Math.abs(ratio - 0.56) < 0.01) return '9:16';
+    return 'custom';
+  }
+
+  /**
+   * 判断是否应该忽略文件
+   * @private
+   */
+  private shouldIgnoreFile(filePath: string): boolean {
+    const fileName = path.basename(filePath);
+
+    // 忽略隐藏文件
+    if (fileName.startsWith('.')) return true;
+
+    // 忽略元数据文件
+    if (fileName.endsWith('.meta.json')) return true;
+
+    // 忽略索引文件
+    if (fileName === 'index.json') return true;
+
+    // 忽略临时文件
+    if (fileName.endsWith('.tmp') || fileName.endsWith('.temp')) return true;
+
+    return false;
   }
 }
 
-// 导出单例实例
-export const assetManager = new AssetManager();
+// 导出单例实例（延迟初始化）
+let assetManagerInstance: AssetManagerClass | null = null;
+
+export function getAssetManager(fsService: FileSystemService): AssetManagerClass {
+  if (!assetManagerInstance) {
+    assetManagerInstance = new AssetManagerClass(fsService);
+  }
+  return assetManagerInstance;
+}
+
+// 导出类型别名
+export type AssetManager = AssetManagerClass;

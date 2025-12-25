@@ -85,37 +85,78 @@ contextBridge.exposeInMainWorld('electronAPI', {
   listProjects: (): Promise<any[]> => 
     ipcRenderer.invoke('project:list'),
 
-  // ==================== 资产相关 ====================
-  
+  // ==================== 资产相关（重构版） ====================
+
   /**
-   * 添加资产
+   * 获取资产索引
    */
-  addAsset: (scope: string, containerId: string, assetData: any): Promise<any> => 
-    ipcRenderer.invoke('asset:add', scope, containerId, assetData),
-  
+  getAssetIndex: (projectId?: string): Promise<any> =>
+    ipcRenderer.invoke('asset:get-index', projectId),
+
   /**
-   * 移除资产
+   * 重建资产索引
    */
-  removeAsset: (scope: string, containerId: string, assetId: string): Promise<void> => 
-    ipcRenderer.invoke('asset:remove', scope, containerId, assetId),
-  
+  rebuildAssetIndex: (projectId?: string): Promise<any> =>
+    ipcRenderer.invoke('asset:rebuild-index', projectId),
+
   /**
-   * 更新资产
+   * 扫描资产（分页）
    */
-  updateAsset: (scope: string, containerId: string, assetId: string, updates: any): Promise<void> => 
-    ipcRenderer.invoke('asset:update', scope, containerId, assetId, updates),
-  
+  scanAssets: (filter: any): Promise<any> =>
+    ipcRenderer.invoke('asset:scan', filter),
+
   /**
-   * 搜索资产
+   * 导入资产
    */
-  searchAssets: (scope: string, containerId: string, query: any): Promise<any[]> => 
-    ipcRenderer.invoke('asset:search', scope, containerId, query),
-  
+  importAsset: (params: any): Promise<any> =>
+    ipcRenderer.invoke('asset:import', params),
+
   /**
-   * 获取资产预览
+   * 删除资产
    */
-  getAssetPreview: (scope: string, containerId: string, assetId: string): Promise<string> => 
-    ipcRenderer.invoke('asset:preview', scope, containerId, assetId),
+  deleteAsset: (filePath: string): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke('asset:delete', filePath),
+
+  /**
+   * 获取资产元数据
+   */
+  getAssetMetadata: (filePath: string): Promise<any> =>
+    ipcRenderer.invoke('asset:get-metadata', filePath),
+
+  /**
+   * 更新资产元数据
+   */
+  updateAssetMetadata: (filePath: string, updates: any): Promise<any> =>
+    ipcRenderer.invoke('asset:update-metadata', filePath, updates),
+
+  /**
+   * 开始监听资产文件变化
+   */
+  startAssetWatching: (projectId?: string): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke('asset:start-watching', projectId),
+
+  /**
+   * 停止监听资产文件变化
+   */
+  stopAssetWatching: (projectId?: string): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke('asset:stop-watching', projectId),
+
+  /**
+   * 打开文件导入对话框
+   */
+  showImportDialog: (): Promise<string[]> =>
+    ipcRenderer.invoke('asset:show-import-dialog'),
+
+  /**
+   * 监听资产文件变化事件
+   */
+  onAssetFileChanged: (callback: (event: {
+    eventType: 'add' | 'change' | 'unlink';
+    filePath: string;
+    projectId?: string;
+  }) => void) => {
+    ipcRenderer.on('asset:file-changed', (_, data) => callback(data));
+  },
 
   // ==================== 工作流相关 ====================
   
@@ -424,11 +465,17 @@ declare global {
       saveProject: (projectId: string, config: any) => Promise<void>;
       deleteProject: (projectId: string) => Promise<void>;
       listProjects: () => Promise<any[]>;
-      addAsset: (scope: string, containerId: string, assetData: any) => Promise<any>;
-      removeAsset: (scope: string, containerId: string, assetId: string) => Promise<void>;
-      updateAsset: (scope: string, containerId: string, assetId: string, updates: any) => Promise<void>;
-      searchAssets: (scope: string, containerId: string, query: any) => Promise<any[]>;
-      getAssetPreview: (scope: string, containerId: string, assetId: string) => Promise<string>;
+      getAssetIndex: (projectId?: string) => Promise<any>;
+      rebuildAssetIndex: (projectId?: string) => Promise<any>;
+      scanAssets: (filter: any) => Promise<any>;
+      importAsset: (params: any) => Promise<any>;
+      deleteAsset: (filePath: string) => Promise<{ success: boolean }>;
+      getAssetMetadata: (filePath: string) => Promise<any>;
+      updateAssetMetadata: (filePath: string, updates: any) => Promise<any>;
+      startAssetWatching: (projectId?: string) => Promise<{ success: boolean }>;
+      stopAssetWatching: (projectId?: string) => Promise<{ success: boolean }>;
+      showImportDialog: () => Promise<string[]>;
+      onAssetFileChanged: (callback: (event: { eventType: 'add' | 'change' | 'unlink'; filePath: string; projectId?: string }) => void) => void;
       executeWorkflow: (config: any) => Promise<string>;
       getWorkflowStatus: (jobId: string) => Promise<any>;
       cancelWorkflow: (jobId: string) => Promise<void>;

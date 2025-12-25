@@ -5,7 +5,8 @@ import * as path from 'path';
 import { WindowManager } from './window';
 import { IPCManager } from './ipc/channels';
 import { ProjectManager } from './services/ProjectManager';
-import { AssetManager } from './services/AssetManager';
+import { FileSystemService, fileSystemService } from './services/FileSystemService';
+import { AssetManager, getAssetManager } from './services/AssetManager';
 import { getSafePath } from './utils/security';
 import { logger } from './services/Logger';
 import { pluginManager } from './services/PluginManager';
@@ -16,6 +17,7 @@ class MatrixApp {
   private windowManager: WindowManager;
   private ipcManager: IPCManager;
   private projectManager: ProjectManager;
+  private fileSystemService: FileSystemService;
   private assetManager: AssetManager;
   private fileWatchers: Map<string, fsSync.FSWatcher> = new Map();
 
@@ -23,7 +25,8 @@ class MatrixApp {
     this.windowManager = new WindowManager();
     this.ipcManager = new IPCManager();
     this.projectManager = new ProjectManager();
-    this.assetManager = new AssetManager();
+    this.fileSystemService = fileSystemService;
+    this.assetManager = getAssetManager(this.fileSystemService);
 
     this.initializeEventListeners();
   }
@@ -75,6 +78,10 @@ class MatrixApp {
   private async initializeServices(): Promise<void> {
     await logger.info('Initializing Matrix services', 'MatrixApp');
 
+    // 优先初始化文件系统服务
+    await this.fileSystemService.initialize();
+
+    // 初始化其他服务
     await this.projectManager.initialize();
     await this.assetManager.initialize();
     await pluginManager.initialize();
@@ -128,12 +135,64 @@ class MatrixApp {
     ipcMain.handle('project:delete', (_, projectId) => this.projectManager.deleteProject(projectId));
     ipcMain.handle('project:list', () => this.projectManager.listProjects());
 
-    // 资产相关IPC处理
-    ipcMain.handle('asset:add', (_, scope, containerId, assetData) => this.assetManager.addAsset({ scope, id: containerId }, assetData));
-    ipcMain.handle('asset:remove', (_, scope, containerId, assetId) => this.assetManager.removeAsset(scope, containerId, assetId));
-    ipcMain.handle('asset:update', (_, scope, containerId, assetId, updates) => this.assetManager.updateAsset(scope, containerId, assetId, updates));
-    ipcMain.handle('asset:search', (_, scope, containerId, query) => this.assetManager.searchAssets(scope, containerId, query));
-    ipcMain.handle('asset:preview', (_, scope, containerId, assetId) => this.assetManager.getAssetPreview(scope, containerId, assetId));
+    // 资产相关IPC处理（重构版）
+    // === 索引管理 ===
+    ipcMain.handle('asset:get-index', async (_, projectId?: string) => {
+      return await this.assetManager.getIndex(projectId);
+    });
+    ipcMain.handle('asset:rebuild-index', async (_, projectId?: string) => {
+      return await this.assetManager.buildIndex(projectId);
+    });
+
+    // === 扫描资产（分页） ===
+    ipcMain.handle('asset:scan', async (_, filter) => {
+      return await this.assetManager.scanAssets(filter);
+    });
+
+    // === 导入资产 ===
+    ipcMain.handle('asset:import', async (_, params) => {
+      return await this.assetManager.importAsset(params);
+    });
+
+    // === 删除资产 ===
+    ipcMain.handle('asset:delete', async (_, filePath: string) => {
+      await this.assetManager.deleteAsset(filePath);
+      return { success: true };
+    });
+
+    // === 元数据管理 ===
+    ipcMain.handle('asset:get-metadata', async (_, filePath: string) => {
+      return await this.assetManager.getMetadata(filePath);
+    });
+    ipcMain.handle('asset:update-metadata', async (_, filePath: string, updates) => {
+      return await this.assetManager.updateMetadata(filePath, updates);
+    });
+
+    // === 文件监听 ===
+    ipcMain.handle('asset:start-watching', async (_, projectId?: string) => {
+      await this.assetManager.startWatching(projectId);
+      return { success: true };
+    });
+    ipcMain.handle('asset:stop-watching', async (_, projectId?: string) => {
+      await this.assetManager.stopWatching(projectId);
+      return { success: true };
+    });
+
+    // === 打开文件选择对话框 ===
+    ipcMain.handle('asset:show-import-dialog', async () => {
+      const { dialog } = require('electron');
+      const result = await dialog.showOpenDialog({
+        properties: ['openFile', 'multiSelections'],
+        filters: [
+          { name: '所有文件', extensions: ['*'] },
+          { name: '图片', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'] },
+          { name: '视频', extensions: ['mp4', 'mov', 'avi', 'mkv', 'webm'] },
+          { name: '音频', extensions: ['mp3', 'wav', 'aac', 'm4a', 'ogg'] },
+          { name: '文本', extensions: ['txt', 'md', 'json', 'xml', 'csv'] }
+        ]
+      });
+      return result.filePaths;
+    });
 
     // 工作流相关IPC处理
     ipcMain.handle('workflow:execute', async (_, config) => {
