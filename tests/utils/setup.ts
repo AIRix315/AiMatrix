@@ -1,35 +1,42 @@
 /**
- * Jest 测试环境设置
+ * Vitest 测试环境设置
  * Mock Electron 模块以支持集成测试
  */
 
+import { vi } from 'vitest';
+
 // Mock Electron
-jest.mock('electron', () => {
+vi.mock('electron', () => {
   const mockApp = {
-    whenReady: jest.fn().mockResolvedValue(true),
-    getVersion: jest.fn().mockReturnValue('0.1.0'),
-    quit: jest.fn().mockResolvedValue(true),
-    on: jest.fn(),
-    isReady: jest.fn().mockReturnValue(true)
+    whenReady: vi.fn().mockResolvedValue(true),
+    getVersion: vi.fn().mockReturnValue('0.1.0'),
+    quit: vi.fn().mockResolvedValue(true),
+    on: vi.fn(),
+    isReady: vi.fn().mockReturnValue(true),
+    getPath: vi.fn((name: string) => {
+      if (name === 'userData') return '/tmp/test-user-data';
+      if (name === 'appData') return '/tmp/test-app-data';
+      return '/tmp/test-path';
+    })
   };
 
-  const mockBrowserWindow = jest.fn().mockImplementation(() => ({
-    loadURL: jest.fn().mockResolvedValue(true),
-    on: jest.fn(),
+  const mockBrowserWindow = vi.fn().mockImplementation(() => ({
+    loadURL: vi.fn().mockResolvedValue(true),
+    on: vi.fn(),
     webContents: {
-      send: jest.fn()
+      send: vi.fn()
     },
-    close: jest.fn(),
-    show: jest.fn(),
-    hide: jest.fn()
+    close: vi.fn(),
+    show: vi.fn(),
+    hide: vi.fn()
   }));
 
   const mockIpcMain = {
-    handle: jest.fn(),
-    on: jest.fn(),
-    removeHandler: jest.fn(),
-    removeAllListeners: jest.fn(),
-    listenerCount: jest.fn().mockReturnValue(1)
+    handle: vi.fn(),
+    on: vi.fn(),
+    removeHandler: vi.fn(),
+    removeAllListeners: vi.fn(),
+    listenerCount: vi.fn().mockReturnValue(1)
   };
 
   return {
@@ -37,12 +44,13 @@ jest.mock('electron', () => {
     BrowserWindow: mockBrowserWindow,
     ipcMain: mockIpcMain,
     ipcRenderer: {
-      invoke: jest.fn(),
-      on: jest.fn(),
-      removeListener: jest.fn()
+      invoke: vi.fn(),
+      on: vi.fn(),
+      removeListener: vi.fn()
+    },
+    protocol: {
+      registerSchemesAsPrivileged: vi.fn(),
+      handle: vi.fn()
     }
   };
 });
-
-// 设置测试超时
-jest.setTimeout(10000);

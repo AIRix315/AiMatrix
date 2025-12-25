@@ -39,7 +39,7 @@ import {
 /**
  * 资产管理器类（新实现）
  */
-class AssetManagerClass {
+export class AssetManagerClass {
   private fsService: FileSystemService;
   private logger: Logger;
   private watchers: Map<string, FSWatcher> = new Map();
@@ -175,7 +175,7 @@ class AssetManagerClass {
           const category: AssetCategory = {
             name: categoryName,
             count: files.length,
-            items: projectId ? files.map(f => f.name) : undefined
+            items: files.map(f => f.name)
           };
 
           // 检测分类的主要类型
