@@ -74,9 +74,9 @@ export function AssetCard({
 
   // 根据文件路径获取本地文件URL
   const getLocalFileUrl = (filePath: string): string => {
-    // 使用自定义协议 local-file:// 或转换为 file:// URL
-    // TODO: Phase 2.6 将实现自定义协议处理
-    return filePath.replace(/\\/g, '/');
+    // 使用 asset:// 协议安全访问本地文件
+    // 协议处理器会验证路径安全性
+    return `asset://${filePath.replace(/\\/g, '/')}`;
   };
 
   // 是否显示缩略图

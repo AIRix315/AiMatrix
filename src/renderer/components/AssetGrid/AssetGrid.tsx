@@ -23,6 +23,7 @@ interface AssetGridProps {
   onAssetSelect?: (asset: AssetMetadata, multiSelect: boolean) => void;
   onAssetPreview?: (asset: AssetMetadata) => void;
   onAssetDelete?: (asset: AssetMetadata) => void;
+  onAssetsLoaded?: (assets: AssetMetadata[]) => void; // 资产加载完成回调
   columnsCount?: number; // 可选：强制指定列数
 }
 
@@ -33,6 +34,7 @@ export function AssetGrid({
   onAssetSelect,
   onAssetPreview,
   onAssetDelete,
+  onAssetsLoaded,
   columnsCount
 }: AssetGridProps) {
   const [assets, setAssets] = useState<AssetMetadata[]>([]);
@@ -66,9 +68,12 @@ export function AssetGrid({
       setCurrentPage(page);
 
       if (append) {
-        setAssets(prev => [...prev, ...result.assets]);
+        const newAssets = [...assets, ...result.assets];
+        setAssets(newAssets);
+        onAssetsLoaded?.(newAssets);
       } else {
         setAssets(result.assets);
+        onAssetsLoaded?.(result.assets);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '加载资产失败';

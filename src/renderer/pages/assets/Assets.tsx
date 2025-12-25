@@ -14,6 +14,7 @@ import React, { useState, useCallback } from 'react';
 import { AssetMetadata, AssetFilter } from '../../../shared/types/asset';
 import { AssetSidebar } from '../../components/AssetSidebar';
 import { AssetGrid } from '../../components/AssetGrid';
+import { AssetPreview } from '../../components/AssetPreview/AssetPreview';
 import './Assets.css';
 
 export function Assets() {
@@ -22,6 +23,8 @@ export function Assets() {
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'name' | 'createdAt' | 'modifiedAt' | 'size'>('modifiedAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [previewAsset, setPreviewAsset] = useState<AssetMetadata | null>(null);
+  const [allAssets, setAllAssets] = useState<AssetMetadata[]>([]);
 
   // 构建过滤器
   const getFilter = useCallback((): AssetFilter => {
@@ -73,8 +76,43 @@ export function Assets() {
 
   // 处理资产预览
   const handleAssetPreview = (asset: AssetMetadata) => {
-    // TODO: Phase 2.5 实现预览Modal
-    console.log('预览资产:', asset);
+    setPreviewAsset(asset);
+  };
+
+  // 关闭预览
+  const handleClosePreview = () => {
+    setPreviewAsset(null);
+  };
+
+  // 预览下一个资产
+  const handleNextAsset = () => {
+    if (!previewAsset || allAssets.length === 0) return;
+    const currentIndex = allAssets.findIndex(a => a.id === previewAsset.id);
+    if (currentIndex < allAssets.length - 1) {
+      setPreviewAsset(allAssets[currentIndex + 1]);
+    }
+  };
+
+  // 预览上一个资产
+  const handlePrevAsset = () => {
+    if (!previewAsset || allAssets.length === 0) return;
+    const currentIndex = allAssets.findIndex(a => a.id === previewAsset.id);
+    if (currentIndex > 0) {
+      setPreviewAsset(allAssets[currentIndex - 1]);
+    }
+  };
+
+  // 更新资产元数据
+  const handleUpdateAsset = async (updates: Partial<AssetMetadata>) => {
+    if (!previewAsset) return;
+    try {
+      await window.electronAPI.updateAssetMetadata(previewAsset.filePath, updates);
+      // 更新本地状态
+      setPreviewAsset({ ...previewAsset, ...updates });
+    } catch (err) {
+      console.error('更新元数据失败:', err);
+      alert('更新失败: ' + (err instanceof Error ? err.message : '未知错误'));
+    }
   };
 
   // 处理资产删除
@@ -182,8 +220,21 @@ export function Assets() {
           onAssetSelect={handleAssetSelect}
           onAssetPreview={handleAssetPreview}
           onAssetDelete={handleAssetDelete}
+          onAssetsLoaded={setAllAssets}
         />
       </div>
+
+      {/* 资产预览 Modal */}
+      {previewAsset && (
+        <AssetPreview
+          asset={previewAsset}
+          isOpen={!!previewAsset}
+          onClose={handleClosePreview}
+          onNext={allAssets.length > 1 ? handleNextAsset : undefined}
+          onPrev={allAssets.length > 1 ? handlePrevAsset : undefined}
+          onUpdate={handleUpdateAsset}
+        />
+      )}
     </div>
   );
 }

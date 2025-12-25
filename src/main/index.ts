@@ -1,7 +1,8 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol } from 'electron';
 import { promises as fs } from 'fs';
 import * as fsSync from 'fs';
 import * as path from 'path';
+import * as mimeTypes from 'mime-types';
 import { WindowManager } from './window';
 import { IPCManager } from './ipc/channels';
 import { ProjectManager } from './services/ProjectManager';
@@ -12,6 +13,19 @@ import { logger } from './services/Logger';
 import { pluginManager } from './services/PluginManager';
 import { taskScheduler } from './services/TaskScheduler';
 import { apiManager } from './services/APIManager';
+
+// 注册自定义协议为特权协议（必须在 app.ready 之前）
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'asset',
+    privileges: {
+      secure: true,
+      supportFetchAPI: true,
+      bypassCSP: false,
+      corsEnabled: false
+    }
+  }
+]);
 
 class MatrixApp {
   private windowManager: WindowManager;
@@ -62,6 +76,9 @@ class MatrixApp {
       // 初始化服务
       await this.initializeServices();
 
+      // 注册自定义协议处理器
+      this.registerCustomProtocols();
+
       // 创建主窗口
       this.windowManager.createMainWindow();
 
@@ -89,6 +106,70 @@ class MatrixApp {
     await apiManager.initialize();
 
     await logger.info('All Matrix services initialized successfully', 'MatrixApp');
+  }
+
+  /**
+   * 注册自定义协议处理器
+   * asset:// - 用于安全访问本地资产文件
+   */
+  private registerCustomProtocols(): void {
+    protocol.handle('asset', async (request) => {
+      try {
+        // 解析 URL: asset://filepath
+        const url = new URL(request.url);
+        const filePath = decodeURIComponent(url.pathname);
+
+        // 路径安全验证
+        const dataDir = this.fileSystemService.getDataDir();
+        const normalizedPath = path.normalize(filePath);
+        const absolutePath = path.isAbsolute(normalizedPath)
+          ? normalizedPath
+          : path.join(dataDir, normalizedPath);
+
+        // 验证路径是否在允许的目录内
+        if (!absolutePath.startsWith(dataDir)) {
+          await logger.warn(`Blocked access to file outside data directory: ${absolutePath}`, 'ProtocolHandler');
+          return new Response('Access Denied', {
+            status: 403,
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        }
+
+        // 检查文件是否存在
+        try {
+          await fs.access(absolutePath);
+        } catch {
+          await logger.warn(`File not found: ${absolutePath}`, 'ProtocolHandler');
+          return new Response('File Not Found', {
+            status: 404,
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        }
+
+        // 读取文件
+        const fileData = await fs.readFile(absolutePath);
+
+        // 获取 MIME 类型
+        const mimeType = mimeTypes.lookup(absolutePath) || 'application/octet-stream';
+
+        // 返回响应（将 Buffer 转换为 Uint8Array）
+        return new Response(new Uint8Array(fileData), {
+          status: 200,
+          headers: {
+            'Content-Type': mimeType,
+            'Cache-Control': 'max-age=3600'
+          }
+        });
+      } catch (error) {
+        await logger.error(`Protocol handler error: ${error}`, 'ProtocolHandler');
+        return new Response('Internal Server Error', {
+          status: 500,
+          headers: { 'Content-Type': 'text/plain' }
+        });
+      }
+    });
+
+    logger.info('Custom protocol registered: asset://', 'MatrixApp');
   }
 
   private setupIPCHandlers(): void {
