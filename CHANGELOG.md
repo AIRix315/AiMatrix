@@ -182,6 +182,53 @@ Closes #123
 - 安全补丁支持所有维护版本
 - 严重漏洞发布独立安全更新
 
+## [0.2.3] - 2025-12-25
+
+### Added
+- feat(asset): 完整实现资产库系统 (Phase 4 E01)
+  - FileSystemService：统一文件系统服务，支持路径管理、文件操作、JSON读写
+  - AssetManager：资产管理器，支持索引、扫描、导入、删除、元数据管理
+  - 11个asset:* IPC处理器：get-index、rebuild-index、scan、import、delete、get-metadata、update-metadata等
+  - AssetPreview Modal组件：多格式预览（图片/视频/音频/文本）、元数据显示、标签管理、键盘导航
+  - asset:// 自定义协议：安全的本地文件访问、MIME类型检测、缓存控制
+- feat(test): 实现完整测试套件 (48个测试, 100%通过)
+  - 从Jest迁移到Vitest 3.2.4
+  - FileSystemService集成测试：22个测试覆盖所有功能
+  - AssetManager集成测试：26个测试覆盖完整业务流程
+  - IPC处理器单元测试：验证所有资产相关处理器
+  - Mock Electron环境：app、BrowserWindow、ipcMain、protocol
+
+### Changed
+- refactor(test): 测试框架从Jest迁移到Vitest
+  - 配置vitest.config.ts（Node环境、集成测试支持）
+  - 更新package.json测试脚本（test、test:unit、test:integration）
+  - 修复tests/utils/setup.ts的Electron Mock（vi.mock语法）
+
+### Fixed
+- fix(asset): AssetManager全局索引存储items列表
+  - 修复scanAssets无法找到资产的问题（line 178）
+- fix(asset): 导出AssetManagerClass
+  - 允许在测试中实例化AssetManager（line 42）
+- fix(test): 修正测试路径期望
+  - 实际实现使用`assets`、`images`、`videos`（复数形式）
+  - 项目资产路径为`projects/{id}/assets`而非`assets/projects/{id}`
+- fix(test): 删除过时的IPCCommunication.test.ts
+
+### Test
+- test(asset): FileSystemService完整覆盖
+  - 初始化和目录创建、路径管理、文件操作、JSON读写、错误处理
+- test(asset): AssetManager完整覆盖
+  - 索引管理、资产扫描（类型/分类/标签/搜索/排序/分页）
+  - 资产导入/删除、元数据管理、错误处理
+- test(integration): 测试隔离策略
+  - 每个测试独立临时目录
+  - beforeEach创建、afterEach清理
+
+### Performance
+- perf(asset): JSON索引系统实现快速查询
+  - 避免每次扫描遍历整个文件系统
+  - 统计信息（total、byType、byCategory）快速获取
+
 ## [0.2.0] - 2025-12-24
 
 ### Added
