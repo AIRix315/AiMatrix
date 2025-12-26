@@ -52,6 +52,7 @@ const WorkflowEditor: React.FC = () => {
         setEdges(workflow.edges || []);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load workflow:', error);
       setToast({
         type: 'error',
@@ -79,6 +80,7 @@ const WorkflowEditor: React.FC = () => {
 
       // 如果有警告，也显示给用户（但不阻塞保存）
       if (validation.warnings.length > 0) {
+        // eslint-disable-next-line no-console
         console.warn('工作流警告:', validation.warnings);
       }
 
@@ -108,6 +110,7 @@ const WorkflowEditor: React.FC = () => {
         }
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to save workflow:', error);
       setToast({
         type: 'error',
@@ -155,6 +158,7 @@ const WorkflowEditor: React.FC = () => {
           }
         }
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to get workflow status:', error);
         clearInterval(interval);
         setIsExecuting(false);
@@ -182,6 +186,7 @@ const WorkflowEditor: React.FC = () => {
 
       // 如果有警告，显示但继续执行
       if (validation.warnings.length > 0) {
+        // eslint-disable-next-line no-console
         console.warn('工作流警告:', validation.warnings);
       }
 
@@ -206,6 +211,7 @@ const WorkflowEditor: React.FC = () => {
         startStatusPolling(jobId);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to execute workflow:', error);
       setToast({
         type: 'error',

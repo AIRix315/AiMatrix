@@ -25,7 +25,7 @@ const Workflows: React.FC = () => {
       if (window.electronAPI?.listWorkflows) {
         const workflowList = await window.electronAPI.listWorkflows();
         // 转换后端数据格式为前端格式
-        const formattedWorkflows: Workflow[] = workflowList.map((w: any) => ({
+        const formattedWorkflows: Workflow[] = workflowList.map((w) => ({
           id: w.id,
           name: w.name,
           description: w.description || '暂无描述',
@@ -36,6 +36,7 @@ const Workflows: React.FC = () => {
         setWorkflows(formattedWorkflows);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load workflows:', error);
       // 加载失败时显示空状态
       setWorkflows([]);
