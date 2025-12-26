@@ -141,7 +141,6 @@
     3. 预览 (Preview): 实现点击卡片弹出大图预览 Modal。
 - 修改标准: 界面不应包含任何“小说”特定的逻辑，它只是一个通用的素材管理器。
 - 预期结果: 往项目文件夹里随便丢一张图，Assets 页面在 1 秒内自动刷新显示该图。
-- CHANGELOG: feat(assets): implemented real-time asset grid with file system watcher
 
 ### [*] [E02] 工作流编辑器 (Workflows页面)
 *   **任务**:
@@ -158,7 +157,6 @@
     4. 数据流: 实现 nodes 和 edges 状态管理 (Zustand/Redux)，支持保存为 JSON。
 - 修改标准: 能拖拽节点、连线、删除、保存布局数据。暂不需要实现真实的后端执行引擎（由 Phase 6 完成）。
 - 预期结果: 打开页面，拖入一个“Start”节点和一个“End”节点，连上线，刷新页面后连线依然存在。
-- CHANGELOG: feat(workflow): integrated react-flow with drag-and-drop node editing
 
 ### [*] [E03] 插件管理系统完善 (Plugins页面)
 *   **任务**:
@@ -172,117 +170,169 @@
     2. 加载器: 实现 PluginManager.loadPlugins()，扫描 plugins/ 目录。
     3. UI展示: 在 Plugins 页面列出已安装插件（包括内置的 Novel 插件）。
 - 预期结果: 系统启动时，Console 输出 "Loaded plugin: novel-to-video"。
-- CHANGELOG: feat(core): implemented plugin loading system and manifest validation
 
 ---
 
-## Phase 5: 纵向业务整合 - 小说转视频 (Novel Plugin)
-目标: 作为第一个“官方插件”，调用 Phase 4 建立的 Asset/Workflow/Plugin 能力，跑通业务闭环。
-
-### [ ] [F01] 剧本解析逻辑 (Script Logic Integration)
-- 文件路径: src/main/features/novel/ (作为插件逻辑)
-- 核心目的: 验证 API 调用能力和文本处理能力。
-- 执行动作:
-    1. 调用 APIManager 进行剧本拆解 (Splitter)。
-    2. 关键: 拆解生成的文件夹结构 (Chapter/Scene) 必须能被 [E01] 资产库 自动识别并显示。
-- 验证: 运行解析后，去 Assets 页面搜索 "Scene"，能看到新生成的文件夹。
-- CHANGELOG: feat(novel): implemented script splitter utilizing core api services
-
-### [ ] [F02] 分镜生图与元数据 (Generation & Sidecar)
-- 文件路径: src/main/features/novel/generation/
-- 核心目的: 验证 TaskScheduler 和“伴生文件”规范。
-- 执行动作:
-    1. 提交 TXT2IMG 任务到 TaskScheduler。
-    2. 生成图片时，同步写入 .json Sidecar。
-    3. 关键: [E01] 资产库 的卡片必须能读取这个 .json，在 Tooltip 中显示 Prompt。
-- 验证: 只要小说插件生了图，Assets 页面的图片卡片上就应该出现一个小图标，提示“包含元数据”。
-- CHANGELOG: feat(novel): integrated image generation with sidecar metadata standard
-
-### [ ] [F03] 专用界面绑定 (Novel UI)
-- 文件路径: src/renderer/features/novel/
-- 核心目的: 提供特定业务的高效操作界面（区别于通用的 Workflow Editor）。
-- 执行动作:
-    1. 移植 V14 的 Sidebar 和 Storyboard。
-    2. 数据源替换: 强制让 Sidebar 读取 AssetManager 的索引数据，而不是私有 State。
-    3. 操作绑定: "生成"按钮不再直接调 API，而是通过 IPC 发送任务给 TaskScheduler。
-- CHANGELOG: ui(novel): ported specific novel interface utilizing platform managers
-
----
-
-## ⏳ Phase 6: 交付前验证
+## Phase 5: 小说转视频功能实施 (Novel-to-Video Feature)
+**目标**: 基于Matrix原生架构实施小说转视频功能，建立通用工作流引擎标准
 **状态**: ⏳ 待Phase 4完成后启动
+**详细方案**: 参考 `plans/notyet-novel-ti-video-plan.md`
 
-- [ ] **[G01] 规范自查**: 检查是否满足 docs/00-global-requirements-v1.0.0.md 的所有强制要求。
-- [ ] **[G02] 构建打包**: 生成 Windows 安装包 (.exe)。
-- [ ] **[G03] 端到端测试**: 完整用户流程验证。
-- [ ] **[G04] 性能优化**: 启动时间、内存占用、响应速度优化。
+### [ ] 阶段5.1: 工作流引擎基础 (3周)
+*   **核心目标**: 建立通用的工作流执行引擎，支持步骤化流程控制
+*   **关键交付**: WorkflowRegistry、WorkflowStateManager、WorkflowExecutor组件
+*   **任务清单**: (详见计划文档第151-594行)
+    - [ ] **[F1.1]** 创建工作流注册表 (WorkflowRegistry)
+    - [ ] **[F1.2]** 实现工作流状态管理器 (WorkflowStateManager)
+    - [ ] **[F1.3]** 创建工作流执行器组件 (WorkflowExecutor)
+    - [ ] **[F1.4]** 扩展Workflows列表页
+    - [ ] **[F1.5]** 添加工作流路由 (`/workflows/:workflowId`)
+    - [ ] **[F1.6]** 创建测试工作流验证流程
+*   **验收标准**: 测试工作流可完整执行，支持中断恢复
+
+### [ ] 阶段5.2: 数据模型和AssetManager集成 (2周)
+*   **核心目标**: 利用AssetManager的customFields机制存储NovelVideo专用数据
+*   **关键交付**: NovelVideoFields类型、NovelVideoAssetHelper工具类
+*   **任务清单**: (详见计划文档第596-958行)
+    - [ ] **[F2.1]** 定义NovelVideo类型系统 (`src/shared/types/novel-video.ts`)
+    - [ ] **[F2.2]** 实现NovelVideoAssetHelper (章节/场景/角色资产快捷方法)
+    - [ ] **[F2.3]** 测试customFields查询性能 (100个资产<100ms)
+*   **验收标准**: 可创建章节/场景资产，查询性能达标
+
+### [ ] 阶段5.3: AI服务集成 (2周)
+*   **核心目标**: 集成LangChain Agent和T8Star/RunningHub API提供商
+*   **关键交付**: LangChainAgent、APIManager扩展、NovelVideoAPIService
+*   **任务清单**: (详见计划文档第960-1284行)
+    - [ ] **[F3.1]** 从ai-playlet复制LangChain Agent
+    - [ ] **[F3.2]** 注册T8Star API提供商 (图片/视频生成)
+    - [ ] **[F3.3]** 注册RunningHub API提供商 (TTS配音)
+    - [ ] **[F3.4]** 实现NovelVideoAPIService (封装API调用+AssetManager集成)
+*   **验收标准**: 场景图、角色图、视频生成API可正常调用
+
+### [ ] 阶段5.4: 业务服务实现 (3周)
+*   **核心目标**: 实现章节拆分、场景提取、资源生成、分镜、配音服务
+*   **关键交付**: ChapterService、ResourceService、StoryboardService、VoiceoverService
+*   **任务清单**: (详见计划文档第1286-1699行)
+    - [ ] **[F4.1]** 实现章节拆分服务 (ChapterService)
+    - [ ] **[F4.2]** 实现场景角色提取服务 (LLM提取)
+    - [ ] **[F4.3]** 实现资源生成服务 (场景图/角色图，集成TaskScheduler)
+    - [ ] **[F4.4]** 实现分镜脚本生成服务 (4步AI链式调用)
+    - [ ] **[F4.5]** 实现配音生成服务 (台词提取+音频生成)
+*   **验收标准**: 所有业务服务可正常工作，数据存储在AssetManager
+
+### [ ] 阶段5.5: UI组件开发 (2周)
+*   **核心目标**: 实现5个工作流面板组件，复用Matrix组件风格
+*   **关键交付**: ChapterSplitPanel、SceneCharacterPanel等5个面板
+*   **任务清单**: (详见计划文档第1702-1916行)
+    - [ ] **[F5.1]** 创建ChapterSplitPanel组件 (章节拆分)
+    - [ ] **[F5.2]** 创建SceneCharacterPanel组件 (场景角色提取)
+    - [ ] **[F5.3]** 创建StoryboardPanel组件 (分镜脚本生成)
+    - [ ] **[F5.4]** 创建VoiceoverPanel组件 (配音生成)
+    - [ ] **[F5.5]** 创建ExportPanel组件 (导出成品)
+    - [ ] **[F5.6]** 注册小说转视频工作流 (WorkflowDefinition)
+*   **验收标准**: 5个步骤可依次完成，UI符合Matrix风格
+
+### [ ] 阶段5.6: 集成测试和文档 (1周)
+*   **核心目标**: 完整流程验证、性能测试、编写开发者文档
+*   **关键交付**: E2E测试、工作流引擎开发指南、用户手册
+*   **任务清单**: (详见计划文档第1918-2148行)
+    - [ ] **[F6.1]** 完整流程测试 (小说导入→视频导出)
+    - [ ] **[F6.2]** 中断恢复测试 (应用重启恢复状态)
+    - [ ] **[F6.3]** 性能测试 (100章处理<1分钟，并发控制有效)
+    - [ ] **[F6.4]** 编写工作流引擎开发指南 (`docs/workflow-engine-guide.md`)
+    - [ ] **[F6.5]** 编写用户使用手册 (`docs/novel-to-video-user-guide.md`)
+*   **验收标准**: 所有测试通过，文档完整
 
 ---
 
-## 📋 Phase 6: 服务增强 (v0.3.0规划)
-**目标**: 完善MVP服务的高级特性
-**预计时间**: 约10个工作日
+## ⏳ Phase 6: 服务增强与生态建设 (v0.3.0规划)
+**目标**: 完善MVP服务的高级特性，建立插件生态基础
+**状态**: ⏳ 待Phase 5完成后启动
 
-### [ ] [H01] PluginManager 增强
+### [ ] [G01] PluginManager 增强
 *   **任务**:
     1.  实现插件沙箱执行环境。
     2.  添加插件签名验证机制。
     3.  实现插件市场API集成。
     4.  完善官方/社区插件权限分级。
+*   **验收**: 第三方插件可安全加载，权限隔离有效
 
-### [ ] [H02] TaskScheduler 增强
+### [ ] [G02] TaskScheduler 增强
 *   **任务**:
-    1.  实现任务队列持久化。
+    1.  实现任务队列持久化 (应用重启后任务不丢失)。
     2.  添加成本估算功能 (estimateCost)。
     3.  实现智能优先级调度算法。
     4.  支持任务断点续传。
+*   **验收**: 长时间任务可靠执行，成本预估准确
 
-### [ ] [H03] APIManager 增强
+### [ ] [G03] APIManager 增强
 *   **任务**:
     1.  实现API使用量实时跟踪。
     2.  添加成本统计和分析功能。
-    3.  实现智能路由选择机制。
-    4.  支持更多AI服务提供商。
+    3.  实现智能路由选择机制 (多提供商自动切换)。
+    4.  支持更多AI服务提供商 (OpenAI, Anthropic等)。
+*   **验收**: API使用量可监控，成本可控
 
-### [ ] [H04] MCP和本地服务集成
+### [ ] [G04] MCP和本地服务集成
 *   **任务**:
     1.  替换mcp:* IPC处理器的模拟实现。
     2.  替换local:* IPC处理器的模拟实现。
     3.  实现真实的MCP协议通信。
-    4.  集成本地服务管理功能。
+    4.  集成本地服务管理功能 (ComfyUI、N8N)。
+*   **验收**: MCP服务可正常通信，本地服务可管理
 
-### [ ] [H05] 工作流执行引擎
+### [ ] [G05] 工作流生态建设
 *   **任务**:
-    1.  替换workflow:execute的演示数据。
-    2.  实现真实的工作流执行逻辑。
-    3.  支持ComfyUI、N8N、MCP工作流。
-    4.  工作流状态实时监控。
+    1.  基于工作流引擎实现第二个工作流插件 (如图片批量生成)。
+    2.  编写插件开发规范文档。
+    3.  建立插件模板项目。
+    4.  实现工作流步骤复用机制。
+*   **验收**: 第三方开发者可独立开发工作流插件
 
 ---
 
-## 📋 Phase 7: 测试覆盖完善 (v0.3.0规划)
-**目标**: 提升测试覆盖率至80%+
-**预计时间**: 约5个工作日
+## 📋 Phase 7: 测试覆盖与交付验证 (v0.3.0规划)
+**目标**: 提升测试覆盖率至80%+，完成交付前验证
+**状态**: ⏳ 待Phase 6完成后启动
 
-### [ ] [I01] 服务层单元测试
+### [ ] [H01] 服务层单元测试
 *   **任务**:
-    1.  ProjectManager单元测试。
-    2.  AssetManager单元测试。
-    3.  PluginManager单元测试。
-    4.  TaskScheduler单元测试。
-    5.  APIManager单元测试。
+    1.  ProjectManager单元测试 (CRUD、元数据管理)。
+    2.  AssetManager单元测试 (索引、查询、监听、customFields)。
+    3.  PluginManager单元测试 (加载、卸载、权限)。
+    4.  TaskScheduler单元测试 (任务调度、优先级、持久化)。
+    5.  APIManager单元测试 (多提供商、路由、成本)。
+*   **验收**: 核心服务测试覆盖率>80%
 
-### [ ] [I02] IPC通信集成测试
+### [ ] [H02] IPC通信集成测试
 *   **任务**:
-    1.  扩展IPC通信集成测试覆盖。
-    2.  测试所有实际IPC处理器。
-    3.  错误处理和边界条件测试。
+    1.  扩展IPC通信集成测试覆盖 (所有80个处理器)。
+    2.  测试错误处理和边界条件。
+    3.  测试并发调用和性能。
+*   **验收**: IPC测试覆盖率>90%
 
-### [ ] [I03] 端到端测试
+### [ ] [H03] 端到端测试
 *   **任务**:
-    1.  创建E2E测试框架。
-    2.  完整用户流程测试。
-    3.  跨平台兼容性测试。
+    1.  创建E2E测试框架 (Playwright/Spectron)。
+    2.  完整用户流程测试 (项目创建→资产导入→工作流执行→导出)。
+    3.  跨平台兼容性测试 (Windows/macOS/Linux)。
+*   **验收**: 关键用户流程可自动化测试
+
+### [ ] [H04] 交付前验证
+*   **任务**:
+    1.  **规范自查**: 检查是否满足 docs/00-global-requirements-v1.0.0.md 的所有强制要求。
+    2.  **构建打包**: 生成 Windows 安装包 (.exe)。
+    3.  **性能优化**: 启动时间<3s、内存占用<500MB、响应速度<100ms。
+    4.  **安全审计**: 检查文件系统路径遍历、XSS、注入等漏洞。
+*   **验收**: 可发布生产就绪版本
+
+### [ ] [H05] 文档完善
+*   **任务**:
+    1.  完善用户文档 (安装、配置、使用教程)。
+    2.  完善开发者文档 (架构、API、插件开发)。
+    3.  编写发布说明 (Release Notes)。
+    4.  录制演示视频。
+*   **验收**: 文档完整，新用户可快速上手
 
 ---
 

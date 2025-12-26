@@ -1,0 +1,245 @@
+/**
+ * 工作流执行器样式
+ */
+
+.workflow-executor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-primary);
+  padding: 24px;
+  gap: 24px;
+}
+
+/* 工作流头部 */
+.workflow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.workflow-title h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.workflow-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.workflow-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* 步骤指示器 */
+.workflow-steps {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 16px 0;
+}
+
+.workflow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.workflow-step:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-hover);
+}
+
+.workflow-step.current {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-active);
+}
+
+.workflow-step.completed {
+  border-color: var(--color-success);
+}
+
+.workflow-step.error {
+  border-color: var(--color-error);
+}
+
+.step-indicator {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.workflow-step.current .step-number {
+  background-color: var(--accent-primary);
+  color: var(--text-on-accent);
+}
+
+.workflow-step.completed .step-number {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.workflow-step.error .step-number {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.step-status-icon {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--bg-primary);
+  font-size: 12px;
+}
+
+.workflow-step.completed .step-status-icon {
+  color: var(--color-success);
+}
+
+.workflow-step.error .step-status-icon {
+  color: var(--color-error);
+}
+
+.workflow-step.in_progress .step-status-icon {
+  color: var(--accent-primary);
+}
+
+.step-info {
+  text-align: center;
+}
+
+.step-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.step-description {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 内容区域 */
+.workflow-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.content-header {
+  margin-bottom: 24px;
+}
+
+.content-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.content-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.content-body {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 24px;
+}
+
+.placeholder-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  padding: 48px;
+  text-align: center;
+}
+
+.placeholder-panel p {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin: 8px 0;
+}
+
+.placeholder-panel .text-muted {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.content-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.step-progress {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* 错误页面 */
+.workflow-executor-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 24px;
+  padding: 48px;
+}
+
+.workflow-executor-error h2 {
+  font-size: 24px;
+  color: var(--text-primary);
+  margin: 0;
+}

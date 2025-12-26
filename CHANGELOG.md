@@ -184,6 +184,55 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.9.1] - 2025-12-27
+
+### Added
+- feat(workflow): 工作流引擎基础架构完成（阶段5.1）
+  - 新增 WorkflowRegistry 服务 - 工作流注册表
+  - 新增 WorkflowStateManager 服务 - 工作流状态管理器
+  - 新增 WorkflowExecutor 组件 - 工作流执行器UI
+  - 新增工作流类型定义系统 (WorkflowDefinition, WorkflowState, WorkflowInstance)
+  - 新增9个工作流相关IPC处理器 (workflow:*)
+  - 新增9个工作流相关API方法
+  - 新增测试工作流定义 (test-workflow)
+
+- feat(ui): Workflows页面功能扩展
+  - 新增工作流模板展示功能
+  - 新增一键创建工作流实例功能
+  - 新增双标签页切换 (工作流模板/我的工作流)
+  - 集成Toast通知和Loading组件
+
+- feat(router): 路由配置优化
+  - 新增 /workflows/:workflowId 路由 - 工作流执行器
+  - 新增 /workflows/new 路由 - 自定义工作流编辑器
+  - 新增 /workflows/editor/:workflowId 路由 - 编辑器
+
+### Changed
+- refactor(workflow): 工作流架构重构
+  - 建立通用的步骤化流程执行引擎
+  - 支持工作流状态持久化和中断恢复
+  - 支持步骤状态追踪和更新
+  - 完整的TypeScript类型安全
+
+### Technical Details
+- **新增文件**: 10个核心文件
+  - `src/shared/types/workflow.ts` - 类型定义
+  - `src/main/services/WorkflowRegistry.ts` - 注册表服务
+  - `src/main/services/WorkflowStateManager.ts` - 状态管理器
+  - `src/main/ipc/workflow-handlers.ts` - IPC处理器
+  - `src/main/workflows/test-workflow.ts` - 测试工作流
+  - `src/renderer/components/WorkflowExecutor/` - 执行器组件
+- **代码量**: 约1,650行新增代码
+- **IPC通道**: 9个新增通道
+- **API方法**: 9个新增方法
+
+### Notes
+- 工作流引擎为未来的"小说转视频"等插件提供标准化流程框架
+- 状态保存在 `{dataDir}/workflows/{workflowId}/state.json`
+- 应用重启后自动恢复工作流执行状态
+
+--------------------------------------------
+
 ## [0.2.9] - 2025-12-26
 
 ### Added

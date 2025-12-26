@@ -457,8 +457,70 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 重启本地服务
    */
-  restartLocal: (serviceId: string): Promise<void> => 
+  restartLocal: (serviceId: string): Promise<void> =>
     ipcRenderer.invoke('local:restart', serviceId),
+
+  // ==================== 工作流相关 ====================
+
+  /**
+   * 列出所有已注册的工作流定义
+   */
+  listWorkflowDefinitions: (): Promise<any[]> =>
+    ipcRenderer.invoke('workflow:listDefinitions'),
+
+  /**
+   * 获取工作流定义
+   */
+  getWorkflowDefinition: (type: string): Promise<any> =>
+    ipcRenderer.invoke('workflow:getDefinition', type),
+
+  /**
+   * 创建工作流实例
+   */
+  createWorkflowInstance: (params: { type: string; projectId?: string; name?: string; initialData?: any }): Promise<any> =>
+    ipcRenderer.invoke('workflow:createInstance', params),
+
+  /**
+   * 加载工作流实例
+   */
+  loadWorkflowInstance: (workflowId: string): Promise<any> =>
+    ipcRenderer.invoke('workflow:loadInstance', workflowId),
+
+  /**
+   * 保存工作流状态
+   */
+  saveWorkflowState: (workflowId: string, state: any): Promise<void> =>
+    ipcRenderer.invoke('workflow:saveState', workflowId, state),
+
+  /**
+   * 加载工作流状态
+   */
+  loadWorkflowState: (workflowId: string): Promise<any> =>
+    ipcRenderer.invoke('workflow:loadState', workflowId),
+
+  /**
+   * 更新当前步骤
+   */
+  updateWorkflowCurrentStep: (workflowId: string, stepIndex: number): Promise<void> =>
+    ipcRenderer.invoke('workflow:updateCurrentStep', workflowId, stepIndex),
+
+  /**
+   * 更新步骤状态
+   */
+  updateWorkflowStepStatus: (workflowId: string, stepId: string, status: string, data?: any): Promise<void> =>
+    ipcRenderer.invoke('workflow:updateStepStatus', workflowId, stepId, status, data),
+
+  /**
+   * 删除工作流实例
+   */
+  deleteWorkflowInstance: (workflowId: string): Promise<void> =>
+    ipcRenderer.invoke('workflow:deleteInstance', workflowId),
+
+  /**
+   * 列出工作流实例
+   */
+  listWorkflowInstances: (projectId?: string): Promise<any[]> =>
+    ipcRenderer.invoke('workflow:listInstances', projectId),
 
   // ==================== 事件监听 ====================
   
@@ -583,6 +645,16 @@ declare global {
       stopLocal: (serviceId: string) => Promise<void>;
       getLocalStatus: (serviceId: string) => Promise<any>;
       restartLocal: (serviceId: string) => Promise<void>;
+      listWorkflowDefinitions: () => Promise<any[]>;
+      getWorkflowDefinition: (type: string) => Promise<any>;
+      createWorkflowInstance: (params: { type: string; projectId?: string; name?: string; initialData?: any }) => Promise<any>;
+      loadWorkflowInstance: (workflowId: string) => Promise<any>;
+      saveWorkflowState: (workflowId: string, state: any) => Promise<void>;
+      loadWorkflowState: (workflowId: string) => Promise<any>;
+      updateWorkflowCurrentStep: (workflowId: string, stepIndex: number) => Promise<void>;
+      updateWorkflowStepStatus: (workflowId: string, stepId: string, status: string, data?: any) => Promise<void>;
+      deleteWorkflowInstance: (workflowId: string) => Promise<void>;
+      listWorkflowInstances: (projectId?: string) => Promise<any[]>;
       onWorkflowProgress: (callback: (data: any) => void) => void;
       onWorkflowCompleted: (callback: (data: any) => void) => void;
       onWorkflowError: (callback: (data: any) => void) => void;

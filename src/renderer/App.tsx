@@ -6,6 +6,7 @@ import Assets from './pages/assets/Assets';
 import Plugins from './pages/plugins/Plugins';
 import Workflows from './pages/workflows/Workflows';
 import WorkflowEditor from './pages/workflows/WorkflowEditor';
+import { WorkflowExecutor } from './components/WorkflowExecutor';
 import Settings from './pages/settings/Settings';
 import About from './pages/about/About';
 
@@ -21,7 +22,11 @@ const App: React.FC = () => {
           <Route path="plugins" element={<Plugins />} />
           <Route path="workflow" element={<Workflows />} />
           <Route path="workflows" element={<Workflows />} />
-          <Route path="workflows/:workflowId" element={<WorkflowEditor />} />
+          {/* 自定义工作流编辑器（可视化流程图） */}
+          <Route path="workflows/new" element={<WorkflowEditor />} />
+          <Route path="workflows/editor/:workflowId" element={<WorkflowEditor />} />
+          {/* 工作流执行器（步骤化流程） */}
+          <Route path="workflows/:workflowId" element={<WorkflowExecutor />} />
           <Route path="settings" element={<Settings />} />
           <Route path="about" element={<About />} />
         </Route>

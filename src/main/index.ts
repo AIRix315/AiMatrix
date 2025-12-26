@@ -17,6 +17,9 @@ import { TaskType } from './services/TaskScheduler';
 import { apiManager } from './services/APIManager';
 import { configManager } from './services/ConfigManager';
 import { timeService } from './services/TimeService';
+import { registerWorkflowHandlers } from './ipc/workflow-handlers';
+import { workflowRegistry } from './services/WorkflowRegistry';
+import { testWorkflowDefinition } from './workflows/test-workflow';
 
 // 注册自定义协议为特权协议（必须在 app.ready 之前）
 protocol.registerSchemesAsPrivileged([
@@ -80,6 +83,9 @@ class MatrixApp {
       // 初始化服务
       await this.initializeServices();
 
+      // 注册测试工作流
+      this.registerTestWorkflows();
+
       // 注册自定义协议处理器
       this.registerCustomProtocols();
 
@@ -93,6 +99,23 @@ class MatrixApp {
     } catch (error) {
       await logger.error('应用启动失败', 'MatrixApp', { error });
       app.quit();
+    }
+  }
+
+  /**
+   * 注册测试工作流
+   */
+  private registerTestWorkflows(): void {
+    try {
+      // 注册测试工作流
+      workflowRegistry.register(testWorkflowDefinition);
+
+      logger.info('测试工作流已注册', 'MatrixApp', {
+        workflowName: testWorkflowDefinition.name,
+        workflowType: testWorkflowDefinition.type
+      });
+    } catch (error) {
+      logger.error('注册测试工作流失败', 'MatrixApp', { error });
     }
   }
 
@@ -650,6 +673,9 @@ class MatrixApp {
       // 暂时返回模拟结果
       return Promise.resolve(`重启本地服务: ${serviceId}`);
     });
+
+    // 注册工作流相关IPC处理器
+    registerWorkflowHandlers();
 
     logger.debug('IPC处理器设置完成', 'MatrixApp');
   }
