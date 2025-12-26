@@ -5,6 +5,37 @@
   width: 100%;
   background: var(--bg-canvas);
   box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 折叠状态样式 - 左侧面板 */
+#left-panel[data-panel-collapsed="true"] {
+  flex: 0;
+  min-width: 0 !important;
+  max-width: 0 !important;
+}
+
+/* 折叠状态样式 - 右侧面板 */
+#right-panel[data-panel-collapsed="true"] {
+  flex: 0;
+  min-width: 0 !important;
+  max-width: 0 !important;
+}
+
+.editor-panels {
+  flex: 1;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 中间列样式 */
+.middle-column {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
 .editor-toolbar {
@@ -15,6 +46,8 @@
   background: var(--bg-header);
   border-bottom: 1px solid var(--border-color);
   gap: 16px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .workflow-name-input {
@@ -36,13 +69,42 @@
 .toolbar-actions {
   display: flex;
   gap: 12px;
+  flex-shrink: 0;
 }
 
-.editor-panels {
-  flex: 1;
-  overflow: hidden;
-  width: 100%;
-  min-width: 0;
+/* 折叠按钮样式 */
+.collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-header);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.collapse-btn:hover {
+  background: #252525;
+  border-color: var(--accent-color);
+}
+
+.collapse-btn .collapse-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.collapse-btn.left-collapse {
+  margin-right: 8px;
+}
+
+.collapse-btn:not(.left-collapse) {
+  margin-left: 8px;
 }
 
 /* 节点库样式 */
@@ -157,9 +219,23 @@
   background: var(--border-color);
   cursor: col-resize;
   transition: background-color 0.2s;
+  flex-shrink: 0;
 }
 
 .resize-handle:hover {
+  background: var(--accent-color);
+}
+
+.resize-handle-vertical {
+  height: 1px;
+  width: 100%;
+  background: var(--border-color);
+  cursor: row-resize;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.resize-handle-vertical:hover {
   background: var(--accent-color);
 }
 
@@ -284,6 +360,7 @@
   .editor-toolbar {
     flex-direction: column;
     align-items: stretch;
+    padding: 8px 12px;
   }
 
   .workflow-name-input {
@@ -292,5 +369,11 @@
 
   .toolbar-actions {
     justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-actions button {
+    flex: 1;
+    min-width: 80px;
   }
 }

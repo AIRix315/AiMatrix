@@ -27,6 +27,36 @@
   gap: 8px;
 }
 
+/* 视图切换容器 */
+.view-switch-container {
+  display: flex;
+  gap: 8px;
+}
+
+/* 视图切换按钮 */
+.view-switch-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-switch-btn.active {
+  background: var(--accent-color);
+  color: #000;
+  border-color: var(--accent-color);
+  font-weight: 500;
+}
+
+.view-switch-btn:hover:not(.active) {
+  background: var(--bg-hover);
+  border-color: #666;
+}
+
 /* action-btn 样式（严格按照设计参考 6x12px） */
 .action-btn {
   padding: 6px 12px;

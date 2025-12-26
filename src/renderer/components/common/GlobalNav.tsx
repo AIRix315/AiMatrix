@@ -39,6 +39,12 @@ const navItems: NavItem[] = [
     icon: 'filter.ico',
     path: '/workflow',
     title: '工作台 (Workflow)',
+  },
+  {
+    id: 'separator',
+    label: '',
+    icon: '',
+    path: '',
     separator: true,
   },
 ];
@@ -83,22 +89,29 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
   };
 
   const renderNavItem = (item: NavItem) => (
-    <div
-      key={item.id}
-      className={`menu-item ${isActive(item.path) ? 'active' : ''}`}
-      onClick={() => handleItemClick(item)}
-      title={item.title || item.label}
-      style={item.separator ? { marginTop: '10px', borderTop: '1px solid var(--border-color)' } : undefined}
-    >
-      <div className="menu-icon-box">
-        <img
-          src={`./icons/${item.icon}`}
-          alt={item.label}
-          style={{ width: '40px', height: '40px' }}
-        />
+    item.separator ? (
+      <div
+        key={item.id}
+        className="menu-separator"
+      >
       </div>
-      <span className="menu-label">{item.label}</span>
-    </div>
+    ) : (
+      <div
+        key={item.id}
+        className={`menu-item ${isActive(item.path) ? 'active' : ''}`}
+        onClick={() => handleItemClick(item)}
+        title={item.title || item.label}
+      >
+        <div className="menu-icon-box">
+          <img
+            src={`./icons/${item.icon}`}
+            alt={item.label}
+            style={{ width: '36px', height: '36px' }}
+          />
+        </div>
+        <span className="menu-label">{item.label}</span>
+      </div>
+    )
   );
 
   return (

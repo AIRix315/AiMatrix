@@ -184,6 +184,64 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.9] - 2025-12-26
+
+### Added
+- feat(button): Button组件增强
+  - 添加className属性支持自定义样式类
+  - 添加style属性支持内联样式
+- feat(globalnav): Global导航组件优化
+  - 添加菜单分隔符样式
+  - 添加分隔符菜单项
+  - 优化content.ico图标显示（放大至9px）
+  - 调整菜单图标大小（7.2px）
+- feat(windowbar): 窗口栏组件增强
+  - 添加版本号显示功能
+- feat(about): 关于页面增强
+  - 添加版本号显示
+- feat(assets): 资产页面优化
+  - 添加网格视图切换功能
+  - 优化资产卡片布局
+  - 改进响应式设计
+- feat(workflows): 工作流页面增强
+  - 添加视图模式切换（列表/网格）
+  - 实现列表视图展示工作流
+- feat(workflow-editor): 工作流编辑器重大重构
+  - 重新设计布局为左右分栏+中间列上下分区
+  - 添加左侧和右侧面板折叠功能
+  - 添加折叠按钮和图标
+  - 优化面板大小控制（固定宽度250px）
+  - 添加垂直调整手柄
+  - 优化工具栏布局和样式
+  - 改进响应式设计
+
+### Changed
+- refactor(dashboard): 优化仪表板页面布局和样式
+- refactor(settings): 优化设置页面布局
+
+### Fixed
+- fix(filesystem): 删除临时文件1.png
+
+### Technical Details
+- 修改文件：
+  - src/renderer/components/common/Button.tsx (+2行)
+  - src/renderer/components/common/GlobalNav.css (+12行)
+  - src/renderer/components/common/GlobalNav.tsx (+7行)
+  - src/renderer/components/common/WindowBar.tsx (+1行)
+  - src/renderer/pages/about/About.tsx (+1行)
+  - src/renderer/pages/assets/Assets.css (优化布局)
+  - src/renderer/pages/assets/Assets.tsx (视图切换)
+  - src/renderer/pages/dashboard/Dashboard.css (优化布局)
+  - src/renderer/pages/dashboard/Dashboard.tsx (优化布局)
+  - src/renderer/pages/settings/Settings.css (优化布局)
+  - src/renderer/pages/settings/Settings.tsx (优化布局)
+  - src/renderer/pages/workflows/WorkflowEditor.css (+60行)
+  - src/renderer/pages/workflows/WorkflowEditor.tsx (+80行)
+  - src/renderer/pages/workflows/Workflows.tsx (+20行)
+- 删除文件：1.png
+
+---
+
 ## [0.2.8] - 2025-12-26
 
 ### Fixed

@@ -41,6 +41,16 @@
     overflow-y: auto;
 }
 
+.settings-divider-sidebar {
+    border-top: 1px solid var(--border-color);
+    margin: 5px 15px;
+}
+
+.provider-list-footer {
+    padding: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
 .provider-item {
     display: flex;
     align-items: center;
@@ -191,4 +201,8 @@
 .model-ctx {
     font-size: 11px;
     color: #888;
+}
+
+.full-width-button {
+  width: 100%;
 }

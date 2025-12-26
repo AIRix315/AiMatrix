@@ -48,6 +48,18 @@ const providers: Provider[] = [
     name: 'Global Defaults',
   },
   {
+    id: 'comfyui',
+    icon: '🎨',
+    name: 'ComfyUI',
+    status: 'off',
+  },
+  {
+    id: 'n8n',
+    icon: '🔗',
+    name: 'N8N',
+    status: 'off',
+  },
+  {
     id: 'ollama',
     icon: '🦙',
     name: 'Ollama',
@@ -202,18 +214,18 @@ const Settings: React.FC = () => {
           return {
             ...prev,
             providers: prev.providers.map((p: ProviderConfig) => {
-            if (p.id === providerId) {
-              return {
-                ...p,
-                models: result.models?.map((modelId: string) => ({
-                  id: modelId,
-                  name: modelId,
-                  ctx: 'Available'
-                })) || []
-              };
-            }
-            return p;
-          })
+              if (p.id === providerId) {
+                return {
+                  ...p,
+                  models: result.models?.map((modelId: string) => ({
+                    id: modelId,
+                    name: modelId,
+                    ctx: 'Available'
+                  })) || []
+                };
+              }
+              return p;
+            })
           };
         });
 
@@ -263,7 +275,7 @@ const Settings: React.FC = () => {
           />
         </div>
         <div className="provider-list">
-          {providers.map((provider) => {
+          {providers.slice(0, 1).map((provider) => {
             const providerConfig = config.providers.find((p: ProviderConfig) => p.id === provider.id);
             const isEnabled = providerConfig?.enabled ?? true;
             return (
@@ -280,6 +292,47 @@ const Settings: React.FC = () => {
               </div>
             );
           })}
+          <div className="settings-divider-sidebar"></div>
+          {providers.slice(1, 3).map((provider) => {
+            const providerConfig = config.providers.find((p: ProviderConfig) => p.id === provider.id);
+            const isEnabled = providerConfig?.enabled ?? true;
+            return (
+              <div
+                key={provider.id}
+                className={`provider-item ${currentTab === provider.id ? 'active' : ''}`}
+                onClick={() => handleTabChange(provider.id)}
+              >
+                <div className="provider-icon">{provider.icon}</div>
+                <span>{provider.name}</span>
+                {provider.id !== 'global' && (
+                  <div className={`provider-status ${isEnabled ? 'on' : 'off'}`}></div>
+                )}
+              </div>
+            );
+          })}
+          <div className="settings-divider-sidebar"></div>
+          {providers.slice(3).map((provider) => {
+            const providerConfig = config.providers.find((p: ProviderConfig) => p.id === provider.id);
+            const isEnabled = providerConfig?.enabled ?? true;
+            return (
+              <div
+                key={provider.id}
+                className={`provider-item ${currentTab === provider.id ? 'active' : ''}`}
+                onClick={() => handleTabChange(provider.id)}
+              >
+                <div className="provider-icon">{provider.icon}</div>
+                <span>{provider.name}</span>
+                {provider.id !== 'global' && (
+                  <div className={`provider-status ${isEnabled ? 'on' : 'off'}`}></div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div className="provider-list-footer">
+          <Button variant="primary" style={{ width: '100%' }}>
+            添加其它供应商
+          </Button>
         </div>
       </div>
 
@@ -307,32 +360,6 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="config-section">
-                <div className="config-label">日志设置 (Logging)</div>
-                <div className="input-group">
-                  <label className="input-label">日志路径 (Log Directory)</label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <input
-                      type="text"
-                      className="input-field"
-                      value={config.general.logging.savePath}
-                      readOnly
-                    />
-                    <Button onClick={() => handleSelectDirectory('logPath')}>浏览...</Button>
-                  </div>
-                </div>
-                <div className="input-group">
-                  <label className="input-label">保留天数 (Retention Days)</label>
-                  <input
-                    type="number"
-                    className="input-field"
-                    value={config.general.logging.retentionDays}
-                    onChange={(e) => handleConfigChange('logging', 'retentionDays', parseInt(e.target.value))}
-                  />
-                </div>
-              </div>
-
               <div style={{ marginTop: '20px' }}>
                 <Button variant="primary" onClick={handleSaveConfig} disabled={isSaving}>
                   {isSaving ? '保存中...' : '保存设置'}
@@ -417,6 +444,7 @@ const Settings: React.FC = () => {
             </div>
           </div>
         )}
+
       </div>
 
       {/* Toast 通知 */}

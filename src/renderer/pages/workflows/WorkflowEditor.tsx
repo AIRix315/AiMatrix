@@ -31,6 +31,20 @@ const WorkflowEditor: React.FC = () => {
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
+  // 面板折叠状态
+  const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
+  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
+
+  // 切换左侧面板折叠状态
+  const toggleLeftPanel = () => {
+    setLeftPanelCollapsed((prev) => !prev);
+  };
+
+  // 切换右侧面板折叠状态
+  const toggleRightPanel = () => {
+    setRightPanelCollapsed((prev) => !prev);
+  };
+
   // 执行监控相关状态
   const [executionStatus, setExecutionStatus] = useState<string>('idle');
   const [executionProgress, setExecutionProgress] = useState<number>(0);
@@ -289,36 +303,18 @@ const WorkflowEditor: React.FC = () => {
 
   return (
     <div className="workflow-editor">
-      {/* 顶部工具栏 */}
-      <div className="editor-toolbar">
-        <input
-          type="text"
-          value={workflowName}
-          onChange={(e) => setWorkflowName(e.target.value)}
-          className="workflow-name-input"
-          placeholder="工作流名称"
-        />
-        <div className="toolbar-actions">
-          <Button variant="ghost" onClick={() => navigate('/workflows')}>
-            返回
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleExecute}
-            disabled={isExecuting || nodes.length === 0}
-          >
-            {isExecuting ? '执行中...' : '执行工作流'}
-          </Button>
-          <Button variant="primary" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? '保存中...' : '保存'}
-          </Button>
-        </div>
-      </div>
-
-      {/* 三栏布局 */}
+      {/* 左右分栏+中间列上下分区布局 */}
       <PanelGroup orientation="horizontal" className="editor-panels">
-        {/* 左侧：节点库 */}
-        <Panel defaultSize={20} minSize={15} maxSize={30}>
+        {/* 左侧：节点库 (区域B) */}
+        <Panel
+          id="left-panel"
+          defaultSize={250}
+          minSize={0}
+          maxSize={250}
+          collapsible
+          collapsedSize={0}
+          data-panel-collapsed={leftPanelCollapsed ? 'true' : 'false'}
+        >
           <div className="node-library">
             <h3>节点库</h3>
             <div className="node-list">
@@ -338,44 +334,105 @@ const WorkflowEditor: React.FC = () => {
 
         <PanelResizeHandle className="resize-handle" />
 
-        {/* 中间：画布 */}
+        {/* 中间列：上下分区 (区域A + 区域C) */}
         <Panel defaultSize={60}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={onNodeClick}
-            onPaneClick={onPaneClick}
-            fitView
-          >
-            <Background />
-            <Controls />
-            <MiniMap />
-            <FlowPanel position="top-right" className="workflow-info">
-              <div className="info-item">
-                <span>节点: {nodes.length}</span>
-              </div>
-              <div className="info-item">
-                <span>连接: {edges.length}</span>
-              </div>
-              {executionStatus !== 'idle' && (
-                <div className="info-item execution-status">
-                  <span>状态: {executionStatus}</span>
-                  {executionProgress > 0 && (
-                    <span> ({Math.round(executionProgress)}%)</span>
-                  )}
+          <PanelGroup orientation="vertical" className="middle-column">
+            {/* 中间列上部：工具栏 (区域A) */}
+            <Panel defaultSize={25} minSize={10} maxSize={50}>
+              <div className="editor-toolbar">
+                {/* 左侧折叠按钮 */}
+                <button
+                  className={`collapse-btn left-collapse ${leftPanelCollapsed ? 'collapsed' : ''}`}
+                  onClick={toggleLeftPanel}
+                  title={leftPanelCollapsed ? '展开左侧面板' : '折叠左侧面板'}
+                >
+                  <span className="collapse-icon">{leftPanelCollapsed ? '◀' : '▶'}</span>
+                </button>
+
+                <input
+                  type="text"
+                  value={workflowName}
+                  onChange={(e) => setWorkflowName(e.target.value)}
+                  className="workflow-name-input"
+                  placeholder="工作流名称"
+                />
+                <div className="toolbar-actions">
+                  <Button variant="ghost" onClick={() => navigate('/workflows')}>
+                    返回
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleExecute}
+                    disabled={isExecuting || nodes.length === 0}
+                  >
+                    {isExecuting ? '执行中...' : '执行工作流'}
+                  </Button>
+                  <Button variant="primary" onClick={handleSave} disabled={isSaving}>
+                    {isSaving ? '保存中...' : '保存'}
+                  </Button>
                 </div>
-              )}
-            </FlowPanel>
-          </ReactFlow>
+
+                {/* 右侧折叠按钮 */}
+                <button
+                  className={`collapse-btn ${rightPanelCollapsed ? 'collapsed' : ''}`}
+                  onClick={toggleRightPanel}
+                  title={rightPanelCollapsed ? '展开右侧面板' : '折叠右侧面板'}
+                >
+                  <span className="collapse-icon">{rightPanelCollapsed ? '▶' : '◀'}</span>
+                </button>
+              </div>
+            </Panel>
+
+            <PanelResizeHandle className="resize-handle resize-handle-vertical" />
+
+            {/* 中间列下部：画布 (区域C) */}
+            <Panel defaultSize={75}>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onNodeClick={onNodeClick}
+                onPaneClick={onPaneClick}
+                fitView
+              >
+                <Background />
+                <Controls />
+                <MiniMap />
+                <FlowPanel position="top-right" className="workflow-info">
+                  <div className="info-item">
+                    <span>节点: {nodes.length}</span>
+                  </div>
+                  <div className="info-item">
+                    <span>连接: {edges.length}</span>
+                  </div>
+                  {executionStatus !== 'idle' && (
+                    <div className="info-item execution-status">
+                      <span>状态: {executionStatus}</span>
+                      {executionProgress > 0 && (
+                        <span> ({Math.round(executionProgress)}%)</span>
+                      )}
+                    </div>
+                  )}
+                </FlowPanel>
+              </ReactFlow>
+            </Panel>
+          </PanelGroup>
         </Panel>
 
         <PanelResizeHandle className="resize-handle" />
 
-        {/* 右侧：属性面板 */}
-        <Panel defaultSize={20} minSize={15} maxSize={30}>
+        {/* 右侧：属性面板 (区域D) */}
+        <Panel
+          id="right-panel"
+          defaultSize={250}
+          minSize={0}
+          maxSize={250}
+          collapsible
+          collapsedSize={0}
+          data-panel-collapsed={rightPanelCollapsed ? 'true' : 'false'}
+        >
           <div className="properties-panel">
             <h3>属性</h3>
             {selectedNode ? (

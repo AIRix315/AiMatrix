@@ -8,6 +8,8 @@ interface ButtonProps {
   onClick?: () => void;
   children?: React.ReactNode;
   title?: string;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -16,14 +18,17 @@ const Button: React.FC<ButtonProps> = ({
   disabled = false,
   onClick,
   children,
-  title
+  title,
+  className,
+  style
 }) => {
   return (
     <button
-      className={`action-btn ${variant} ${size} ${disabled ? 'disabled' : ''}`}
+      className={`action-btn ${variant} ${size} ${disabled ? 'disabled' : ''} ${className || ''}`}
       onClick={onClick}
       disabled={disabled}
       title={title}
+      style={style}
     >
       {children}
     </button>

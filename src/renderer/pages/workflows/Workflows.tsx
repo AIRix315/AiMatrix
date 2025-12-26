@@ -15,6 +15,7 @@ interface Workflow {
 const Workflows: React.FC = () => {
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   useEffect(() => {
     loadWorkflows();
@@ -55,11 +56,23 @@ const Workflows: React.FC = () => {
     <div className="dashboard">
       <div className="dashboard-header">
         <div className="view-title">工作流 <small>| 流程管理 (Workflow Management)</small></div>
-        <div className="view-actions">
-          <Button variant="primary" onClick={handleCreateWorkflow}>
-            + 新建工作流
-          </Button>
+        <div className="view-switch-container">
+          <div
+            className={`view-switch-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            List (列表)
+          </div>
+          <div
+            className={`view-switch-btn ${viewMode === 'grid' ? 'active' : ''}`}
+            onClick={() => setViewMode('grid')}
+          >
+            Grid (视图)
+          </div>
         </div>
+        <Button variant="primary" onClick={handleCreateWorkflow}>
+          + 新建工作流
+        </Button>
       </div>
 
       <div className="dashboard-content">
@@ -71,6 +84,22 @@ const Workflows: React.FC = () => {
             <Button variant="primary" onClick={handleCreateWorkflow}>
               + 新建工作流
             </Button>
+          </div>
+        ) : viewMode === 'list' ? (
+          <div className="workflow-list">
+            {workflows.map((workflow) => (
+              <div key={workflow.id} className="workflow-item-wrapper">
+                <Card
+                  key={workflow.id}
+                  tag={workflow.type}
+                  image={workflow.type === 'comfyui' ? '🔄' : workflow.type === 'n8n' ? '🔗' : '⚙️'}
+                  title={workflow.name}
+                  info={`Type: ${workflow.type} | ${workflow.lastModified}`}
+                  hoverable
+                  onClick={() => handleOpenWorkflow(workflow.id)}
+                />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="project-grid">

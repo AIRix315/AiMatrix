@@ -7,9 +7,9 @@ interface WindowBarProps {
   version?: string;
 }
 
-const WindowBar: React.FC<WindowBarProps> = ({ 
-  title = 'MATRIX', 
-  version = 'Platform V14.0' 
+const WindowBar: React.FC<WindowBarProps> = ({
+  title = 'MATRIX',
+  version = 'v0.2.9'
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
 

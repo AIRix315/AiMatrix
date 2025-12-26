@@ -54,9 +54,15 @@
 
 /* 图标样式 - 缩小至0.2倍并应用滤镜将黑色转为白色 */
 .menu-icon-box img {
-    width: 8px;
-    height: 8px;
+    width: 7.2px;
+    height: 7.2px;
     filter: invert(1);
+}
+
+/* content.ico 图标放大 */
+.menu-icon-box img[src*="content.ico"] {
+    width: 9px;
+    height: 9px;
 }
 
 .menu-label {
@@ -75,6 +81,15 @@
 .menu-spacer {
     flex: 1;
     min-height: 20px;
+    margin-top: 10px;
+}
+
+.menu-separator {
+    padding: 10px 0;
+    text-align: center;
+    color: var(--text-muted);
+    opacity: 0.5;
+    border-top: 1px solid var(--border-color);
     margin-top: 10px;
 }
 

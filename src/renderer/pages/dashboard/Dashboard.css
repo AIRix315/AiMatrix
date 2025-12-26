@@ -49,13 +49,28 @@
 }
 
 .project-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr)); /* 使用 CSS 变量 */
-    gap: var(--card-gap); /* 使用 CSS 变量 */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr)); /* 使用 CSS 变量 */
+  gap: var(--card-gap); /* 使用 CSS 变量 */
+}
+
+/* 项目列表样式 */
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-item-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .project-card-wrapper {
-    position: relative;
+  position: relative;
 }
 
 .project-card-wrapper .delete-btn {

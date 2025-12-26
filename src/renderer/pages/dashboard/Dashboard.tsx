@@ -22,6 +22,7 @@ const Dashboard: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ projectId: string; projectName: string } | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   // 加载项目列表
   useEffect(() => {
@@ -105,10 +106,19 @@ const Dashboard: React.FC = () => {
     <div className="dashboard">
       <div className="dashboard-header">
         <div className="view-title">首页 <small>| 项目管理 (Project Management)</small></div>
-        <div className="view-actions">
-          <Button variant="primary" onClick={() => setShowNewProjectModal(true)}>
-            + 新建项目
-          </Button>
+        <div className="view-switch-container">
+          <div
+            className={`view-switch-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            List (列表)
+          </div>
+          <div
+            className={`view-switch-btn ${viewMode === 'grid' ? 'active' : ''}`}
+            onClick={() => setViewMode('grid')}
+          >
+            Grid (视图)
+          </div>
         </div>
       </div>
 
@@ -123,6 +133,31 @@ const Dashboard: React.FC = () => {
             <Button variant="primary" onClick={() => setShowNewProjectModal(true)}>
               + 新建项目
             </Button>
+          </div>
+        ) : viewMode === 'list' ? (
+          <div className="project-list">
+            {projects.map((project) => (
+              <div key={project.id} className="project-item-wrapper">
+                <Card
+                  tag={project.tag || 'Project'}
+                  image={project.image || '🎬'}
+                  title={project.name}
+                  info={`Path: ${project.path}`}
+                  hoverable
+                  onClick={() => handleOpenProject(project.id)}
+                />
+                <button
+                  className="delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteConfirm({ projectId: project.id, projectName: project.name });
+                  }}
+                  title="删除项目"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="project-grid">
@@ -195,11 +230,11 @@ const Dashboard: React.FC = () => {
         <ConfirmDialog
           isOpen={true}
           title="删除项目"
-          message={`确定要删除项目 "${deleteConfirm.projectName}" 吗？此操作无法撤销。`}
+          message={`确定要删除项目 "${deleteConfirm?.projectName}" 吗？此操作无法撤销。`}
           type="danger"
           confirmText="删除"
           cancelText="取消"
-          onConfirm={() => handleDeleteProject(deleteConfirm.projectId)}
+          onConfirm={() => deleteConfirm && handleDeleteProject(deleteConfirm.projectId)}
           onCancel={() => setDeleteConfirm(null)}
         />
       )}
@@ -207,8 +242,8 @@ const Dashboard: React.FC = () => {
       {/* Toast 通知 */}
       {toast && (
         <Toast
-          type={toast.type}
-          message={toast.message}
+          type={toast?.type}
+          message={toast?.message}
           onClose={() => setToast(null)}
         />
       )}

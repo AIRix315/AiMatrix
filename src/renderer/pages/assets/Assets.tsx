@@ -2,59 +2,33 @@
  * Assets 页面
  *
  * 功能：
- * - 左侧分类导航（AssetSidebar）
- * - 右侧资产网格（AssetGrid）
- * - 顶部工具栏（搜索、导入、排序）
+ * - 左侧分类导航（可折叠）
+ * - 右侧资产网格
  * - 资产预览和管理
- *
- * 参考：phase4-e01-asset-library-implementation-plan.md
  */
 
 import React, { useState, useCallback } from 'react';
 import { AssetMetadata, AssetFilter } from '../../../shared/types/asset';
-import { AssetSidebar } from '../../components/AssetSidebar';
 import { AssetGrid } from '../../components/AssetGrid';
 import { AssetPreview } from '../../components/AssetPreview/AssetPreview';
 import './Assets.css';
 
 export function Assets() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [searchText, setSearchText] = useState('');
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<'name' | 'createdAt' | 'modifiedAt' | 'size'>('modifiedAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [previewAsset, setPreviewAsset] = useState<AssetMetadata | null>(null);
   const [allAssets, setAllAssets] = useState<AssetMetadata[]>([]);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   // 构建过滤器
   const getFilter = useCallback((): AssetFilter => {
     const filter: AssetFilter = {
       scope: 'all',
-      sortBy,
-      sortOrder
+      sortBy: 'modifiedAt',
+      sortOrder: 'desc'
     };
 
-    if (selectedCategory) {
-      filter.category = selectedCategory;
-    }
-
-    if (searchText.trim()) {
-      filter.search = searchText.trim();
-    }
-
     return filter;
-  }, [selectedCategory, searchText, sortBy, sortOrder]);
-
-  // 处理分类选择
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    setSelectedAssets(new Set()); // 清空选中
-  };
-
-  // 处理搜索
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value);
-  };
+  }, []);
 
   // 处理资产选择
   const handleAssetSelect = (asset: AssetMetadata, multiSelect: boolean) => {
@@ -125,112 +99,27 @@ export function Assets() {
     });
   };
 
-  // 处理导入
-  const handleImport = async () => {
-    try {
-      const result = await window.electronAPI.showImportDialog();
-      if (result) {
-        // 刷新资产列表（通过改变filter触发重新加载）
-        setSelectedCategory('');
-      }
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      // console.error('导入失败:', err);
-      alert('导入失败: ' + (err instanceof Error ? err.message : '未知错误'));
-    }
-  };
-
-  // 处理排序切换
-  const handleSortChange = (newSortBy: typeof sortBy) => {
-    if (sortBy === newSortBy) {
-      // 切换升序/降序
-      setSortOrder(order => order === 'asc' ? 'desc' : 'asc');
-    } else {
-      // 切换排序字段
-      setSortBy(newSortBy);
-      setSortOrder('desc');
-    }
-  };
-
   return (
-    <div className="assets-page">
-      {/* 左侧分类导航 */}
-      <AssetSidebar
-        selectedCategory={selectedCategory}
-        onCategorySelect={handleCategorySelect}
-      />
-
-      {/* 主内容区 */}
-      <div className="assets-main">
-        {/* 视图头部 */}
-        <div className="view-header">
-          <div className="view-title">素材库 (Assets)</div>
-          <div className="view-actions">
-            <button className="action-btn active">Local (本地)</button>
-            <button
-              className="action-btn disabled"
-              title="云端库即将上线"
-              disabled
-            >
-              Cloud (云端)
-            </button>
+    <div className="dashboard">
+      <div className="dashboard-header">
+        <div className="view-title">资产库 <small>| 资产 (Assets)</small></div>
+        <div className="view-switch-container">
+          <div
+            className={`view-switch-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            List (列表)
+          </div>
+          <div
+            className={`view-switch-btn ${viewMode === 'grid' ? 'active' : ''}`}
+            onClick={() => setViewMode('grid')}
+          >
+            Grid (视图)
           </div>
         </div>
+      </div>
 
-        {/* 顶部工具栏 */}
-        <div className="assets-toolbar">
-          {/* 搜索框 */}
-          <div className="search-box">
-            <span className="search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder="搜索资产..."
-              value={searchText}
-              onChange={handleSearch}
-              className="search-input"
-            />
-            {searchText && (
-              <button
-                className="clear-button"
-                onClick={() => setSearchText('')}
-                title="清空搜索"
-              >
-                ×
-              </button>
-            )}
-          </div>
-
-          {/* 工具按钮组 */}
-          <div className="toolbar-actions">
-            {/* 排序选择 */}
-            <div className="sort-dropdown">
-              <select
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value as typeof sortBy)}
-                className="sort-select"
-              >
-                <option value="modifiedAt">修改时间</option>
-                <option value="createdAt">创建时间</option>
-                <option value="name">名称</option>
-                <option value="size">大小</option>
-              </select>
-              <button
-                className="sort-order-button"
-                onClick={() => setSortOrder(order => order === 'asc' ? 'desc' : 'asc')}
-                title={sortOrder === 'asc' ? '升序' : '降序'}
-              >
-                {sortOrder === 'asc' ? '↑' : '↓'}
-              </button>
-            </div>
-
-            {/* 导入按钮 */}
-            <button className="import-button" onClick={handleImport}>
-              + 导入
-            </button>
-          </div>
-        </div>
-
-        {/* 资产网格 */}
+      <div className="dashboard-content">
         <AssetGrid
           filter={getFilter()}
           selectedAssets={selectedAssets}
