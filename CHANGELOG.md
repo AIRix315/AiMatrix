@@ -193,6 +193,8 @@ Closes #123
   - Settings.tsx: 修复9处any类型错误，添加完整类型定义
     - 定义LoggingConfig、GeneralConfig、Model、ProviderConfig、AppConfig接口
     - 将所有any替换为具体类型，添加必要的null检查
+  - WorkflowEditor.tsx: 修复5处console语句错误，添加eslint-disable注释
+  - Workflows.tsx: 修复1处any类型错误和1处console语句错误
 - fix(workflow): 修复工作流编辑器宽度适配问题
   - WorkflowEditor.css: 添加width: 100%和box-sizing: border-box
   - editor-panels: 添加width: 100%和min-width: 0确保三栏布局正确
@@ -207,6 +209,8 @@ Closes #123
   - src/main/services/Logger.ts (4处修复)
   - src/main/services/ServiceErrorHandler.ts (1处修复)
   - src/renderer/pages/settings/Settings.tsx (添加类型定义+9处修复)
+  - src/renderer/pages/workflows/WorkflowEditor.tsx (5处console修复)
+  - src/renderer/pages/workflows/Workflows.tsx (1处any+1处console修复)
   - src/renderer/pages/workflows/WorkflowEditor.css (宽度适配修复)
   - src/renderer/pages/workflows/Workflows.css (响应式布局添加)
 
