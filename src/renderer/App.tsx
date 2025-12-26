@@ -11,7 +11,7 @@ import About from './pages/about/About';
 
 const App: React.FC = () => {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true }}>
       <Routes>
         <Route path="/" element={<Layout />}>
           {/* 首页路由 */}

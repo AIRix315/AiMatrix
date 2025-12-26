@@ -24,6 +24,7 @@
   ],
   "rules": {
     "no-console": "warn",
+    "@typescript-eslint/no-var-requires": "off",
     "prefer-const": "error",
     "no-restricted-imports": [
       "error",

@@ -4,10 +4,12 @@
    ========================================= */
 
 .about-page {
+    width: 100%;
     padding: 30px;
     overflow-y: auto;
     color: var(--text-main);
     background: var(--bg-canvas);
+    box-sizing: border-box;
 }
 
 .about-content {
@@ -16,6 +18,8 @@
     align-items: center;
     justify-content: center;
     min-height: 60%;
+    width: 100%;
+    max-width: 100%;
 }
 
 .about-content h2 {

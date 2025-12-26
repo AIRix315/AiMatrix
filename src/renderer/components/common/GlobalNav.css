@@ -52,6 +52,13 @@
     flex-shrink: 0;
 }
 
+/* 图标样式 - 缩小至0.2倍并应用滤镜将黑色转为白色 */
+.menu-icon-box img {
+    width: 8px;
+    height: 8px;
+    filter: invert(1);
+}
+
 .menu-label {
     font-size: 14px;
     font-weight: 500;
@@ -68,6 +75,7 @@
 .menu-spacer {
     flex: 1;
     min-height: 20px;
+    margin-top: 10px;
 }
 
 .material-icons {

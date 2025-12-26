@@ -16,7 +16,7 @@ import * as path from 'path';
 import { app, safeStorage } from 'electron';
 import { EventEmitter } from 'events';
 import type { IAppSettings, IProviderConfig, IGeneralSettings, ILogSettings } from '../../common/types';
-import { Logger } from './Logger';
+import { logger } from './Logger';
 
 /**
  * 配置文件名称
@@ -73,13 +73,11 @@ export class ConfigManager extends EventEmitter {
   private configPath: string;
   private config: IAppSettings;
   private isInitialized: boolean = false;
-  private logger: Logger;
 
   constructor() {
     super();
     this.configPath = path.join(app.getPath('userData'), CONFIG_FILE_NAME);
     this.config = DEFAULT_CONFIG;
-    this.logger = Logger.getInstance();
   }
 
   /**
@@ -95,13 +93,13 @@ export class ConfigManager extends EventEmitter {
       await this.loadConfig();
     } catch (error) {
       // 配置文件不存在或无效，使用默认配置并保存
-      await this.logger.info('Config file not found, creating default config', 'ConfigManager');
+      await logger.info('Config file not found, creating default config', 'ConfigManager');
       this.config = DEFAULT_CONFIG;
       await this.saveConfig(this.config);
     }
 
     this.isInitialized = true;
-    await this.logger.info('Initialized successfully', 'ConfigManager');
+    await logger.info('Initialized successfully', 'ConfigManager');
   }
 
   /**
@@ -136,7 +134,7 @@ export class ConfigManager extends EventEmitter {
     // 发出配置变更事件
     this.emit('config-changed', this.config, oldConfig);
 
-    await this.logger.debug('Config saved successfully', 'ConfigManager');
+    await logger.debug('Config saved successfully', 'ConfigManager');
   }
 
   /**
@@ -223,7 +221,7 @@ export class ConfigManager extends EventEmitter {
   /**
    * 加密配置（主要加密 API Keys）
    */
-  private encryptConfig(config: IAppSettings): any {
+  private encryptConfig(config: IAppSettings): IAppSettings {
     const encrypted = JSON.parse(JSON.stringify(config));
 
     // 加密所有服务商的 API Key
@@ -247,12 +245,12 @@ export class ConfigManager extends EventEmitter {
   /**
    * 解密配置
    */
-  private decryptConfig(rawConfig: any): IAppSettings {
+  private decryptConfig(rawConfig: IAppSettings): IAppSettings {
     const decrypted = JSON.parse(JSON.stringify(rawConfig));
 
     // 解密所有服务商的 API Key
     if (safeStorage.isEncryptionAvailable()) {
-      decrypted.providers = decrypted.providers.map((provider: any) => {
+      decrypted.providers = decrypted.providers.map((provider: IProviderConfig & { _encrypted?: boolean }) => {
         if (provider.apiKey && provider._encrypted) {
           try {
             const buffer = Buffer.from(provider.apiKey, 'base64');
@@ -285,7 +283,7 @@ export class ConfigManager extends EventEmitter {
    */
   async cleanup(): Promise<void> {
     this.removeAllListeners();
-    await this.logger.debug('Cleaned up', 'ConfigManager');
+    await logger.debug('Cleaned up', 'ConfigManager');
   }
 }
 

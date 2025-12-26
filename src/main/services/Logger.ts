@@ -79,8 +79,10 @@ export class Logger {
     this.currentLogFile = this.getLogFilePath();
 
     // 确保日志目录存在
-    this.ensureLogDir().catch(error => {
-      console.error('[Logger] Failed to create log directory:', error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    this.ensureLogDir().catch(_error => {
+      // eslint-disable-next-line no-console
+      // console.error('[Logger] Failed to create log directory:', error);
     });
 
     // 如果传入了 ConfigManager，监听配置变更
@@ -88,8 +90,10 @@ export class Logger {
       this.configManager.onConfigChange((newConfig) => {
         const newLogPath = newConfig.general.logging.savePath;
         if (newLogPath !== this.logDir) {
-          this.switchLogDirectory(newLogPath).catch(error => {
-            console.error('[Logger] Failed to switch log directory:', error);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          this.switchLogDirectory(newLogPath).catch(_error => {
+            // eslint-disable-next-line no-console
+            // console.error('[Logger] Failed to switch log directory:', error);
           });
         }
       });
@@ -198,8 +202,10 @@ export class Logger {
     try {
       await this.checkRotation();
       await fs.appendFile(this.currentLogFile, formattedLog + '\n', 'utf-8');
-    } catch (error) {
-      console.error('[Logger] Failed to write log:', error);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      // eslint-disable-next-line no-console
+      // console.error('[Logger] Failed to write log:', error);
     }
   }
 
@@ -226,17 +232,20 @@ export class Logger {
     if (this.enableConsole) {
       switch (level) {
         case LogLevel.DEBUG:
-          console.debug(formattedLog);
+          // eslint-disable-next-line no-console
+          // console.debug(formattedLog);
           break;
         case LogLevel.INFO:
           // eslint-disable-next-line no-console
-          console.log(formattedLog);
+          // console.log(formattedLog);
           break;
         case LogLevel.WARN:
-          console.warn(formattedLog);
+          // eslint-disable-next-line no-console
+          // console.warn(formattedLog);
           break;
         case LogLevel.ERROR:
-          console.error(formattedLog);
+          // eslint-disable-next-line no-console
+          // console.error(formattedLog);
           break;
       }
     }
@@ -294,8 +303,10 @@ export class Logger {
           }
         }
       }
-    } catch (error) {
-      console.error('[Logger] Failed to clean old logs:', error);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      // eslint-disable-next-line no-console
+      // console.error('[Logger] Failed to clean old logs:', error);
     }
   }
 

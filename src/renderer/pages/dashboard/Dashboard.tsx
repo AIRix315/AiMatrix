@@ -36,7 +36,8 @@ const Dashboard: React.FC = () => {
         setProjects(projectList || []);
       }
     } catch (error) {
-      console.error('Failed to load projects:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to load projects:', error);
       setToast({
         type: 'error',
         message: `加载项目列表失败: ${error instanceof Error ? error.message : String(error)}`
@@ -65,7 +66,8 @@ const Dashboard: React.FC = () => {
         await loadProjects();
       }
     } catch (error) {
-      console.error('Failed to create project:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to create project:', error);
       setToast({
         type: 'error',
         message: `创建项目失败: ${error instanceof Error ? error.message : String(error)}`
@@ -86,7 +88,8 @@ const Dashboard: React.FC = () => {
         await loadProjects();
       }
     } catch (error) {
-      console.error('Failed to delete project:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to delete project:', error);
       setToast({
         type: 'error',
         message: `删除项目失败: ${error instanceof Error ? error.message : String(error)}`

@@ -46,7 +46,8 @@ const Plugins: React.FC = () => {
         setPlugins(pluginList || []);
       }
     } catch (error) {
-      console.error('Failed to load plugins:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to load plugins:', error);
       setToast({
         type: 'error',
         message: `加载插件列表失败: ${error instanceof Error ? error.message : String(error)}`
@@ -69,7 +70,8 @@ const Plugins: React.FC = () => {
         setMarketPlugins(plugins || []);
       }
     } catch (error) {
-      console.error('Failed to load market plugins:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to load market plugins:', error);
       setToast({
         type: 'error',
         message: `加载市场插件失败: ${error instanceof Error ? error.message : String(error)}`
@@ -122,7 +124,8 @@ const Plugins: React.FC = () => {
         setShowInstallModal(false);
       }
     } catch (error) {
-      console.error('Failed to install plugin:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to install plugin:', error);
       setToast({
         type: 'error',
         message: `插件安装失败: ${error instanceof Error ? error.message : String(error)}`
@@ -143,7 +146,8 @@ const Plugins: React.FC = () => {
         await loadPlugins();
       }
     } catch (error) {
-      console.error('Failed to uninstall plugin:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to uninstall plugin:', error);
       setToast({
         type: 'error',
         message: `卸载插件失败: ${error instanceof Error ? error.message : String(error)}`

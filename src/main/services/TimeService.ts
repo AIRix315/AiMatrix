@@ -10,7 +10,7 @@
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { Logger } from './Logger';
+import { logger } from './Logger';
 
 const execAsync = promisify(exec);
 
@@ -24,7 +24,6 @@ export interface TimeService {
 
 export class TimeServiceImpl implements TimeService {
   private static instance: TimeServiceImpl;
-  private logger?: Logger;
   private lastSyncTime: Date | null = null;
   private timeDriftThreshold = 5000; // 5秒时间偏差阈值
   private ntpServers = [
@@ -35,13 +34,6 @@ export class TimeServiceImpl implements TimeService {
 
   private constructor() {
     // Logger 延迟初始化
-  }
-
-  private getLogger(): Logger {
-    if (!this.logger) {
-      this.logger = Logger.getInstance();
-    }
-    return this.logger;
   }
 
   public static getInstance(): TimeServiceImpl {
@@ -98,7 +90,7 @@ export class TimeServiceImpl implements TimeService {
             return true;
           }
         } catch (error) {
-          await this.getLogger().warn(`NTP同步失败 ${server}`, 'TimeService', { error });
+          await logger.warn(`NTP同步失败 ${server}`, 'TimeService', { error });
         }
       }
       
@@ -107,7 +99,7 @@ export class TimeServiceImpl implements TimeService {
       await this.logTimeOperation('syncWithNTP_fallback', this.lastSyncTime);
       return false;
     } catch (error) {
-      await this.getLogger().error('NTP同步过程中发生错误', 'TimeService', { error });
+      await logger.error('NTP同步过程中发生错误', 'TimeService', { error });
       return false;
     }
   }
@@ -125,7 +117,7 @@ export class TimeServiceImpl implements TimeService {
       const timeDiff = Math.abs(currentTime.getTime() - now);
       
       if (timeDiff > this.timeDriftThreshold) {
-        await this.getLogger().warn(`检测到时间偏差: ${timeDiff}ms`, 'TimeService');
+        await logger.warn(`检测到时间偏差: ${timeDiff}ms`, 'TimeService');
         return false;
       }
       
@@ -135,7 +127,7 @@ export class TimeServiceImpl implements TimeService {
         const maxSyncAge = 5 * 60 * 1000; // 5分钟
         
         if (syncAge > maxSyncAge) {
-          await this.getLogger().warn(`时间同步过期: ${syncAge}ms`, 'TimeService');
+          await logger.warn(`时间同步过期: ${syncAge}ms`, 'TimeService');
           return false;
         }
       }
@@ -143,7 +135,7 @@ export class TimeServiceImpl implements TimeService {
       await this.logTimeOperation('validateTimeIntegrity', currentTime, { isValid: true });
       return true;
     } catch (error) {
-      await this.getLogger().error('时间验证失败', 'TimeService', { error });
+      await logger.error('时间验证失败', 'TimeService', { error });
       return false;
     }
   }
@@ -162,7 +154,7 @@ export class TimeServiceImpl implements TimeService {
         try {
           await execAsync(`w32tm /resync /force`, { timeout: 5000 });
         } catch (error) {
-          await this.getLogger().warn(`Windows NTP同步失败（可能需要管理员权限）: ${server}`, 'TimeService', { error });
+          await logger.warn(`Windows NTP同步失败（可能需要管理员权限）: ${server}`, 'TimeService', { error });
           // 不抛出错误，让系统使用系统时间
           return false;
         }
@@ -171,7 +163,7 @@ export class TimeServiceImpl implements TimeService {
         try {
           await execAsync(`sntp -sS ${server}`, { timeout: 5000 });
         } catch (error) {
-          await this.getLogger().warn(`macOS NTP同步失败: ${server}`, 'TimeService', { error });
+          await logger.warn(`macOS NTP同步失败: ${server}`, 'TimeService', { error });
           return false;
         }
       } else if (platform === 'linux') {
@@ -182,7 +174,7 @@ export class TimeServiceImpl implements TimeService {
           try {
             await execAsync(`chronyc sources || chronyc makestep`, { timeout: 5000 });
           } catch (error) {
-            await this.getLogger().warn(`Linux NTP同步失败: ${server}`, 'TimeService', { error });
+            await logger.warn(`Linux NTP同步失败: ${server}`, 'TimeService', { error });
             return false;
           }
         }
@@ -190,7 +182,7 @@ export class TimeServiceImpl implements TimeService {
       
       return true;
     } catch (error) {
-      await this.getLogger().error(`与NTP服务器 ${server} 同步失败`, 'TimeService', { error });
+      await logger.error(`与NTP服务器 ${server} 同步失败`, 'TimeService', { error });
       return false;
     }
   }
@@ -199,8 +191,8 @@ export class TimeServiceImpl implements TimeService {
    * 记录时间操作
    * @private
    */
-  private async logTimeOperation(operation: string, timestamp: Date, data?: any): Promise<void> {
-    await this.getLogger().debug(
+  private async logTimeOperation(operation: string, timestamp: Date, data?: Record<string, unknown>): Promise<void> {
+    await logger.debug(
       `时间操作: ${operation}`,
       'TimeService',
       {
@@ -216,7 +208,7 @@ export class TimeServiceImpl implements TimeService {
    * 确保被装饰的方法在执行前验证时间有效性
    */
   public static requireValidTime() {
-    return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor | undefined) {
+    return function (target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor | undefined) {
       if (!descriptor) {
         // 处理没有描述符的情况（如访问器属性）
         return;
@@ -224,7 +216,7 @@ export class TimeServiceImpl implements TimeService {
       
       const originalMethod = descriptor.value;
       
-      descriptor.value = async function (...args: any[]) {
+      descriptor.value = async function (...args: unknown[]) {
         const timeService = TimeServiceImpl.getInstance();
         const isTimeValid = await timeService.validateTimeIntegrity();
         
@@ -250,17 +242,9 @@ export class TimeServiceImpl implements TimeService {
  */
 export class TimeMonitor {
   private static instance: TimeMonitor;
-  private logger?: Logger;
 
   private constructor() {
     // Logger 延迟初始化
-  }
-
-  private getLogger(): Logger {
-    if (!this.logger) {
-      this.logger = Logger.getInstance();
-    }
-    return this.logger;
   }
 
   public static getInstance(): TimeMonitor {
@@ -285,7 +269,7 @@ export class TimeMonitor {
       await this.logTimeOperation(operation, startTime, endTime);
       return true;
     } catch (error) {
-      await this.getLogger().error(`时间操作验证失败: ${operation}`, 'TimeMonitor', { error });
+      await logger.error(`时间操作验证失败: ${operation}`, 'TimeMonitor', { error });
       return false;
     }
   }
@@ -297,7 +281,7 @@ export class TimeMonitor {
   private async logTimeOperation(operation: string, start: Date, end: Date): Promise<void> {
     const duration = end.getTime() - start.getTime();
 
-    await this.getLogger().debug(
+    await logger.debug(
       `时间操作监控: ${operation}`,
       'TimeMonitor',
       {

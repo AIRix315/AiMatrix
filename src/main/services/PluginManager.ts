@@ -146,7 +146,8 @@ export class PluginManager {
 
       // MVP: 直接 require 加载（后续版本使用沙箱）
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pluginModule = require(mainFile);
+      // 使用 eval('require') 绕过 Webpack 静态分析
+      const pluginModule = eval('require')(mainFile);
 
       // 获取默认导出或 default 属性
       const plugin: Plugin = pluginModule.default || pluginModule;

@@ -4,10 +4,12 @@
    ========================================= */
 
 .dashboard {
+    width: 100%;
     padding: var(--page-padding); /* 使用 CSS 变量 */
     overflow-y: auto;
     color: var(--text-main);
     background: var(--bg-canvas);
+    box-sizing: border-box;
 }
 
 .dashboard-header {

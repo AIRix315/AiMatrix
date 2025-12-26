@@ -3,6 +3,16 @@
    从设计原型提取的插件页样式
    ========================================= */
 
+/* 确保插件页面容器占据整个可用宽度 */
+.dashboard {
+    width: 100%;
+    padding: var(--page-padding);
+    overflow-y: auto;
+    color: var(--text-main);
+    background: var(--bg-canvas);
+    box-sizing: border-box;
+}
+
 .plugin-section {
     margin-bottom: 30px;
 }
@@ -146,6 +156,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    width: 100%;
 }
 
 /* 搜索和筛选栏 */
@@ -316,8 +327,13 @@
     line-height: 1.4;
     flex: 1;
     display: -webkit-box;
+    display: -ms-box;
     -webkit-line-clamp: 3;
+    -ms-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
+    -ms-box-orient: vertical;
+    box-orient: vertical;
     overflow: hidden;
     margin: 0;
 }
@@ -376,6 +392,7 @@
 
 .market-grid {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    width: 100%;
 }
 
 /* 响应式调整 */

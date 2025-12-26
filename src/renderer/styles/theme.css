@@ -11,13 +11,24 @@
     --bg-nav: #141414;
     --bg-card: #1e1e1e;
     
+    /* 资产库页面专用背景色 */
+    --bg-primary: #0f0f0f;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #222222;
+    --bg-hover: #2a2a2a;
+    
     /* 边框和强调色 */
     --border-color: #2b2b2b;
-    --accent-color: #00E676; 
+    --border-primary: #333333;
+    --border-secondary: #444444;
+    --accent-color: #00E676;
+    --accent-primary: #00E676;
     --accent-dim: rgba(0, 230, 118, 0.1);
     
     /* 文字颜色 */
     --text-main: #e0e0e0;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
     --text-muted: #757575;
     
     /* 尺寸变量 */

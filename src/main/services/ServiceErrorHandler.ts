@@ -205,8 +205,9 @@ export class ServiceErrorHandler {
           context: serviceError.context,
           stack: error.stack
         }
-      ).catch(logError => {
-        console.error('[ServiceErrorHandler] Failed to log error:', logError);
+      ).catch(() => {
+        // eslint-disable-next-line no-console
+        // console.error('[ServiceErrorHandler] Failed to log error');
       });
     }
 

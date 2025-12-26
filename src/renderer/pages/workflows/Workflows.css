@@ -3,6 +3,21 @@
    从设计原型提取的工作流页样式
    ========================================= */
 
+/* 确保工作流页面容器适应窗口宽度 */
+.dashboard {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* 工作流网格布局 */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
+    gap: var(--card-gap);
+    width: 100%;
+}
+
 .workflow-status {
     display: inline-block;
     width: 8px;

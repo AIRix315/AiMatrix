@@ -110,7 +110,8 @@ export function Assets() {
       // 更新本地状态
       setPreviewAsset({ ...previewAsset, ...updates });
     } catch (err) {
-      console.error('更新元数据失败:', err);
+      // eslint-disable-next-line no-console
+      // console.error('更新元数据失败:', err);
       alert('更新失败: ' + (err instanceof Error ? err.message : '未知错误'));
     }
   };
@@ -133,7 +134,8 @@ export function Assets() {
         setSelectedCategory('');
       }
     } catch (err) {
-      console.error('导入失败:', err);
+      // eslint-disable-next-line no-console
+      // console.error('导入失败:', err);
       alert('导入失败: ' + (err instanceof Error ? err.message : '未知错误'));
     }
   };

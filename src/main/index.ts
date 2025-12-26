@@ -13,6 +13,7 @@ import { logger, Logger, LogLevel } from './services/Logger';
 import { pluginManager } from './services/PluginManager';
 import { pluginMarketService } from './services/PluginMarketService';
 import { taskScheduler } from './services/TaskScheduler';
+import { TaskType } from './services/TaskScheduler';
 import { apiManager } from './services/APIManager';
 import { configManager } from './services/ConfigManager';
 import { timeService } from './services/TimeService';
@@ -204,19 +205,18 @@ class MatrixApp {
       app.exit();
     });
     ipcMain.handle('app:log', async (_, level: string, message: string, context?: string, data?: unknown) => {
-      const loggerInstance = Logger.getInstance();
       switch (level) {
         case 'debug':
-          await loggerInstance.debug(message, context || 'Renderer', data);
+          await logger.debug(message, context || 'Renderer', data);
           break;
         case 'info':
-          await loggerInstance.info(message, context || 'Renderer', data);
+          await logger.info(message, context || 'Renderer', data);
           break;
         case 'warn':
-          await loggerInstance.warn(message, context || 'Renderer', data);
+          await logger.warn(message, context || 'Renderer', data);
           break;
         case 'error':
-          await loggerInstance.error(message, context || 'Renderer', data);
+          await logger.error(message, context || 'Renderer', data);
           break;
       }
     });
@@ -324,7 +324,7 @@ class MatrixApp {
     ipcMain.handle('workflow:execute', async (_, config) => {
       // 创建工作流任务并执行
       const taskId = await taskScheduler.createTask({
-        type: 'workflow' as any,
+        type: TaskType.WORKFLOW,
         name: config.name || 'Workflow Execution',
         description: config.description,
         metadata: config
@@ -339,9 +339,10 @@ class MatrixApp {
       return { success: true };
     });
     ipcMain.handle('workflow:list', async () => {
-      // 读取 library/workflows 目录
+      // 读取工作空间路径下的 workflows 目录
       try {
-        const workflowsDir = path.join(app.getPath('userData'), 'library', 'workflows');
+        const workspacePath = configManager.getGeneralSettings().workspacePath;
+        const workflowsDir = path.join(workspacePath, 'workflows');
         const files = await fs.readdir(workflowsDir);
         const workflows = [];
 
@@ -363,14 +364,16 @@ class MatrixApp {
       }
     });
     ipcMain.handle('workflow:save', async (_, workflowId, config) => {
-      const workflowsDir = path.join(app.getPath('userData'), 'library', 'workflows');
+      const workspacePath = configManager.getGeneralSettings().workspacePath;
+      const workflowsDir = path.join(workspacePath, 'workflows');
       await fs.mkdir(workflowsDir, { recursive: true });
       const filePath = path.join(workflowsDir, `${workflowId}.json`);
       await fs.writeFile(filePath, JSON.stringify(config, null, 2), 'utf-8');
       return { success: true };
     });
     ipcMain.handle('workflow:load', async (_, workflowId) => {
-      const workflowsDir = path.join(app.getPath('userData'), 'library', 'workflows');
+      const workspacePath = configManager.getGeneralSettings().workspacePath;
+      const workflowsDir = path.join(workspacePath, 'workflows');
       const filePath = path.join(workflowsDir, `${workflowId}.json`);
       const content = await fs.readFile(filePath, 'utf-8');
       return JSON.parse(content);
@@ -648,7 +651,7 @@ class MatrixApp {
       return Promise.resolve(`重启本地服务: ${serviceId}`);
     });
 
-    await logger.debug('IPC处理器设置完成', 'MatrixApp');
+    logger.debug('IPC处理器设置完成', 'MatrixApp');
   }
 
   private async cleanup(): Promise<void> {

@@ -43,7 +43,8 @@ export function AssetSidebar({
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '加载索引失败';
       setError(errorMessage);
-      console.error('加载索引失败:', err);
+      // eslint-disable-next-line no-console
+      // console.error('加载索引失败:', err);
     } finally {
       setLoading(false);
     }

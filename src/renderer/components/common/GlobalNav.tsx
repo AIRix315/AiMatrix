@@ -15,30 +15,30 @@ const navItems: NavItem[] = [
   {
     id: 'home',
     label: '首页',
-    icon: 'home',
+    icon: 'projects_icon.ico',
     path: '/',
     title: '首页 (Projects)',
   },
   {
     id: 'assets',
-    label: '素材',
-    icon: 'library',
+    label: '资产库',
+    icon: 'content.ico',
     path: '/assets',
-    title: '素材 (Assets)',
+    title: '资产库 (Assets)',
   },
   {
     id: 'plugins',
     label: '插件',
-    icon: 'plugins',
+    icon: 'plugin_market.ico',
     path: '/plugins',
     title: '插件 (Market)',
   },
   {
     id: 'workflow',
-    label: '小说转视频',
-    icon: 'video',
+    label: '工作台',
+    icon: 'filter.ico',
     path: '/workflow',
-    title: '小说转视频 (Workflow)',
+    title: '工作台 (Workflow)',
     separator: true,
   },
 ];
@@ -47,14 +47,14 @@ const bottomNavItems: NavItem[] = [
   {
     id: 'settings',
     label: '设置',
-    icon: 'settings',
+    icon: 'settings.ico',
     path: '/settings',
     title: '设置',
   },
   {
     id: 'about',
     label: '关于',
-    icon: 'info',
+    icon: 'info.ico',
     path: '/about',
     title: '关于',
   },
@@ -91,14 +91,11 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
       style={item.separator ? { marginTop: '10px', borderTop: '1px solid var(--border-color)' } : undefined}
     >
       <div className="menu-icon-box">
-        <span className="material-icons" style={{ fontSize: '20px' }}>
-          {item.icon === 'home' && '🏠'}
-          {item.icon === 'library' && '📁'}
-          {item.icon === 'plugins' && '🧩'}
-          {item.icon === 'video' && '🎬'}
-          {item.icon === 'settings' && '⚙️'}
-          {item.icon === 'info' && 'ℹ️'}
-        </span>
+        <img
+          src={`./icons/${item.icon}`}
+          alt={item.label}
+          style={{ width: '40px', height: '40px' }}
+        />
       </div>
       <span className="menu-label">{item.label}</span>
     </div>

@@ -78,7 +78,8 @@ export function AssetGrid({
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '加载资产失败';
       setError(errorMessage);
-      console.error('加载资产失败:', err);
+      // eslint-disable-next-line no-console
+      // console.error('加载资产失败:', err);
     } finally {
       setLoading(false);
     }
@@ -135,7 +136,8 @@ export function AssetGrid({
       // 重新加载当前页
       loadAssets(1, false);
     } catch (err) {
-      console.error('删除资产失败:', err);
+      // eslint-disable-next-line no-console
+      // console.error('删除资产失败:', err);
       alert('删除失败: ' + (err instanceof Error ? err.message : '未知错误'));
     }
   };

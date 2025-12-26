@@ -10,6 +10,37 @@ interface Provider {
   status?: 'on' | 'off';
 }
 
+interface LoggingConfig {
+  savePath: string;
+  retentionDays: number;
+}
+
+interface GeneralConfig {
+  workspacePath: string;
+  logging: LoggingConfig;
+}
+
+interface Model {
+  id: string;
+  name: string;
+  ctx?: string;
+}
+
+interface ProviderConfig {
+  id: string;
+  name: string;
+  type: 'local' | 'cloud' | 'relay';
+  enabled: boolean;
+  apiKey?: string;
+  baseUrl: string;
+  models?: Model[];
+}
+
+interface AppConfig {
+  general: GeneralConfig;
+  providers: ProviderConfig[];
+}
+
 const providers: Provider[] = [
   {
     id: 'global',
@@ -41,7 +72,7 @@ const Settings: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<AppConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // 加载配置
@@ -55,7 +86,8 @@ const Settings: React.FC = () => {
       const settings = await window.electronAPI.getAllSettings();
       setConfig(settings);
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to load settings:', error);
       setToast({
         type: 'error',
         message: `加载配置失败: ${error instanceof Error ? error.message : String(error)}`
@@ -70,7 +102,8 @@ const Settings: React.FC = () => {
   };
 
   const handleConfigChange = (section: string, field: string, value: string | boolean | number) => {
-    setConfig((prev: any) => {
+    setConfig((prev: AppConfig | null) => {
+      if (!prev) return prev;
       if (section === 'general') {
         return {
           ...prev,
@@ -94,7 +127,7 @@ const Settings: React.FC = () => {
         // Provider 配置
         return {
           ...prev,
-          providers: prev.providers.map((p: any) => {
+          providers: prev.providers.map((p: ProviderConfig) => {
             if (p.id === section) {
               return { ...p, [field]: value };
             }
@@ -116,7 +149,8 @@ const Settings: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Failed to select directory:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to select directory:', error);
       setToast({
         type: 'error',
         message: `选择目录失败: ${error instanceof Error ? error.message : String(error)}`
@@ -133,7 +167,8 @@ const Settings: React.FC = () => {
         message: '配置保存成功'
       });
     } catch (error) {
-      console.error('Failed to save config:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to save config:', error);
       setToast({
         type: 'error',
         message: `保存配置失败: ${error instanceof Error ? error.message : String(error)}`
@@ -146,7 +181,10 @@ const Settings: React.FC = () => {
   const handleTestConnection = async (providerId: string) => {
     try {
       setIsTesting(true);
-      const provider = config.providers.find((p: any) => p.id === providerId);
+      if (!config) {
+        throw new Error('Config not loaded');
+      }
+      const provider = config.providers.find((p: ProviderConfig) => p.id === providerId);
       if (!provider) {
         throw new Error('Provider not found');
       }
@@ -159,9 +197,11 @@ const Settings: React.FC = () => {
 
       if (result.success) {
         // 更新模型列表
-        setConfig((prev: any) => ({
-          ...prev,
-          providers: prev.providers.map((p: any) => {
+        setConfig((prev: AppConfig | null) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            providers: prev.providers.map((p: ProviderConfig) => {
             if (p.id === providerId) {
               return {
                 ...p,
@@ -174,7 +214,8 @@ const Settings: React.FC = () => {
             }
             return p;
           })
-        }));
+          };
+        });
 
         setToast({
           type: 'success',
@@ -187,7 +228,8 @@ const Settings: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Failed to test connection:', error);
+      // eslint-disable-next-line no-console
+      // console.error('Failed to test connection:', error);
       setToast({
         type: 'error',
         message: `测试连接失败: ${error instanceof Error ? error.message : String(error)}`
@@ -207,7 +249,7 @@ const Settings: React.FC = () => {
     );
   }
 
-  const currentProvider = config.providers.find((p: any) => p.id === currentTab);
+  const currentProvider = config.providers.find((p: ProviderConfig) => p.id === currentTab);
 
   return (
     <div className="settings-layout">
@@ -222,7 +264,7 @@ const Settings: React.FC = () => {
         </div>
         <div className="provider-list">
           {providers.map((provider) => {
-            const providerConfig = config.providers.find((p: any) => p.id === provider.id);
+            const providerConfig = config.providers.find((p: ProviderConfig) => p.id === provider.id);
             const isEnabled = providerConfig?.enabled ?? true;
             return (
               <div
@@ -360,7 +402,7 @@ const Settings: React.FC = () => {
                 <div className="config-section">
                   <div className="config-label">已添加模型 (Model Library)</div>
                   <div className="model-list-grid">
-                    {currentProvider.models.map((model: any) => (
+                    {currentProvider.models.map((model: Model) => (
                       <div key={model.id} className="model-item-card">
                         <div className="model-icon">{model.name.substring(0, 2).toUpperCase()}</div>
                         <div className="model-info">

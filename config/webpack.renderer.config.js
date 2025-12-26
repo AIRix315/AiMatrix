@@ -2,6 +2,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -36,7 +37,7 @@ module.exports = {
         use: 'babel-loader'
       },
       {
-        test: /\.(png|jpe?g|gif|svg)$/,
+        test: /\.(png|jpe?g|gif|svg|ico)$/,
         type: 'asset/resource'
       }
     ]
@@ -47,6 +48,11 @@ module.exports = {
       filename: 'index.html',
       inject: 'body',
       scriptLoading: 'blocking' // 使用阻塞方式加载脚本，确保在 DOM 加载前执行
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: path.resolve(__dirname, '../resources/icons'), to: 'icons' }
+      ]
     }),
     new webpack.ProvidePlugin({
       process: 'process/browser',

@@ -64,9 +64,10 @@ export class PathUtils {
       PathUtils.getProjectsDir()
     ];
 
-    dirs.forEach(dir => {
+    dirs.forEach(() => {
       // 这里应该确保目录存在，但由于在主进程中，需要使用文件系统API
-      console.log(`确保目录存在: ${dir}`);
+      // eslint-disable-next-line no-console
+      // console.log(`确保目录存在: ${dir}`);
     });
   }
 

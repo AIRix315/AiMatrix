@@ -160,7 +160,7 @@
 - 预期结果: 打开页面，拖入一个“Start”节点和一个“End”节点，连上线，刷新页面后连线依然存在。
 - CHANGELOG: feat(workflow): integrated react-flow with drag-and-drop node editing
 
-### [ ] [E03] 插件管理系统完善 (Plugins页面)
+### [*] [E03] 插件管理系统完善 (Plugins页面)
 *   **任务**:
     1.  实现插件安装流程。
     2.  插件市场集成。

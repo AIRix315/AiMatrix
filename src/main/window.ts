@@ -1,4 +1,4 @@
-import { BrowserWindow, screen, app } from 'electron';
+import { BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 
 export class WindowManager {
@@ -19,7 +19,7 @@ export class WindowManager {
         preload: path.join(__dirname, '../preload/index.js'),
         devTools: true // 启用开发者工具
       },
-      // icon: path.join(__dirname, '../../resources/icons/icon.png'), // 图标文件暂不存在，注释掉
+      icon: path.join(__dirname, '../../resources/images/MatrixStudio.ico'), // 窗口图标
       show: false
     });
 
@@ -27,10 +27,7 @@ export class WindowManager {
     // 开发和生产模式都使用 loadFile，避免 webpack-dev-server 的兼容性问题
     this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
 
-    // 开发模式下打开开发者工具
-    if (!app.isPackaged) {
-      this.mainWindow.webContents.openDevTools();
-    }
+    // 开发者工具默认不自动打开，可通过 F12 快捷键手动打开
 
     // 窗口准备显示时才显示，避免视觉闪烁
     this.mainWindow.once('ready-to-show', () => {

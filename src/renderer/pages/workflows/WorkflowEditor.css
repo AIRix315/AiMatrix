@@ -1,8 +1,10 @@
 .workflow-editor {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
+  width: 100%;
   background: var(--bg-canvas);
+  box-sizing: border-box;
 }
 
 .editor-toolbar {
@@ -39,6 +41,8 @@
 .editor-panels {
   flex: 1;
   overflow: hidden;
+  width: 100%;
+  min-width: 0;
 }
 
 /* 节点库样式 */

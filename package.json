@@ -1,6 +1,6 @@
 {
   "name": "matrix-ai-workflow",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "AI视频生成工作流管理平台",
   "main": "build/main/index.js",
   "homepage": "./",
@@ -60,6 +60,7 @@
     "@vitest/ui": "^3.2.4",
     "buffer": "^6.0.3",
     "concurrently": "^8.0.0",
+    "copy-webpack-plugin": "^13.0.1",
     "cross-env": "^7.0.3",
     "crypto-browserify": "^3.12.1",
     "css-loader": "^7.1.2",

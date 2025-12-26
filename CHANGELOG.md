@@ -184,6 +184,34 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.8] - 2025-12-26
+
+### Fixed
+- fix(eslint): 修复所有ESLint错误
+  - Logger.ts: 修复4处未使用变量错误（_error参数）
+  - ServiceErrorHandler.ts: 修复1处未使用变量错误（_logError参数）
+  - Settings.tsx: 修复9处any类型错误，添加完整类型定义
+    - 定义LoggingConfig、GeneralConfig、Model、ProviderConfig、AppConfig接口
+    - 将所有any替换为具体类型，添加必要的null检查
+- fix(workflow): 修复工作流编辑器宽度适配问题
+  - WorkflowEditor.css: 添加width: 100%和box-sizing: border-box
+  - editor-panels: 添加width: 100%和min-width: 0确保三栏布局正确
+  - 工作流编辑器现在正确适应窗口宽度
+
+### Changed
+- revert(workflow): 从Git恢复工作流页面文件
+  - Workflows.tsx、Workflows.css、WorkflowEditor.tsx、WorkflowEditor.css、workflowValidator.ts
+
+### Technical Details
+- 修改文件：
+  - src/main/services/Logger.ts (4处修复)
+  - src/main/services/ServiceErrorHandler.ts (1处修复)
+  - src/renderer/pages/settings/Settings.tsx (添加类型定义+9处修复)
+  - src/renderer/pages/workflows/WorkflowEditor.css (宽度适配修复)
+  - src/renderer/pages/workflows/Workflows.css (响应式布局添加)
+
+---
+
 ## [0.2.6] - 2025-12-26
 
 ### Added
