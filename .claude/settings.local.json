@@ -34,7 +34,11 @@
       "Bash(xargs:*)",
       "Bash(npm test:*)",
       "Bash(mkdir:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "WebFetch(domain:www.shadcn.com.cn)",
+      "Bash(npm uninstall:*)",
+      "Bash(timeout /t 10 /nobreak)",
+      "WebFetch(domain:ui.shadcn.com)"
     ]
   },
   "enabledPlugins": {

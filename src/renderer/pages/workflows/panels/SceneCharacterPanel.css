@@ -1,14 +1,16 @@
 /**
  * SceneCharacterPanel样式
+ * 使用CSS变量控制padding
  */
 
 .scene-character-panel {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 24px;
+  padding: var(--page-padding); /* 使用CSS变量 */
   background: var(--bg-secondary);
   border-radius: 8px;
+  box-sizing: border-box;
 }
 
 /* 章节选择器 */

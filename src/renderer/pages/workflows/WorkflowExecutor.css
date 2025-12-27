@@ -1,18 +1,21 @@
 /**
  * WorkflowExecutor样式
+ * 遵循Dashboard页面的全宽CSS模式
  */
 
 .workflow-executor {
   display: flex;
   flex-direction: column;
+  width: 100%; /* 全宽，与Dashboard一致 */
   height: 100vh;
   background: var(--bg-primary);
+  box-sizing: border-box;
 }
 
 /* 步骤进度条 */
 .workflow-progress {
   flex-shrink: 0;
-  padding: 24px;
+  padding: var(--section-padding); /* 使用CSS变量 */
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
 }
@@ -114,7 +117,7 @@
 .workflow-panel {
   flex: 1;
   overflow: hidden;
-  padding: 24px;
+  /* 去掉 padding，让各个 Panel 自己控制内边距，避免双重 padding */
 }
 
 /* 错误状态 */

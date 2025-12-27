@@ -184,6 +184,48 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.9.6] - 2025-12-28
+
+### Added
+- feat(ui): Phase 8 H01-H04 UI设计系统迁移（Sprint 1 核心任务）
+  - 创建 SidebarContext 全局侧边栏状态管理
+  - 实现侧边栏收缩功能（左侧导航栏）
+  - 应用 V2 OKLCH 色彩系统（赛博朋克暗黑主题）
+  - 集成 Google Fonts（Inter + JetBrains Mono）
+  - 添加 Framer Motion 弹簧动画（damping: 25, stiffness: 300）
+  - WindowBar 添加侧边栏收缩按钮（PanelLeftClose/Open 图标）
+  - GlobalNav 支持流畅收缩动画
+
+### Changed
+- refactor(styles): 全局样式文件更新为 V2 设计规范
+  - 更新 globals.css 应用 OKLCH 色彩空间
+  - 添加自定义滚动条样式（深色主题）
+  - 更新 CSP 策略支持 Google Fonts
+  - 字体系统：Inter（主字体）+ JetBrains Mono（等宽）
+
+### Removed
+- chore(cleanup): 删除冗余 Projects 页面
+  - 删除 src/renderer/pages/projects/ 目录
+  - 清理重复的项目管理功能
+
+### Fixed
+- fix(deps): 安装 framer-motion@12.23.26 依赖
+  - 使用 --legacy-peer-deps 解决依赖冲突
+
+### Technical Details
+- **色彩系统**:
+  - 主色调: oklch(0.85 0.22 160) - 电子绿
+  - 背景色: oklch(0.12 0 0) - 深黑
+  - 侧边栏: oklch(0.1 0 0) - 更深背景
+- **动画系统**: Framer Motion 弹簧动画
+- **构建状态**: ✅ 编译成功（1个非关键警告）
+- **完成度**: Sprint 1 核心任务 4/9 (44%)
+
+### Documentation
+- 更新 TODO.md Phase 8 任务状态（H1.1-H1.4 已完成）
+
+--------------------------------------------
+
 ## [0.2.9.5] - 2025-12-27
 
 ### Fixed

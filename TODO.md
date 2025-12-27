@@ -1,12 +1,12 @@
 # MATRIX Studio 开发执行总纲 v1.1
 
 ## 📂 项目状态概览
-*   **当前版本**: v0.2.9.4 (Phase 7 架构标准化与API固化完成)
-*   **当前阶段**: Phase 7 完成，准备启动 Phase 8
-*   **最后更新**: 2025-12-27
+*   **当前版本**: v0.2.9.6 (Phase 8 UI设计系统迁移 - Sprint 1 进行中)
+*   **当前阶段**: Phase 8 Sprint 1 (44% 完成)
+*   **最后更新**: 2025-12-28
 *   **架构依据**: `/docs/00-06` 文档集
-*   **参考UI**: `docs/references/UI/matrix`
-*   **功能完成度**: 约95% (插件标准化完成，等待测试覆盖提升)
+*   **参考UI**: `docs/references/UI/matrix`, `docs/08-ui-design-specification-v1.0.0.md`
+*   **功能完成度**: 约95% (插件标准化完成，UI设计系统迁移进行中)
 
 ---
 
@@ -365,11 +365,227 @@
 
 ------
 
-## 📋 Phase 8: 测试覆盖与交付验证 (v0.3.0规划)
-**目标**: 提升测试覆盖率至80%+，完成交付前验证
-**状态**: ⏳ 待Phase 7完成后启动
+## 🎨 Phase 8: UI 设计系统迁移与三栏布局实现 (v0.3.0核心功能)
+**目标**: 应用 V2 设计规范，实现 WorkflowExecutor 完整三栏布局与交互控件
+**状态**: 🔄 进行中 (Sprint 1: 44% 完成)
+**当前版本**: v0.2.9.6
+**基准文档**: `docs/08-ui-design-specification-v1.0.0.md`, `plans/ui-optimization-plan.md`
+**参考实现标准** (重要):
+- **主题系统**: `src/renderer/pages/about/ThemeShowcase.tsx` - OKLCH色彩、字体、圆角规范
+- **组件库**: `src/renderer/pages/demo/UIDemo.tsx` - Button、Card、Input、Badge、Icons等标准实现
+**版本**: v0.3.0-ui-upgrade
 
-### [ ] [I01] 服务层单元测试
+### [🔄] [H01] Sprint 1: 核心页面 V2 设计迁移 (44% 完成)
+*   **目标**: 全局应用 V2 赛博朋克暗黑主题，实现侧边栏收缩控制
+*   **参考**: `docs/08-ui-design-specification-v1.0.0.md`
+*   **任务清单**:
+    - [x] **[H1.1]** 删除冗余 Projects 页面 ✅ v0.2.9.6
+        - 删除 `src/renderer/pages/projects/Projects.tsx`
+        - 删除 `App.tsx` 中的 `/projects` 路由
+        - **验收**: 应用启动无报错，路由表干净
+
+    - [x] **[H1.2]** 全局样式文件更新 ✅ v0.2.9.6
+        - 创建 `src/renderer/styles/globals.css`（OKLCH色彩系统）
+        - 从 `docs/references/UI/V2/app/globals.css` 迁移所有CSS变量
+        - 配置自定义滚动条样式
+        - 在 `index.html` 添加 Google Fonts（Inter + JetBrains Mono）
+        - **参考**: `ThemeShowcase.tsx` colorTokens/chartColors/sidebarColors 数组定义
+        - **验收**: 页面背景变为 `oklch(0.12 0 0)`，字体应用 Inter
+
+    - [x] **[H1.3]** WindowBar V2 迁移 + 侧边栏收缩按钮 ✅ v0.2.9.6
+        - 应用 V2 Header 设计（h-14 / 56px）
+        - 添加左侧收缩按钮（`PanelLeftOpen/Close` 图标）
+        - 创建 SidebarContext 全局状态管理
+        - 集成 Framer Motion 弹簧动画
+        - **参考**: `UIDemo.tsx` Button组件（size="icon"变体）
+        - **验收**: 按钮可见，点击触发侧边栏收缩（动画流畅）
+
+    - [x] **[H1.4]** GlobalNav V2 迁移（可收缩）✅ v0.2.9.6
+        - 应用 V2 Sidebar 设计（w-64 / 256px，bg-sidebar）
+        - 支持收缩状态（width: 0，opacity: 0）
+        - 集成 Framer Motion 弹簧动画（damping: 25, stiffness: 300）
+        - **参考**: `ThemeShowcase.tsx` sidebarColors 色彩定义
+        - **验收**: 侧边栏样式符合规范，收缩动画流畅
+
+    - [ ] **[H1.5]** Dashboard V2 迁移
+        - 项目卡片应用 V2 SceneCard 风格
+        - 使用 Framer Motion 悬停动画（scale: 1.02）
+        - **参考**: `UIDemo.tsx` Card组件（CardHeader/CardContent/CardFooter结构）
+        - **验收**: 卡片圆角 8px，悬停有缩放效果
+
+    - [ ] **[H1.6]** Assets 左侧分类导航
+        - 创建左侧 Sidebar（w-64），包含资产类型分类树
+        - 实现作用域切换（全局/项目资源）
+        - 分类项：文本📝、图像🖼️、音频🎵、视频🎬、脚本📜
+        - **验收**: 点击分类过滤资产，作用域切换正常
+        
+    - [ ] **[H1.7]** Workflows 视图切换按钮
+        - 添加 `Grid3x3` / `List` 图标按钮组
+        - 添加全屏切换按钮（`Maximize2`）
+        - **参考**: `UIDemo.tsx` Button（variant切换）和Icons（lucide-react图标）
+        - **验收**: 按钮可见，切换功能正常
+
+    - [ ] **[H1.8]** ProgressOrb 状态球组件
+        - 创建 `src/renderer/components/common/ProgressOrb.tsx`
+        - 实现 SVG 圆环进度（64x64px）
+        - 中心显示队列数，外圈显示进度百分比
+        - 生成时播放脉动动画
+        - 固定定位：`fixed bottom-6 right-6`
+        - **参考**: `ThemeShowcase.tsx` primary色彩（电绿 oklch(0.85 0.22 160)）
+        - **验收**: 状态球显示在右下角，数字和圆环正常渲染
+
+    - [ ] **[H1.9]** 侧边栏收缩快捷键
+        - 实现 `Ctrl+B`（切换左侧边栏）
+        - 实现 `Ctrl+Alt+B`（切换右侧边栏）
+        - 实现 `Ctrl+\`（切换所有侧边栏）
+        - 安装 `react-hotkeys-hook` 依赖
+        - **验收**: 快捷键生效，侧边栏收缩/展开正常
+*   **里程碑**: 所有页面应用 V2 设计风格，侧边栏可收缩
+
+### [ ] [H02] Sprint 2: 三栏布局与功能补齐 
+*   **目标**: 实现 WorkflowExecutor 完整三栏布局（左项目树 + 中内容区 + 右属性面板）
+*   **参考**: `plans/ui-optimization-plan.md` Phase 1.4
+*   **任务清单**:
+    - [ ] **[H2.1]** WorkflowExecutor 三栏布局重构
+        - 修改 `WorkflowExecutor.tsx`，实现左中右三栏布局
+        - 左侧：项目资源树（可收缩，宽度 256px）
+        - 中间：工作流步骤内容区（flex-1）
+        - 右侧：属性面板（可收缩，宽度 320px）
+        - **验收**: 三栏布局渲染正常，比例协调
+
+    - [ ] **[H2.2]** RightSettingsPanel 右侧属性面板
+        - 创建 `src/renderer/components/workflow/RightSettingsPanel.tsx`
+        - 实现 Tab 切换：【属性】|【工具】
+        - 实现检查器区域（显示当前选中项信息）
+        - 实现 Prompt 编辑器（Textarea，h-24）
+        - 实现生成设置表单（模型、步数、CFG、种子）
+        - 实现关联资产显示（Tag 列表）
+        - 实现底部绿色"生成 (GENERATE)"按钮（w-full, size-lg）
+        - **参考**: `UIDemo.tsx` Tabs/Input/Label/Button组件（完整表单实现示例）
+        - **验收**: 面板完整显示，字段可编辑，按钮可点击
+
+    - [ ] **[H2.3]** 视图模式切换（卡片/列表）
+        - 创建 `SceneCardGrid.tsx`（卡片网格视图，grid-cols-1/2/3）
+        - 创建 `SceneListView.tsx`（列表视图，紧凑行布局）
+        - 实现视图切换按钮逻辑（Grid3x3 / List）
+        - 实现用户偏好持久化（localStorage）
+        - **参考**: `UIDemo.tsx` Card组件和Button状态切换示例
+        - **验收**: 两种视图正常切换，刷新后保持上次选择
+
+    - [ ] **[H2.4]** 右侧面板与卡片联动
+        - 点击分镜卡片时，右侧面板显示其详细信息
+        - 修改 Prompt/参数后，数据同步到状态
+        - 支持批量选中（Shift/Ctrl点击）
+        - **验收**: 点击卡片，右侧面板立即更新
+
+    - [ ] **[H2.5]** 实现 ChapterSplitPanel 业务逻辑
+        - 实现小说文件上传（txt/docx）
+        - 实现 AI 章节识别（调用 ChapterService）
+        - 实现章节列表展示（可编辑标题）
+        - 实现"下一步"按钮（保存数据，跳转下一面板）
+        - **验收**: 上传小说后自动拆分章节，可手动调整
+
+    - [ ] **[H2.6]** 实现 SceneCharacterPanel 业务逻辑
+        - 实现场景卡片网格展示
+        - 实现角色管理（添加、编辑、删除）
+        - 调用后端服务提取场景和角色
+        - **验收**: 显示场景列表，角色可管理
+
+    - [ ] **[H2.7]** 实现 StoryboardPanel 业务逻辑
+        - 实现分镜卡片/列表双视图
+        - 实现"重生成"按钮（单个分镜）
+        - 集成右侧属性面板（编辑 Prompt）
+        - 调用后端生成分镜图（ComfyUI）
+        - **验收**: 分镜可生成，可编辑，支持两种视图
+
+    - [ ] **[H2.8]** 实现 VoiceoverPanel 业务逻辑
+        - 实现旁白列表展示
+        - 实现音色选择下拉框
+        - 实现试听按钮（播放音频）
+        - 调用后端 TTS 服务生成音频
+        - **验收**: 可生成配音，可试听
+*   **里程碑**: WorkflowExecutor 三栏布局完整，5 个面板功能可用
+
+### [ ] [H03] Sprint 3: 交互优化与测试
+*   **目标**: 完善交互细节，添加动画，进行全面测试
+*   **任务清单**:
+    - [ ] **[H3.1]** ProgressOrb 点击展开任务列表
+        - 实现任务列表底部抽屉（Sheet 组件）
+        - 显示所有队列任务、进度、预计时间
+        - 支持取消/重试单个任务
+        - **验收**: 点击状态球，抽屉弹出，任务列表完整
+
+    - [ ] **[H3.2]** Framer Motion 动画全局应用
+        - 卡片悬停动画（whileHover: scale 1.02）
+        - 侧边栏展开动画（弹簧参数：damping 25, stiffness 300）
+        - 模态框弹出动画（initial: opacity 0, scale 0.95）
+        - 选项卡切换动画（layoutId="activeTab"）
+        - **参考**: `ThemeShowcase.tsx` Tab切换动画实现
+        - **验收**: 所有动画流畅，参数符合规范
+
+    - [ ] **[H3.3]** 键盘快捷键完善
+        - `Ctrl+Shift+G`: 切换视图模式（卡片/列表）
+        - `F11`: 全屏切换
+        - `Ctrl+N`: 新建项目
+        - `Ctrl+,`: 打开设置
+        - **验收**: 所有快捷键生效
+
+    - [ ] **[H3.4]** UI 一致性检查
+        - 检查所有页面色彩符合 `08-ui-design-specification-v1.0.0.md`
+        - 检查字体统一使用 Inter / JetBrains Mono
+        - 检查间距统一使用 4px 基准（gap-1/2/3/4）
+        - 检查圆角统一使用 8px 基准（rounded-lg）
+        - **验收**: 无视觉不一致问题
+
+    - [ ] **[H3.5]** 性能优化
+        - 实现资产网格懒加载（react-window 或 react-virtualized）
+        - 优化图片加载（WebP 格式 + 占位符）
+        - 优化动画性能（使用 transform 代替 left/top）
+        - **验收**: 大量资产加载流畅，无卡顿
+
+    - [ ] **[H3.6]** 无障碍测试
+        - 为所有图标按钮添加 `aria-label`
+        - 测试键盘导航（Tab / Enter / Escape）
+        - 测试屏幕阅读器兼容性
+        - **验收**: 符合 WCAG 2.1 AA 级标准
+*   **里程碑**: UI/UX 打磨完成，交互细节完善
+
+---
+
+### 📋 Phase 8 验收标准
+- [ ] **功能完整性**
+    - [ ] WorkflowExecutor 三栏布局完整（左项目树 + 中内容区 + 右属性面板）
+    - [ ] 右侧属性面板功能完整（检查器、Prompt、生成设置、关联资产）
+    - [ ] 状态球正常工作（显示队列数、进度圆环、点击展开任务列表）
+    - [ ] 侧边栏收缩功能（左右侧独立控制，动画流畅，快捷键有效）
+    - [ ] 视图模式切换（卡片/列表两种布局，用户偏好持久化）
+    - [ ] 5 个工作流面板业务逻辑完整
+- [ ] **UI 规范符合性**
+    - [ ] 色彩系统符合 `08-ui-design-specification-v1.0.0.md`（OKLCH色彩空间）
+    - [ ] 字体使用 Inter（主字体）+ JetBrains Mono（等宽）
+    - [ ] 所有动画使用 Framer Motion（弹簧参数：damping 25, stiffness 300）
+    - [ ] 图标统一使用 lucide-react
+    - [ ] 圆角 8px、间距 4px 基准、按钮高度 32/40/48px
+    - [ ] 对比度满足 WCAG 2.1 AAA 级（正文 7:1）
+- [ ] **代码质量**
+    - [ ] TypeScript 严格模式通过（0 错误）
+    - [ ] ESLint 0 错误
+    - [ ] 组件类型定义完整（Props 接口清晰）
+    - [ ] 无 console.log 残留
+    - [ ] 注释完整（中文）
+- [ ] **性能指标**
+    - [ ] 页面加载 < 1s
+    - [ ] 资产网格渲染 1000+ 项无卡顿
+    - [ ] 动画帧率 > 60fps
+    - [ ] 内存占用增长 < 50MB
+
+---
+
+## 📋 Phase 9: 测试覆盖与交付验证 (v0.3.0规划)
+**目标**: 提升测试覆盖率至80%+，完成交付前验证
+**状态**: ⏳ 待Phase 8完成后启动
+
+### [ ] [J01] 服务层单元测试
 *   **任务**:
     1.  ProjectManager单元测试 (CRUD、元数据管理)。
     2.  AssetManager单元测试 (索引、查询、监听、customFields)。
@@ -378,7 +594,7 @@
     5.  APIManager单元测试 (多提供商、路由、成本)。
 *   **验收**: 核心服务测试覆盖率>80%
 
-### [ ] [I02] IPC通信集成测试
+### [ ] [J02] IPC通信集成测试
 *   **任务**:
     1.  扩展IPC通信集成测试覆盖 (所有80个处理器)。
     2.  测试错误处理和边界条件。

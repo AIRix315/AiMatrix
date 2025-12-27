@@ -30,6 +30,7 @@ if (!window.electronAPI) {
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import './styles/globals.css';
 import './styles/base.css';
 import './styles/theme.css';
 import './styles/layout.css';

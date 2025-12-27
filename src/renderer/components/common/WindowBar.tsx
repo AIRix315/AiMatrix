@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { useSidebar } from '../../contexts/SidebarContext';
 import './WindowBar.css';
 import { logger } from '../../utils/logger';
 
@@ -12,6 +14,7 @@ const WindowBar: React.FC<WindowBarProps> = ({
   version = 'v0.2.9'
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
+  const { leftSidebarCollapsed, toggleLeftSidebar } = useSidebar();
 
   useEffect(() => {
     // 检查窗口是否最大化
@@ -71,6 +74,19 @@ const WindowBar: React.FC<WindowBarProps> = ({
   return (
     <div className="window-bar">
       <div className="window-title">
+        {/* 左侧边栏收缩按钮 */}
+        <button
+          className="sidebar-toggle-btn"
+          onClick={toggleLeftSidebar}
+          title={leftSidebarCollapsed ? '展开侧边栏' : '收缩侧边栏'}
+          aria-label={leftSidebarCollapsed ? '展开侧边栏' : '收缩侧边栏'}
+        >
+          {leftSidebarCollapsed ? (
+            <PanelLeftOpen className="h-4 w-4" />
+          ) : (
+            <PanelLeftClose className="h-4 w-4" />
+          )}
+        </button>
         <span>{title}</span> Studio{' '}
         <span style={{ fontWeight: 'normal', opacity: 0.5, marginLeft: '10px' }}>
           {version}

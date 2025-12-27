@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useSidebar } from '../../contexts/SidebarContext';
 import './GlobalNav.css';
 
 export interface NavItem {
@@ -73,6 +75,7 @@ interface GlobalNavProps {
 const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { leftSidebarCollapsed } = useSidebar();
 
   const handleItemClick = (item: NavItem) => {
     navigate(item.path);
@@ -115,7 +118,14 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
   );
 
   return (
-    <nav className="global-menu">
+    <motion.nav
+      className={`global-menu ${leftSidebarCollapsed ? 'collapsed' : ''}`}
+      animate={{
+        width: leftSidebarCollapsed ? 0 : 80,
+        opacity: leftSidebarCollapsed ? 0 : 1,
+      }}
+      transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+    >
       {/* 主导航项 */}
       {navItems.map(renderNavItem)}
 
@@ -124,7 +134,7 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
 
       {/* 底部导航项 */}
       {bottomNavItems.map(renderNavItem)}
-    </nav>
+    </motion.nav>
   );
 };
 

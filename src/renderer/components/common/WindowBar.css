@@ -16,9 +16,39 @@
     -webkit-app-region: drag; /* 允许拖拽窗口 */
 }
 
+.window-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .window-title span {
     color: var(--text-main);
     font-weight: bold;
+}
+
+/* 侧边栏切换按钮 */
+.sidebar-toggle-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    -webkit-app-region: no-drag;
+}
+
+.sidebar-toggle-btn:hover {
+    background: var(--sidebar-accent);
+    color: var(--text-main);
+}
+
+.sidebar-toggle-btn:active {
+    transform: scale(0.95);
 }
 
 .window-controls {
