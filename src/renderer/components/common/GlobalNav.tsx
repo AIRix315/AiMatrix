@@ -120,9 +120,11 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
   return (
     <motion.nav
       className={`global-menu ${leftSidebarCollapsed ? 'collapsed' : ''}`}
-      animate={{
-        width: leftSidebarCollapsed ? 0 : 80,
-        opacity: leftSidebarCollapsed ? 0 : 1,
+      animate={leftSidebarCollapsed ? {
+        width: 0,
+        opacity: 0,
+      } : {
+        opacity: 1,
       }}
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
     >
