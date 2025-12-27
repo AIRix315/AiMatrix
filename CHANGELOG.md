@@ -211,6 +211,14 @@ Closes #123
 ### Fixed
 - fix(deps): 安装 framer-motion@12.23.26 依赖
   - 使用 --legacy-peer-deps 解决依赖冲突
+- fix(GlobalNav): 修复侧边栏宽度和悬停展开功能 ⚠️ **重要修复**
+  - 问题：展开状态下宽度只有 80px，文字显示不全
+  - 问题：鼠标悬停无法自动展开到 200px
+  - 问题：Framer Motion inline style 覆盖了 CSS hover 效果
+  - 修复：移除非折叠状态下的 width 强制设置
+  - 修复：让 CSS 自己处理宽度（默认 60px，hover 200px）
+  - 修复：仅在折叠状态使用 Framer Motion 控制 width: 0
+  - 效果：收缩状态完全隐藏，展开状态正常显示图标（60px），悬停显示完整文字（200px）
 
 ### Technical Details
 - **色彩系统**:
