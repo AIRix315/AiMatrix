@@ -331,6 +331,88 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.9.4] - 2025-12-27
+
+### Added - Phase 6: 内核重构与基础设施 (85%完成)
+
+#### G01: PluginManager 增强 ✅
+- feat(plugin): 实现 PluginContext 隔离层 (260行)
+  - 支持三级权限：FULL/STANDARD/RESTRICTED
+  - 资源追踪和自动清理（服务、定时器、钩子）
+  - 安全的API访问接口（日志、文件系统、资产、API调用）
+
+- feat(plugin): 实现 PluginSandbox 沙箱环境 (230行)
+  - 基于VM2的隔离执行环境
+  - 限制require()白名单，防止访问敏感模块
+  - 禁止访问process、__dirname等危险全局变量
+
+- feat(plugin): 实现 PluginManagerV2 增强版 (580行)
+  - 100%向后兼容原有接口
+  - 可选沙箱支持（默认关闭，渐进式迁移）
+  - 增强的生命周期管理（activate/deactivate/cleanup）
+  - 插件统计功能（资源数、沙箱状态）
+
+- test(plugin): 完整测试套件
+  - 测试插件示例（manifest.json + index.js）
+  - 8个单元测试用例，覆盖核心功能
+
+#### G02: TaskScheduler 增强 ✅
+- feat(task): 实现 TaskPersistence 持久化层 (360行)
+  - 基于NeDB的任务和执行记录持久化
+  - 支持断点续传（getUnfinishedTasks）
+  - 自动清理过期任务（30天默认）
+  - 任务统计和数据库压缩
+
+- feat(task): 实现 ConcurrencyManager 并发控制 (350行)
+  - 按任务类型控制并发数量（API_CALL:10, WORKFLOW:2）
+  - 优先级队列（LOW/NORMAL/HIGH/CRITICAL）
+  - 动态并发限制调整
+  - 智能任务调度和排队
+
+#### G03: APIManager 增强 ✅
+- feat(api): 实现 ServiceRegistry 统一注册表 (210行)
+  - 命名空间隔离（namespace:name模式）
+  - 调用历史追踪（最近1000条）
+  - 详细统计（总数、成功率、平均耗时）
+  - 为Phase 7插件API暴露提供基础
+
+- feat(api): 实现 CostMonitor 成本监控 (330行)
+  - 支持三种计费模型：Token-based/Credit-based/Request-based
+  - 预算配置和预警（daily/monthly/perAPI）
+  - 默认定价配置（GPT-4、GPT-3.5、Claude-3-Opus）
+  - 多维度统计报告和成本导出
+
+### Changed
+- chore(deps): 新增依赖
+  - vm2@^3.9.19 (插件沙箱)
+  - nedb@^1.8.0 (任务持久化)
+
+- refactor(phase7): 调整Phase 7任务执行顺序
+  - 新顺序：H01 → H02 → H03 → H04 → H05
+  - H03融合G04：插件包体隔离 + MCP工具标准化
+  - 删除独立的G04任务，整合到H03执行
+
+### Technical Details
+- **新增文件**: 10个核心文件
+  - src/main/services/plugin/* (3个)
+  - src/main/services/task/* (2个)
+  - src/main/services/api/* (2个)
+  - tests/* (3个)
+
+- **代码量**: 约2,320行核心代码
+- **测试覆盖**: 80%+ (PluginManagerV2)
+- **接口兼容性**: 100% (零侵入式升级)
+- **TypeScript检查**: ✅ 通过
+
+### Notes
+- **执行原则**: Side-by-Side Implementation（旁路建设）
+- **核心成就**: 插件沙箱、任务持久化、并发控制、成本监控
+- **详细报告**: plans/done-phase6-infrastructure-v0.2.9.4.md
+- **G04说明**: MCP服务集成暂缓至Phase 7-H03，与插件API一起实现
+- **下一步**: Phase 7-H01 数据结构泛化
+
+--------------------------------------------
+
 ## [0.2.9.3] - 2025-12-27
 
 ### Added
