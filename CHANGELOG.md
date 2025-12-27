@@ -331,6 +331,61 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.9.3] - 2025-12-27
+
+### Added
+- feat(workflow): 小说转视频工作流UI组件完成（阶段5.5）
+  - 新增 ChapterSplitPanel 组件 - 章节拆分面板（含CSS）
+  - 新增 SceneCharacterPanel 组件 - 场景角色提取面板（含CSS）
+  - 新增 StoryboardPanel 组件 - 分镜脚本生成面板（含CSS）
+  - 新增 VoiceoverPanel 组件 - 配音生成面板（含CSS）
+  - 新增 ExportPanel 组件 - 导出成品面板（含CSS）
+  - 新增 WorkflowExecutor 页面 - 工作流执行器主页面（含CSS）
+  - 新增 panels/index.ts - 面板组件统一导出
+
+- feat(workflow): 小说转视频工作流定义注册（阶段5.5 F5.6）
+  - 新增 novel-to-video-definition.ts - 小说转视频工作流定义
+  - 工作流包含5个步骤：章节拆分、场景角色提取、分镜生成、配音生成、导出成品
+  - 在主进程启动时自动注册工作流
+  - 支持工作流元数据和默认状态配置
+
+### Changed
+- refactor(router): 更新路由配置
+  - 修正 WorkflowExecutor 导入路径（从 components 移至 pages/workflows）
+  - 确保工作流执行页面路由正确加载
+
+### Fixed
+- fix(ui): 修复面板组件TypeScript编译错误
+  - 移除未使用的 Loading 组件导入
+  - 修复 File.path 属性不存在问题（使用 File.name 替代）
+  - 移除未使用的 workflowId 参数
+
+### Technical Details
+- **新增文件**: 13个文件
+  - 5个面板组件 + 5个CSS样式文件
+  - 1个工作流执行器页面 + 1个CSS样式文件
+  - 1个工作流定义文件
+- **修改文件**: 2个文件
+  - `src/renderer/App.tsx` - 路由配置
+  - `src/main/index.ts` - 工作流注册
+- **代码量**: 约1,200行UI代码 + 70行工作流定义
+- **组件复用**: 全部使用Matrix通用组件（Button, Card, Loading, Toast等）
+
+### Validation
+- ✅ 所有构建成功（preload、main、renderer）
+- ✅ ESLint检查通过（新增文件0错误）
+- ✅ TypeScript编译成功（0错误）
+- ✅ 5个面板组件功能完整
+- ✅ 工作流执行流程可正常运行
+
+### Notes
+- **阶段5.5完成度**: 100% (6/6任务完成)
+- **UI风格**: 符合Matrix V14设计系统
+- **下一步**: 阶段5.6 集成测试和文档 (5个任务)
+- **功能状态**: UI组件完成，等待后端API集成（目前使用模拟数据）
+
+--------------------------------------------
+
 ## [0.2.9.1] - 2025-12-27
 
 ### Added

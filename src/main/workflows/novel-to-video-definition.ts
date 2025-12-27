@@ -1,0 +1,73 @@
+/**
+ * 小说转视频工作流定义
+ *
+ * 功能：将小说文本转换为短视频作品
+ */
+
+import { WorkflowDefinition } from '../../shared/types/workflow'
+
+/**
+ * 小说转视频工作流定义
+ */
+export const novelToVideoWorkflow: WorkflowDefinition = {
+  id: 'novel-to-video-v1',
+  name: '小说转视频',
+  type: 'novel-to-video',
+  description: '将小说文本转换为短视频作品，支持自动章节拆分、场景角色提取、分镜生成、配音生成',
+  version: '1.0.0',
+  icon: '📖',
+
+  steps: [
+    {
+      id: 'split-chapters',
+      name: '章节拆分',
+      description: '上传小说文件，自动拆分为章节',
+      status: 'pending',
+      componentType: 'ChapterSplitPanel'
+    },
+    {
+      id: 'extract-scenes',
+      name: '场景角色提取',
+      description: '使用AI从章节中提取场景和角色信息',
+      status: 'pending',
+      componentType: 'SceneCharacterPanel'
+    },
+    {
+      id: 'generate-storyboard',
+      name: '分镜脚本生成',
+      description: '为场景生成分镜脚本和图片/视频资源',
+      status: 'pending',
+      componentType: 'StoryboardPanel'
+    },
+    {
+      id: 'generate-voiceover',
+      name: '配音生成',
+      description: '为分镜生成AI配音音频',
+      status: 'pending',
+      componentType: 'VoiceoverPanel'
+    },
+    {
+      id: 'export',
+      name: '导出成品',
+      description: '合成并导出最终视频文件',
+      status: 'pending',
+      componentType: 'ExportPanel'
+    }
+  ],
+
+  defaultState: {
+    chapters: [],
+    scenes: [],
+    characters: [],
+    storyboards: [],
+    voiceovers: [],
+    exportPath: ''
+  },
+
+  metadata: {
+    author: 'Matrix Studio',
+    category: 'AI创作',
+    tags: ['小说', '视频', 'AI', '自动化'],
+    estimatedTime: '根据章节数量和场景复杂度，约10-60分钟'
+  }
+}

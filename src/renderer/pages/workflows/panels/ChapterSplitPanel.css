@@ -1,0 +1,90 @@
+/**
+ * ChapterSplitPanel样式
+ */
+
+.chapter-split-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+/* 面板头部 */
+.panel-header {
+  margin-bottom: 24px;
+}
+
+.panel-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.panel-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* 面板内容 */
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 上传区域 */
+.upload-section {
+  margin-bottom: 24px;
+}
+
+.file-info {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.file-path {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  word-break: break-all;
+}
+
+/* 章节列表区域 */
+.chapter-list-section {
+  margin-top: 24px;
+}
+
+.chapter-list-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+
+.chapter-list-section .count {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: normal;
+}
+
+.chapter-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+/* 面板底部 */
+.panel-footer {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

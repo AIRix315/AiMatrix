@@ -6,7 +6,7 @@ import Assets from './pages/assets/Assets';
 import Plugins from './pages/plugins/Plugins';
 import Workflows from './pages/workflows/Workflows';
 import WorkflowEditor from './pages/workflows/WorkflowEditor';
-import { WorkflowExecutor } from './components/WorkflowExecutor';
+import WorkflowExecutor from './pages/workflows/WorkflowExecutor';
 import Settings from './pages/settings/Settings';
 import About from './pages/about/About';
 

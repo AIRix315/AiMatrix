@@ -1,0 +1,133 @@
+/**
+ * WorkflowExecutor样式
+ */
+
+.workflow-executor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-primary);
+}
+
+/* 步骤进度条 */
+.workflow-progress {
+  flex-shrink: 0;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.progress-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.progress-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.steps-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  padding: 0 24px;
+}
+
+.steps-bar::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 60px;
+  right: 60px;
+  height: 2px;
+  background: var(--border-color);
+  z-index: 0;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.step-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.step-item.active .step-indicator {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.step-item.completed .step-indicator {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.step-name {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 120px;
+  transition: color 0.3s ease;
+}
+
+.step-item.active .step-name {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.step-item.completed .step-name {
+  color: var(--text-primary);
+}
+
+/* 工作流面板 */
+.workflow-panel {
+  flex: 1;
+  overflow: hidden;
+  padding: 24px;
+}
+
+/* 错误状态 */
+.workflow-executor-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 24px;
+}
+
+.workflow-executor-error h2 {
+  font-size: 24px;
+  color: var(--text-primary);
+}

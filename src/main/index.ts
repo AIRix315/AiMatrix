@@ -20,6 +20,7 @@ import { timeService } from './services/TimeService';
 import { registerWorkflowHandlers } from './ipc/workflow-handlers';
 import { workflowRegistry } from './services/WorkflowRegistry';
 import { testWorkflowDefinition } from './workflows/test-workflow';
+import { novelToVideoWorkflow } from './workflows/novel-to-video-definition';
 
 // 注册自定义协议为特权协议（必须在 app.ready 之前）
 protocol.registerSchemesAsPrivileged([
@@ -114,8 +115,16 @@ class MatrixApp {
         workflowName: testWorkflowDefinition.name,
         workflowType: testWorkflowDefinition.type
       });
+
+      // 注册小说转视频工作流
+      workflowRegistry.register(novelToVideoWorkflow);
+
+      logger.info('小说转视频工作流已注册', 'MatrixApp', {
+        workflowName: novelToVideoWorkflow.name,
+        workflowType: novelToVideoWorkflow.type
+      });
     } catch (error) {
-      logger.error('注册测试工作流失败', 'MatrixApp', { error });
+      logger.error('注册工作流失败', 'MatrixApp', { error });
     }
   }
 
