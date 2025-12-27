@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Modal, Toast, Loading, ConfirmDialog } from '../../components/common';
+import { motion } from 'framer-motion';
+import { Button, Modal, Toast, Loading, ConfirmDialog } from '../../components/common';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 import type { ToastType } from '../../components/common/Toast';
 import './Dashboard.css';
 
@@ -137,15 +140,31 @@ const Dashboard: React.FC = () => {
         ) : viewMode === 'list' ? (
           <div className="project-list">
             {projects.map((project) => (
-              <div key={project.id} className="project-item-wrapper">
+              <motion.div
+                key={project.id}
+                className="project-item-wrapper"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              >
                 <Card
-                  tag={project.tag || 'Project'}
-                  image={project.image || '🎬'}
-                  title={project.name}
-                  info={`Path: ${project.path}`}
-                  hoverable
+                  className="cursor-pointer rounded-lg"
                   onClick={() => handleOpenProject(project.id)}
-                />
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{project.name}</CardTitle>
+                      <Badge variant="secondary">{project.tag || 'Project'}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <div className="project-image">
+                      {project.image || '🎬'}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="text-sm text-muted-foreground pt-2">
+                    {project.path}
+                  </CardFooter>
+                </Card>
                 <button
                   className="delete-btn"
                   onClick={(e) => {
@@ -156,21 +175,37 @@ const Dashboard: React.FC = () => {
                 >
                   ×
                 </button>
-              </div>
+              </motion.div>
             ))}
           </div>
         ) : (
           <div className="project-grid">
             {projects.map((project) => (
-              <div key={project.id} className="project-card-wrapper">
+              <motion.div
+                key={project.id}
+                className="project-card-wrapper"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              >
                 <Card
-                  tag={project.tag || 'Project'}
-                  image={project.image || '🎬'}
-                  title={project.name}
-                  info={`Path: ${project.path}`}
-                  hoverable
+                  className="cursor-pointer rounded-lg h-full flex flex-col"
                   onClick={() => handleOpenProject(project.id)}
-                />
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{project.name}</CardTitle>
+                      <Badge variant="secondary">{project.tag || 'Project'}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pb-2 flex-1">
+                    <div className="project-image">
+                      {project.image || '🎬'}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="text-sm text-muted-foreground pt-2">
+                    {project.path}
+                  </CardFooter>
+                </Card>
                 <button
                   className="delete-btn"
                   onClick={(e) => {
@@ -181,7 +216,7 @@ const Dashboard: React.FC = () => {
                 >
                   ×
                 </button>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

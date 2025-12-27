@@ -9,3 +9,4 @@ export { default as Toast } from './Toast';
 export { default as Loading } from './Loading';
 export { default as Modal } from './Modal';
 export { default as ConfirmDialog } from './ConfirmDialog';
+export { ProgressOrb } from './ProgressOrb';

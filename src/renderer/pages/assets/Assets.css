@@ -1,60 +1,189 @@
 /**
- * Assets 页面样式
+ * Assets 页面样式 - V2
  *
- * 布局：左侧边栏 + 右侧主内容区
- * 参考：docs/references/UI/matrix 的设计风格
+ * 布局：左侧分类导航 (256px) + 右侧主内容区
+ * 色彩：OKLCH 色彩系统
  */
 
+/* ===== 页面布局 ===== */
+.assets-page {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background: oklch(0.12 0 0);
+    overflow: hidden;
+}
+
+/* ===== 左侧 Sidebar ===== */
+.assets-sidebar {
+    width: 256px;
+    background: oklch(0.1 0 0);
+    border-right: 1px solid oklch(0.24 0 0);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* Sidebar 区块 */
+.sidebar-section {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid oklch(0.24 0 0);
+}
+
+.sidebar-section:last-child {
+    border-bottom: none;
+}
+
+.sidebar-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: oklch(0.58 0 0);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+/* 作用域切换 */
+.scope-switcher {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.scope-btn {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: 1px solid oklch(0.24 0 0);
+    border-radius: 0.5rem;
+    color: oklch(0.92 0 0);
+    font-size: 0.875rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.scope-btn:hover {
+    background: oklch(0.18 0 0);
+}
+
+.scope-btn.active {
+    background: oklch(0.85 0.22 160);
+    color: oklch(0.12 0 0);
+    border-color: oklch(0.85 0.22 160);
+    font-weight: 500;
+}
+
+/* 分类列表 */
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    color: oklch(0.92 0 0);
+    font-size: 0.875rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.category-item:hover {
+    background: oklch(0.18 0 0);
+}
+
+.category-item.active {
+    background: oklch(0.18 0 0);
+    color: oklch(0.85 0.22 160);
+    font-weight: 500;
+}
+
+.category-icon {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.category-item.active .category-icon {
+    opacity: 1;
+}
+
+.category-label {
+    flex: 1;
+}
+
+/* ===== 右侧主内容区 ===== */
+.assets-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 /* ===== 视图头部 (View Header) ===== */
-.view-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-header);
-  flex-shrink: 0;
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid oklch(0.24 0 0);
+    background: oklch(0.12 0 0);
+    flex-shrink: 0;
+}
+
+.dashboard-content {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
 }
 
 .view-title {
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--text-main);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: oklch(0.92 0 0);
 }
 
-.view-actions {
-  display: flex;
-  gap: 8px;
+.view-title small {
+    font-size: 0.875rem;
+    color: oklch(0.58 0 0);
+    font-weight: 400;
 }
 
 /* 视图切换容器 */
 .view-switch-container {
-  display: flex;
-  gap: 8px;
+    display: flex;
+    gap: 0.5rem;
 }
 
 /* 视图切换按钮 */
 .view-switch-btn {
-  padding: 6px 12px;
-  font-size: 12px;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-  background: transparent;
-  color: var(--text-main);
-  cursor: pointer;
-  transition: all 0.2s;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    border: 1px solid oklch(0.24 0 0);
+    background: transparent;
+    color: oklch(0.92 0 0);
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .view-switch-btn.active {
-  background: var(--accent-color);
-  color: #000;
-  border-color: var(--accent-color);
-  font-weight: 500;
+    background: oklch(0.85 0.22 160);
+    color: oklch(0.12 0 0);
+    border-color: oklch(0.85 0.22 160);
+    font-weight: 500;
 }
 
 .view-switch-btn:hover:not(.active) {
-  background: var(--bg-hover);
-  border-color: #666;
+    background: oklch(0.18 0 0);
 }
 
 /* action-btn 样式（严格按照设计参考 6x12px） */

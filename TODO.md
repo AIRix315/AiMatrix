@@ -1,8 +1,8 @@
 # MATRIX Studio 开发执行总纲 v1.1
 
 ## 📂 项目状态概览
-*   **当前版本**: v0.2.9.6 (Phase 8 UI设计系统迁移 - Sprint 1 进行中)
-*   **当前阶段**: Phase 8 Sprint 1 (44% 完成)
+*   **当前版本**: v0.2.9.6 (Phase 8 UI设计系统迁移 - Sprint 1 已完成)
+*   **当前阶段**: Phase 8 Sprint 1 (100% 完成)
 *   **最后更新**: 2025-12-28
 *   **架构依据**: `/docs/00-06` 文档集
 *   **参考UI**: `docs/references/UI/matrix`, `docs/08-ui-design-specification-v1.0.0.md`
@@ -367,7 +367,7 @@
 
 ## 🎨 Phase 8: UI 设计系统迁移与三栏布局实现 (v0.3.0核心功能)
 **目标**: 应用 V2 设计规范，实现 WorkflowExecutor 完整三栏布局与交互控件
-**状态**: 🔄 进行中 (Sprint 1: 44% 完成)
+**状态**: 🔄 进行中 (Sprint 1: ✅ 100% 完成)
 **当前版本**: v0.2.9.6
 **基准文档**: `docs/08-ui-design-specification-v1.0.0.md`, `plans/ui-optimization-plan.md`
 **参考实现标准** (重要):
@@ -375,7 +375,7 @@
 - **组件库**: `src/renderer/pages/demo/UIDemo.tsx` - Button、Card、Input、Badge、Icons等标准实现
 **版本**: v0.3.0-ui-upgrade
 
-### [🔄] [H01] Sprint 1: 核心页面 V2 设计迁移 (44% 完成)
+### [✅] [H01] Sprint 1: 核心页面 V2 设计迁移 (100% 完成)
 *   **目标**: 全局应用 V2 赛博朋克暗黑主题，实现侧边栏收缩控制
 *   **参考**: `docs/08-ui-design-specification-v1.0.0.md`
 *   **任务清单**:
@@ -407,25 +407,25 @@
         - **参考**: `ThemeShowcase.tsx` sidebarColors 色彩定义
         - **验收**: 侧边栏样式符合规范，收缩动画流畅
 
-    - [ ] **[H1.5]** Dashboard V2 迁移
+    - [x] **[H1.5]** Dashboard V2 迁移 ✅ v0.2.9.6
         - 项目卡片应用 V2 SceneCard 风格
         - 使用 Framer Motion 悬停动画（scale: 1.02）
         - **参考**: `UIDemo.tsx` Card组件（CardHeader/CardContent/CardFooter结构）
         - **验收**: 卡片圆角 8px，悬停有缩放效果
 
-    - [ ] **[H1.6]** Assets 左侧分类导航
+    - [x] **[H1.6]** Assets 左侧分类导航 ✅ v0.2.9.6
         - 创建左侧 Sidebar（w-64），包含资产类型分类树
         - 实现作用域切换（全局/项目资源）
         - 分类项：文本📝、图像🖼️、音频🎵、视频🎬、脚本📜
         - **验收**: 点击分类过滤资产，作用域切换正常
-        
-    - [ ] **[H1.7]** Workflows 视图切换按钮
+
+    - [x] **[H1.7]** Workflows 视图切换按钮 ✅ v0.2.9.6
         - 添加 `Grid3x3` / `List` 图标按钮组
         - 添加全屏切换按钮（`Maximize2`）
         - **参考**: `UIDemo.tsx` Button（variant切换）和Icons（lucide-react图标）
         - **验收**: 按钮可见，切换功能正常
 
-    - [ ] **[H1.8]** ProgressOrb 状态球组件
+    - [x] **[H1.8]** ProgressOrb 状态球组件 ✅ v0.2.9.6
         - 创建 `src/renderer/components/common/ProgressOrb.tsx`
         - 实现 SVG 圆环进度（64x64px）
         - 中心显示队列数，外圈显示进度百分比
@@ -434,11 +434,11 @@
         - **参考**: `ThemeShowcase.tsx` primary色彩（电绿 oklch(0.85 0.22 160)）
         - **验收**: 状态球显示在右下角，数字和圆环正常渲染
 
-    - [ ] **[H1.9]** 侧边栏收缩快捷键
+    - [x] **[H1.9]** 侧边栏收缩快捷键 ✅ v0.2.9.6
         - 实现 `Ctrl+B`（切换左侧边栏）
         - 实现 `Ctrl+Alt+B`（切换右侧边栏）
-        - 实现 `Ctrl+\`（切换所有侧边栏）
-        - 安装 `react-hotkeys-hook` 依赖
+        - 实现 `Ctrl+\`（切换左侧边栏备选）
+        - 使用原生 keyboard events 处理
         - **验收**: 快捷键生效，侧边栏收缩/展开正常
 *   **里程碑**: 所有页面应用 V2 设计风格，侧边栏可收缩
 

@@ -1,0 +1,97 @@
+/**
+ * ProgressOrb 状态球样式
+ *
+ * 参考：docs/08-ui-design-specification-v1.0.0.md
+ * 主色调：oklch(0.85 0.22 160) - 电子绿
+ */
+
+/* 容器 */
+.progress-orb {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 64px;
+    height: 64px;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-orb:hover {
+    filter: brightness(1.1);
+}
+
+/* SVG 圆环 */
+.progress-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.progress-ring {
+    transition: stroke-dashoffset 0.3s ease;
+}
+
+/* 脉动动画 */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+        stroke-width: 4;
+        r: 28;
+    }
+    50% {
+        opacity: 0.5;
+        stroke-width: 2;
+        r: 30;
+    }
+    100% {
+        opacity: 0;
+        stroke-width: 1;
+        r: 32;
+    }
+}
+
+.pulse-ring {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* 中心内容 */
+.orb-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.queue-count {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: oklch(0.85 0.22 160);
+    line-height: 1;
+    margin-bottom: 0.125rem;
+}
+
+.progress-text {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: oklch(0.58 0 0);
+    line-height: 1;
+}
+
+/* 生成状态动画 */
+.progress-orb.generating .queue-count {
+    animation: pulse-text 2s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}

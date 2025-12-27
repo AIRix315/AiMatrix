@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Grid3x3, List, Maximize2, Minimize2 } from 'lucide-react';
 import { Card, Button, Toast, Loading } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import './Workflows.css';
@@ -31,10 +32,22 @@ const Workflows: React.FC = () => {
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [workflowDefinitions, setWorkflowDefinitions] = useState<WorkflowDefinition[]>([]);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [activeTab, setActiveTab] = useState<'definitions' | 'instances'>('definitions');
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // 全屏切换
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
 
   useEffect(() => {
     loadWorkflowDefinitions();
@@ -130,25 +143,60 @@ const Workflows: React.FC = () => {
     <div className="dashboard">
       <div className="dashboard-header">
         <div className="view-title">工作流 <small>| 流程管理 (Workflow Management)</small></div>
-        <div className="view-switch-container">
-          <div
-            className={`view-switch-btn ${activeTab === 'definitions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('definitions')}
-          >
-            工作流模板
+
+        <div className="header-actions">
+          {/* Tab 切换 */}
+          <div className="view-switch-container">
+            <div
+              className={`view-switch-btn ${activeTab === 'definitions' ? 'active' : ''}`}
+              onClick={() => setActiveTab('definitions')}
+            >
+              工作流模板
+            </div>
+            <div
+              className={`view-switch-btn ${activeTab === 'instances' ? 'active' : ''}`}
+              onClick={() => setActiveTab('instances')}
+            >
+              我的工作流
+            </div>
           </div>
-          <div
-            className={`view-switch-btn ${activeTab === 'instances' ? 'active' : ''}`}
-            onClick={() => setActiveTab('instances')}
+
+          {/* 视图模式切换按钮 */}
+          {activeTab === 'instances' && workflows.length > 0 && (
+            <div className="view-mode-buttons">
+              <button
+                className={`icon-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="网格视图"
+              >
+                <Grid3x3 size={18} />
+              </button>
+              <button
+                className={`icon-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="列表视图"
+              >
+                <List size={18} />
+              </button>
+            </div>
+          )}
+
+          {/* 全屏切换按钮 */}
+          <button
+            className="icon-btn"
+            onClick={toggleFullscreen}
+            title={isFullscreen ? '退出全屏' : '全屏显示'}
           >
-            我的工作流
-          </div>
+            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          </button>
+
+          {/* 创建工作流按钮 */}
+          {activeTab === 'instances' && (
+            <Button variant="primary" onClick={handleCreateWorkflow}>
+              + 自定义工作流
+            </Button>
+          )}
         </div>
-        {activeTab === 'instances' && (
-          <Button variant="primary" onClick={handleCreateWorkflow}>
-            + 自定义工作流
-          </Button>
-        )}
       </div>
 
       <div className="dashboard-content">
