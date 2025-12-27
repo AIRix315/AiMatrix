@@ -31,7 +31,9 @@
       "Bash(dir:*)",
       "Bash(node -e:*)",
       "Bash(find:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(npm test:*)",
+      "Bash(mkdir:*)"
     ]
   },
   "enabledPlugins": {

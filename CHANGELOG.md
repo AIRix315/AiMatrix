@@ -184,6 +184,153 @@ Closes #123
 
 --------------------------------------------
 
+## [Unreleased] - 2025-12-27
+
+### Added - 阶段5.2: 数据模型和AssetManager集成
+- feat(novel-video): 完整实现小说转视频数据模型系统
+  - 新增 NovelVideoFields 类型定义 (161行) - 支持章节/场景/角色/分镜/配音字段
+  - 新增 NovelVideoAssetHelper 服务 (510行) - 封装资产创建和查询方法
+  - 新增 5个数据类型 (ChapterData, SceneData, CharacterData, StoryboardData, VoiceoverData)
+  - 新增集成测试套件 (389行, 13个测试, 100%通过)
+
+### Added - 阶段5.3: AI服务集成
+- feat(ai): 从ai-playlet复制LangChain Agent相关文件
+  - 新增 src/main/agent/LangChainAgent.ts - LangChain结构化输出封装
+  - 新增 src/main/agent/types.ts, config.ts - Agent配置和类型
+  - 新增 AI实现文件 (4个) - AgentSceneCharacterExtractor, AgentStoryboardScriptGenerator等
+  - 安装langchain, zod, @langchain/community依赖
+
+- feat(api): 扩展APIManager支持T8Star和RunningHub提供商
+  - 新增 APIProvider.T8STAR, APIProvider.RUNNINGHUB 枚举
+  - 新增 callT8StarImage() - T8Star图片生成API (nano-banana模型)
+  - 新增 callT8StarVideo() - T8Star视频生成API (sora-2模型, 支持进度回调)
+  - 新增 callRunningHubTTS() - RunningHub TTS API (4步流程: 上传→创建→轮询→下载)
+  - 新增 pollT8StarVideoStatus() - 视频生成状态轮询 (5秒间隔, 最多5分钟)
+  - 新增 pollRunningHubTaskStatus() - TTS任务状态轮询 (5秒间隔, 最多10分钟)
+  - 新增 uploadRunningHubFile(), createRunningHubTTSTask(), downloadFile() - 辅助方法
+
+- feat(novel-video): 实现NovelVideoAPIService封装层
+  - 新增 NovelVideoAPIService 服务 (330行) - 封装API调用并集成AssetManager
+  - 新增 generateSceneImage() - 场景图片生成 (自动下载并更新元数据)
+  - 新增 generateCharacterImage() - 角色图片生成
+  - 新增 generateStoryboardVideo() - 分镜视频生成 (支持进度回调)
+  - 新增 generateDialogueAudio() - 对白音频生成
+  - 新增 downloadImage(), downloadVideo() - 图片和视频下载方法
+
+### Performance - 阶段5.2测试结果
+- perf(asset): NovelVideoAssetHelper性能优异
+  - 查询100个章节资产: 43.42ms (目标<100ms) ✅
+  - 查询50个场景资产: 32.06ms (目标<100ms) ✅
+  - 创建100个章节资产: 4.06s
+  - 测试覆盖率: 13/13通过
+
+### Technical Details
+- **新增文件**: 11个核心文件
+  - src/shared/types/novel-video.ts (161行)
+  - src/main/services/novel-video/NovelVideoAssetHelper.ts (510行)
+  - src/main/services/novel-video/NovelVideoAPIService.ts (330行)
+  - src/main/agent/* (3个文件)
+  - src/main/services/ai/implementations/* (4个文件)
+  - tests/integration/services/NovelVideoAssetHelper.test.ts (389行)
+
+- **修改文件**: 1个
+  - src/main/services/APIManager.ts (+340行) - T8Star/RunningHub API集成
+
+- **新增依赖**:
+  - langchain@1.2.3
+  - zod (peer dependency)
+  - @langchain/community@1.1.1
+
+### Added - 阶段5.4: 业务服务实现
+- feat(novel-video): 实现5个业务服务完整功能
+  - 新增 ChapterService (270行) - 章节拆分+场景角色提取
+    - splitChapters() - 基于RuleBasedChapterSplitter拆分小说
+    - extractScenesAndCharacters() - LLM提取场景和角色（集成AgentSceneCharacterExtractor）
+    - batchExtractScenesAndCharacters() - 批量提取+角色去重
+
+  - 新增 ResourceService (260行) - 资源生成服务
+    - generateSceneImage() - 场景图片异步生成（集成TaskScheduler）
+    - generateCharacterImage() - 角色图片异步生成
+    - generateSceneImages/generateCharacterImages() - 批量生成（并发控制）
+    - waitForTask/waitForTasks() - 任务等待和结果获取
+
+  - 新增 StoryboardService (240行) - 分镜脚本生成服务
+    - generateScript() - 4步AI链式调用生成分镜脚本
+      - Step 1: 生成剧本分镜描述
+      - Step 2: 生成Sora2视频提示词
+      - Step 3 & 4: 并行执行（角色名替换+图片分镜提示词）
+    - batchGenerateScripts() - 批量生成
+
+  - 新增 VoiceoverService (220行) - 配音生成服务
+    - generateVoiceover() - LLM提取台词+音频生成（集成AgentVoiceoverGenerator）
+    - batchGenerateVoiceovers() - 批量生成配音
+    - 支持音色文件映射（characterId -> voiceFilePath）
+
+  - 新增 index.ts - 统一导出所有NovelVideo服务
+
+### Fixed - 阶段5.4: 编译错误修复
+- fix(ai): LangChain API集成修复（16+个TypeScript编译错误）
+  - 移除无效的 @langchain/deepseek 导入，使用标准 ChatOpenAI
+  - 使用 ChatOpenAI.withStructuredOutput() 替代 createAgent()
+  - 符合用户要求："LangChain API应该纳入基础配置"
+
+- fix(ai): AgentVoiceoverGenerator完全重写（485行→302行）
+  - 移除不存在的 FileSystemService、TTSService、configService 依赖
+  - 简化为仅处理LLM工作（台词提取+情绪分析）
+  - 实际TTS音频生成委托给 VoiceoverService（使用NovelVideoAPIService）
+  - 符合用户要求："文件的导入和导出，应该纳入系统已经存在的资产管理-项目管理范畴"
+  - 构造函数改为接受config getter函数，延迟初始化，实时读取配置
+
+- fix(novel-video): ResourceService修复
+  - 添加 TaskType 导入：`import { TaskScheduler, TaskType } from '../TaskScheduler'`
+  - 修复任务类型：将 `'API_CALL'` 字符串改为 `TaskType.API_CALL` 枚举
+  - 移除不存在的 updateTaskStatus 调用（TaskScheduler内部管理状态）
+  - 修复类型断言：`const errorInfo = task.result as { error?: string } | undefined`
+
+- fix(ai): 接口和实现修复
+  - 创建缺失的 IChapterSplitter.ts 接口（18行）
+  - 修复 RuleBasedChapterSplitter：方法名 `splitChapters()` → `split()`
+  - 修复 AgentStoryboardScriptGenerator：添加缺失的导入和默认参数
+  - 修复 Character 接口字段名：`char.id` → `char.characterId`
+
+- fix(api): APIManager Buffer类型兼容性修复
+  - 修复 uploadRunningHubFile() 中的 Buffer → Blob 转换
+  - 使用 `new Blob([new Uint8Array(fileBuffer)])` 确保类型兼容
+
+- fix(ai): 接口类型定义更新
+  - GenerateStoryboardPromptsInput 添加 `chapter: any` 字段
+  - ImagePromptItem 修改：`prompt: string` → `prompts: string[]`
+
+### Technical Details - 错误修复统计
+- **修复文件**: 9个文件
+  - src/main/agent/LangChainAgent.ts (ChatOpenAI.withStructuredOutput)
+  - src/main/services/ai/implementations/AgentVoiceoverGenerator.ts (完全重写)
+  - src/main/services/novel-video/ResourceService.ts (TaskType修复)
+  - src/main/services/ai/implementations/RuleBasedChapterSplitter.ts (接口实现)
+  - src/main/services/ai/implementations/AgentStoryboardScriptGenerator.ts (导入修复)
+  - src/main/services/ai/interfaces/IStoryboardScriptGenerator.ts (类型更新)
+  - src/main/services/APIManager.ts (Buffer类型修复)
+  - src/main/services/ai/interfaces/IChapterSplitter.ts (新增)
+
+- **构建状态**: ✅ 成功（0错误，0警告）
+- **修复的错误类型**:
+  - TS2307: 模块不存在 (5个)
+  - TS2304: 名称不存在 (4个)
+  - TS2339: 属性不存在 (3个)
+  - TS2322: 类型不匹配 (2个)
+  - TS2820: 枚举类型错误 (1个)
+  - TS2420: 接口实现错误 (1个)
+
+### Notes
+- **阶段5.2完成度**: 100% (3/3任务完成)
+- **阶段5.3完成度**: 100% (4/4任务完成)
+- **阶段5.4完成度**: 100% (5/5任务完成 + 编译错误修复)
+- **下一步**: 阶段5.5 UI组件开发 (6个任务)
+- **代码量**: 约2,390行新增代码 + 389行测试代码
+- **架构改进**: 遵循Matrix架构模式，AI服务与文件操作分离
+
+--------------------------------------------
+
 ## [0.2.9.1] - 2025-12-27
 
 ### Added

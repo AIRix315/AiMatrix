@@ -27,6 +27,8 @@ export enum APIProvider {
   ANTHROPIC = 'anthropic',
   OLLAMA = 'ollama',
   SILICONFLOW = 'siliconflow',
+  T8STAR = 't8star',
+  RUNNINGHUB = 'runninghub',
   CUSTOM = 'custom'
 }
 
@@ -448,6 +450,330 @@ export class APIManager {
       'removeAPI',
       ErrorCode.OPERATION_FAILED
     );
+  }
+
+  /**
+   * T8Star图片生成API调用
+   * @param prompt 图片生成提示词
+   * @param options 可选参数
+   * @returns 生成的图片URL
+   */
+  public async callT8StarImage(
+    prompt: string,
+    options?: {
+      model?: string;
+      aspectRatio?: string;
+      apiKey?: string;
+    }
+  ): Promise<string> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const apiKey = options?.apiKey || this.apis.get('T8Star')?.apiKey;
+        if (!apiKey) {
+          throw new Error('T8Star API key not found');
+        }
+
+        const url = 'https://ai.t8star.cn/v1/images/generations';
+        const headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        };
+
+        const body = {
+          prompt,
+          model: options?.model || 'nano-banana',
+          aspect_ratio: options?.aspectRatio || '16:9'
+        };
+
+        await logger.debug('Calling T8Star Image API', 'APIManager', { prompt });
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(60000) // 60秒超时
+        });
+
+        if (!response.ok) {
+          throw new Error(`T8Star API call failed: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        const imageUrl = result.data?.[0]?.url;
+
+        if (!imageUrl) {
+          throw new Error('No image URL returned from T8Star API');
+        }
+
+        await logger.info('T8Star Image generated', 'APIManager');
+        return imageUrl;
+      },
+      'APIManager',
+      'callT8StarImage',
+      ErrorCode.API_CALL_ERROR
+    );
+  }
+
+  /**
+   * T8Star视频生成API调用
+   * @param options 视频生成参数
+   * @returns 生成的视频URL
+   */
+  public async callT8StarVideo(options: {
+    prompt: string;
+    imagePath?: string;
+    model?: string;
+    apiKey?: string;
+    onProgress?: (progress: number) => void;
+  }): Promise<string> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const apiKey = options.apiKey || this.apis.get('T8Star')?.apiKey;
+        if (!apiKey) {
+          throw new Error('T8Star API key not found');
+        }
+
+        const url = 'https://ai.t8star.cn/v2/videos/generations';
+        const headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        };
+
+        const body: any = {
+          prompt: options.prompt,
+          model: options.model || 'sora-2'
+        };
+
+        if (options.imagePath) {
+          body.image = options.imagePath;
+        }
+
+        await logger.debug('Calling T8Star Video API', 'APIManager', { prompt: options.prompt });
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(180000) // 3分钟超时
+        });
+
+        if (!response.ok) {
+          throw new Error(`T8Star Video API call failed: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        const taskId = result.task_id;
+
+        if (!taskId) {
+          throw new Error('No task ID returned from T8Star Video API');
+        }
+
+        // 轮询任务状态
+        const videoUrl = await this.pollT8StarVideoStatus(taskId, apiKey, options.onProgress);
+
+        await logger.info('T8Star Video generated', 'APIManager');
+        return videoUrl;
+      },
+      'APIManager',
+      'callT8StarVideo',
+      ErrorCode.API_CALL_ERROR
+    );
+  }
+
+  /**
+   * 轮询T8Star视频生成状态
+   */
+  private async pollT8StarVideoStatus(
+    taskId: string,
+    apiKey: string,
+    onProgress?: (progress: number) => void
+  ): Promise<string> {
+    const maxAttempts = 60; // 最多轮询5分钟（每5秒一次）
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 5000)); // 等待5秒
+
+      const statusUrl = `https://ai.t8star.cn/v2/videos/status/${taskId}`;
+      const response = await fetch(statusUrl, {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get video status: ${response.status}`);
+      }
+
+      const status = await response.json();
+
+      if (status.status === 'completed') {
+        return status.video_url;
+      } else if (status.status === 'failed') {
+        throw new Error(`Video generation failed: ${status.error}`);
+      }
+
+      // 更新进度
+      if (onProgress && status.progress) {
+        onProgress(status.progress);
+      }
+
+      attempts++;
+    }
+
+    throw new Error('Video generation timed out');
+  }
+
+  /**
+   * RunningHub TTS API调用（4步流程）
+   * @param params TTS参数
+   * @returns 生成的音频路径
+   */
+  public async callRunningHubTTS(params: {
+    text: string;
+    voiceFilePath: string;
+    emotion: number[];
+    apiKey?: string;
+  }): Promise<string> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const apiKey = params.apiKey || this.apis.get('RunningHub')?.apiKey;
+        if (!apiKey) {
+          throw new Error('RunningHub API key not found');
+        }
+
+        await logger.debug('Starting RunningHub TTS', 'APIManager', { text: params.text });
+
+        // Step 1: 上传音色文件
+        const voiceFileName = await this.uploadRunningHubFile(params.voiceFilePath, apiKey);
+
+        // Step 2: 创建TTS任务
+        const taskId = await this.createRunningHubTTSTask({
+          apiKey,
+          text: params.text,
+          voiceFileName,
+          emotion: params.emotion
+        });
+
+        // Step 3: 轮询任务状态
+        const audioUrl = await this.pollRunningHubTaskStatus(taskId, apiKey);
+
+        // Step 4: 下载音频文件
+        const localPath = await this.downloadFile(audioUrl);
+
+        await logger.info('RunningHub TTS completed', 'APIManager');
+        return localPath;
+      },
+      'APIManager',
+      'callRunningHubTTS',
+      ErrorCode.API_CALL_ERROR
+    );
+  }
+
+  /**
+   * 上传文件到RunningHub
+   */
+  private async uploadRunningHubFile(filePath: string, apiKey: string): Promise<string> {
+    const formData = new FormData();
+    const fileBuffer = await fs.readFile(filePath);
+    // 在Node.js环境中，FormData可以直接接受Buffer
+    // 将Buffer转换为Blob以满足类型要求
+    const blob = new Blob([new Uint8Array(fileBuffer)]);
+    formData.append('file', blob, path.basename(filePath));
+
+    const response = await fetch('https://www.runninghub.cn/task/openapi/upload', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      body: formData as any
+    });
+
+    if (!response.ok) {
+      throw new Error(`File upload failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.file_name;
+  }
+
+  /**
+   * 创建RunningHub TTS任务
+   */
+  private async createRunningHubTTSTask(params: {
+    apiKey: string;
+    text: string;
+    voiceFileName: string;
+    emotion: number[];
+  }): Promise<string> {
+    const response = await fetch('https://www.runninghub.cn/task/openapi/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${params.apiKey}`
+      },
+      body: JSON.stringify({
+        text: params.text,
+        voice_file: params.voiceFileName,
+        emotion: params.emotion
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Task creation failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.task_id;
+  }
+
+  /**
+   * 轮询RunningHub任务状态
+   */
+  private async pollRunningHubTaskStatus(taskId: string, apiKey: string): Promise<string> {
+    const maxAttempts = 120; // 最多轮询10分钟（每5秒一次）
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 5000)); // 等待5秒
+
+      const response = await fetch(
+        `https://www.runninghub.cn/task/openapi/status/${taskId}`,
+        { headers: { 'Authorization': `Bearer ${apiKey}` } }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to get task status: ${response.status}`);
+      }
+
+      const status = await response.json();
+
+      if (status.status === 'completed') {
+        return status.audio_url;
+      } else if (status.status === 'failed') {
+        throw new Error(`TTS generation failed: ${status.error}`);
+      }
+
+      attempts++;
+    }
+
+    throw new Error('TTS generation timed out');
+  }
+
+  /**
+   * 下载文件
+   */
+  private async downloadFile(url: string): Promise<string> {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`File download failed: ${response.status}`);
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const tempDir = path.join(app.getPath('userData'), 'temp');
+    await fs.mkdir(tempDir, { recursive: true });
+
+    const fileName = `audio-${Date.now()}.wav`;
+    const localPath = path.join(tempDir, fileName);
+    await fs.writeFile(localPath, buffer);
+
+    return localPath;
   }
 
   /**
