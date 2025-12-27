@@ -1,0 +1,170 @@
+{
+  "description": "AssetMetadata Schema - 用于Phase 7数据结构泛化",
+  "baseFields": {
+    "id": {
+      "type": "string",
+      "description": "资产唯一ID"
+    },
+    "type": {
+      "type": "enum",
+      "values": [
+        "text",
+        "image",
+        "video",
+        "audio",
+        "other"
+      ]
+    },
+    "scope": {
+      "type": "enum",
+      "values": [
+        "project",
+        "global"
+      ]
+    },
+    "projectId": {
+      "type": "string",
+      "optional": true
+    },
+    "category": {
+      "type": "string",
+      "description": "资产分类"
+    },
+    "tags": {
+      "type": "array",
+      "items": "string"
+    },
+    "filePath": {
+      "type": "string",
+      "description": "文件路径"
+    },
+    "fileName": {
+      "type": "string"
+    },
+    "fileSize": {
+      "type": "number"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "ISO 8601"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "ISO 8601"
+    },
+    "status": {
+      "type": "enum",
+      "values": [
+        "none",
+        "pending",
+        "processing",
+        "success",
+        "failed"
+      ],
+      "optional": true
+    },
+    "prompt": {
+      "type": "string",
+      "optional": true
+    }
+  },
+  "customFields": {
+    "description": "扩展字段，支持插件自定义数据结构",
+    "type": "object",
+    "properties": {
+      "novelVideo": {
+        "type": "object",
+        "description": "NovelVideo插件专用字段",
+        "properties": {
+          "chapterId": {
+            "type": "string",
+            "optional": true
+          },
+          "chapterTitle": {
+            "type": "string",
+            "optional": true
+          },
+          "chapterContent": {
+            "type": "string",
+            "optional": true
+          },
+          "chapterIndex": {
+            "type": "number",
+            "optional": true
+          },
+          "sceneId": {
+            "type": "string",
+            "optional": true
+          },
+          "sceneChapterId": {
+            "type": "string",
+            "optional": true
+          },
+          "sceneStory": {
+            "type": "string",
+            "optional": true
+          },
+          "sceneLocation": {
+            "type": "string",
+            "optional": true
+          },
+          "sceneImagePrompt": {
+            "type": "string",
+            "optional": true
+          },
+          "sceneImagePath": {
+            "type": "string",
+            "optional": true
+          },
+          "characterId": {
+            "type": "string",
+            "optional": true
+          },
+          "characterName": {
+            "type": "string",
+            "optional": true
+          },
+          "characterAppearance": {
+            "type": "string",
+            "optional": true
+          },
+          "characterImagePrompt": {
+            "type": "string",
+            "optional": true
+          },
+          "soraName": {
+            "type": "string",
+            "optional": true
+          },
+          "voiceId": {
+            "type": "string",
+            "optional": true
+          }
+        }
+      }
+    }
+  },
+  "example": {
+    "baseMetadata": {
+      "id": "378e3058-0917-4368-856b-862491e7562e",
+      "type": "text",
+      "scope": "project",
+      "projectId": "phase7-baseline-project",
+      "category": "chapters",
+      "tags": [
+        "novel-video",
+        "chapter"
+      ],
+      "filePath": "E:\\Projects\\Matrix\\test-data\\baseline-1766814808004\\projects\\phase7-baseline-project\\assets\\chapters\\Schema测试章节_1766814808010.txt",
+      "createdAt": "2025-12-27T05:53:28.012Z"
+    },
+    "customFields": {
+      "novelVideo": {
+        "chapterId": "chapter-1766814808008",
+        "chapterTitle": "Schema测试章节",
+        "chapterContent": "这是用于记录Schema的测试章节",
+        "chapterIndex": 1
+      }
+    }
+  }
+}

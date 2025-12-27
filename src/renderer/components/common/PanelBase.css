@@ -1,0 +1,107 @@
+/**
+ * PanelBase - 通用面板基础组件样式
+ *
+ * Phase 7 H04: UI组件标准化
+ */
+
+.panel-base {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--panel-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 面板头部 */
+.panel-base-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.panel-base-title-section {
+  flex: 1;
+}
+
+.panel-base-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.panel-base-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.panel-base-header-extra {
+  margin-left: 16px;
+}
+
+/* 面板内容 */
+.panel-base-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* 面板底部 */
+.panel-base-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  background: var(--panel-footer-bg);
+}
+
+.panel-base-footer-extra {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.panel-base-footer-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .panel-base-header {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .panel-base-header-extra {
+    margin-left: 0;
+    margin-top: 12px;
+  }
+
+  .panel-base-content {
+    padding: 16px;
+  }
+
+  .panel-base-footer {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .panel-base-footer-extra {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+
+  .panel-base-footer-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

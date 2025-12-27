@@ -1,0 +1,38 @@
+{
+  "characterCount": 2,
+  "characters": [
+    {
+      "characterId": "character-1766814807974",
+      "name": "张三",
+      "appearance": "年轻男子，黑色短发，阳光帅气",
+      "imagePrompt": "年轻的中国男子，黑色短发，阳光气质，现代服装",
+      "status": "none",
+      "metadata": {
+        "type": "text",
+        "scope": "project",
+        "category": "characters",
+        "tags": [
+          "novel-video",
+          "character"
+        ]
+      }
+    },
+    {
+      "characterId": "character-1766814807985",
+      "name": "李四",
+      "appearance": "优雅女子，长发及肩，温柔气质",
+      "imagePrompt": "优雅的中国女子，长发及肩，温柔气质，休闲装",
+      "status": "none",
+      "metadata": {
+        "type": "text",
+        "scope": "project",
+        "category": "characters",
+        "tags": [
+          "novel-video",
+          "character"
+        ]
+      }
+    }
+  ],
+  "timestamp": "2025-12-27T05:53:27.997Z"
+}

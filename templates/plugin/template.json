@@ -1,0 +1,44 @@
+{
+  "name": "Matrix Plugin Template",
+  "version": "1.0.0",
+  "description": "Official Matrix Studio plugin template",
+  "files": [
+    "src/index.ts",
+    "src/schemas/index.ts",
+    "src/services/ExampleService.ts",
+    "src/tools/example-tool.ts",
+    "manifest.json",
+    "package.json",
+    "tsconfig.json",
+    "README.md"
+  ],
+  "prompts": [
+    {
+      "type": "input",
+      "name": "pluginId",
+      "message": "Plugin ID (e.g., my-plugin):",
+      "validate": "^[a-z][a-z0-9-]*$"
+    },
+    {
+      "type": "input",
+      "name": "pluginName",
+      "message": "Plugin Name (e.g., My Plugin):"
+    },
+    {
+      "type": "input",
+      "name": "description",
+      "message": "Description:"
+    },
+    {
+      "type": "input",
+      "name": "author",
+      "message": "Author:"
+    },
+    {
+      "type": "list",
+      "name": "category",
+      "message": "Plugin Category:",
+      "choices": ["workflow", "tool", "integration", "ui", "other"]
+    }
+  ]
+}

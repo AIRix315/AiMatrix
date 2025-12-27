@@ -1,0 +1,54 @@
+{
+  "sceneCount": 3,
+  "scenes": [
+    {
+      "sceneId": "scene-1766814807947",
+      "location": "卧室",
+      "story": "清晨的阳光透过窗户洒进卧室，张三缓缓睁开双眼",
+      "imagePrompt": "温馨的卧室，清晨阳光，柔和光线",
+      "status": "none",
+      "metadata": {
+        "type": "text",
+        "scope": "project",
+        "category": "scenes",
+        "tags": [
+          "novel-video",
+          "scene"
+        ]
+      }
+    },
+    {
+      "sceneId": "scene-1766814807956",
+      "location": "窗边",
+      "story": "张三起身走向窗边，窗外的城市已经苏醒",
+      "imagePrompt": "城市窗景，早晨街道，人来人往",
+      "status": "none",
+      "metadata": {
+        "type": "text",
+        "scope": "project",
+        "category": "scenes",
+        "tags": [
+          "novel-video",
+          "scene"
+        ]
+      }
+    },
+    {
+      "sceneId": "scene-1766814807964",
+      "location": "咖啡馆",
+      "story": "店内温暖舒适，空气中弥漫着咖啡的香气",
+      "imagePrompt": "温暖的咖啡馆，舒适氛围，咖啡香气",
+      "status": "none",
+      "metadata": {
+        "type": "text",
+        "scope": "project",
+        "category": "scenes",
+        "tags": [
+          "novel-video",
+          "scene"
+        ]
+      }
+    }
+  ],
+  "timestamp": "2025-12-27T05:53:27.997Z"
+}

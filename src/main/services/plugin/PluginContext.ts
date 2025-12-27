@@ -13,7 +13,7 @@
  */
 
 import { logger } from '../Logger';
-import { errorHandler } from '../ServiceErrorHandler';
+import { errorHandler, ErrorCode } from '../ServiceErrorHandler';
 
 /**
  * 插件权限级别
@@ -120,14 +120,14 @@ export class PluginContext {
    * 文件系统API - 需要fs权限
    */
   public fs = {
-    readFile: async (filePath: string): Promise<string> => {
+    readFile: async (_filePath: string): Promise<string> => {
       if (!this.checkPermission('fs:read')) {
         throw new Error(`Permission denied: fs:read for plugin ${this.config.pluginId}`);
       }
       // 这里会调用FileSystemService，但不直接暴露实现
       throw new Error('Not implemented yet - will be connected in Phase 7');
     },
-    writeFile: async (filePath: string, content: string): Promise<void> => {
+    writeFile: async (_filePath: string, _content: string): Promise<void> => {
       if (!this.checkPermission('fs:write')) {
         throw new Error(`Permission denied: fs:write for plugin ${this.config.pluginId}`);
       }
@@ -139,13 +139,13 @@ export class PluginContext {
    * 资产API - 需要asset权限
    */
   public assets = {
-    query: async (filter: Record<string, unknown>): Promise<unknown[]> => {
+    query: async (_filter: Record<string, unknown>): Promise<unknown[]> => {
       if (!this.checkPermission('asset:read')) {
         throw new Error(`Permission denied: asset:read for plugin ${this.config.pluginId}`);
       }
       throw new Error('Not implemented yet - will be connected in Phase 7');
     },
-    create: async (assetData: unknown): Promise<string> => {
+    create: async (_assetData: unknown): Promise<string> => {
       if (!this.checkPermission('asset:write')) {
         throw new Error(`Permission denied: asset:write for plugin ${this.config.pluginId}`);
       }
@@ -157,7 +157,7 @@ export class PluginContext {
    * API调用 - 需要api权限
    */
   public api = {
-    call: async (apiName: string, params: unknown): Promise<unknown> => {
+    call: async (_apiName: string, _params: unknown): Promise<unknown> => {
       if (!this.checkPermission('api:call')) {
         throw new Error(`Permission denied: api:call for plugin ${this.config.pluginId}`);
       }
@@ -251,7 +251,7 @@ export class PluginContext {
 
     if (errors.length > 0) {
       throw errorHandler.createError(
-        'OPERATION_FAILED' as any,
+        ErrorCode.OPERATION_FAILED,
         'PluginContext',
         'cleanup',
         `Failed to cleanup ${errors.length} resources`,

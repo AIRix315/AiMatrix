@@ -1,0 +1,127 @@
+/**
+ * PluginPanelRenderer - 插件面板渲染器样式
+ *
+ * Phase 7 H04: UI组件标准化
+ */
+
+/* 表单字段容器 */
+.panel-fields {
+  display: flex;
+  gap: 20px;
+}
+
+.panel-layout-vertical {
+  flex-direction: column;
+}
+
+.panel-layout-horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.panel-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+/* 单个表单字段 */
+.panel-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.panel-field-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.panel-field-label .required-mark {
+  color: var(--error-color);
+  margin-left: 4px;
+}
+
+.panel-field-help {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.panel-field-error {
+  font-size: 12px;
+  color: var(--error-color);
+  margin: 0;
+}
+
+/* 输入组件通用样式 */
+.panel-input,
+.panel-textarea,
+.panel-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.panel-input:focus,
+.panel-textarea:focus,
+.panel-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-shadow);
+}
+
+.panel-input:disabled,
+.panel-textarea:disabled,
+.panel-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.panel-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.panel-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.panel-checkbox:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 文件输入 */
+.panel-file-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-file-input .file-path {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .panel-layout-horizontal {
+    flex-direction: column;
+  }
+
+  .panel-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}

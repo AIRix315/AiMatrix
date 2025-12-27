@@ -1,0 +1,42 @@
+/**
+ * ViewContainer - 插件视图容器样式
+ *
+ * Phase 7 H04: UI组件标准化
+ */
+
+.view-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.view-container-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  color: var(--text-secondary);
+}
+
+.view-container-error p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.view-container-error button {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--button-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-container-error button:hover {
+  background: var(--hover-bg);
+}

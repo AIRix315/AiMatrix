@@ -1,0 +1,134 @@
+/**
+ * {{pluginName}} Plugin
+ *
+ * {{description}}
+ *
+ * @author {{author}}
+ */
+
+import { Plugin, PluginContext, PluginMetadata } from '@matrix/sdk';
+import { ExampleSchema } from './schemas';
+import { ExampleService } from './services/ExampleService';
+import { ExampleTool } from './tools/example-tool';
+
+/**
+ * 插件元数据
+ */
+export const metadata: PluginMetadata = {
+  id: '{{pluginId}}',
+  name: '{{pluginName}}',
+  version: '1.0.0',
+  description: '{{description}}',
+  author: '{{author}}',
+  license: 'MIT'
+};
+
+/**
+ * 插件主类
+ *
+ * 【开发指南】
+ *
+ * 1. activate() - 插件激活时调用
+ *    - 注册Schema
+ *    - 注册MCP工具
+ *    - 初始化服务
+ *
+ * 2. deactivate() - 插件卸载时调用
+ *    - 清理资源
+ *    - 注销监听器
+ *
+ * 3. 通过PluginContext访问Matrix API
+ *    - logger: 日志服务
+ *    - schemaRegistry: Schema注册表
+ *    - assetHelper: 资产操作助手
+ *    - taskScheduler: 任务调度器
+ *    - apiManager: API管理器
+ */
+export class {{pluginClassName}} implements Plugin {
+  readonly metadata = metadata;
+
+  private exampleService?: ExampleService;
+
+  /**
+   * 插件激活
+   */
+  async activate(context: PluginContext): Promise<void> {
+    const { logger, schemaRegistry, mcpClient } = context;
+
+    await logger.info('激活插件', '{{pluginClassName}}');
+
+    // 1. 注册JSON Schemas
+    await this.registerSchemas(context);
+
+    // 2. 注册MCP工具
+    await this.registerTools(context);
+
+    // 3. 初始化业务服务
+    await this.initializeServices(context);
+
+    await logger.info('插件激活成功', '{{pluginClassName}}');
+  }
+
+  /**
+   * 插件卸载
+   */
+  async deactivate(context: PluginContext): Promise<void> {
+    const { logger } = context;
+    await logger.info('插件已卸载', '{{pluginClassName}}');
+  }
+
+  /**
+   * 注册JSON Schemas
+   */
+  private async registerSchemas(context: PluginContext): Promise<void> {
+    const { schemaRegistry, logger } = context;
+
+    const schemas = [ExampleSchema];
+
+    for (const schema of schemas) {
+      await schemaRegistry.registerSchema(this.metadata.id, schema);
+      await logger.debug(`注册Schema: ${schema.name}`, '{{pluginClassName}}');
+    }
+
+    await logger.info(`注册了${schemas.length}个Schema`, '{{pluginClassName}}');
+  }
+
+  /**
+   * 注册MCP工具
+   */
+  private async registerTools(context: PluginContext): Promise<void> {
+    const { mcpClient, logger } = context;
+
+    const exampleTool = new ExampleTool();
+    await mcpClient.registerTool(exampleTool);
+    await logger.debug('注册ExampleTool工具', '{{pluginClassName}}');
+
+    await logger.info('MCP工具注册完成', '{{pluginClassName}}');
+  }
+
+  /**
+   * 初始化业务服务
+   */
+  private async initializeServices(context: PluginContext): Promise<void> {
+    const { logger } = context;
+
+    this.exampleService = new ExampleService(context);
+
+    await logger.info('业务服务初始化完成', '{{pluginClassName}}');
+  }
+
+  /**
+   * 获取示例服务
+   */
+  getExampleService(): ExampleService {
+    if (!this.exampleService) {
+      throw new Error('ExampleService未初始化');
+    }
+    return this.exampleService;
+  }
+}
+
+/**
+ * 默认导出插件实例
+ */
+export default new {{pluginClassName}}();

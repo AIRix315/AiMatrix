@@ -2,37 +2,23 @@
   "id": "novel-to-video",
   "name": "小说转视频",
   "version": "1.0.0",
-  "description": "将小说文本转换为视频分镜和素材。支持章节拆解、分镜生成、素材匹配等功能。官方内置插件。",
-  "author": "MATRIX Team",
-  "icon": "🎬",
-  "main": "index.js",
+  "description": "将小说文本转换为AI生成的视频内容",
+  "author": "Matrix Team",
+  "license": "MIT",
   "type": "official",
+  "category": "workflow",
+  "entryPoint": "dist/index.js",
   "permissions": [
-    "file-system:read",
-    "file-system:write",
-    "network:official-api"
+    "file:read",
+    "file:write",
+    "asset:create",
+    "asset:read",
+    "asset:update",
+    "schema:register",
+    "task:create",
+    "task:execute",
+    "api:call"
   ],
-  "actions": [
-    {
-      "id": "split-script",
-      "name": "剧本拆解",
-      "description": "将小说文本拆解为独立的场景和章节"
-    },
-    {
-      "id": "generate-storyboard",
-      "name": "分镜生成",
-      "description": "根据剧本生成视频分镜脚本"
-    },
-    {
-      "id": "generate-image",
-      "name": "图片生成",
-      "description": "根据分镜脚本生成场景图片"
-    },
-    {
-      "id": "match-assets",
-      "name": "素材匹配",
-      "description": "为分镜匹配合适的音频和视频素材"
-    }
-  ],
-  "dependencies": {}
+  "tools": ["ffmpeg", "comfyui"],
+  "schemas": ["chapter", "scene", "character", "storyboard", "voiceover"]
 }

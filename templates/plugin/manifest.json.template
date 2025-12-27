@@ -1,0 +1,24 @@
+{
+  "id": "{{pluginId}}",
+  "name": "{{pluginName}}",
+  "version": "1.0.0",
+  "description": "{{description}}",
+  "author": "{{author}}",
+  "license": "MIT",
+  "type": "community",
+  "category": "{{category}}",
+  "entryPoint": "dist/index.js",
+  "permissions": [
+    "file:read",
+    "file:write",
+    "asset:create",
+    "asset:read",
+    "asset:update",
+    "schema:register",
+    "task:create",
+    "task:execute",
+    "api:call"
+  ],
+  "tools": [],
+  "schemas": ["example"]
+}

@@ -1,0 +1,87 @@
+{
+  "title": "Phase 7 架构标准化验收标准",
+  "baseline": {
+    "version": "v0.2.9.4",
+    "date": "2025-12-27T05:53:28.025Z",
+    "description": "基于当前版本记录的小说转视频流程基准行为"
+  },
+  "dataStructures": {
+    "assetMetadata": {
+      "file": "schema-asset-metadata.json",
+      "description": "资产元数据完整Schema，包含基础字段和customFields扩展机制"
+    },
+    "novelVideoFields": {
+      "description": "NovelVideo插件专用字段，将在H01中转换为JSON Schema注册"
+    }
+  },
+  "workflows": {
+    "chapterSplit": {
+      "file": "output-chapters.json",
+      "description": "章节拆分流程：小说文本 -> 章节文件 -> AssetMetadata"
+    },
+    "sceneExtraction": {
+      "file": "output-scenes.json",
+      "description": "场景提取流程：章节内容 -> AI提取 -> 场景资产"
+    },
+    "characterExtraction": {
+      "file": "output-characters.json",
+      "description": "角色识别流程：小说文本 -> AI提取 -> 角色资产"
+    }
+  },
+  "acceptanceCriteria": {
+    "h01": {
+      "task": "数据结构泛化",
+      "criteria": [
+        "AssetManager支持Schema注册机制",
+        "NovelVideoFields转换为JSON Schema格式",
+        "插件通过通用API查询而非硬编码Helper",
+        "重构后的查询结果与基准快照100%一致"
+      ]
+    },
+    "h02": {
+      "task": "任务调度标准化",
+      "criteria": [
+        "任务模板化：图片生成、TTS等封装为标准TaskTemplate",
+        "链式任务SDK：支持A完成自动触发B",
+        "断点续传：杀进程重启后任务队列自动恢复",
+        "Phase 6增强集成：TaskPersistence + ConcurrencyManager生效"
+      ]
+    },
+    "h03": {
+      "task": "插件包体隔离与工具标准化",
+      "criteria": [
+        "小说转视频代码移至 plugins/official/novel-to-video/",
+        "插件无法直接import主进程内部类",
+        "FFmpeg和ComfyUI封装为MCP Tool",
+        "插件可打包为.zip并重新加载"
+      ]
+    },
+    "h04": {
+      "task": "UI组件标准化",
+      "criteria": [
+        "业务组件提取到@matrix/ui-kit",
+        "PluginPanelProtocol支持JSON描述简单配置面板",
+        "CustomView接口规范化，插件React组件通过标准路由注册"
+      ]
+    },
+    "h05": {
+      "task": "开发者体验文档",
+      "criteria": [
+        "插件源码包含详细注释说明每步API调用",
+        "create-matrix-plugin脚手架生成器可用",
+        "完整的插件开发指南文档"
+      ]
+    }
+  },
+  "validation": {
+    "baseline": "执行 npm run test:integration:novel-baseline 生成基准快照",
+    "regression": "重构后执行相同测试，输出必须与快照100%匹配",
+    "demo": "加载Echo Demo插件，验证通用API可用性"
+  },
+  "notes": [
+    "所有快照文件位于: tests/snapshots/phase7-baseline/",
+    "重构过程中严禁修改Phase 5已有业务代码（旁路建设原则）",
+    "类型栅栏：plugins/目录只能引用src/common和src/shared",
+    "最终验收：Chrome DevTools无红色错误，双盲测试通过"
+  ]
+}

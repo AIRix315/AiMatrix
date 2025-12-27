@@ -1,0 +1,86 @@
+/**
+ * ListSection - 通用列表区块组件样式
+ *
+ * Phase 7 H04: UI组件标准化
+ */
+
+.list-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 标签页切换 */
+.list-section-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.list-section-tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.list-section-tab:hover {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.list-section-tab.active {
+  background: var(--primary-bg);
+  color: var(--primary-color);
+}
+
+.list-section-tab .tab-count {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* 列表内容 */
+.list-section-content {
+  min-height: 200px;
+}
+
+.list-section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* 空状态 */
+.list-section-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .list-section-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .list-section-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .list-section-tab {
+    white-space: nowrap;
+  }
+}
