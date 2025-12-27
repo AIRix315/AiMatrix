@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { PanelBase } from './common/PanelBase';
 import { ListSection } from './common/ListSection';
-import { Button } from './common/Button';
+import Button from './common/Button';
 import type {
   PluginPanelConfig,
   PanelState,
@@ -16,8 +16,9 @@ import type {
   PanelHandler,
   PanelField,
   PanelAction,
+  PanelTab,
   FieldType
-} from '../shared/types/plugin-panel';
+} from '../../shared/types/plugin-panel';
 import './PluginPanelRenderer.css';
 
 export interface PluginPanelRendererProps {
@@ -66,19 +67,19 @@ export const PluginPanelRenderer: React.FC<PluginPanelRendererProps> = ({
     customData: initialState?.customData || {}
   });
 
-  const [toast, setToast] = useState<any>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error' | 'warning' | 'info'; message: string } | null>(null);
 
   // 初始化字段默认值
   useEffect(() => {
     const defaultValues: Record<string, any> = {};
-    config.fields?.forEach(field => {
+    config.fields?.forEach((field: PanelField) => {
       if (field.defaultValue !== undefined && state.values[field.id] === undefined) {
         defaultValues[field.id] = field.defaultValue;
       }
     });
 
     if (Object.keys(defaultValues).length > 0) {
-      setState(prev => ({
+      setState((prev: PanelState) => ({
         ...prev,
         values: { ...defaultValues, ...prev.values }
       }));
@@ -142,14 +143,14 @@ export const PluginPanelRenderer: React.FC<PluginPanelRendererProps> = ({
       state
     };
 
-    setState(prev => ({ ...prev, loading: true }));
+    setState((prev: PanelState) => ({ ...prev, loading: true }));
 
     try {
       if (action.actionType === 'submit') {
         // 验证表单
         const errors = await handler.validate(state);
         if (Object.keys(errors).length > 0) {
-          setState(prev => ({ ...prev, errors, loading: false }));
+          setState((prev: PanelState) => ({ ...prev, errors, loading: false }));
           setToast({
             type: 'error',
             message: '表单验证失败，请检查输入'
@@ -172,7 +173,7 @@ export const PluginPanelRenderer: React.FC<PluginPanelRendererProps> = ({
         message: `操作失败: ${error instanceof Error ? error.message : String(error)}`
       });
     } finally {
-      setState(prev => ({ ...prev, loading: false }));
+      setState((prev: PanelState) => ({ ...prev, loading: false }));
     }
   }, [state, handler, onComplete, config]);
 
@@ -260,7 +261,7 @@ export const PluginPanelRenderer: React.FC<PluginPanelRendererProps> = ({
             disabled={field.disabled}
           >
             <option value="">请选择...</option>
-            {field.options?.map(opt => (
+            {field.options?.map((opt: { value: string | number; label: string; disabled?: boolean }) => (
               <option key={opt.value} value={opt.value} disabled={opt.disabled}>
                 {opt.label}
               </option>
@@ -309,11 +310,11 @@ export const PluginPanelRenderer: React.FC<PluginPanelRendererProps> = ({
       return [];
     }
 
-    return config.actions.map(action => {
+    return config.actions.map((action: PanelAction) => {
       // 检查禁用条件
       let disabled = action.disabled || false;
       if (action.disabledWhen) {
-        disabled = action.disabledWhen.some(condition => {
+        disabled = action.disabledWhen.some((condition: { field: string; operator: string; value?: any }) => {
           const fieldValue = state.values[condition.field];
           return evaluateCondition(fieldValue, condition.operator, condition.value);
         });
@@ -334,7 +335,7 @@ export const PluginPanelRenderer: React.FC<PluginPanelRendererProps> = ({
   const renderListOrTabs = () => {
     if (config.tabs && config.tabs.length > 0) {
       // 渲染标签页模式
-      const tabs = config.tabs.map(tab => ({
+      const tabs = config.tabs.map((tab: PanelTab) => ({
         id: tab.id,
         label: tab.label,
         items: (state.values[tab.dataSource] || []).map((item: any, index: number) => ({
@@ -350,16 +351,17 @@ export const PluginPanelRenderer: React.FC<PluginPanelRendererProps> = ({
       return <ListSection tabs={tabs} />;
     } else if (config.list) {
       // 渲染单列表模式
-      const items = (state.values[config.list.dataSource] || []).map((item: any, index: number) => ({
+      const list = config.list; // 保存引用以避免重复空值检查
+      const items = (state.values[list.dataSource] || []).map((item: any, index: number) => ({
         id: item.id || `item-${index}`,
-        title: item[config.list.itemTemplate.titleField],
-        tag: config.list.itemTemplate.tagField ? item[config.list.itemTemplate.tagField] : undefined,
-        info: config.list.itemTemplate.infoField ? item[config.list.itemTemplate.infoField] : undefined,
-        thumbnail: config.list.itemTemplate.thumbnailField ? item[config.list.itemTemplate.thumbnailField] : undefined,
+        title: item[list.itemTemplate.titleField],
+        tag: list.itemTemplate.tagField ? item[list.itemTemplate.tagField] : undefined,
+        info: list.itemTemplate.infoField ? item[list.itemTemplate.infoField] : undefined,
+        thumbnail: list.itemTemplate.thumbnailField ? item[list.itemTemplate.thumbnailField] : undefined,
         data: item
       }));
 
-      return <ListSection items={items} emptyText={config.list.emptyText} />;
+      return <ListSection items={items} emptyText={list.emptyText} />;
     }
 
     return null;
@@ -379,7 +381,7 @@ export const PluginPanelRenderer: React.FC<PluginPanelRendererProps> = ({
       {/* 表单字段 */}
       {config.fields && config.fields.length > 0 && (
         <div className={`panel-fields panel-layout-${config.layout || 'vertical'}`}>
-          {config.fields.map(field => renderField(field))}
+          {config.fields.map((field: PanelField) => renderField(field))}
         </div>
       )}
 

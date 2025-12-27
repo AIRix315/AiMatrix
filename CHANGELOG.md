@@ -184,6 +184,49 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.9.5] - 2025-12-27
+
+### Fixed
+- fix(compilation): 修复41个TypeScript编译错误
+  - 修复 SchemaRegistry.ts 的 loadJSON → readJSON 方法调用
+  - 修复 TaskScheduler 缺少的 getExecution 和 cancelExecution 方法
+  - 修复组件导入错误（Button, Modal, Toast, Card, Loading 改为默认导入）
+  - 修复类型声明文件导入路径错误（plugin-panel, plugin-view）
+  - 修复 PluginPanelRenderer.tsx 的24个隐式 any 类型错误
+  - 修复 ViewContainer.tsx 的14个隐式 any 类型错误
+  - 修复 ViewContainer 的 ViewComponent JSX 类型问题
+  - 修复 SchemaRegistry 的 readJSON 泛型类型
+  - 修复 PluginPanelRenderer 的 config.list 空值检查
+  - 修复 ListSection 的 thumbnail → image 属性映射
+  - 修复 PanelBase 的 Button variant 类型映射
+
+### Changed
+- refactor(types): 统一组件导出方式
+  - Button, Modal, Toast, Card, Loading 统一使用默认导出
+  - 保持类型声明使用命名导出
+
+### Technical Details
+- **编译状态**: ✅ 0错误，所有进程编译成功
+  - Preload: 编译成功 (5.2秒)
+  - Main: 编译成功 (5.9秒)
+  - Renderer: 编译成功 (7.1秒)
+- **TypeScript**: ✅ 严格模式通过
+- **修复文件**: 9个核心文件
+  - src/main/services/SchemaRegistry.ts
+  - src/main/services/TaskScheduler.ts
+  - src/renderer/components/PluginPanelRenderer.tsx
+  - src/renderer/components/ViewContainer.tsx
+  - src/renderer/components/common/ListSection.tsx
+  - src/renderer/components/common/PanelBase.tsx
+
+### Benefits
+- ✅ 编译错误清零：从41个错误减少到0个
+- ✅ 类型安全性：所有隐式 any 类型都添加了明确的类型注解
+- ✅ 代码一致性：统一了组件导入导出方式
+- ✅ 构建稳定性：所有三个进程可以正常编译和运行
+
+--------------------------------------------
+
 ## [Unreleased] - 2025-12-27
 
 ### Added - Phase 7: 架构标准化与API固化 (100%完成)

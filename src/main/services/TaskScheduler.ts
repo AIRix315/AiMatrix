@@ -414,6 +414,26 @@ export class TaskScheduler {
   }
 
   /**
+   * 获取执行状态（别名方法，供ChainTask使用）
+   */
+  public async getExecution(executionId: string): Promise<TaskExecution | null> {
+    try {
+      const execution = this.executions.get(executionId);
+      return execution ? { ...execution } : null;
+    } catch (error) {
+      await logger.error(`Failed to get execution: ${executionId}`, 'TaskScheduler', { error });
+      return null;
+    }
+  }
+
+  /**
+   * 取消执行（别名方法，供ChainTask使用）
+   */
+  public async cancelExecution(executionId: string): Promise<void> {
+    return this.cancelTask(executionId);
+  }
+
+  /**
    * 清理资源
    */
   public async cleanup(): Promise<void> {

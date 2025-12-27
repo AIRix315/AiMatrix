@@ -6,7 +6,7 @@
  */
 
 import React, { ReactNode, useState } from 'react';
-import { Card } from './Card';
+import Card from './Card';
 import './ListSection.css';
 
 export interface ListItem {
@@ -114,7 +114,7 @@ export const ListSection: React.FC<ListSectionProps> = ({
       tag={item.tag}
       title={item.title}
       info={item.info}
-      thumbnail={item.thumbnail}
+      image={item.thumbnail}
       hoverable
       onClick={() => onItemClick?.(item)}
     />

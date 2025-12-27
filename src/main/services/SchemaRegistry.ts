@@ -50,7 +50,7 @@ export class SchemaRegistry {
 
       // 加载已保存的Schema
       if (await this.fsService.exists(this.schemaFilePath)) {
-        const data = await this.fsService.loadJSON(this.schemaFilePath);
+        const data = await this.fsService.readJSON<{ schemas: AssetSchemaDefinition[] }>(this.schemaFilePath);
         if (data && Array.isArray(data.schemas)) {
           for (const schema of data.schemas) {
             this.schemas.set(schema.id, schema);

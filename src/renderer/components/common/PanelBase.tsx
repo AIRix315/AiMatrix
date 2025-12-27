@@ -6,9 +6,9 @@
  */
 
 import React, { ReactNode } from 'react';
-import { Button } from './Button';
-import { Toast } from './Toast';
-import { Loading } from './Loading';
+import Button from './Button';
+import Toast from './Toast';
+import Loading from './Loading';
 import type { ToastType } from './Toast';
 import './PanelBase.css';
 
@@ -128,16 +128,23 @@ export const PanelBase: React.FC<PanelBaseProps> = ({
             <div className="panel-base-footer-extra">{footerExtra}</div>
           )}
           <div className="panel-base-footer-actions">
-            {footerActions.map((action, index) => (
-              <Button
-                key={index}
-                variant={action.variant || 'default'}
-                onClick={action.onClick}
-                disabled={action.disabled}
-              >
-                {action.label}
-              </Button>
-            ))}
+            {footerActions.map((action, index) => {
+              // 映射 variant 类型到 Button 支持的类型
+              const buttonVariant: 'primary' | 'ghost' | 'secondary' =
+                action.variant === 'primary' ? 'primary' :
+                action.variant === 'danger' ? 'primary' : 'secondary';
+
+              return (
+                <Button
+                  key={index}
+                  variant={buttonVariant}
+                  onClick={action.onClick}
+                  disabled={action.disabled}
+                >
+                  {action.label}
+                </Button>
+              );
+            })}
           </div>
         </div>
       )}

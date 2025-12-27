@@ -13,9 +13,9 @@ import type {
   CustomViewProps,
   ViewState,
   ViewActions
-} from '../shared/types/plugin-view';
-import { Modal } from './common/Modal';
-import { Toast } from './common/Toast';
+} from '../../shared/types/plugin-view';
+import Modal from './common/Modal';
+import Toast from './common/Toast';
 import './ViewContainer.css';
 
 /**
@@ -65,7 +65,7 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
     pluginId,
     projectId: undefined, // TODO: 从路由或全局状态获取
     workflowId: undefined,
-    callAPI: async (channel, ...args) => {
+    callAPI: async (channel: string, ...args: any[]) => {
       // 调用IPC API
       if (window.electronAPI && typeof window.electronAPI[channel as keyof typeof window.electronAPI] === 'function') {
         const api = window.electronAPI[channel as keyof typeof window.electronAPI] as (...args: any[]) => Promise<any>;
@@ -73,30 +73,30 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
       }
       throw new Error(`API channel not found: ${channel}`);
     },
-    showToast: (type, message) => {
+    showToast: (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
       setToast({ type, message });
     },
-    showConfirm: async (title, message) => {
+    showConfirm: async (title: string, message: string) => {
       return window.confirm(`${title}\n\n${message}`);
     },
-    navigate: (path) => {
+    navigate: (path: string) => {
       navigate(path);
     },
     refresh: () => {
       // 触发视图刷新
-      setViewState(prev => ({ ...prev, data: { ...prev.data } }));
+      setViewState((prev: ViewState) => ({ ...prev, data: { ...prev.data } }));
     },
     storage: {
-      get: async (key) => {
+      get: async (key: string) => {
         const storageKey = `plugin.${pluginId}.${viewId}.${key}`;
         const value = localStorage.getItem(storageKey);
         return value ? JSON.parse(value) : null;
       },
-      set: async (key, value) => {
+      set: async (key: string, value: any) => {
         const storageKey = `plugin.${pluginId}.${viewId}.${key}`;
         localStorage.setItem(storageKey, JSON.stringify(value));
       },
-      remove: async (key) => {
+      remove: async (key: string) => {
         const storageKey = `plugin.${pluginId}.${viewId}.${key}`;
         localStorage.removeItem(storageKey);
       }
@@ -105,14 +105,14 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
 
   // 视图操作
   const viewActions: ViewActions = {
-    setLoading: (loading) => {
-      setViewState(prev => ({ ...prev, loading }));
+    setLoading: (loading: boolean) => {
+      setViewState((prev: ViewState) => ({ ...prev, loading }));
     },
-    setError: (error) => {
-      setViewState(prev => ({ ...prev, error: error || undefined }));
+    setError: (error: Error | null) => {
+      setViewState((prev: ViewState) => ({ ...prev, error: error || undefined }));
     },
-    updateData: (newData) => {
-      setViewState(prev => ({ ...prev, data: newData }));
+    updateData: (newData: any) => {
+      setViewState((prev: ViewState) => ({ ...prev, data: newData }));
     },
     reset: () => {
       setViewState({
@@ -164,9 +164,12 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
     onError: handleError
   };
 
+  // 此时 ViewComponent 必定不为 null（因为上面已经检查过了）
+  const Component = ViewComponent as React.ComponentType<CustomViewProps>;
+
   return (
     <div className="view-container">
-      <ViewComponent {...viewProps} />
+      <Component {...viewProps} />
 
       {/* Toast通知 */}
       {toast && (

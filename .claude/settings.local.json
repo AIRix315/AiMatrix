@@ -33,7 +33,8 @@
       "Bash(find:*)",
       "Bash(xargs:*)",
       "Bash(npm test:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(tee:*)"
     ]
   },
   "enabledPlugins": {
