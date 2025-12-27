@@ -184,6 +184,73 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.9.7] - 2025-12-28
+
+### Added
+- feat(workflow): Phase 8 Sprint 2 (H02) 完整工作流UI优化完成
+  - H2.1: WorkflowExecutor 三栏布局重构 - 左侧面板 + 中间执行区 + 右侧属性面板
+  - H2.2: RightSettingsPanel 右侧属性面板实现 - 基础信息展示 + 属性配置
+  - H2.3: 视图模式切换功能 - StoryboardPanel 支持网格/列表视图切换
+  - H2.4: 右侧面板与卡片联动 - 选中状态同步 + 属性实时更新
+  - H2.5: ChapterSplitPanel 业务逻辑实现 - 章节编辑 + 拆分管理
+  - H2.6: SceneCharacterPanel 业务逻辑实现 - CRUD模态对话框 + 场景角色管理
+  - H2.7: StoryboardPanel 业务逻辑实现 - 双视图展示 + 重新生成功能
+  - H2.8: VoiceoverPanel 业务逻辑实现 - 音频播放/暂停 + 配音重生成
+
+### Changed
+- refactor(voiceover): VoiceoverPanel 完全重写为列表视图
+  - 移除 Card 组件依赖
+  - 添加自定义配音列表项组件
+  - 集成 Play/Pause/Volume2/RefreshCw 图标
+  - 实现动态图标切换（播放/暂停）
+
+### Added - H2.8 音频播放功能
+- feat(audio): 实现 HTML5 Audio API 集成
+  - useRef 管理音频元素引用
+  - 播放/暂停状态切换
+  - 自动停止前一个音频
+  - 3秒模拟播放 + 完成通知
+- feat(regenerate): 配音重新生成功能
+  - generatingIds 数组追踪多个同时生成的任务
+  - 旋转动画图标（RefreshCw + spinning 类）
+  - 2秒模拟生成 + Toast 通知
+  - 自动更新配音元数据
+
+### Fixed
+- fix(ui): VoiceoverPanel 组件类型安全
+  - 添加 isPlaying 状态管理
+  - 添加 generatingIds 状态追踪
+  - 修复音频路径检查逻辑
+
+### Technical Details - VoiceoverPanel
+- **新增文件**: VoiceoverPanel.css (270行完整V2样式)
+- **修改文件**: VoiceoverPanel.tsx (lines 252-332 UI重构)
+- **设计系统**: V2 OKLCH色彩 + Inter字体 + 8px圆角
+- **动画系统**: @keyframes spin 旋转动画
+- **状态管理**: useState + useRef
+- **图标库**: Lucide React (Play, Pause, Volume2, RefreshCw)
+
+### Performance
+- perf(audio): 音频播放优化
+  - 单实例音频元素，避免内存泄漏
+  - 自动清理完成的音频
+  - 即时响应播放/暂停切换
+
+### Benefits
+- ✅ 完整的工作流UI体系：8个面板全部实现业务逻辑
+- ✅ 交互增强：音频播放、视图切换、右侧面板联动
+- ✅ 用户体验：实时反馈（Toast通知）、加载状态、错误处理
+- ✅ V2设计一致性：所有面板统一OKLCH色彩和组件风格
+- ✅ 功能完整度：Phase 8 Sprint 2 (100%完成)
+
+### Notes
+- **完成度**: 8/8 任务全部完成
+- **构建状态**: ✅ 编译成功（0错误）
+- **代码量**: VoiceoverPanel 357行代码 + 270行CSS
+- **下一步**: Phase 8 Sprint 3 (H03-H06) 测试覆盖与文档完善
+
+--------------------------------------------
+
 ## [0.2.9.6] - 2025-12-28
 
 ### Added
