@@ -16,7 +16,7 @@ import { ViewSwitcher } from '../../components/common';
 import './Assets.css';
 
 // UI 资产类型定义（包含 'all' 用于显示）
-type UIAssetType = 'all' | 'text' | 'image' | 'audio' | 'video' | 'other';
+type UIAssetType = 'all' | 'text' | 'image' | 'audio' | 'video' | 'other' | 'scenes' | 'characters';
 type UIAssetScope = 'all' | 'global' | 'project';
 
 // 资产分类配置
@@ -27,6 +27,8 @@ const ASSET_CATEGORIES = [
   { id: 'audio' as UIAssetType, label: '音频', icon: Music },
   { id: 'video' as UIAssetType, label: '视频', icon: Video },
   { id: 'other' as UIAssetType, label: '其他', icon: FileCode },
+  { id: 'scenes' as UIAssetType, label: '场景', icon: ImageIcon },
+  { id: 'characters' as UIAssetType, label: '角色', icon: ImageIcon },
 ];
 
 interface ProjectConfig {
@@ -74,7 +76,15 @@ export function Assets() {
 
     // 根据分类添加类型过滤（'all' 不过滤）
     if (selectedCategory !== 'all') {
-      filter.type = selectedCategory as 'text' | 'image' | 'audio' | 'video' | 'other';
+      // 特殊处理场景和角色分类（使用category过滤）
+      if (selectedCategory === 'scenes') {
+        filter.category = 'scenes';
+      } else if (selectedCategory === 'characters') {
+        filter.category = 'characters';
+      } else {
+        // 其他使用type过滤
+        filter.type = selectedCategory as 'text' | 'image' | 'audio' | 'video' | 'other';
+      }
     }
 
     return filter;

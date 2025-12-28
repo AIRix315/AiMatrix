@@ -976,6 +976,133 @@ export class AssetManagerClass {
   }
 
   /**
+   * 创建场景资产
+   * @param projectId 项目ID
+   * @param name 资产名称
+   * @param imagePath 图片路径
+   * @param sceneData 场景专用数据
+   * @returns 资产元数据
+   */
+  async createSceneAsset(
+    projectId: string,
+    name: string,
+    imagePath: string,
+    sceneData: Omit<import('../../shared/types/asset').SceneCustomFields, 'assetSubType'>
+  ): Promise<import('../../shared/types/asset').AssetMetadata> {
+    const customFields: import('../../shared/types/asset').SceneCustomFields = {
+      assetSubType: 'scene',
+      ...sceneData
+    };
+
+    const result = await this.importAsset({
+      sourcePath: imagePath,
+      scope: 'project',
+      projectId,
+      category: 'scenes',
+      metadata: {
+        name,
+        customFields
+      }
+    });
+
+    return result;
+  }
+
+  /**
+   * 创建角色资产
+   * @param projectId 项目ID
+   * @param name 资产名称
+   * @param imagePath 图片路径
+   * @param characterData 角色专用数据
+   * @returns 资产元数据
+   */
+  async createCharacterAsset(
+    projectId: string,
+    name: string,
+    imagePath: string,
+    characterData: Omit<import('../../shared/types/asset').CharacterCustomFields, 'assetSubType'>
+  ): Promise<import('../../shared/types/asset').AssetMetadata> {
+    const customFields: import('../../shared/types/asset').CharacterCustomFields = {
+      assetSubType: 'character',
+      ...characterData
+    };
+
+    const result = await this.importAsset({
+      sourcePath: imagePath,
+      scope: 'project',
+      projectId,
+      category: 'characters',
+      metadata: {
+        name,
+        customFields
+      }
+    });
+
+    return result;
+  }
+
+  /**
+   * 智能过滤场景资产
+   * @param filter 场景过滤器
+   * @returns 匹配的场景资产列表
+   */
+  async searchScenes(filter: {
+    environment?: 'indoor' | 'outdoor';
+    timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'night';
+    weather?: 'sunny' | 'rainy' | 'cloudy' | 'snowy';
+    location?: string;
+  }): Promise<import('../../shared/types/asset').AssetMetadata[]> {
+    const result = await this.scanAssets({ category: 'scenes' });
+    const allAssets = result.assets;
+
+    return allAssets.filter((asset) => {
+      if (!asset.customFields || asset.customFields.assetSubType !== 'scene') {
+        return false;
+      }
+
+      const sceneData = asset.customFields as import('../../shared/types/asset').SceneCustomFields;
+
+      if (filter.environment && sceneData.environment !== filter.environment) return false;
+      if (filter.timeOfDay && sceneData.timeOfDay !== filter.timeOfDay) return false;
+      if (filter.weather && sceneData.weather !== filter.weather) return false;
+      if (filter.location && !sceneData.location.includes(filter.location)) return false;
+
+      return true;
+    });
+  }
+
+  /**
+   * 智能过滤角色资产
+   * @param filter 角色过滤器
+   * @returns 匹配的角色资产列表
+   */
+  async searchCharacters(filter: {
+    gender?: 'male' | 'female' | 'other';
+    ageRange?: [number, number];
+    bodyType?: 'slim' | 'average' | 'muscular' | 'heavyset';
+  }): Promise<import('../../shared/types/asset').AssetMetadata[]> {
+    const result = await this.scanAssets({ category: 'characters' });
+    const allAssets = result.assets;
+
+    return allAssets.filter((asset) => {
+      if (!asset.customFields || asset.customFields.assetSubType !== 'character') {
+        return false;
+      }
+
+      const charData = asset.customFields as import('../../shared/types/asset').CharacterCustomFields;
+
+      if (filter.gender && charData.gender !== filter.gender) return false;
+      if (filter.ageRange) {
+        const [min, max] = filter.ageRange;
+        if (charData.age < min || charData.age > max) return false;
+      }
+      if (filter.bodyType && charData.bodyType !== filter.bodyType) return false;
+
+      return true;
+    });
+  }
+
+  /**
    * 判断是否应该忽略文件
    * @private
    */

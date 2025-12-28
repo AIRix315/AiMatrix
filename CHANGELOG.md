@@ -186,7 +186,7 @@ Closes #123
 
 ## [0.3.2] - 2025-12-29
 
-### Added - Phase 9 第三阶段：业务功能补齐 (H2.11)
+### Added - Phase 9 第三阶段：业务功能补齐 (H2.11-H2.12)
 - feat(workflow): 节点编辑器功能补充 - 通用工作台完善 (H2.11)
   - 集成@xyflow/react库 - 现代化工作流画布引擎
   - InputNode节点组件 - 资源输入节点（无左端口/有右端口）
@@ -205,6 +205,18 @@ Closes #123
   - 节点连线和数据流 - Input → Execute → Output完整数据流
   - 工作流保存/加载 - JSON配置，支持节点恢复（WorkflowEditor已实现）
   - 自定义节点样式 - OKLCH色彩系统，深色主题优化
+- feat(asset): 场景/角色素材专用管理 (H2.12)
+  - SceneCustomFields接口 - 场景专用字段（环境/时间/天气/地点/氛围/光照）
+  - CharacterCustomFields接口 - 角色专用字段（性别/年龄/外貌/性格/服装/身高/体型）
+  - AssetManager新增方法:
+    - createSceneAsset() - 创建场景资产（使用customFields存储场景数据）
+    - createCharacterAsset() - 创建角色资产（使用customFields存储角色数据）
+    - searchScenes() - 智能过滤场景资产（按环境/时间/天气/地点筛选）
+    - searchCharacters() - 智能过滤角色资产（按性别/年龄/体型筛选）
+  - Assets页面UI增强:
+    - 新增"场景"Tab - 显示所有场景资产（category='scenes'）
+    - 新增"角色"Tab - 显示所有角色资产（category='characters'）
+    - 优化过滤器逻辑 - 支持按category和type双模式过滤
 
 ### Changed
 - refactor(workflow): WorkflowEditor集成自定义节点类型
@@ -217,6 +229,9 @@ Closes #123
   - 修复ExecuteNode的Provider加载 - 使用listProviders替代getAPIProviders
   - 修复OutputNode的目录选择 - 使用openDirectoryDialog替代showOpenDialog
   - 添加APIProviderConfig类型标注 - 消除隐式any类型错误
+- fix(asset): 修复AssetManager方法调用错误
+  - 修复createSceneAsset/createCharacterAsset - 使用importAsset替代addAsset
+  - 修复searchScenes/searchCharacters - 使用AssetFilter对象替代字符串参数
 
 --------------------------------------------
 

@@ -161,3 +161,32 @@ export interface AssetFileChangeEvent {
   projectId?: string;
   category?: string;
 }
+
+/**
+ * 场景专用字段
+ * 用于小说转视频工作流的场景管理
+ */
+export interface SceneCustomFields {
+  assetSubType: 'scene';                              // 资产子类型标识
+  environment: 'indoor' | 'outdoor';                  // 环境
+  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night'; // 时间
+  weather?: 'sunny' | 'rainy' | 'cloudy' | 'snowy';  // 天气
+  location: string;                                    // 地点描述
+  mood?: 'calm' | 'tense' | 'joyful' | 'sad';        // 氛围
+  lighting?: string;                                   // 光照描述
+}
+
+/**
+ * 角色专用字段
+ * 用于小说转视频工作流的角色管理
+ */
+export interface CharacterCustomFields {
+  assetSubType: 'character';                          // 资产子类型标识
+  gender: 'male' | 'female' | 'other';                // 性别
+  age: number;                                         // 年龄
+  appearance: string;                                  // 外貌描述
+  personality?: string;                                // 性格描述
+  clothing?: string;                                   // 服装描述
+  height?: number;                                     // 身高（cm）
+  bodyType?: 'slim' | 'average' | 'muscular' | 'heavyset'; // 体型
+}
