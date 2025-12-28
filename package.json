@@ -1,6 +1,6 @@
 {
   "name": "matrix-ai-workflow",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "AI视频生成工作流管理平台",
   "main": "build/main/index.js",
   "homepage": "./",

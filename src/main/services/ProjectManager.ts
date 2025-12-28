@@ -538,11 +538,19 @@ export class ProjectManager implements IProjectManager {
   private async loadAllProjects(): Promise<void> {
     try {
       const projectDirs = await fs.readdir(this.projectsPath, { withFileTypes: true });
-      
+
       for (const dir of projectDirs) {
         if (dir.isDirectory()) {
           try {
-            await this.loadProject(dir.name);
+            const configPath = path.join(this.projectsPath, dir.name, 'project.json');
+            const configData = await fs.readFile(configPath, 'utf-8');
+            const projectConfig: ProjectConfig = JSON.parse(configData);
+
+            projectConfig.createdAt = new Date(projectConfig.createdAt);
+            projectConfig.updatedAt = new Date(projectConfig.updatedAt);
+
+            this.projects.set(projectConfig.id, projectConfig);
+            this.log('info', `项目加载成功: ${projectConfig.id}`);
           } catch (error) {
             this.log('warn', `跳过无效项目目录: ${dir.name}, 错误: ${error}`);
           }

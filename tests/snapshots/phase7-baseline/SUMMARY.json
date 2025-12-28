@@ -2,7 +2,7 @@
   "title": "Phase 7 架构标准化验收标准",
   "baseline": {
     "version": "v0.2.9.4",
-    "date": "2025-12-27T05:53:28.025Z",
+    "date": "2025-12-28T23:38:41.946Z",
     "description": "基于当前版本记录的小说转视频流程基准行为"
   },
   "dataStructures": {

@@ -176,7 +176,7 @@ export class AssetManagerClass {
       // 如果是项目索引，读取项目名称
       if (projectId) {
         const projectJsonPath = path.join(
-          path.dirname(path.dirname(baseDir)),
+          path.dirname(baseDir),
           'project.json'
         );
         const projectData = await this.fsService.readJSON<{ name: string }>(projectJsonPath);
@@ -692,7 +692,12 @@ export class AssetManagerClass {
           category || (assetType === 'image' ? 'images' : assetType + 's')
         );
       } else {
-        targetDir = this.fsService.getGlobalAssetDir(assetType);
+        // 全局资产：优先使用 category，否则使用 assetType 目录
+        if (category) {
+          targetDir = path.join(this.fsService.getGlobalAssetDir(), category);
+        } else {
+          targetDir = this.fsService.getGlobalAssetDir(assetType);
+        }
       }
 
       // 确保目标目录存在

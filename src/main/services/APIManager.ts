@@ -1027,12 +1027,14 @@ export class APIManager {
   public async addProvider(config: APIProviderConfig): Promise<void> {
     return errorHandler.wrapAsync(
       async () => {
+        const isUpdate = this.providers.has(config.id);
+
         this.providers.set(config.id, {
           ...config,
           updatedAt: new Date().toISOString()
         });
         await this.saveProviders();
-        await logger.info(`Provider added/updated: ${config.id}`, 'APIManager');
+        await logger.info(`Provider ${isUpdate ? 'updated' : 'added'}: ${config.id}`, 'APIManager');
       },
       'APIManager',
       'addProvider',
@@ -1063,18 +1065,13 @@ export class APIManager {
 
   /**
    * 获取 Provider 配置
+   *
+   * @param providerId - Provider ID
+   * @returns Provider配置，如果不存在则返回null
    */
-  public async getProvider(providerId: string): Promise<APIProviderConfig> {
+  public async getProvider(providerId: string): Promise<APIProviderConfig | null> {
     const config = this.providers.get(providerId);
-    if (!config) {
-      throw errorHandler.createError(
-        ErrorCode.API_NOT_FOUND,
-        'APIManager',
-        'getProvider',
-        `Provider not found: ${providerId}`
-      );
-    }
-    return config;
+    return config || null;
   }
 
   /**

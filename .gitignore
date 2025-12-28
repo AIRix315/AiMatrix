@@ -6,3 +6,4 @@ nul
 .DS_Store
 .env
 .env.local
+test-data/
