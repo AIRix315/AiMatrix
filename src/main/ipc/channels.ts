@@ -59,6 +59,23 @@ export const IPC_CHANNELS = {
   SHORTCUT_REORDER: 'shortcut:reorder',
   SHORTCUT_LIST: 'shortcut:list',
 
+  // API Provider相关
+  API_LIST_PROVIDERS: 'api:list-providers',
+  API_GET_PROVIDER: 'api:get-provider',
+  API_ADD_PROVIDER: 'api:add-provider',
+  API_REMOVE_PROVIDER: 'api:remove-provider',
+  API_TEST_PROVIDER_CONNECTION: 'api:test-provider-connection',
+  API_GET_PROVIDER_STATUS: 'api:get-provider-status',
+
+  // Model相关
+  MODEL_LIST: 'model:list',
+  MODEL_GET: 'model:get',
+  MODEL_ADD_CUSTOM: 'model:add-custom',
+  MODEL_REMOVE_CUSTOM: 'model:remove-custom',
+  MODEL_TOGGLE_VISIBILITY: 'model:toggle-visibility',
+  MODEL_TOGGLE_FAVORITE: 'model:toggle-favorite',
+  MODEL_SET_ALIAS: 'model:set-alias',
+
   // 事件通知
   EVENT_WORKFLOW_PROGRESS: 'event:workflow:progress',
   EVENT_WORKFLOW_COMPLETED: 'event:workflow:completed',

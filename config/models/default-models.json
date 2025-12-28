@@ -1,0 +1,167 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-12-29",
+  "models": [
+    {
+      "id": "sd-xl-base-1.0",
+      "name": "Stable Diffusion XL",
+      "provider": "comfyui-local",
+      "category": "image-generation",
+      "official": true,
+      "parameters": {
+        "dimensions": ["1024x1024", "1152x896", "896x1152", "1216x832", "832x1216"],
+        "aspectRatios": ["1:1", "4:3", "3:4", "16:9", "9:16"]
+      },
+      "description": "高质量图像生成模型，基于Stable Diffusion XL架构",
+      "tags": ["stable-diffusion", "sdxl", "image", "popular"]
+    },
+    {
+      "id": "sd-3-medium",
+      "name": "Stable Diffusion 3 Medium",
+      "provider": "stability-ai",
+      "category": "image-generation",
+      "official": true,
+      "parameters": {
+        "dimensions": ["1024x1024", "1152x896", "896x1152"],
+        "aspectRatios": ["1:1", "4:3", "3:4", "16:9", "9:16"]
+      },
+      "costPerUnit": 0.035,
+      "currency": "USD",
+      "description": "Stability AI最新图像生成模型",
+      "tags": ["stable-diffusion", "sd3", "image"],
+      "version": "3.0"
+    },
+    {
+      "id": "flux-dev",
+      "name": "Flux Dev",
+      "provider": "comfyui-local",
+      "category": "image-generation",
+      "official": true,
+      "parameters": {
+        "dimensions": ["1024x1024", "1280x720", "720x1280"],
+        "aspectRatios": ["1:1", "16:9", "9:16"]
+      },
+      "description": "高性能开源图像生成模型",
+      "tags": ["flux", "image", "open-source"]
+    },
+    {
+      "id": "gpt-4-turbo",
+      "name": "GPT-4 Turbo",
+      "provider": "openai",
+      "category": "llm",
+      "official": true,
+      "parameters": {
+        "maxTokens": 128000,
+        "contextWindow": 128000
+      },
+      "costPerUnit": 0.01,
+      "currency": "USD",
+      "description": "OpenAI最强大的语言模型，支持128K上下文",
+      "tags": ["gpt-4", "llm", "openai", "popular"],
+      "version": "gpt-4-turbo-2024-04-09"
+    },
+    {
+      "id": "gpt-3.5-turbo",
+      "name": "GPT-3.5 Turbo",
+      "provider": "openai",
+      "category": "llm",
+      "official": true,
+      "parameters": {
+        "maxTokens": 16385,
+        "contextWindow": 16385
+      },
+      "costPerUnit": 0.0005,
+      "currency": "USD",
+      "description": "快速且经济的语言模型",
+      "tags": ["gpt-3.5", "llm", "openai", "budget"],
+      "version": "gpt-3.5-turbo-0125"
+    },
+    {
+      "id": "llama3-8b",
+      "name": "Llama 3 8B",
+      "provider": "ollama-local",
+      "category": "llm",
+      "official": true,
+      "parameters": {
+        "maxTokens": 8192,
+        "contextWindow": 8192
+      },
+      "description": "Meta开源语言模型，本地运行",
+      "tags": ["llama", "llm", "open-source", "local"],
+      "version": "3.0"
+    },
+    {
+      "id": "mistral-latest",
+      "name": "Mistral Latest",
+      "provider": "ollama-local",
+      "category": "llm",
+      "official": true,
+      "parameters": {
+        "maxTokens": 32768,
+        "contextWindow": 32768
+      },
+      "description": "高性能开源语言模型",
+      "tags": ["mistral", "llm", "open-source", "local"]
+    },
+    {
+      "id": "sora-2",
+      "name": "Sora 2",
+      "provider": "t8star-video",
+      "category": "video-generation",
+      "official": true,
+      "parameters": {
+        "dimensions": ["1920x1080", "1080x1920", "1280x720"],
+        "aspectRatios": ["16:9", "9:16", "4:3"],
+        "fps": [24, 30]
+      },
+      "costPerUnit": 0.15,
+      "currency": "USD",
+      "description": "T8Star视频生成服务",
+      "tags": ["sora", "video", "t8star"],
+      "version": "2.0"
+    },
+    {
+      "id": "runway-gen3-alpha",
+      "name": "Runway Gen-3 Alpha",
+      "provider": "runway-gen3",
+      "category": "video-generation",
+      "official": true,
+      "parameters": {
+        "dimensions": ["1280x768", "768x1280", "1920x1080"],
+        "aspectRatios": ["16:9", "9:16"],
+        "fps": [24, 30]
+      },
+      "costPerUnit": 0.05,
+      "currency": "USD",
+      "description": "Runway最新视频生成模型",
+      "tags": ["runway", "video", "gen-3"],
+      "version": "3.0-alpha"
+    },
+    {
+      "id": "runninghub-tts-v1",
+      "name": "RunningHub TTS",
+      "provider": "runninghub-tts",
+      "category": "tts",
+      "official": true,
+      "parameters": {},
+      "description": "RunningHub语音合成服务",
+      "tags": ["tts", "voice", "chinese"],
+      "version": "1.0"
+    },
+    {
+      "id": "whisper-large-v3",
+      "name": "Whisper Large V3",
+      "provider": "openai",
+      "category": "stt",
+      "official": true,
+      "parameters": {
+        "maxTokens": 448
+      },
+      "costPerUnit": 0.006,
+      "currency": "USD",
+      "description": "OpenAI语音识别模型",
+      "tags": ["whisper", "stt", "openai"],
+      "version": "3.0"
+    }
+  ]
+}

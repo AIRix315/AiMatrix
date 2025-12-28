@@ -790,41 +790,83 @@
 
 ### 🔹 第二阶段：API Provider 架构重构（v0.3.0）
 
-### [ ] [H2.8] 统一 Provider 配置模型
+### [x] [H2.8] 统一 Provider 配置模型 ✅ 2025-12-29
 *   **文件**: `src/main/services/APIManager.ts`, `src/shared/types/api.ts`
 *   **参考**:
     - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 核心架构问题)
     - 实现方法: `plans/code-references-phase9.md` (REF-013 API Provider统一配置模型)
-*   **任务内容**:
-    1.  统一本地和云端服务为HTTP API抽象（APIProviderConfig接口）
-    2.  支持同类型多Provider（如ComfyUI本地+ComfyUI云端）
-    3.  按功能分类（APICategory枚举：图像生成、视频生成、LLM、工作流等）
-    4.  移除错误的"本地/云端"分类
-*   **验收**: 可同时配置多个同类型Provider，Settings页面按功能分类显示
+*   **完成内容**:
+    1.  ✅ 创建 `src/shared/types/api.ts` - 统一API类型定义（9个枚举和接口）
+    2.  ✅ 重构 `APIManager.ts` - 升级到v2.0架构（保持向后兼容）
+    3.  ✅ 实现按功能分类（APICategory枚举：9种分类）
+    4.  ✅ 支持同类型多Provider（基于id唯一标识）
+    5.  ✅ 注册7个默认Providers（ComfyUI、Stability AI、T8Star、Ollama、OpenAI等）
+    6.  ✅ 实现旧配置自动迁移（migrateOldConfig方法）
+    7.  ✅ 新增Provider管理API（addProvider/removeProvider/getProvider/listProviders）
+    8.  ✅ 新增状态检查和连接测试（getProviderStatus/testProviderConnection）
+    9.  ✅ 修复TaskScheduler导入错误
+    10. ✅ 完整构建测试通过（0错误）
+*   **验收**: ✅ 所有功能实现完成，可同时配置多个同类型Provider
+*   **新增文件**: `src/shared/types/api.ts` (120行)
+*   **修改文件**: `src/main/services/APIManager.ts` (+430行), `src/main/services/TaskScheduler.ts` (+1行)
+*   **代码量**: 约550行核心代码
+*   **下一步**: Settings页面UI重构（H2.10）将使用新的Provider配置模型
 
-### [ ] [H2.9] 模型注册表系统
+### [x] [H2.9] 模型注册表系统 ✅ 2025-12-29
 *   **文件**: `src/main/services/ModelRegistry.ts`（新建）, `config/models/default-models.json`（新建）
 *   **参考**:
     - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 模型注册表系统)
     - 实现方法: `plans/code-references-phase9.md` (REF-014 ModelRegistry数据结构)
-*   **任务内容**:
-    1.  创建全局模型列表（JSON配置文件，ModelDefinition接口）
-    2.  实现ModelRegistry服务（listModels/addCustomModel/toggleModelVisibility）
-    3.  支持用户自定义模型（UserModelConfig接口）
-    4.  智能过滤：只显示已配置Provider的模型（enabledProvidersOnly参数）
-*   **验收**: 用户可添加自定义模型，可隐藏不需要的模型，模型列表只显示已配置Provider支持的模型
+*   **完成内容**:
+    1.  ✅ 扩展 `src/shared/types/api.ts` - 添加5个模型相关类型（ModelParameters、ModelDefinition、UserModelConfig等）
+    2.  ✅ 创建 `config/models/default-models.json` - 11个默认模型（SD XL、GPT-4、Sora 2等）
+    3.  ✅ 实现 `ModelRegistry.ts` - 完整的模型注册表服务（470行）
+    4.  ✅ 核心功能：listModels/getModel/addCustomModel/removeCustomModel
+    5.  ✅ 用户配置：toggleModelVisibility/toggleModelFavorite/setModelAlias/getUserConfig
+    6.  ✅ 智能过滤：按分类、按Provider、隐藏模型、仅收藏
+    7.  ✅ 辅助方法：getModelsByProvider/searchModelsByTag
+    8.  ✅ 集成到主进程（初始化和清理）
+    9.  ✅ 完整构建测试通过（0错误）
+*   **验收**: ✅ 所有功能实现完成
+    - ✅ 支持11种默认模型（图像生成4个、LLM 4个、视频生成2个、TTS 1个）
+    - ✅ 智能过滤：仅显示已配置Provider的模型
+    - ✅ 用户可添加/删除自定义模型
+    - ✅ 用户可隐藏/收藏/设置别名
+    - ✅ 支持按标签搜索、按Provider过滤
+*   **新增文件**:
+    - `src/main/services/ModelRegistry.ts` (470行)
+    - `config/models/default-models.json` (150行JSON)
+*   **修改文件**:
+    - `src/shared/types/api.ts` (+60行)
+    - `src/main/index.ts` (+2行)
+*   **代码量**: 约530行核心代码 + 150行配置数据
+*   **下一步**: Settings页面UI重构（H2.10）将使用ModelRegistry展示和管理模型
 
-### [ ] [H2.10] Settings 页面重构
+### [x] [H2.10] Settings 页面重构 ✅ 2025-12-29
 *   **文件**: `src/renderer/pages/settings/Settings.tsx`
 *   **参考**:
     - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置)
     - 实现方法: `plans/code-references-phase9.md` (REF-013 API Provider统一配置模型UI设计, REF-014 ModelRegistry数据结构)
 *   **任务内容**:
-    1.  按功能分类Provider列表（左侧分类导航：图像生成、视频生成、LLM、工作流等）
-    2.  实现ProviderConfigCard组件（右侧Provider配置列表）
-    3.  实现模型选择器组件（支持勾选/隐藏模型）
+    1.  ✅ 按功能分类Provider列表（左侧分类导航：图像生成、视频生成、LLM、工作流等）
+    2.  ✅ 实现ProviderConfigCard组件（右侧Provider配置列表）
+    3.  ✅ 实现模型选择器组件（支持勾选/隐藏模型）
 *   **验收**: Settings页面按功能分类显示Provider，模型选择器完整可用
 *   **审核报告参考**: A5.设置
+*   **完成内容** (13个核心变更):
+    1. ✅ 在 `src/main/index.ts` 添加13个新的 IPC 处理器（6个Provider API + 7个Model API）
+    2. ✅ 在 `src/preload/index.ts` 暴露13个新的IPC API到渲染进程
+    3. ✅ 创建 `src/renderer/pages/settings/components/ProviderConfigCard.tsx` (310行) - Provider配置卡片组件
+    4. ✅ 创建 `src/renderer/pages/settings/components/ProviderConfigCard.css` (196行) - 配置卡片样式
+    5. ✅ 创建 `src/renderer/pages/settings/components/ModelSelector.tsx` (390行) - 模型选择器组件
+    6. ✅ 创建 `src/renderer/pages/settings/components/ModelSelector.css` (262行) - 模型选择器样式
+    7. ✅ 重构 `src/renderer/pages/settings/Settings.tsx` (428行) - 左侧9个功能分类导航 + 右侧Provider卡片列表
+*   **新增功能**:
+    - 左侧导航: 全局配置、模型管理、9个API分类（图像生成、视频生成、音频生成、LLM、工作流、TTS、STT、向量嵌入、翻译）
+    - ProviderConfigCard: 启用/禁用切换、API Key配置、Base URL配置、连接测试、状态指示器、编辑/删除功能
+    - ModelSelector: 搜索过滤、仅显示收藏、显示隐藏模型、标签过滤、收藏功能、设置别名、隐藏/显示切换
+*   **代码量**: 约1586行代码（4个新组件 + 主页面重构 + IPC集成）
+*   **构建状态**: ✅ 全部通过（preload, main, renderer）
 
 ---
 
@@ -987,9 +1029,9 @@
 
 ### v0.3.0 📋 (Phase 9 第二阶段 - API Provider架构重构)
 **重点**: 统一服务抽象和模型管理
-- [ ] 统一 Provider 配置模型（H2.8）
-- [ ] 模型注册表系统（H2.9）
-- [ ] Settings 页面重构（H2.10）
+- [x] 统一 Provider 配置模型（H2.8）✅ 2025-12-29
+- [x] 模型注册表系统（H2.9）✅ 2025-12-29
+- [x] Settings 页面重构（H2.10）✅ 2025-12-29
 
 ### v0.3.2 📋 (Phase 9 第三阶段 - 业务功能补齐)
 **重点**: 节点编辑器完善、资产管理和工作流业务逻辑

@@ -372,6 +372,88 @@ contextBridge.exposeInMainWorld('electronAPI', {
   testAPIConnection: (params: { type: string; baseUrl: string; apiKey?: string }): Promise<{ success: boolean; models?: string[]; error?: string }> =>
     ipcRenderer.invoke('api:test-connection', params),
 
+  // ==================== Provider相关 ====================
+
+  /**
+   * 列出所有Provider
+   */
+  listProviders: (options?: { category?: string; enabledOnly?: boolean }): Promise<any[]> =>
+    ipcRenderer.invoke('api:list-providers', options),
+
+  /**
+   * 获取单个Provider配置
+   */
+  getProvider: (providerId: string): Promise<any> =>
+    ipcRenderer.invoke('api:get-provider', providerId),
+
+  /**
+   * 添加Provider配置
+   */
+  addProvider: (config: any): Promise<void> =>
+    ipcRenderer.invoke('api:add-provider', config),
+
+  /**
+   * 移除Provider配置
+   */
+  removeProvider: (providerId: string): Promise<void> =>
+    ipcRenderer.invoke('api:remove-provider', providerId),
+
+  /**
+   * 测试Provider连接
+   */
+  testProviderConnection: (params: any): Promise<any> =>
+    ipcRenderer.invoke('api:test-provider-connection', params),
+
+  /**
+   * 获取Provider状态
+   */
+  getProviderStatus: (providerId: string): Promise<any> =>
+    ipcRenderer.invoke('api:get-provider-status', providerId),
+
+  // ==================== Model相关 ====================
+
+  /**
+   * 列出所有模型
+   */
+  listModels: (options?: { category?: string; enabledProvidersOnly?: boolean; includeHidden?: boolean; favoriteOnly?: boolean }): Promise<any[]> =>
+    ipcRenderer.invoke('model:list', options),
+
+  /**
+   * 获取单个模型详情
+   */
+  getModel: (modelId: string): Promise<any> =>
+    ipcRenderer.invoke('model:get', modelId),
+
+  /**
+   * 添加自定义模型
+   */
+  addCustomModel: (model: any): Promise<void> =>
+    ipcRenderer.invoke('model:add-custom', model),
+
+  /**
+   * 移除自定义模型
+   */
+  removeCustomModel: (modelId: string): Promise<void> =>
+    ipcRenderer.invoke('model:remove-custom', modelId),
+
+  /**
+   * 切换模型可见性
+   */
+  toggleModelVisibility: (modelId: string, hidden: boolean): Promise<void> =>
+    ipcRenderer.invoke('model:toggle-visibility', modelId, hidden),
+
+  /**
+   * 切换模型收藏状态
+   */
+  toggleModelFavorite: (modelId: string, favorite: boolean): Promise<void> =>
+    ipcRenderer.invoke('model:toggle-favorite', modelId, favorite),
+
+  /**
+   * 设置模型别名
+   */
+  setModelAlias: (modelId: string, alias: string): Promise<void> =>
+    ipcRenderer.invoke('model:set-alias', modelId, alias),
+
   // ==================== Settings相关 ====================
 
   /**
@@ -672,6 +754,19 @@ declare global {
       getAPIStatus: (name: string) => Promise<any>;
       getAPIUsage: (name: string) => Promise<any>;
       testAPIConnection: (params: { type: string; baseUrl: string; apiKey?: string }) => Promise<{ success: boolean; models?: string[]; error?: string }>;
+      listProviders: (options?: { category?: string; enabledOnly?: boolean }) => Promise<any[]>;
+      getProvider: (providerId: string) => Promise<any>;
+      addProvider: (config: any) => Promise<void>;
+      removeProvider: (providerId: string) => Promise<void>;
+      testProviderConnection: (params: any) => Promise<any>;
+      getProviderStatus: (providerId: string) => Promise<any>;
+      listModels: (options?: { category?: string; enabledProvidersOnly?: boolean; includeHidden?: boolean; favoriteOnly?: boolean }) => Promise<any[]>;
+      getModel: (modelId: string) => Promise<any>;
+      addCustomModel: (model: any) => Promise<void>;
+      removeCustomModel: (modelId: string) => Promise<void>;
+      toggleModelVisibility: (modelId: string, hidden: boolean) => Promise<void>;
+      toggleModelFavorite: (modelId: string, favorite: boolean) => Promise<void>;
+      setModelAlias: (modelId: string, alias: string) => Promise<void>;
       getAllSettings: () => Promise<any>;
       saveSettings: (config: any) => Promise<{ success: boolean }>;
       openDirectoryDialog: () => Promise<string | null>;

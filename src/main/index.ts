@@ -15,6 +15,7 @@ import { pluginMarketService } from './services/PluginMarketService';
 import { taskScheduler } from './services/TaskScheduler';
 import { TaskType } from './services/TaskScheduler';
 import { apiManager } from './services/APIManager';
+import { modelRegistry } from './services/ModelRegistry';
 import { configManager } from './services/ConfigManager';
 import { timeService } from './services/TimeService';
 import { ShortcutManager } from './services/ShortcutManager';
@@ -163,6 +164,7 @@ class MatrixApp {
     await pluginMarketService.initialize();
     await taskScheduler.initialize();
     await apiManager.initialize();
+    await modelRegistry.initialize();
     await this.shortcutManager.initialize();
 
     await logger.info('All Matrix services initialized successfully', 'MatrixApp');
@@ -303,6 +305,54 @@ class MatrixApp {
     });
     ipcMain.handle('shortcut:list', async () => {
       return await this.shortcutManager.listShortcuts();
+    });
+
+    // API Provider相关IPC处理
+    ipcMain.handle('api:list-providers', async (_, options?: { category?: string; enabledOnly?: boolean }) => {
+      return await apiManager.listProviders(options as any);
+    });
+    ipcMain.handle('api:get-provider', async (_, providerId: string) => {
+      return await apiManager.getProvider(providerId);
+    });
+    ipcMain.handle('api:add-provider', async (_, config) => {
+      await apiManager.addProvider(config);
+    });
+    ipcMain.handle('api:remove-provider', async (_, providerId: string) => {
+      await apiManager.removeProvider(providerId);
+    });
+    ipcMain.handle('api:test-provider-connection', async (_, params) => {
+      return await apiManager.testProviderConnection(params);
+    });
+    ipcMain.handle('api:get-provider-status', async (_, providerId: string) => {
+      return await apiManager.getProviderStatus(providerId);
+    });
+
+    // Model相关IPC处理
+    ipcMain.handle('model:list', async (_, options?: {
+      category?: string;
+      enabledProvidersOnly?: boolean;
+      includeHidden?: boolean;
+      favoriteOnly?: boolean;
+    }) => {
+      return await modelRegistry.listModels(options as any);
+    });
+    ipcMain.handle('model:get', async (_, modelId: string) => {
+      return await modelRegistry.getModel(modelId);
+    });
+    ipcMain.handle('model:add-custom', async (_, model) => {
+      await modelRegistry.addCustomModel(model);
+    });
+    ipcMain.handle('model:remove-custom', async (_, modelId: string) => {
+      await modelRegistry.removeCustomModel(modelId);
+    });
+    ipcMain.handle('model:toggle-visibility', async (_, modelId: string, hidden: boolean) => {
+      await modelRegistry.toggleModelVisibility(modelId, hidden);
+    });
+    ipcMain.handle('model:toggle-favorite', async (_, modelId: string, favorite: boolean) => {
+      await modelRegistry.toggleModelFavorite(modelId, favorite);
+    });
+    ipcMain.handle('model:set-alias', async (_, modelId: string, alias: string) => {
+      await modelRegistry.setModelAlias(modelId, alias);
     });
 
     // 项目相关IPC处理
@@ -723,6 +773,7 @@ class MatrixApp {
       await pluginManager.cleanup();
       await taskScheduler.cleanup();
       await apiManager.cleanup();
+      await modelRegistry.cleanup();
 
       await logger.info('Matrix application cleanup completed', 'MatrixApp');
     } catch (error) {

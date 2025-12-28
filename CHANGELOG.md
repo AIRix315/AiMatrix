@@ -184,6 +184,109 @@ Closes #123
 
 --------------------------------------------
 
+## [0.3.1] - 2025-12-29
+
+### Added - Phase 9 第二阶段：API Provider架构重构 (H2.8-H2.10)
+- feat(api): 统一 Provider 配置模型 (H2.8)
+  - APICategory 枚举 - 9个功能分类（图像生成/视频生成/音频生成/LLM/工作流/TTS/STT/向量嵌入/翻译）
+  - APIProviderConfig 接口 - 统一Provider配置结构（id/name/category/baseUrl/authType/apiKey/enabled等）
+  - AuthType 枚举 - 4种认证方式（Bearer/APIKey/Basic/None）
+  - APIManager v2.0 - 双配置系统（新配置 + 向后兼容旧配置）
+  - 支持多实例Provider（如 comfyui-local/comfyui-runpod/comfyui-replicate）
+  - 7个默认Provider自动注册（ComfyUI/Stability AI/T8Star/Ollama/OpenAI/RunningHub TTS/N8N）
+- feat(model): ModelRegistry 模型注册表系统 (H2.9)
+  - ModelDefinition 接口 - 统一模型定义（id/name/provider/category/parameters/costPerUnit等）
+  - UserModelConfig 接口 - 用户配置（hidden/favorite/alias/customParams）
+  - ModelRegistry 服务 - 集中式模型管理（470行）
+  - 智能过滤 - 仅显示已启用Provider的模型
+  - 11个默认模型配置（SD XL/SD3/Flux/GPT-4/GPT-3.5/Llama3/Mistral/Sora2/Runway Gen-3/RunningHub TTS/Whisper）
+  - 支持自定义模型（添加/删除）
+  - 支持模型配置（隐藏/显示、收藏、设置别名）
+- feat(ui): Settings 页面重构 (H2.10)
+  - ProviderConfigCard 组件 (310行 + 196行CSS) - Provider配置卡片
+    - 启用/禁用切换开关
+    - API Key 和 Base URL 配置
+    - 连接测试功能
+    - 状态指示器（在线/离线/未知）
+    - 编辑/删除功能
+    - 单价显示（costPerUnit + currency）
+  - ModelSelector 组件 (390行 + 262行CSS) - 模型选择器
+    - 搜索过滤（名称/ID/描述/别名）
+    - 仅显示收藏/显示隐藏模型
+    - 标签过滤（多选）
+    - 收藏功能（★标记）
+    - 隐藏/显示切换
+    - 设置别名（自定义显示名称）
+  - Settings 主页面重构 (428行)
+    - 左侧分类导航（全局配置/模型管理/9个API分类）
+    - 右侧Provider卡片列表（按分类显示）
+    - 空状态提示
+- feat(ipc): 13个新增 IPC 通道
+  - API Provider: list-providers/get-provider/add-provider/remove-provider/test-provider-connection/get-provider-status
+  - Model: list/get/add-custom/remove-custom/toggle-visibility/toggle-favorite/set-alias
+- feat(preload): Provider 和 Model API 暴露
+  - window.electronAPI.listProviders()
+  - window.electronAPI.getProvider()
+  - window.electronAPI.addProvider()
+  - window.electronAPI.removeProvider()
+  - window.electronAPI.testProviderConnection()
+  - window.electronAPI.getProviderStatus()
+  - window.electronAPI.listModels()
+  - window.electronAPI.getModel()
+  - window.electronAPI.addCustomModel()
+  - window.electronAPI.removeCustomModel()
+  - window.electronAPI.toggleModelVisibility()
+  - window.electronAPI.toggleModelFavorite()
+  - window.electronAPI.setModelAlias()
+
+### Changed
+- refactor(api): APIManager 架构升级
+  - local/cloud分类 → 9个功能分类
+  - 单实例 → 多实例支持
+  - 配置迁移支持（自动从旧格式转换）
+  - 向后兼容旧API（标记为 @deprecated）
+- refactor(types): 新增 src/shared/types/api.ts (180行)
+  - 集中管理 API 和 Model 类型定义
+  - 9个核心接口（APICategory/AuthType/APIProviderConfig/ModelDefinition/UserModelConfig等）
+
+### Fixed
+- fix(build): 组件导入路径修正
+  - Card 组件不支持 children - 改用 div
+  - Button size prop: "small" → "sm"
+  - 导入路径统一使用 common/index
+
+### Technical Details
+- **新增文件**: 7个核心文件
+  - src/shared/types/api.ts (180行) - API/Model类型定义
+  - config/models/default-models.json (150行) - 默认模型配置
+  - src/main/services/ModelRegistry.ts (470行) - 模型注册表服务
+  - src/renderer/pages/settings/components/ProviderConfigCard.tsx (310行)
+  - src/renderer/pages/settings/components/ProviderConfigCard.css (196行)
+  - src/renderer/pages/settings/components/ModelSelector.tsx (390行)
+  - src/renderer/pages/settings/components/ModelSelector.css (262行)
+- **修改文件**: 5个文件
+  - src/main/services/APIManager.ts (+430行) - v2.0升级
+  - src/main/services/TaskScheduler.ts (+1行) - 导入路径修正
+  - src/main/index.ts (+50行) - IPC处理器集成
+  - src/preload/index.ts (+70行) - API暴露
+  - src/renderer/pages/settings/Settings.tsx (完全重构 428行)
+- **代码量**: 约2666行新增代码
+- **构建状态**: ✅ 全部通过（preload/main/renderer）
+
+### Benefits
+- ✅ 架构优化：功能分类更清晰，支持多实例Provider
+- ✅ 模型管理：集中式管理 + 智能过滤 + 用户自定义
+- ✅ UI重构：分类导航 + 卡片式配置 + 功能完整的模型选择器
+- ✅ 向后兼容：旧配置自动迁移，不影响现有用户
+- ✅ 功能完整度：Phase 9 H2.8-H2.10 (100%完成 3/3任务)
+
+### Notes
+- **完成任务**: H2.8 统一Provider配置模型、H2.9 模型注册表系统、H2.10 Settings页面重构
+- **验收状态**: 所有功能完整，构建成功，类型安全
+- **后续任务**: Phase 9 H2.11-H2.15 节点编辑器和业务功能补齐
+
+--------------------------------------------
+
 ## [0.2.9.9] - 2025-12-28
 
 ### Added - Phase 9 第一阶段：核心交互完善 + 菜单栏快捷方式系统 (H2.7)
