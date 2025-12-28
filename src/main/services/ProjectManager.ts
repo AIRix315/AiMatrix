@@ -124,7 +124,11 @@ export class ProjectManager implements IProjectManager {
         updatedAt: currentTime,
         settings: defaultSettings,
         workflows: [],
-        assets: []
+        assets: [],
+        workflowType: template,
+        inputAssets: [],
+        outputAssets: [],
+        immutable: false
       };
 
       // 如果有模板，复制模板文件
@@ -245,9 +249,103 @@ export class ProjectManager implements IProjectManager {
   }
 
   /**
-   * 删除项目
+   * 添加输入资源引用
+   * @param projectId 项目ID
+   * @param assetId 资源ID
    */
-  public async deleteProject(projectId: string): Promise<void> {
+  public async addInputAsset(projectId: string, assetId: string): Promise<void> {
+    // 验证时间有效性
+    const isTimeValid = await timeService.validateTimeIntegrity();
+    if (!isTimeValid) {
+      const syncSuccess = await timeService.syncWithNTP();
+      if (!syncSuccess) {
+        throw new Error('时间验证失败，无法执行操作: addInputAsset');
+      }
+    }
+
+    if (!this.isInitialized) {
+      throw new Error('项目管理器未初始化');
+    }
+
+    try {
+      const project = await this.loadProject(projectId);
+
+      // 检查项目是否不可修改
+      if (project.immutable) {
+        throw new Error('项目已完成，不可修改');
+      }
+
+      // 检查是否已存在
+      if (!project.inputAssets.includes(assetId)) {
+        project.inputAssets.push(assetId);
+        await this.saveProject(projectId, project);
+        this.log('info', `添加输入资源: ${assetId} -> ${projectId}`);
+      }
+    } catch (error) {
+      const serviceError: ServiceError = {
+        code: 'PROJECT_ADD_INPUT_ASSET_FAILED',
+        message: `添加输入资源失败: ${error instanceof Error ? error.message : String(error)}`,
+        timestamp: await timeService.getCurrentTime(),
+        service: 'ProjectManager',
+        operation: 'addInputAsset'
+      };
+      this.log('error', serviceError.message, serviceError);
+      throw serviceError;
+    }
+  }
+
+  /**
+   * 添加输出资源
+   * @param projectId 项目ID
+   * @param assetId 资源ID（项目生成的资源）
+   */
+  public async addOutputAsset(projectId: string, assetId: string): Promise<void> {
+    // 验证时间有效性
+    const isTimeValid = await timeService.validateTimeIntegrity();
+    if (!isTimeValid) {
+      const syncSuccess = await timeService.syncWithNTP();
+      if (!syncSuccess) {
+        throw new Error('时间验证失败，无法执行操作: addOutputAsset');
+      }
+    }
+
+    if (!this.isInitialized) {
+      throw new Error('项目管理器未初始化');
+    }
+
+    try {
+      const project = await this.loadProject(projectId);
+
+      // 检查项目是否不可修改
+      if (project.immutable) {
+        throw new Error('项目已完成，不可修改');
+      }
+
+      // 检查是否已存在
+      if (!project.outputAssets.includes(assetId)) {
+        project.outputAssets.push(assetId);
+        await this.saveProject(projectId, project);
+        this.log('info', `添加输出资源: ${assetId} -> ${projectId}`);
+      }
+    } catch (error) {
+      const serviceError: ServiceError = {
+        code: 'PROJECT_ADD_OUTPUT_ASSET_FAILED',
+        message: `添加输出资源失败: ${error instanceof Error ? error.message : String(error)}`,
+        timestamp: await timeService.getCurrentTime(),
+        service: 'ProjectManager',
+        operation: 'addOutputAsset'
+      };
+      this.log('error', serviceError.message, serviceError);
+      throw serviceError;
+    }
+  }
+
+  /**
+   * 安全删除项目
+   * @param projectId 项目ID
+   * @param deleteOutputs 是否删除输出资源（默认false）
+   */
+  public async deleteProject(projectId: string, deleteOutputs: boolean = false): Promise<void> {
     // 验证时间有效性
     const isTimeValid = await timeService.validateTimeIntegrity();
     if (!isTimeValid) {
@@ -262,18 +360,25 @@ export class ProjectManager implements IProjectManager {
     }
 
     try {
-      const project = this.projects.get(projectId);
+      const project = await this.loadProject(projectId);
       if (!project) {
         throw new Error(`项目不存在: ${projectId}`);
       }
 
+      if (deleteOutputs && project.outputAssets.length > 0) {
+        this.log('info', `准备删除项目输出资源，共 ${project.outputAssets.length} 个`);
+        for (const assetId of project.outputAssets) {
+          this.log('info', `需要删除输出资源: ${assetId}`);
+        }
+      }
+
       // 删除项目目录
       await fs.rm(project.path, { recursive: true, force: true });
-      
+
       // 从内存中移除
       this.projects.delete(projectId);
-      
-      this.log('info', `项目删除成功: ${projectId}`);
+
+      this.log('info', `项目删除成功: ${projectId}, 删除输出资源: ${deleteOutputs}`);
     } catch (error) {
       const serviceError: ServiceError = {
         code: 'PROJECT_DELETE_FAILED',

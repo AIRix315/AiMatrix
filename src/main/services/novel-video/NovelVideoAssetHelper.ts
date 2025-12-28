@@ -16,8 +16,7 @@ import { FileSystemService } from '../FileSystemService';
 import { Logger } from '../Logger';
 import { timeService } from '../TimeService';
 import {
-  AssetMetadata,
-  AssetFilter
+  AssetMetadata
 } from '../../../shared/types/asset';
 import {
   NovelVideoFields,

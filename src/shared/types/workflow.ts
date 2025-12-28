@@ -34,6 +34,8 @@ export interface WorkflowStep {
 export interface WorkflowState {
   /** 工作流实例ID */
   workflowId: string
+  /** 绑定的项目ID */
+  projectId: string
   /** 当前步骤索引 */
   currentStep: number
   /** 步骤状态映射 */
@@ -85,7 +87,7 @@ export interface WorkflowInstance {
   /** 工作流名称 */
   name: string
   /** 项目ID */
-  projectId?: string
+  projectId: string
   /** 当前状态 */
   state: WorkflowState
   /** 创建时间 */
@@ -100,8 +102,8 @@ export interface WorkflowInstance {
 export interface CreateWorkflowInstanceParams {
   /** 工作流类型 */
   type: string
-  /** 项目ID (可选) */
-  projectId?: string
+  /** 项目ID */
+  projectId: string
   /** 自定义名称 (可选) */
   name?: string
   /** 初始数据 (可选) */

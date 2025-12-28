@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Modal.css';
 
 interface ModalProps {
@@ -41,30 +42,43 @@ const Modal: React.FC<ModalProps> = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-container"
-        style={{ width }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {(title || showCloseButton) && (
-          <div className="modal-header">
-            {title && <h2 className="modal-title">{title}</h2>}
-            {showCloseButton && (
-              <button className="modal-close" onClick={onClose}>
-                ×
-              </button>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="modal-overlay"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+        >
+          <motion.div
+            className="modal-container"
+            style={{ width }}
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          >
+            {(title || showCloseButton) && (
+              <div className="modal-header">
+                {title && <h2 className="modal-title">{title}</h2>}
+                {showCloseButton && (
+                  <button className="modal-close" onClick={onClose}>
+                    ×
+                  </button>
+                )}
+              </div>
             )}
-          </div>
-        )}
-        <div className="modal-body">
-          {children}
-        </div>
-      </div>
-    </div>
+            <div className="modal-body">
+              {children}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

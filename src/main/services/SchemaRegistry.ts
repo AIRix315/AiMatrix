@@ -11,7 +11,6 @@
  * 遵循全局时间处理要求
  */
 
-import * as fs from 'fs/promises';
 import * as path from 'path';
 import { FileSystemService } from './FileSystemService';
 import { Logger } from './Logger';

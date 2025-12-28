@@ -12,9 +12,8 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { TaskScheduler, TaskStatus, Task, TaskConfig } from '../TaskScheduler';
+import { TaskScheduler, TaskStatus, TaskConfig } from '../TaskScheduler';
 import { logger } from '../Logger';
-import { TaskPriority } from './ConcurrencyManager';
 
 /**
  * 链式任务节点

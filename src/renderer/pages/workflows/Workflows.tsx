@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Grid3x3, List, Maximize2, Minimize2 } from 'lucide-react';
 import { Card, Button, Toast, Loading } from '../../components/common';
+import { ProjectSelectorDialog } from '../../components/workflow/ProjectSelectorDialog';
 import type { ToastType } from '../../components/common/Toast';
 import './Workflows.css';
 
@@ -37,6 +38,8 @@ const Workflows: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [selectedWorkflowType, setSelectedWorkflowType] = useState('');
 
   // 全屏切换
   const toggleFullscreen = () => {
@@ -96,15 +99,19 @@ const Workflows: React.FC = () => {
     }
   };
 
-  const handleCreateWorkflowInstance = async (type: string, name: string) => {
+  const handleCreateWorkflowInstance = async (type: string) => {
+    setSelectedWorkflowType(type);
+    setShowProjectSelector(true);
+  };
+
+  const handleProjectSelected = async (projectId: string) => {
     try {
       setIsLoading(true);
 
-      // 创建工作流实例
       if (window.electronAPI?.createWorkflowInstance) {
         const instance = await window.electronAPI.createWorkflowInstance({
-          type,
-          name
+          type: selectedWorkflowType,
+          projectId
         });
 
         setToast({
@@ -112,11 +119,9 @@ const Workflows: React.FC = () => {
           message: `工作流实例已创建: ${instance.name}`
         });
 
-        // 跳转到工作流执行页面
         navigate(`/workflows/${instance.id}`);
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('创建工作流实例失败:', error);
       setToast({
         type: 'error',
@@ -218,7 +223,7 @@ const Workflows: React.FC = () => {
                   title={definition.name}
                   info={definition.description || `${definition.steps.length} 个步骤`}
                   hoverable
-                  onClick={() => handleCreateWorkflowInstance(definition.type, definition.name)}
+                  onClick={() => handleCreateWorkflowInstance(definition.type)}
                 />
               ))}
             </div>
@@ -269,6 +274,14 @@ const Workflows: React.FC = () => {
       </div>
 
       {/* Toast通知 */}
+      <ProjectSelectorDialog
+        isOpen={showProjectSelector}
+        onClose={() => setShowProjectSelector(false)}
+        onSelectProject={handleProjectSelected}
+        onCreateProject={(projectId) => handleProjectSelected(projectId)}
+        workflowType={selectedWorkflowType}
+      />
+
       {toast && (
         <Toast
           type={toast.type}

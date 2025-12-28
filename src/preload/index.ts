@@ -98,8 +98,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出项目
    */
-  listProjects: (): Promise<any[]> => 
+  listProjects: (): Promise<any[]> =>
     ipcRenderer.invoke('project:list'),
+
+  /**
+   * 添加输入资产到项目
+   */
+  addInputAsset: (projectId: string, assetId: string): Promise<void> =>
+    ipcRenderer.invoke('project:add-input-asset', projectId, assetId),
+
+  /**
+   * 添加输出资产到项目
+   */
+  addOutputAsset: (projectId: string, assetId: string): Promise<void> =>
+    ipcRenderer.invoke('project:add-output-asset', projectId, assetId),
 
   // ==================== 资产相关（重构版） ====================
 
@@ -173,6 +185,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   }) => void) => {
     ipcRenderer.on('asset:file-changed', (_, data) => callback(data));
   },
+
+  /**
+   * 获取资产引用关系
+   */
+  getAssetReferences: (assetId: string): Promise<string[]> =>
+    ipcRenderer.invoke('asset:get-references', assetId),
 
   // ==================== 工作流相关 ====================
   
@@ -589,6 +607,8 @@ declare global {
       saveProject: (projectId: string, config: any) => Promise<void>;
       deleteProject: (projectId: string) => Promise<void>;
       listProjects: () => Promise<any[]>;
+      addInputAsset: (projectId: string, assetId: string) => Promise<void>;
+      addOutputAsset: (projectId: string, assetId: string) => Promise<void>;
       getAssetIndex: (projectId?: string) => Promise<any>;
       rebuildAssetIndex: (projectId?: string) => Promise<any>;
       scanAssets: (filter: any) => Promise<any>;
@@ -600,6 +620,7 @@ declare global {
       stopAssetWatching: (projectId?: string) => Promise<{ success: boolean }>;
       showImportDialog: () => Promise<string[]>;
       onAssetFileChanged: (callback: (event: { eventType: 'add' | 'change' | 'unlink'; filePath: string; projectId?: string }) => void) => void;
+      getAssetReferences: (assetId: string) => Promise<string[]>;
       executeWorkflow: (config: any) => Promise<string>;
       getWorkflowStatus: (jobId: string) => Promise<any>;
       cancelWorkflow: (jobId: string) => Promise<void>;

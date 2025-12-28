@@ -134,6 +134,15 @@ export interface AssetConfig {
 }
 
 /**
+ * 项目状态枚举
+ */
+export enum ProjectStatus {
+  IN_PROGRESS = 'in-progress',
+  COMPLETED = 'completed',
+  ARCHIVED = 'archived'
+}
+
+/**
  * 项目配置接口
  */
 export interface ProjectConfig {
@@ -145,6 +154,19 @@ export interface ProjectConfig {
   settings: ProjectSettings;
   workflows: string[];
   assets: AssetConfig[];
+
+  // ========== Phase 9 H0.1 新增字段 ==========
+
+  // 工作流识别字段（UI-2）
+  workflowType?: string;           // 'novel-to-video' | 'custom' | ...
+  pluginId?: string;               // 使用的插件ID（如果是插件工作流）
+  currentWorkflowInstanceId?: string; // 当前关联的工作流实例
+  status?: ProjectStatus;          // 项目状态
+
+  // 资源绑定字段
+  inputAssets: string[];   // 引用的输入资源ID列表（用户上传的原始资源）
+  outputAssets: string[];  // 该项目生成的输出资源ID列表（AI生成资源）
+  immutable: boolean;      // 项目完成后不可修改标志
 }
 
 /**

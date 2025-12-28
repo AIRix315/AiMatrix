@@ -184,6 +184,70 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.9.8] - 2025-12-28
+
+### Added - Phase 9 第零阶段：核心架构修复 (H0.1-H0.6)
+- feat(project): ProjectConfig 扩展 - 新增7个字段支持项目-资源绑定
+  - workflowType, pluginId, currentWorkflowInstanceId
+  - status (ProjectStatus枚举), inputAssets, outputAssets, immutable
+- feat(project): ProjectManager 新增方法
+  - addInputAsset() - 添加输入资产到项目
+  - addOutputAsset() - 添加输出资产到项目
+  - deleteProject() - 安全删除逻辑（输出资产保留）
+- feat(asset): AssetMetadata 扩展
+  - isUserUploaded 字段区分用户上传/项目生成资产
+- feat(asset): AssetManager 新增方法
+  - getAssetReferences() - 获取资产引用关系（stub实现）
+  - createDefaultMetadata() - 支持 isUserUploaded 参数
+- feat(workflow): WorkflowState/WorkflowInstance 强制项目绑定
+  - projectId 从可选改为必填字段
+  - createInstance() 必须传入 projectId
+  - saveState() 验证 projectId 存在性
+- feat(ui): ProjectSelectorDialog 组件
+  - 工作流创建前项目选择对话框
+  - 支持选择已有项目/创建新项目
+  - 按 workflowType/pluginId 过滤项目列表
+- feat(ui): Assets 页面项目导航
+  - 左侧导航新增项目分类树
+  - 支持按项目过滤资产
+  - 项目列表动态加载
+- feat(ipc): 3个新增 IPC 通道
+  - project:add-input-asset - 添加输入资产
+  - project:add-output-asset - 添加输出资产
+  - asset:get-references - 获取资产引用关系
+- feat(ipc): workflow:createInstance 参数校验
+  - projectId 必填验证
+- feat(preload): API 暴露扩展
+  - addInputAsset(), addOutputAsset(), getAssetReferences()
+  - 完整 TypeScript 类型声明
+
+### Changed
+- refactor(workflow): Workflows.tsx 集成 ProjectSelectorDialog
+  - 创建工作流实例前强制选择项目
+  - handleProjectSelected() 项目选择后回调
+- refactor(asset): Assets.tsx 项目过滤重构
+  - getFilter() 集成 projectId 参数
+  - 项目作用域切换逻辑
+
+### Technical Details
+- **修改文件**: 10个核心文件（类型定义、服务、IPC、UI组件）
+- **新增文件**: ProjectSelectorDialog.tsx/css
+- **架构修复**: 项目-资源-工作流三者关联架构完整实现
+- **构建状态**: ✅ TypeScript 编译成功（0错误）
+
+### Benefits
+- ✅ 架构完整性：项目与资源/工作流正确绑定
+- ✅ 数据安全：安全删除逻辑保护项目生成资产
+- ✅ 类型安全：projectId 必填强制保证数据完整性
+- ✅ 用户体验：项目选择对话框清晰引导用户流程
+- ✅ 功能完整度：Phase 9 第零阶段 (100%完成 6/6)
+
+### Notes
+- **完成任务**: H0.1-H0.6 全部完成
+- **后续任务**: Phase 9 H2.1-H2.15 工作流UI优化
+
+--------------------------------------------
+
 ## [0.2.9.7] - 2025-12-28
 
 ### Added

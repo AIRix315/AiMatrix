@@ -1,42 +1,73 @@
 /**
  * WorkflowExecutor样式
- * 遵循Dashboard页面的全宽CSS模式
+ * H02重构：三栏布局(左项目树 + 中间列2行 + 右属性面板)
+ * 遵循V2设计规范：OKLCH色彩、弹簧动画、8px圆角
  */
 
 .workflow-executor {
   display: flex;
-  flex-direction: column;
-  width: 100%; /* 全宽，与Dashboard一致 */
+  flex-direction: row;
+  width: 100%;
   height: 100vh;
-  background: var(--bg-primary);
-  box-sizing: border-box;
+  background: oklch(0.12 0 0);
+  overflow: hidden;
+}
+
+/* 中间列：步骤进度条 + 内容区 */
+.workflow-middle-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* 步骤进度条 */
 .workflow-progress {
   flex-shrink: 0;
-  padding: var(--section-padding); /* 使用CSS变量 */
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  padding: 16px 24px;
+  background: oklch(0.16 0 0);
+  border-bottom: 1px solid oklch(0.24 0 0);
 }
 
 .progress-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.progress-header h2 {
-  font-size: 24px;
+.progress-title h2 {
+  font-size: 20px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: oklch(0.92 0 0);
   margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.progress-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-toggle-btn {
+  width: 32px;
+  height: 32px;
+  color: oklch(0.58 0 0);
+  transition: color 0.2s ease;
+}
+
+.panel-toggle-btn:hover {
+  color: oklch(0.85 0.22 160);
 }
 
 .progress-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid oklch(0.24 0 0);
 }
 
 .steps-bar {
@@ -113,11 +144,130 @@
   color: var(--text-primary);
 }
 
-/* 工作流面板 */
-.workflow-panel {
-  flex: 1;
+/* ========== 左侧面板：项目资源树 ========== */
+.workflow-left-panel {
+  flex-shrink: 0;
+  width: 256px;
+  background: oklch(0.1 0 0);
+  border-right: 1px solid oklch(0.24 0 0);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  /* 去掉 padding，让各个 Panel 自己控制内边距，避免双重 padding */
+}
+
+.left-panel-header {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid oklch(0.24 0 0);
+}
+
+.left-panel-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.92 0 0);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.resource-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+/* 资源树节点 */
+.resource-tree-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  color: oklch(0.7 0 0);
+  font-size: 13px;
+}
+
+.resource-tree-node:hover {
+  background: oklch(0.18 0 0);
+}
+
+.resource-tree-node.selected {
+  background: oklch(0.18 0 0);
+  color: oklch(0.85 0.22 160);
+}
+
+.resource-tree-node svg {
+  flex-shrink: 0;
+}
+
+.tree-chevron {
+  transition: transform 0.2s ease;
+}
+
+.tree-chevron.expanded {
+  transform: rotate(90deg);
+}
+
+.tree-spacer {
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.tree-node-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-children {
+  /* 子节点容器，由padding-left控制缩进 */
+}
+
+/* ========== 中间内容区 ========== */
+.workflow-content-area {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* ========== 右侧面板：属性面板 ========== */
+.workflow-right-panel {
+  flex-shrink: 0;
+  width: 320px;
+  background: oklch(0.1 0 0);
+  border-left: 1px solid oklch(0.24 0 0);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.right-panel-header {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid oklch(0.24 0 0);
+}
+
+.right-panel-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.92 0 0);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.right-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.placeholder-text {
+  color: oklch(0.58 0 0);
+  font-size: 13px;
+  text-align: center;
+  padding: 24px;
 }
 
 /* 错误状态 */
@@ -132,5 +282,5 @@
 
 .workflow-executor-error h2 {
   font-size: 24px;
-  color: var(--text-primary);
+  color: oklch(0.92 0 0);
 }

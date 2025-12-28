@@ -17,8 +17,7 @@ import {
   WorkflowState,
   WorkflowStepStatus,
   WorkflowInstance,
-  CreateWorkflowInstanceParams,
-  WorkflowDefinition
+  CreateWorkflowInstanceParams
 } from '../../shared/types/workflow'
 import { workflowRegistry } from './WorkflowRegistry'
 
@@ -60,6 +59,7 @@ export class WorkflowStateManager {
       // 创建初始状态
       const initialState: WorkflowState = {
         workflowId: instanceId,
+        projectId: params.projectId,
         currentStep: 0,
         steps: {},
         data: params.initialData || {},
@@ -116,6 +116,10 @@ export class WorkflowStateManager {
    */
   async saveState(workflowId: string, state: WorkflowState): Promise<void> {
     try {
+      if (!state.projectId) {
+        throw new Error('WorkflowState must have projectId')
+      }
+
       const statePath = this.getStatePath(workflowId)
 
       // 更新时间戳
@@ -372,7 +376,8 @@ export class WorkflowStateManager {
    */
   async listInstances(projectId?: string): Promise<WorkflowInstance[]> {
     try {
-      const workflowsDir = path.join(this.fsService.getDataDir(), 'workflows')
+      // 工作流目录路径（将来用于扫描持久化的工作流）
+      const _workflowsDir = path.join(this.fsService.getDataDir(), 'workflows')
 
       // 这里简化实现，实际应该扫描目录
       // 暂时返回缓存的实例

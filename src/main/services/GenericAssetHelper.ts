@@ -154,7 +154,7 @@ export class GenericAssetHelper {
    * @param params 查询参数
    * @returns 符合条件的资产列表
    */
-  async queryAssets<T = any>(params: GenericAssetQueryParams): Promise<AssetMetadata[]> {
+  async queryAssets(params: GenericAssetQueryParams): Promise<AssetMetadata[]> {
     try {
       await this.logger.debug('查询通用资产', 'GenericAssetHelper', {
         schemaId: params.schemaId,

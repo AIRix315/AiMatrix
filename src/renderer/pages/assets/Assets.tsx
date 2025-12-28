@@ -7,7 +7,7 @@
  * - 资产预览和管理
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { FileText, Image as ImageIcon, Music, Video, FileCode, Folder } from 'lucide-react';
 import { AssetMetadata, AssetFilter } from '../../../shared/types/asset';
 import { AssetGrid } from '../../components/AssetGrid';
@@ -28,6 +28,12 @@ const ASSET_CATEGORIES = [
   { id: 'other' as UIAssetType, label: '其他', icon: FileCode },
 ];
 
+interface ProjectConfig {
+  id: string;
+  name: string;
+  status?: 'in-progress' | 'completed' | 'archived';
+}
+
 export function Assets() {
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
   const [previewAsset, setPreviewAsset] = useState<AssetMetadata | null>(null);
@@ -35,11 +41,32 @@ export function Assets() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedCategory, setSelectedCategory] = useState<UIAssetType>('all');
   const [selectedScope, setSelectedScope] = useState<UIAssetScope>('all');
+  const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
+  const [projects, setProjects] = useState<ProjectConfig[]>([]);
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  const loadProjects = async () => {
+    try {
+      const projectList = await window.electronAPI.listProjects();
+      setProjects(projectList);
+    } catch (error) {
+      console.error('加载项目列表失败:', error);
+    }
+  };
+
+  const handleProjectSelect = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    setSelectedScope('project');
+  };
 
   // 构建过滤器
   const getFilter = useCallback((): AssetFilter => {
     const filter: AssetFilter = {
       scope: selectedScope === 'all' ? undefined : selectedScope,
+      projectId: selectedProjectId,
       sortBy: 'modifiedAt',
       sortOrder: 'desc'
     };
@@ -50,7 +77,7 @@ export function Assets() {
     }
 
     return filter;
-  }, [selectedScope, selectedCategory]);
+  }, [selectedScope, selectedCategory, selectedProjectId]);
 
   // 处理资产选择
   const handleAssetSelect = (asset: AssetMetadata, multiSelect: boolean) => {
@@ -169,6 +196,28 @@ export function Assets() {
             })}
           </div>
         </div>
+
+        {/* 项目分类树 */}
+        {selectedScope === 'project' && (
+          <div className="sidebar-section">
+            <h3 className="sidebar-section-title">项目列表</h3>
+            <div className="category-list">
+              {projects.map((project) => (
+                <button
+                  key={project.id}
+                  className={`category-item ${selectedProjectId === project.id ? 'active' : ''}`}
+                  onClick={() => handleProjectSelect(project.id)}
+                >
+                  <Folder className="category-icon" size={18} />
+                  <span className="category-label">{project.name}</span>
+                </button>
+              ))}
+              {projects.length === 0 && (
+                <div className="empty-hint">暂无项目</div>
+              )}
+            </div>
+          </div>
+        )}
       </aside>
 
       {/* 右侧主内容区 */}

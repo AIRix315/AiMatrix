@@ -1,43 +1,44 @@
 /**
  * ChapterSplitPanel样式
- * 使用CSS变量控制padding
+ * H2.5: 完整业务逻辑实现，V2设计系统
  */
 
 .chapter-split-panel {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: var(--page-padding); /* 使用CSS变量 */
-  background: var(--bg-secondary);
-  border-radius: 8px;
+  padding: 24px;
+  background: oklch(0.12 0 0);
   box-sizing: border-box;
 }
 
-/* 面板头部 */
+/* ========== 面板头部 ========== */
 .panel-header {
   margin-bottom: 24px;
 }
 
 .panel-header h2 {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: oklch(0.92 0 0);
   margin: 0 0 8px 0;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .panel-description {
-  font-size: 14px;
-  color: var(--text-secondary);
+  font-size: 13px;
+  color: oklch(0.58 0 0);
   margin: 0;
 }
 
-/* 面板内容 */
+/* ========== 面板内容 ========== */
 .panel-content {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
 }
 
-/* 上传区域 */
+/* ========== 上传区域 ========== */
 .upload-section {
   margin-bottom: 24px;
 }
@@ -45,47 +46,242 @@
 .file-info {
   margin-top: 16px;
   padding: 16px;
-  background: var(--bg-tertiary);
+  background: oklch(0.16 0 0);
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid oklch(0.24 0 0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.file-details {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.file-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.file-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.92 0 0);
+  margin: 0 0 4px 0;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .file-path {
-  font-size: 14px;
-  color: var(--text-primary);
-  margin: 0 0 12px 0;
-  word-break: break-all;
+  font-size: 12px;
+  color: oklch(0.58 0 0);
+  margin: 0;
+  font-family: "JetBrains Mono", monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* 章节列表区域 */
+/* ========== 章节列表区域 ========== */
 .chapter-list-section {
   margin-top: 24px;
 }
 
-.chapter-list-section h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 16px 0;
+.section-header {
+  margin-bottom: 16px;
 }
 
-.chapter-list-section .count {
+.section-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: oklch(0.92 0 0);
+  margin: 0 0 8px 0;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.section-header .count {
   font-size: 14px;
-  color: var(--text-secondary);
-  font-weight: normal;
+  color: oklch(0.85 0.22 160);
+  font-weight: 600;
+}
+
+.section-header .hint {
+  font-size: 12px;
+  color: oklch(0.58 0 0);
+  margin: 0;
 }
 
 .chapter-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-/* 面板底部 */
+/* ========== 章节项 ========== */
+.chapter-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: oklch(0.16 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.chapter-item:hover {
+  background: oklch(0.18 0 0);
+  border-color: oklch(0.85 0.22 160 / 0.3);
+}
+
+.chapter-number {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(0.14 0 0);
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: oklch(0.85 0.22 160);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.chapter-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 显示模式 */
+.chapter-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.chapter-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: oklch(0.92 0 0);
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chapter-word-count {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: oklch(0.58 0 0);
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* 编辑模式 */
+.chapter-edit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chapter-title-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: oklch(0.14 0 0);
+  border: 1px solid oklch(0.85 0.22 160);
+  border-radius: 6px;
+  color: oklch(0.92 0 0);
+  font-size: 14px;
+  font-family: "Inter", system-ui, sans-serif;
+  transition: border-color 0.2s ease;
+}
+
+.chapter-title-input:focus {
+  outline: none;
+  border-color: oklch(0.85 0.22 160);
+  box-shadow: 0 0 0 3px oklch(0.85 0.22 160 / 0.1);
+}
+
+.edit-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+}
+
+/* 操作按钮 */
+.chapter-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 6px;
+  color: oklch(0.7 0 0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.icon-btn:hover {
+  background: oklch(0.18 0 0);
+  border-color: oklch(0.85 0.22 160 / 0.3);
+  color: oklch(0.85 0.22 160);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+.icon-btn.save-btn {
+  background: oklch(0.85 0.22 160);
+  border-color: oklch(0.85 0.22 160);
+  color: oklch(0.12 0 0);
+}
+
+.icon-btn.save-btn:hover {
+  background: oklch(0.88 0.22 160);
+  border-color: oklch(0.88 0.22 160);
+}
+
+.icon-btn.cancel-btn:hover {
+  background: oklch(0.577 0.245 27.325 / 0.2);
+  border-color: oklch(0.577 0.245 27.325);
+  color: oklch(0.577 0.245 27.325);
+}
+
+.icon-btn.delete-btn:hover {
+  background: oklch(0.577 0.245 27.325 / 0.2);
+  border-color: oklch(0.577 0.245 27.325);
+  color: oklch(0.577 0.245 27.325);
+}
+
+/* ========== 面板底部 ========== */
 .panel-footer {
+  flex-shrink: 0;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid oklch(0.24 0 0);
   display: flex;
   justify-content: flex-end;
   gap: 12px;

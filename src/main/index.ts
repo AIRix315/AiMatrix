@@ -293,6 +293,8 @@ class MatrixApp {
     ipcMain.handle('project:save', (_, projectId, config) => this.projectManager.saveProject(projectId, config));
     ipcMain.handle('project:delete', (_, projectId) => this.projectManager.deleteProject(projectId));
     ipcMain.handle('project:list', () => this.projectManager.listProjects());
+    ipcMain.handle('project:add-input-asset', (_, projectId, assetId) => this.projectManager.addInputAsset(projectId, assetId));
+    ipcMain.handle('project:add-output-asset', (_, projectId, assetId) => this.projectManager.addOutputAsset(projectId, assetId));
 
     // 资产相关IPC处理（重构版）
     // === 索引管理 ===
@@ -350,6 +352,11 @@ class MatrixApp {
         ]
       });
       return result.filePaths;
+    });
+
+    // === 获取资产引用关系 ===
+    ipcMain.handle('asset:get-references', async (_, assetId: string) => {
+      return await this.assetManager.getAssetReferences(assetId);
     });
 
     // 工作流相关IPC处理

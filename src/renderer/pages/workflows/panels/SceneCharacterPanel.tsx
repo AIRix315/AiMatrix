@@ -2,10 +2,12 @@
  * SceneCharacterPanel - 场景角色提取面板
  *
  * 功能：从章节中提取场景和角色信息
+ * H2.6: 完整业务逻辑实现（场景展示、角色管理）
  */
 
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Loading, Toast } from '../../../components/common';
+import { Plus, Edit2, Trash2, Check, X, MapPin, Users } from 'lucide-react';
+import { Button, Card, Loading, Toast, Modal } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
 import './SceneCharacterPanel.css';
 
@@ -23,6 +25,7 @@ interface Character {
   name: string;
   description: string;
   appearance?: string;
+  personality?: string;
   chapterId?: string;
 }
 
@@ -40,6 +43,16 @@ export const SceneCharacterPanel: React.FC<PanelProps> = ({ workflowId, onComple
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'scenes' | 'characters'>('scenes');
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
+
+  // 角色编辑状态
+  const [showCharacterModal, setShowCharacterModal] = useState(false);
+  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
+  const [characterForm, setCharacterForm] = useState({
+    name: '',
+    description: '',
+    appearance: '',
+    personality: ''
+  });
 
   useEffect(() => {
     if (chapters.length > 0 && !selectedChapterId) {
@@ -101,6 +114,95 @@ export const SceneCharacterPanel: React.FC<PanelProps> = ({ workflowId, onComple
   };
 
   /**
+   * 打开添加角色对话框
+   */
+  const handleAddCharacter = () => {
+    setEditingCharacter(null);
+    setCharacterForm({
+      name: '',
+      description: '',
+      appearance: '',
+      personality: ''
+    });
+    setShowCharacterModal(true);
+  };
+
+  /**
+   * 打开编辑角色对话框
+   */
+  const handleEditCharacter = (character: Character) => {
+    setEditingCharacter(character);
+    setCharacterForm({
+      name: character.name,
+      description: character.description,
+      appearance: character.appearance || '',
+      personality: character.personality || ''
+    });
+    setShowCharacterModal(true);
+  };
+
+  /**
+   * 保存角色
+   */
+  const handleSaveCharacter = () => {
+    if (!characterForm.name.trim()) {
+      setToast({
+        type: 'warning',
+        message: '请输入角色名称'
+      });
+      return;
+    }
+
+    if (editingCharacter) {
+      // 编辑现有角色
+      setCharacters((prev) =>
+        prev.map((char) =>
+          char.id === editingCharacter.id
+            ? {
+                ...char,
+                name: characterForm.name.trim(),
+                description: characterForm.description.trim(),
+                appearance: characterForm.appearance.trim(),
+                personality: characterForm.personality.trim()
+              }
+            : char
+        )
+      );
+      setToast({
+        type: 'success',
+        message: '角色已更新'
+      });
+    } else {
+      // 添加新角色
+      const newCharacter: Character = {
+        id: `character-${Date.now()}`,
+        name: characterForm.name.trim(),
+        description: characterForm.description.trim(),
+        appearance: characterForm.appearance.trim(),
+        personality: characterForm.personality.trim()
+      };
+      setCharacters([...characters, newCharacter]);
+      setToast({
+        type: 'success',
+        message: '角色已添加'
+      });
+    }
+
+    setShowCharacterModal(false);
+  };
+
+  /**
+   * 删除角色
+   */
+  const handleDeleteCharacter = (characterId: string) => {
+    setCharacters((prev) => prev.filter((char) => char.id !== characterId));
+    setToast({
+      type: 'info',
+      message: '角色已删除'
+    });
+  };
+
+  /**
    * 处理下一步
    */
   const handleNext = () => {
@@ -156,47 +258,113 @@ export const SceneCharacterPanel: React.FC<PanelProps> = ({ workflowId, onComple
                 className={`tab-button ${activeTab === 'scenes' ? 'active' : ''}`}
                 onClick={() => setActiveTab('scenes')}
               >
+                <MapPin size={16} />
                 场景 ({scenes.length})
               </button>
               <button
                 className={`tab-button ${activeTab === 'characters' ? 'active' : ''}`}
                 onClick={() => setActiveTab('characters')}
               >
+                <Users size={16} />
                 角色 ({characters.length})
               </button>
             </div>
 
             {/* 场景列表 */}
-            {activeTab === 'scenes' && scenes.length > 0 && (
+            {activeTab === 'scenes' && (
               <div className="list-section">
-                <div className="item-list">
-                  {scenes.map((scene) => (
-                    <Card
-                      key={scene.id}
-                      tag={scene.location || '未知地点'}
-                      title={scene.name}
-                      info={scene.description}
-                      hoverable
-                    />
-                  ))}
-                </div>
+                {scenes.length > 0 ? (
+                  <div className="scene-grid">
+                    {scenes.map((scene) => (
+                      <div key={scene.id} className="scene-card">
+                        <div className="scene-header">
+                          <h4 className="scene-name">{scene.name}</h4>
+                          {scene.location && (
+                            <span className="scene-location">
+                              <MapPin size={14} />
+                              {scene.location}
+                            </span>
+                          )}
+                        </div>
+                        <p className="scene-description">{scene.description}</p>
+                        {scene.atmosphere && (
+                          <div className="scene-atmosphere">
+                            <span className="atmosphere-label">氛围:</span>
+                            <span className="atmosphere-text">{scene.atmosphere}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <p>暂无场景数据</p>
+                  </div>
+                )}
               </div>
             )}
 
             {/* 角色列表 */}
-            {activeTab === 'characters' && characters.length > 0 && (
+            {activeTab === 'characters' && (
               <div className="list-section">
-                <div className="item-list">
-                  {characters.map((character) => (
-                    <Card
-                      key={character.id}
-                      tag="角色"
-                      title={character.name}
-                      info={character.description}
-                      hoverable
-                    />
-                  ))}
+                <div className="section-header">
+                  <h3>角色列表</h3>
+                  <Button variant="primary" size="sm" onClick={handleAddCharacter}>
+                    <Plus size={16} />
+                    添加角色
+                  </Button>
                 </div>
+                {characters.length > 0 ? (
+                  <div className="character-list">
+                    {characters.map((character) => (
+                      <div key={character.id} className="character-card">
+                        <div className="character-avatar">
+                          {character.name.charAt(0)}
+                        </div>
+                        <div className="character-info">
+                          <h4 className="character-name">{character.name}</h4>
+                          <p className="character-description">{character.description}</p>
+                          {character.appearance && (
+                            <div className="character-detail">
+                              <span className="detail-label">外貌:</span>
+                              <span className="detail-text">{character.appearance}</span>
+                            </div>
+                          )}
+                          {character.personality && (
+                            <div className="character-detail">
+                              <span className="detail-label">性格:</span>
+                              <span className="detail-text">{character.personality}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="character-actions">
+                          <button
+                            className="icon-btn edit-btn"
+                            onClick={() => handleEditCharacter(character)}
+                            title="编辑角色"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            className="icon-btn delete-btn"
+                            onClick={() => handleDeleteCharacter(character.id)}
+                            title="删除角色"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <p>暂无角色数据</p>
+                    <Button variant="ghost" size="sm" onClick={handleAddCharacter}>
+                      <Plus size={16} />
+                      添加第一个角色
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </>
@@ -213,6 +381,85 @@ export const SceneCharacterPanel: React.FC<PanelProps> = ({ workflowId, onComple
           下一步 →
         </Button>
       </div>
+
+      {/* 角色编辑对话框 */}
+      {showCharacterModal && (
+        <Modal
+          isOpen={showCharacterModal}
+          title={editingCharacter ? '编辑角色' : '添加角色'}
+          onClose={() => setShowCharacterModal(false)}
+        >
+          <div className="character-form">
+            <div className="form-field">
+              <label htmlFor="char-name">
+                角色名称 <span className="required">*</span>
+              </label>
+              <input
+                id="char-name"
+                type="text"
+                className="form-input"
+                value={characterForm.name}
+                onChange={(e) =>
+                  setCharacterForm({ ...characterForm, name: e.target.value })
+                }
+                placeholder="输入角色名称"
+                autoFocus
+              />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="char-desc">角色描述</label>
+              <textarea
+                id="char-desc"
+                className="form-textarea"
+                value={characterForm.description}
+                onChange={(e) =>
+                  setCharacterForm({ ...characterForm, description: e.target.value })
+                }
+                placeholder="描述角色的基本信息"
+                rows={3}
+              />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="char-appearance">外貌特征</label>
+              <input
+                id="char-appearance"
+                type="text"
+                className="form-input"
+                value={characterForm.appearance}
+                onChange={(e) =>
+                  setCharacterForm({ ...characterForm, appearance: e.target.value })
+                }
+                placeholder="描述角色的外貌"
+              />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="char-personality">性格特点</label>
+              <input
+                id="char-personality"
+                type="text"
+                className="form-input"
+                value={characterForm.personality}
+                onChange={(e) =>
+                  setCharacterForm({ ...characterForm, personality: e.target.value })
+                }
+                placeholder="描述角色的性格"
+              />
+            </div>
+
+            <div className="form-actions">
+              <Button variant="ghost" onClick={() => setShowCharacterModal(false)}>
+                取消
+              </Button>
+              <Button variant="primary" onClick={handleSaveCharacter}>
+                {editingCharacter ? '保存' : '添加'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Toast通知 */}
       {toast && (

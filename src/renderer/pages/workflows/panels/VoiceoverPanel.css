@@ -1,19 +1,44 @@
 /**
  * VoiceoverPanel样式
- * 使用CSS变量控制padding
+ * H2.8: 完整业务逻辑实现（旁白列表、音色选择、试听）
  */
 
 .voiceover-panel {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: var(--page-padding); /* 使用CSS变量 */
-  background: var(--bg-secondary);
-  border-radius: 8px;
+  padding: 24px;
+  background: oklch(0.12 0 0);
   box-sizing: border-box;
 }
 
-/* 配音选项 */
+/* ========== 面板头部 ========== */
+.panel-header {
+  margin-bottom: 24px;
+}
+
+.panel-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: oklch(0.92 0 0);
+  margin: 0 0 8px 0;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.panel-description {
+  font-size: 13px;
+  color: oklch(0.58 0 0);
+  margin: 0;
+}
+
+/* ========== 面板内容 ========== */
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* ========== 配音选项 ========== */
 .voice-options {
   display: flex;
   align-items: center;
@@ -21,47 +46,71 @@
   gap: 16px;
   margin-bottom: 24px;
   padding: 16px;
-  background: var(--bg-tertiary);
+  background: oklch(0.16 0 0);
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid oklch(0.24 0 0);
 }
 
-.voice-options .option-group {
+.option-group {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1;
 }
 
-.voice-options .option-group label {
+.option-group label {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: oklch(0.92 0 0);
+  font-family: "Inter", system-ui, sans-serif;
 }
 
-.voice-options .option-group select {
-  flex: 1;
-  max-width: 300px;
+.option-group select {
   padding: 8px 12px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background: oklch(0.14 0 0);
+  color: oklch(0.92 0 0);
+  border: 1px solid oklch(0.24 0 0);
   border-radius: 6px;
   font-size: 14px;
+  font-family: "Inter", system-ui, sans-serif;
   cursor: pointer;
+  transition: border-color 0.2s ease;
 }
 
-.voice-options .option-group select:hover {
-  border-color: var(--primary-color);
+.option-group select:hover {
+  border-color: oklch(0.85 0.22 160 / 0.5);
 }
 
-.voice-options .option-group select:focus {
+.option-group select:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+  border-color: oklch(0.85 0.22 160);
+  box-shadow: 0 0 0 3px oklch(0.85 0.22 160 / 0.1);
 }
 
-/* 配音列表 */
+/* ========== 统计信息 ========== */
+.stats-section {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: oklch(0.58 0 0);
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: oklch(0.85 0.22 160);
+}
+
+/* ========== 配音列表 ========== */
 .voiceover-list-section {
   margin-top: 24px;
 }
@@ -69,12 +118,153 @@
 .voiceover-list-section h3 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: oklch(0.92 0 0);
   margin: 0 0 16px 0;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .voiceover-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+}
+
+.voiceover-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: oklch(0.16 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.voiceover-item:hover {
+  background: oklch(0.18 0 0);
+  border-color: oklch(0.85 0.22 160 / 0.3);
+}
+
+.voiceover-item.generating {
+  opacity: 0.8;
+}
+
+.voiceover-item.generating .voiceover-content {
+  opacity: 0.6;
+}
+
+/* 左侧图标 */
+.voiceover-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(0.14 0 0);
+  border-radius: 8px;
+  color: oklch(0.85 0.22 160);
+}
+
+/* 中间内容 */
+.voiceover-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.voiceover-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.voiceover-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: oklch(0.92 0 0);
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.voiceover-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: oklch(0.75 0.15 280 / 0.2);
+  color: oklch(0.75 0.15 280);
+}
+
+.voiceover-text {
+  font-size: 13px;
+  color: oklch(0.7 0 0);
+  line-height: 1.5;
+  margin: 0 0 8px 0;
+}
+
+.voiceover-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.status-badge.completed {
+  background: oklch(0.85 0.22 160 / 0.2);
+  color: oklch(0.85 0.22 160);
+}
+
+.status-badge.generating {
+  background: oklch(0.8 0.2 60 / 0.2);
+  color: oklch(0.8 0.2 60);
+}
+
+.status-badge.failed {
+  background: oklch(0.577 0.245 27.325 / 0.2);
+  color: oklch(0.577 0.245 27.325);
+}
+
+.status-badge.pending {
+  background: oklch(0.58 0 0 / 0.2);
+  color: oklch(0.58 0 0);
+}
+
+/* 右侧操作按钮 */
+.voiceover-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+}
+
+/* ========== 旋转动画 ========== */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* ========== 面板底部 ========== */
+.panel-footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 24px;
+  border-top: 1px solid oklch(0.24 0 0);
+  margin-top: 24px;
 }

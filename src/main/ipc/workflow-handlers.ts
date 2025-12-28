@@ -51,6 +51,9 @@ export function registerWorkflowHandlers(): void {
    */
   ipcMain.handle('workflow:createInstance', async (_event, params: CreateWorkflowInstanceParams) => {
     try {
+      if (!params.projectId) {
+        throw new Error('projectId is required')
+      }
       const instance = await workflowStateManager.createInstance(params)
       return instance
     } catch (error) {

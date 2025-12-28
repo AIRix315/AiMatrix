@@ -288,6 +288,7 @@
     - `CostMonitor.ts` (330行) - 完整的API成本监控，支持预算预警
 
 ---
+
 ## ✅ Phase 7: 架构标准化与 API 固化 (基于"小说转视频"的提炼)
 **目标**: 将 Phase 5 中验证通过的业务逻辑，提炼为标准 SDK 能力，确保第三方开发者能复刻同等体验。
 **状态**: ✅ 已完成 (2025-12-27)
@@ -442,18 +443,18 @@
         - **验收**: 快捷键生效，侧边栏收缩/展开正常
 *   **里程碑**: 所有页面应用 V2 设计风格，侧边栏可收缩
 
-### [ ] [H02] Sprint 2: 三栏布局与功能补齐 
+### [*] [H02] Sprint 2: 三栏布局与功能补齐 
 *   **目标**: 实现 WorkflowExecutor 完整三栏布局（左项目树 + 中内容区 + 右属性面板）
 *   **参考**: `plans/ui-optimization-plan.md` Phase 1.4
 *   **任务清单**:
-    - [ ] **[H2.1]** WorkflowExecutor 三栏布局重构
+    - [*] **[H2.1]** WorkflowExecutor 三栏布局重构
         - 修改 `WorkflowExecutor.tsx`，实现左中右三栏布局
         - 左侧：项目资源树（可收缩，宽度 256px）
         - 中间：工作流步骤内容区（flex-1）
         - 右侧：属性面板（可收缩，宽度 320px）
         - **验收**: 三栏布局渲染正常，比例协调
 
-    - [ ] **[H2.2]** RightSettingsPanel 右侧属性面板
+    - [*] **[H2.2]** RightSettingsPanel 右侧属性面板
         - 创建 `src/renderer/components/workflow/RightSettingsPanel.tsx`
         - 实现 Tab 切换：【属性】|【工具】
         - 实现检查器区域（显示当前选中项信息）
@@ -464,7 +465,7 @@
         - **参考**: `UIDemo.tsx` Tabs/Input/Label/Button组件（完整表单实现示例）
         - **验收**: 面板完整显示，字段可编辑，按钮可点击
 
-    - [ ] **[H2.3]** 视图模式切换（卡片/列表）
+    - [*] **[H2.3]** 视图模式切换（卡片/列表）
         - 创建 `SceneCardGrid.tsx`（卡片网格视图，grid-cols-1/2/3）
         - 创建 `SceneListView.tsx`（列表视图，紧凑行布局）
         - 实现视图切换按钮逻辑（Grid3x3 / List）
@@ -472,33 +473,33 @@
         - **参考**: `UIDemo.tsx` Card组件和Button状态切换示例
         - **验收**: 两种视图正常切换，刷新后保持上次选择
 
-    - [ ] **[H2.4]** 右侧面板与卡片联动
+    - [*] **[H2.4]** 右侧面板与卡片联动
         - 点击分镜卡片时，右侧面板显示其详细信息
         - 修改 Prompt/参数后，数据同步到状态
         - 支持批量选中（Shift/Ctrl点击）
         - **验收**: 点击卡片，右侧面板立即更新
 
-    - [ ] **[H2.5]** 实现 ChapterSplitPanel 业务逻辑
+    - [*] **[H2.5]** 实现 ChapterSplitPanel 业务逻辑
         - 实现小说文件上传（txt/docx）
         - 实现 AI 章节识别（调用 ChapterService）
         - 实现章节列表展示（可编辑标题）
         - 实现"下一步"按钮（保存数据，跳转下一面板）
         - **验收**: 上传小说后自动拆分章节，可手动调整
 
-    - [ ] **[H2.6]** 实现 SceneCharacterPanel 业务逻辑
+    - [*] **[H2.6]** 实现 SceneCharacterPanel 业务逻辑
         - 实现场景卡片网格展示
         - 实现角色管理（添加、编辑、删除）
         - 调用后端服务提取场景和角色
         - **验收**: 显示场景列表，角色可管理
 
-    - [ ] **[H2.7]** 实现 StoryboardPanel 业务逻辑
+    - [*] **[H2.7]** 实现 StoryboardPanel 业务逻辑
         - 实现分镜卡片/列表双视图
         - 实现"重生成"按钮（单个分镜）
         - 集成右侧属性面板（编辑 Prompt）
         - 调用后端生成分镜图（ComfyUI）
         - **验收**: 分镜可生成，可编辑，支持两种视图
 
-    - [ ] **[H2.8]** 实现 VoiceoverPanel 业务逻辑
+    - [*] **[H2.8]** 实现 VoiceoverPanel 业务逻辑
         - 实现旁白列表展示
         - 实现音色选择下拉框
         - 实现试听按钮（播放音频）
@@ -506,16 +507,16 @@
         - **验收**: 可生成配音，可试听
 *   **里程碑**: WorkflowExecutor 三栏布局完整，5 个面板功能可用
 
-### [ ] [H03] Sprint 3: 交互优化与测试
+### [*] [H03] Sprint 3: 交互优化与测试
 *   **目标**: 完善交互细节，添加动画，进行全面测试
 *   **任务清单**:
-    - [ ] **[H3.1]** ProgressOrb 点击展开任务列表
+    - [*] **[H3.1]** ProgressOrb 点击展开任务列表
         - 实现任务列表底部抽屉（Sheet 组件）
         - 显示所有队列任务、进度、预计时间
         - 支持取消/重试单个任务
         - **验收**: 点击状态球，抽屉弹出，任务列表完整
 
-    - [ ] **[H3.2]** Framer Motion 动画全局应用
+    - [*] **[H3.2]** Framer Motion 动画全局应用
         - 卡片悬停动画（whileHover: scale 1.02）
         - 侧边栏展开动画（弹簧参数：damping 25, stiffness 300）
         - 模态框弹出动画（initial: opacity 0, scale 0.95）
@@ -523,34 +524,32 @@
         - **参考**: `ThemeShowcase.tsx` Tab切换动画实现
         - **验收**: 所有动画流畅，参数符合规范
 
-    - [ ] **[H3.3]** 键盘快捷键完善
+    - [*] **[H3.3]** 键盘快捷键完善
         - `Ctrl+Shift+G`: 切换视图模式（卡片/列表）
         - `F11`: 全屏切换
         - `Ctrl+N`: 新建项目
         - `Ctrl+,`: 打开设置
         - **验收**: 所有快捷键生效
 
-    - [ ] **[H3.4]** UI 一致性检查
+    - [*] **[H3.4]** UI 一致性检查
         - 检查所有页面色彩符合 `08-ui-design-specification-v1.0.0.md`
         - 检查字体统一使用 Inter / JetBrains Mono
         - 检查间距统一使用 4px 基准（gap-1/2/3/4）
         - 检查圆角统一使用 8px 基准（rounded-lg）
         - **验收**: 无视觉不一致问题
 
-    - [ ] **[H3.5]** 性能优化
+    - [*] **[H3.5]** 性能优化
         - 实现资产网格懒加载（react-window 或 react-virtualized）
         - 优化图片加载（WebP 格式 + 占位符）
         - 优化动画性能（使用 transform 代替 left/top）
         - **验收**: 大量资产加载流畅，无卡顿
 
-    - [ ] **[H3.6]** 无障碍测试
+    - [*] **[H3.6]** 无障碍测试
         - 为所有图标按钮添加 `aria-label`
         - 测试键盘导航（Tab / Enter / Escape）
         - 测试屏幕阅读器兼容性
         - **验收**: 符合 WCAG 2.1 AA 级标准
 *   **里程碑**: UI/UX 打磨完成，交互细节完善
-
----
 
 ### 📋 Phase 8 验收标准
 - [ ] **功能完整性**
@@ -581,11 +580,313 @@
 
 ---
 
-## 📋 Phase 9: 测试覆盖与交付验证 (v0.3.0规划)
-**目标**: 提升测试覆盖率至80%+，完成交付前验证
-**状态**: ⏳ 待Phase 8完成后启动
+## 📋 Phase 9: 核心功能补齐与架构优化 (v0.2.9.8-v0.3.5)
+**目标**: 修复核心架构问题、完善工作流交互、重构API Provider架构、补充节点编辑器、补齐业务逻辑
+**状态**: 🔄 进行中
+**参考**: `plans/implementation-audit-report-2025-12-28.md` (详细背景、目的、方法)
+**总计**: 21个任务（新增4个UI修正任务）
+- 第零阶段（架构修复）: 6个任务（H0.1-H0.6）
+- 第一阶段（核心交互+UI修正）: 7个任务（H2.1-H2.7）
+- 第二阶段（API Provider重构）: 3个任务（H2.8-H2.10）
+- 第三阶段（业务功能补齐）: 3个任务（H2.11-H2.13）
+- 第四阶段（优化和安全）: 2个任务（H2.14-H2.15）
 
-### [ ] [J01] 服务层单元测试
+---
+
+### 🔴 第零阶段：核心架构修复（v0.2.9.8）
+**优先级**: 最高 - 必须先完成架构修复，再进行UI优化和功能补齐
+
+### [ ] [H0.1] 项目-资源绑定架构实现
+*   **文件**: `src/main/services/ProjectManager.ts`, `src/shared/types/project.ts`, `src/common/types.ts`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A1.项目管理 - 核心架构缺失, UI-2)
+    - 实现方法: `plans/code-references-phase9.md` (REF-001 ProjectConfig扩展字段定义)
+*   **任务内容**:
+    1.  扩展 ProjectConfig 接口（7个新字段：workflowType, pluginId, status, inputAssets, outputAssets, immutable等）
+    2.  实现资源绑定方法（addInputAsset, addOutputAsset）
+    3.  实现安全删除方法（deleteProject with deleteOutputs flag）
+*   **验收**: 项目元数据包含资源引用关系和工作流类型识别，删除项目安全可靠
+
+### [ ] [H0.2] AssetManager 项目作用域支持
+*   **文件**: `src/main/services/AssetManager.ts`, `src/shared/types/asset.ts`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A2.资源库 - 核心架构缺失)
+    - 实现方法: `plans/code-references-phase9.md` (REF-002 AssetMetadata扩展字段 + 文件组织结构)
+*   **任务内容**:
+    1.  扩展 AssetMetadata 接口（projectId, isUserUploaded字段）
+    2.  修改资源保存路径逻辑（user_uploaded vs project_outputs/<projectId>/<YYYYMMDD>）
+    3.  扩展 `scanAssets(scope, projectId, filter)` 支持项目作用域
+    4.  实现 `getAssetReferences(assetId)` 引用追踪
+*   **验收**: 资源带项目标记，可按项目过滤，可追踪引用关系
+
+### [ ] [H0.3] 工作流实例绑定项目
+*   **文件**: `src/main/services/WorkflowStateManager.ts`, `src/shared/types/workflow.ts`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台 - 核心架构缺失)
+    - 实现方法: `plans/code-references-phase9.md` (REF-003 WorkflowState接口定义)
+*   **任务内容**:
+    1.  扩展 WorkflowState 接口（添加必填 projectId 字段）
+    2.  修改 `createInstance(type, projectId)` 方法签名
+    3.  工作流保存状态时记录 projectId，确保非空校验
+*   **验收**: 工作流实例必须绑定项目，生成资源自动归档
+
+### [ ] [H0.4] 前端项目选择流程
+*   **文件**: `src/renderer/pages/workflows/Workflows.tsx`, `src/renderer/components/workflow/ProjectSelectorDialog.tsx` (新建)
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台 - 核心架构缺失)
+    - 实现方法: `plans/code-references-phase9.md` (REF-004 项目选择对话框UI实现)
+*   **任务内容**:
+    1.  创建 ProjectSelectorDialog 组件（含已有项目列表 + 新建表单）
+    2.  集成到 Workflows.tsx（点击模板 → 弹出对话框 → 创建实例）
+    3.  实现项目筛选逻辑（按workflowType和pluginId）
+*   **验收**: 创建工作流前必须选择或创建项目
+
+### [ ] [H0.5] Assets页面项目导航
+*   **文件**: `src/renderer/pages/assets/Assets.tsx`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A2.资源库 - 核心架构缺失)
+    - 实现方法: `plans/code-references-phase9.md` (REF-002 AssetManager扩展方法)
+*   **任务内容**:
+    1.  左侧导航增加"项目"分类树（树形展示所有项目）
+    2.  点击项目节点调用 `scanAssets('project', projectId)` 过滤资源
+    3.  资产预览界面显示"被 X 个项目引用"（调用getAssetReferences）
+*   **验收**: 可按项目过滤资源，查看引用关系
+
+### [ ] [H0.6] IPC通道扩展
+*   **文件**: `src/main/ipc/`, `src/preload/index.ts`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A1/A2/A4 IPC通信扩展)
+    - 实现方法: `plans/code-references-phase9.md` (REF-001/002/003 服务方法签名)
+*   **任务内容**:
+    1.  新增4个IPC通道处理器（project:add-input-asset, project:add-output-asset, asset:get-references）
+    2.  修改 `workflow:create-instance` 处理器（增加 projectId 参数校验）
+    3.  更新 `src/preload/index.ts` 暴露新API到 window.electronAPI
+*   **验收**: 前端可调用项目-资源绑定相关API，TypeScript类型完整
+
+---
+
+### 🔹 第一阶段：核心交互完善（v0.2.9.9）
+
+### [ ] [H2.1] WorkflowHeader 统一头部组件（UI-1）
+*   **文件**: `src/renderer/components/workflow/WorkflowHeader.tsx` (新建), `WorkflowHeader.css` (新建)
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-1)
+    - 实现方法: `plans/code-references-phase9.md` (REF-005 WorkflowHeader组件完整实现)
+*   **任务内容**:
+    1.  创建完整的WorkflowHeader组件（含6个交互控件：左侧收缩、项目下拉、标题、步骤条、关闭全部、右侧收缩）
+    2.  实现步骤条点击逻辑（参考REF-006）
+    3.  集成到 WorkflowExecutor.tsx 替换现有头部
+*   **验收**: 头部布局统一，项目可切换，步骤条可点击，侧栏控制按钮生效
+
+### [ ] [H2.2] WorkflowExecutor 右侧属性面板联动与增强（UI-4）
+*   **文件**: `src/renderer/pages/workflows/WorkflowExecutor.tsx`, `src/renderer/components/workflow/RightSettingsPanel.tsx`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台 章节, UI-4)
+    - 实现方法: `plans/code-references-phase9.md` (REF-005 WorkflowHeader组件含联动逻辑示例)
+*   **任务内容**（8个子功能）:
+    1.  实现分镜卡片点击 → 右侧面板数据同步（handleStoryboardSelectionChange）
+    2.  实现Prompt编辑 → 分镜数据更新（双向绑定）
+    3.  实现批量选择和批量编辑
+    4.  新增"队列"Tab（显示任务列表、进度、支持取消/重试）
+    5.  新增中间模块（3个生成模式按钮：当前选择|自动补全|全流程）
+    6.  新增下分栏（Provider特定参数，如Sora2宽高比选择器）
+    7.  实现可折叠区域（Collapsible组件 + localStorage持久化）
+    8.  右侧面板显示选中项详细信息（检查器区域）
+*   **验收**: 点击分镜卡片，右侧面板立即显示详细信息；队列Tab完整；3个生成模式可切换；参数区域可折叠
+
+### [ ] [H2.3] ProgressOrb 重设计（UI-3）
+*   **文件**: `src/renderer/components/common/ProgressOrb.tsx`, `src/renderer/components/common/ProgressOrb.css`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-3)
+    - 实现方法: `plans/code-references-phase9.md` (REF-007 ProgressOrb半圆形状和潮汐动画)
+*   **任务内容**:
+    1.  修改形状为半圆（border-radius: 50% 0 0 50%）+ 吸附右侧边缘
+    2.  实现潮汐注水动画（水位填充 + 波浪@keyframes）
+    3.  集成react-draggable（限制Y轴拖动）
+    4.  实现点击交互（打开右侧面板"队列"Tab）
+*   **验收**: 半圆形状，潮汐注水动画，可上下拖动，点击打开右侧面板队列Tab
+
+### [ ] [H2.4] 步骤导航交互修正（UI-5）
+*   **文件**: `src/renderer/pages/workflows/WorkflowExecutor.tsx`, `src/renderer/pages/workflows/panels/*.tsx`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-5)
+    - 实现方法: `plans/code-references-phase9.md` (REF-006 步骤条点击逻辑实现)
+*   **任务内容**:
+    1.  删除底部"下一步"按钮（所有工作流面板）
+    2.  步骤条改为可点击（实现handleStepClick和canClickStep）
+    3.  实现步骤点击权限逻辑（已完成项目所有步骤可点击，进行中项目仅当前及之前可点击）
+*   **验收**: 步骤条可点击切换，前进需满足条件，后退随时允许，已完成项目所有步骤可点击
+
+### [ ] [H2.5] 全局视图切换器组件（UI-6）
+*   **文件**: `src/renderer/components/common/ViewSwitcher.tsx`（新建）, `src/renderer/components/common/ListView.tsx`（新建）
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-6)
+    - 实现方法: `plans/code-references-phase9.md` (REF-008 ViewSwitcher全局组件)
+*   **任务内容**:
+    1.  创建ViewSwitcher组件（Grid3x3/List图标切换）
+    2.  创建ListView组件（统一列表视图样式，64x64+缩略图）
+    3.  响应式缩略图CSS（等比缩放，保持宽高比）
+    4.  应用到所有页面（Assets/Plugins/Workflows/Dashboard/StoryboardPanel）
+*   **验收**: 所有页面有网格/列表切换按钮，列表视图包含64x64+缩略图，缩略图等比缩放
+
+### [ ] [H2.6] 资产网格虚拟滚动
+*   **文件**: `src/renderer/components/AssetGrid/AssetGrid.tsx`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A2.资源库 - 性能优化)
+    - 实现方法: `plans/code-references-phase9.md` (REF-009 react-window虚拟滚动集成)
+*   **任务内容**:
+    1.  集成react-window（FixedSizeGrid + InfiniteLoader）
+    2.  实现虚拟滚动列表（Cell渲染器 + AutoSizer）
+    3.  支持千级资产流畅渲染（懒加载图片）
+*   **验收**: 加载1000+资产时页面流畅，滚动帧率>60fps
+
+### [ ] [H2.7] 菜单栏快捷方式系统（UI-7）⭐ 新增重要功能
+*   **文件**:
+    - `src/main/services/ShortcutManager.ts`（新建）
+    - `src/renderer/components/layout/GlobalNav.tsx`
+    - `src/renderer/components/layout/ShortcutNavItem.tsx`（新建）
+    - `src/renderer/pages/dashboard/Dashboard.tsx`
+    - `src/renderer/pages/workflows/Workflows.tsx`
+    - `src/renderer/pages/plugins/Plugins.tsx`
+    - `src/common/types.ts`
+    - `src/main/ipc/channels.ts`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-7)
+    - 实现方法: `plans/code-references-phase9.md` (REF-010 ShortcutManager服务, REF-011 GlobalNav三区域重构, REF-012 ShortcutNavItem长按编辑)
+*   **任务内容** (9个子任务):
+    1.  扩展数据模型（ShortcutType枚举、ShortcutItem接口、IAppSettings扩展）
+    2.  创建ShortcutManager服务（addShortcut/removeShortcut/reorderShortcuts/listShortcuts/initializeDefaultShortcuts）
+    3.  重构GlobalNav组件（三区域结构：固定上方+可编辑中间+固定下方，中间支持滚动）
+    4.  创建ShortcutNavItem组件（图标显示、点击跳转、长按编辑500ms、删除按钮、拖拽排序）
+    5.  添加"添加到菜单栏"按钮（Dashboard/Workflows/Plugins卡片添加Pin图标）
+    6.  修正官方插件位置（小说转视频移至Plugins页面，首次启动自动添加到菜单栏）
+    7.  IPC通道扩展（shortcut:add/remove/reorder/list）
+    8.  CSS闪动动画（编辑模式shake动画）
+    9.  首次启动初始化（app.on('ready')调用initializeDefaultShortcuts）
+*   **验收**:
+    - 菜单栏分为三个区域，中间区域显示用户快捷方式
+    - 可通过Pin按钮添加项目/工作流/插件到菜单栏
+    - 长按快捷方式图标进入编辑模式（闪动）
+    - 可删除快捷方式，可拖拽调整顺序
+    - 中间区域支持鼠标滚轮上下切换
+    - "小说转视频"显示在插件列表，首次启动自动添加到菜单栏
+
+---
+
+### 🔹 第二阶段：API Provider 架构重构（v0.3.0）
+
+### [ ] [H2.8] 统一 Provider 配置模型
+*   **文件**: `src/main/services/APIManager.ts`, `src/shared/types/api.ts`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 核心架构问题)
+    - 实现方法: `plans/code-references-phase9.md` (REF-013 API Provider统一配置模型)
+*   **任务内容**:
+    1.  统一本地和云端服务为HTTP API抽象（APIProviderConfig接口）
+    2.  支持同类型多Provider（如ComfyUI本地+ComfyUI云端）
+    3.  按功能分类（APICategory枚举：图像生成、视频生成、LLM、工作流等）
+    4.  移除错误的"本地/云端"分类
+*   **验收**: 可同时配置多个同类型Provider，Settings页面按功能分类显示
+
+### [ ] [H2.9] 模型注册表系统
+*   **文件**: `src/main/services/ModelRegistry.ts`（新建）, `config/models/default-models.json`（新建）
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 模型注册表系统)
+    - 实现方法: `plans/code-references-phase9.md` (REF-014 ModelRegistry数据结构)
+*   **任务内容**:
+    1.  创建全局模型列表（JSON配置文件，ModelDefinition接口）
+    2.  实现ModelRegistry服务（listModels/addCustomModel/toggleModelVisibility）
+    3.  支持用户自定义模型（UserModelConfig接口）
+    4.  智能过滤：只显示已配置Provider的模型（enabledProvidersOnly参数）
+*   **验收**: 用户可添加自定义模型，可隐藏不需要的模型，模型列表只显示已配置Provider支持的模型
+
+### [ ] [H2.10] Settings 页面重构
+*   **文件**: `src/renderer/pages/settings/Settings.tsx`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置)
+    - 实现方法: `plans/code-references-phase9.md` (REF-013 API Provider统一配置模型UI设计, REF-014 ModelRegistry数据结构)
+*   **任务内容**:
+    1.  按功能分类Provider列表（左侧分类导航：图像生成、视频生成、LLM、工作流等）
+    2.  实现ProviderConfigCard组件（右侧Provider配置列表）
+    3.  实现模型选择器组件（支持勾选/隐藏模型）
+*   **验收**: Settings页面按功能分类显示Provider，模型选择器完整可用
+*   **审核报告参考**: A5.设置
+
+---
+
+### 🔹 第三阶段：业务功能补齐（v0.3.2）
+
+### [ ] [H2.11] 节点编辑器功能补充（通用工作台完善）
+*   **文件**: `src/renderer/pages/workflows/WorkflowCanvas.tsx`（新建）, `src/renderer/components/workflow/nodes/*.tsx`（新建）
+*   **依赖**: 需要先完成H0.3（工作流实例绑定项目）
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台 - 节点编辑器功能待补充)
+*   **任务内容**:
+    1.  集成ReactFlow库（安装react-flow-renderer，配置工作流画布）
+    2.  创建Input节点组件（无左端口有右端口，资源类型选择，拖拽资产，搜索框）
+    3.  创建Execute节点组件（左右端口，Provider选择下拉框，参数配置，右侧面板联动）
+    4.  创建Output节点组件（有左端口无右端口，输出格式选择，保存位置配置）
+    5.  实现节点连线和数据流（Input → Execute → Output）
+    6.  工作流保存/加载（JSON配置，支持恢复）
+*   **验收**: 可创建3节点工作流，拖拽连线，执行生成，保存恢复
+
+### [ ] [H2.12] 场景/角色素材专用管理
+*   **文件**: `src/main/services/AssetManager.ts`, `src/renderer/pages/assets/Assets.tsx`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A2.资源库 - 场景/角色素材专用管理)
+    - 实现方法: `plans/code-references-phase9.md` (REF-015 场景/角色customFields Schema)
+*   **任务内容**:
+    1.  扩展资产类型（添加"场景"和"角色"分类）
+    2.  利用customFields存储专用数据（SceneCustomFields/CharacterCustomFields接口）
+    3.  实现智能过滤器（searchScenes/searchCharacters方法，按场景特征、角色特征筛选）
+    4.  在Assets页面添加"场景"和"角色"Tab
+*   **验收**: 可创建场景/角色资产，可按专用字段筛选
+
+### [ ] [H2.13] 工作流面板业务逻辑完善（小说转视频插件）
+*   **文件**: `src/renderer/pages/workflows/panels/*.tsx`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台)
+*   **任务内容**:
+    1.  **ChapterSplitPanel**: 实现小说文件上传（txt/docx）、AI章节识别、章节列表编辑
+    2.  **SceneCharacterPanel**: 实现场景卡片展示、角色管理（添加/编辑/删除）、场景角色提取调用
+    3.  **StoryboardPanel**: 实现分镜生成、"重生成"按钮、Prompt编辑、右侧属性面板联动
+    4.  **VoiceoverPanel**: 实现配音生成、音色选择下拉框、音频播放器
+*   **验收**: 5个工作流面板的业务逻辑全部可用，可完整执行小说转视频流程
+*   **审核报告参考**: A4.工作台
+
+---
+
+### 🔹 第四阶段：优化和安全（v0.3.5）
+
+### [ ] [H2.14] API密钥加密存储
+*   **文件**: `src/main/services/ConfigManager.ts`
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 安全性改进)
+    - 实现方法: `plans/code-references-phase9.md` (REF-016 API密钥加密实现)
+*   **任务内容**:
+    1.  实现AES-256-GCM加密算法（APIKeyEncryption类，使用machine-id作为密钥种子）
+    2.  修改配置读写逻辑（saveProvider自动加密，getProvider自动解密）
+    3.  向后兼容：自动迁移明文配置到加密配置（migrateToEncryptedKeys方法）
+*   **验收**: API Key加密存储在配置文件中，无法直接读取明文
+
+### [ ] [H2.15] 日志管理（底部状态栏）
+*   **文件**: `src/renderer/components/layout/StatusBar.tsx`（新建）, `src/renderer/components/layout/LogViewer.tsx`（新建）
+*   **参考**:
+    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 日志管理)
+*   **任务内容**:
+    1.  在底部状态栏添加铃铛图标（🔔）
+    2.  重要错误时在铃铛上显示红点提示
+    3.  点击铃铛弹出日志查看器（底部Sheet组件）
+    4.  支持按日志级别过滤（Error、Warning、Info、Debug）
+    5.  日志存储路径：`workspace/log/YYYYMMDD.log`（按日期分隔）
+*   **验收**: 底部状态栏显示铃铛图标，点击查看日志，重要错误显示红点
+
+---
+
+## 📋 Phase 10: 测试覆盖与交付验证 (v0.4.0规划)
+**目标**: 提升测试覆盖率至80%+，完成交付前验证
+**状态**: ⏳ 待Phase 9完成后启动
+
+### [ ] [K01] 服务层单元测试
 *   **任务**:
     1.  ProjectManager单元测试 (CRUD、元数据管理)。
     2.  AssetManager单元测试 (索引、查询、监听、customFields)。
@@ -594,21 +895,21 @@
     5.  APIManager单元测试 (多提供商、路由、成本)。
 *   **验收**: 核心服务测试覆盖率>80%
 
-### [ ] [J02] IPC通信集成测试
+### [ ] [K02] IPC通信集成测试
 *   **任务**:
     1.  扩展IPC通信集成测试覆盖 (所有80个处理器)。
     2.  测试错误处理和边界条件。
     3.  测试并发调用和性能。
 *   **验收**: IPC测试覆盖率>90%
 
-### [ ] [I03] 端到端测试
+### [ ] [K03] 端到端测试
 *   **任务**:
     1.  创建E2E测试框架 (Playwright/Spectron)。
     2.  完整用户流程测试 (项目创建→资产导入→工作流执行→导出)。
     3.  跨平台兼容性测试 (Windows/macOS/Linux)。
 *   **验收**: 关键用户流程可自动化测试
 
-### [ ] [I04] 交付前验证
+### [ ] [K04] 交付前验证
 *   **任务**:
     1.  **规范自查**: 检查是否满足 docs/00-global-requirements-v1.0.0.md 的所有强制要求。
     2.  **构建打包**: 生成 Windows 安装包 (.exe)。
@@ -616,7 +917,7 @@
     4.  **安全审计**: 检查文件系统路径遍历、XSS、注入等漏洞。
 *   **验收**: 可发布生产就绪版本
 
-### [ ] [I05] 文档完善
+### [ ] [K05] 文档完善
 *   **任务**:
     1.  完善用户文档 (安装、配置、使用教程)。
     2.  完善开发者文档 (架构、API、插件开发)。
@@ -626,7 +927,7 @@
 
 ---
 
-### [ ] [J01] 工作流生态建设
+### [ ] [K06] 工作流生态建设
 *   **任务**:
     1.  基于工作流引擎实现第二个工作流插件 (如图片批量生成)。
     2.  编写插件开发规范文档。
@@ -636,31 +937,59 @@
 
 ## 🎯 里程碑与版本规划
 
-### v0.2.0 ✅ (当前版本 - 2025-12-24)
-- ✅ 5个核心服务MVP实现
-- ✅ 80个IPC处理器（51完整+20部分+9模拟）
-- ✅ 10个通用UI组件
-- ✅ Dashboard页面完整功能
-- ✅ 安全漏洞修复
-- ✅ 代码质量提升（0 ESLint错误）
+### v0.2.9.6 ✅ (当前版本 - 2025-12-28)
+- ✅ Phase 8 Sprint 1 完成：核心页面 V2 设计迁移
+- ✅ 全局样式系统（OKLCH色彩、Inter字体）
+- ✅ 侧边栏收缩控制（左右独立，快捷键支持）
+- ✅ ProgressOrb 状态球组件
+- ✅ Assets 左侧分类导航
+- ✅ Workflows 视图切换按钮
 
-### v0.3.0 📋 (下一版本 - 预计2周后)
-**重点**: 服务增强 + UI功能完善
-- [ ] PluginManager、TaskScheduler、APIManager高级特性
-- [ ] MCP和本地服务真实集成
-- [ ] 工作流执行引擎实现
-- [ ] Assets和Workflows页面功能完整
-- [ ] 测试覆盖率提升至80%+
+### v0.2.9.8 📋 (Phase 9 第零阶段 - 核心架构修复)
+**优先级**: 最高 - 架构问题必须先修复
+- [ ] 项目-资源绑定架构实现（H0.1）
+- [ ] AssetManager 项目作用域支持（H0.2）
+- [ ] 工作流实例绑定项目（H0.3）
+- [ ] 前端项目选择流程（H0.4）
+- [ ] Assets页面项目导航（H0.5）
+- [ ] IPC通道扩展（H0.6）
 
-### v0.4.0 📋 (预计1个月后)
-**重点**: 用户体验优化
-- [ ] 工作流可视化编辑器
-- [ ] 资产库完整功能
-- [ ] 插件市场集成
-- [ ] 性能优化
-- [ ] 用户文档完善
+### v0.2.9.9 📋 (Phase 9 第一阶段 - 核心交互完善+UI修正)
+**重点**: UI交互、性能优化、界面设计规范实现、菜单栏快捷方式系统
+- [ ] WorkflowHeader 统一头部组件（H2.1）- UI-1
+- [ ] WorkflowExecutor 右侧属性面板联动与增强（H2.2）- UI-4
+- [ ] ProgressOrb 重设计（H2.3）- UI-3
+- [ ] 步骤导航交互修正（H2.4）- UI-5
+- [ ] 全局视图切换器组件（H2.5）- UI-6
+- [ ] 资产网格虚拟滚动（H2.6）
+- [ ] **菜单栏快捷方式系统（H2.7）- UI-7** ⭐ 新增重要功能
 
-### v1.0.0 🎯 (正式发布 - 预计2-3个月后)
+### v0.3.0 📋 (Phase 9 第二阶段 - API Provider架构重构)
+**重点**: 统一服务抽象和模型管理
+- [ ] 统一 Provider 配置模型（H2.8）
+- [ ] 模型注册表系统（H2.9）
+- [ ] Settings 页面重构（H2.10）
+
+### v0.3.2 📋 (Phase 9 第三阶段 - 业务功能补齐)
+**重点**: 节点编辑器完善、资产管理和工作流业务逻辑
+- [ ] 节点编辑器功能补充（H2.11）- 通用工作台完善
+- [ ] 场景/角色素材专用管理（H2.12）
+- [ ] 工作流面板业务逻辑完善（H2.13）- 小说转视频插件
+
+### v0.3.5 📋 (Phase 9 第四阶段 - 优化和安全)
+**重点**: 安全性和日志管理
+- [ ] API密钥加密存储（H2.14）
+- [ ] 日志管理（底部状态栏）（H2.15）
+
+### v0.4.0 📋 (Phase 10 - 测试覆盖与交付验证)
+**重点**: 测试和文档完善
+- [ ] 服务层单元测试（覆盖率>80%）
+- [ ] IPC通信集成测试（覆盖率>90%）
+- [ ] 端到端测试（E2E）
+- [ ] 交付前验证（性能、安全审计）
+- [ ] 用户和开发者文档完善
+
+### v1.0.0 🎯 (正式发布)
 **重点**: 生产就绪
 - [ ] 所有核心功能完整
 - [ ] 完整的测试覆盖

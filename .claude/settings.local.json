@@ -38,7 +38,11 @@
       "WebFetch(domain:www.shadcn.com.cn)",
       "Bash(npm uninstall:*)",
       "Bash(timeout /t 10 /nobreak)",
-      "WebFetch(domain:ui.shadcn.com)"
+      "WebFetch(domain:ui.shadcn.com)",
+      "Bash(npx shadcn@latest add sheet)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(if not exist \"plans\" mkdir plans)"
     ]
   },
   "enabledPlugins": {

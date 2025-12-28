@@ -549,7 +549,8 @@ export class AssetManagerClass {
         normalizedPath,
         scope,
         projectId,
-        category
+        category,
+        undefined
       );
     } catch (error) {
       await this.logger.error('获取资产元数据失败: ' + JSON.stringify({ filePath, error }), 'AssetManager');
@@ -606,7 +607,8 @@ export class AssetManagerClass {
     filePath: string,
     scope: AssetScope,
     projectId?: string,
-    category?: string
+    category?: string,
+    isUserUploaded?: boolean
   ): Promise<AssetMetadata> {
     const fileName = path.basename(filePath);
     const fileInfo = await this.fsService.getFileInfo(filePath);
@@ -627,6 +629,7 @@ export class AssetManagerClass {
       mimeType: fileInfo.mimeType,
       extension: fileInfo.extension,
       projectId,
+      isUserUploaded,
       tags: [],
       status: 'none'
     };
@@ -636,6 +639,16 @@ export class AssetManagerClass {
     await this.fsService.saveJSON(metadataPath, metadata);
 
     return metadata;
+  }
+
+  async getAssetReferences(assetId: string): Promise<string[]> {
+    try {
+      await this.logger.debug(`获取资产引用关系: ${assetId}`, 'AssetManager');
+      return [];
+    } catch (error) {
+      await this.logger.error(`获取资产引用失败: ${assetId}`, 'AssetManager', { error });
+      throw error;
+    }
   }
 
   // ========================================
@@ -748,7 +761,8 @@ export class AssetManagerClass {
       filePath,
       scope,
       projectId,
-      category
+      category,
+      true
     );
 
     const metadata: AssetMetadata = {

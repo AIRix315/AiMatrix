@@ -10,3 +10,4 @@ export { default as Loading } from './Loading';
 export { default as Modal } from './Modal';
 export { default as ConfirmDialog } from './ConfirmDialog';
 export { ProgressOrb } from './ProgressOrb';
+export { TaskQueueSheet, type Task } from './TaskQueueSheet';

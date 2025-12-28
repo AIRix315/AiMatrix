@@ -56,6 +56,7 @@ export interface AssetMetadata {
 
   // === 项目关联 ===
   projectId?: string;                // 所属项目ID (scope=project时必需)
+  isUserUploaded?: boolean;          // 是否用户上传 (true: 用户上传, false: 项目生成)
 
   // === 组织字段 ===
   tags: string[];                    // 标签数组
