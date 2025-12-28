@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Maximize2, RefreshCw } from 'lucide-react';
+import { Maximize2, RefreshCw, Edit2, Check, X } from 'lucide-react';
 import { Button, Card, Loading, Toast, ViewSwitcher } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
 import './StoryboardPanel.css';
@@ -49,6 +49,10 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
 
   // 正在生成的分镜ID列表
   const [generatingIds, setGeneratingIds] = useState<string[]>([]);
+
+  // Prompt编辑状态
+  const [editingPromptId, setEditingPromptId] = useState<string | null>(null);
+  const [editingPromptText, setEditingPromptText] = useState('');
 
   // 从localStorage恢复视图模式偏好
   useEffect(() => {
@@ -217,6 +221,41 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
   };
 
   /**
+   * 开始编辑Prompt
+   */
+  const handleStartEditPrompt = (storyboard: Storyboard) => {
+    setEditingPromptId(storyboard.id);
+    setEditingPromptText(storyboard.prompt || '');
+  };
+
+  /**
+   * 保存Prompt编辑
+   */
+  const handleSavePrompt = () => {
+    if (editingPromptId && editingPromptText.trim()) {
+      setStoryboards((prev) =>
+        prev.map((s) =>
+          s.id === editingPromptId ? { ...s, prompt: editingPromptText.trim() } : s
+        )
+      );
+      setToast({
+        type: 'success',
+        message: 'Prompt已更新'
+      });
+    }
+    setEditingPromptId(null);
+    setEditingPromptText('');
+  };
+
+  /**
+   * 取消编辑Prompt
+   */
+  const handleCancelEditPrompt = () => {
+    setEditingPromptId(null);
+    setEditingPromptText('');
+  };
+
+  /**
    * 处理下一步
    */
   const handleNext = () => {
@@ -340,15 +379,71 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
                           image={storyboard.type === 'image' ? '🖼️' : '🎬'}
                           hoverable
                         />
+                        {editingPromptId === storyboard.id ? (
+                          <div className="card-prompt-edit">
+                            <textarea
+                              className="prompt-edit-textarea"
+                              value={editingPromptText}
+                              onChange={(e) => setEditingPromptText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && e.ctrlKey) {
+                                  handleSavePrompt();
+                                }
+                                if (e.key === 'Escape') {
+                                  handleCancelEditPrompt();
+                                }
+                              }}
+                              placeholder="输入生成提示词..."
+                              rows={2}
+                              autoFocus
+                            />
+                            <div className="prompt-edit-actions">
+                              <button
+                                className="icon-btn save-btn"
+                                onClick={handleSavePrompt}
+                                title="保存 (Ctrl+Enter)"
+                              >
+                                <Check size={12} />
+                              </button>
+                              <button
+                                className="icon-btn cancel-btn"
+                                onClick={handleCancelEditPrompt}
+                                title="取消 (Esc)"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="card-prompt-display">
+                            {storyboard.prompt ? (
+                              <p className="card-prompt-text">{storyboard.prompt}</p>
+                            ) : (
+                              <p className="card-prompt-text placeholder">暂无Prompt</p>
+                            )}
+                          </div>
+                        )}
                         <div
                           className="card-actions"
                           onClick={(e) => e.stopPropagation()}
                         >
+                          {editingPromptId !== storyboard.id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStartEditPrompt(storyboard)}
+                              disabled={isGenerating}
+                              title="编辑Prompt"
+                            >
+                              <Edit2 size={14} />
+                              编辑
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRegenerate(storyboard.id)}
-                            disabled={isGenerating}
+                            disabled={isGenerating || editingPromptId === storyboard.id}
                           >
                             <RefreshCw size={14} className={isGenerating ? 'spinning' : ''} />
                             {isGenerating ? '生成中' : '重生成'}
@@ -383,8 +478,50 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
                             {storyboard.type === 'image' ? '图片' : '视频'}
                           </span>
                         </div>
-                        {storyboard.prompt && (
-                          <p className="list-item-prompt">{storyboard.prompt}</p>
+                        {editingPromptId === storyboard.id ? (
+                          <div className="prompt-edit-container">
+                            <textarea
+                              className="prompt-edit-textarea"
+                              value={editingPromptText}
+                              onChange={(e) => setEditingPromptText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && e.ctrlKey) {
+                                  handleSavePrompt();
+                                }
+                                if (e.key === 'Escape') {
+                                  handleCancelEditPrompt();
+                                }
+                              }}
+                              placeholder="输入生成提示词..."
+                              rows={3}
+                              autoFocus
+                            />
+                            <div className="prompt-edit-actions">
+                              <button
+                                className="icon-btn save-btn"
+                                onClick={handleSavePrompt}
+                                title="保存 (Ctrl+Enter)"
+                              >
+                                <Check size={14} />
+                              </button>
+                              <button
+                                className="icon-btn cancel-btn"
+                                onClick={handleCancelEditPrompt}
+                                title="取消 (Esc)"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="prompt-display-container">
+                            {storyboard.prompt && (
+                              <p className="list-item-prompt">{storyboard.prompt}</p>
+                            )}
+                            {!storyboard.prompt && (
+                              <p className="list-item-prompt placeholder">暂无Prompt</p>
+                            )}
+                          </div>
                         )}
                         <div className="list-item-meta">
                           <span
@@ -406,11 +543,23 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
                         className="list-item-actions"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        {editingPromptId !== storyboard.id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleStartEditPrompt(storyboard)}
+                            disabled={isGenerating}
+                            title="编辑Prompt"
+                          >
+                            <Edit2 size={14} />
+                            编辑
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRegenerate(storyboard.id)}
-                          disabled={isGenerating}
+                          disabled={isGenerating || editingPromptId === storyboard.id}
                         >
                           <RefreshCw size={14} className={isGenerating ? 'spinning' : ''} />
                           {isGenerating ? '生成中' : '重生成'}
