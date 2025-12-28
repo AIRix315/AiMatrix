@@ -355,6 +355,11 @@ class MatrixApp {
       await modelRegistry.setModelAlias(modelId, alias);
     });
 
+    // 日志相关IPC处理
+    ipcMain.handle('logs:get-recent', async (_, limit?: number, levelFilter?: string) => {
+      return await logger.getRecentLogs(limit, levelFilter as any);
+    });
+
     // 项目相关IPC处理
     ipcMain.handle('project:create', (_, name, template) => this.projectManager.createProject(name, template));
     ipcMain.handle('project:load', (_, projectId) => this.projectManager.loadProject(projectId));

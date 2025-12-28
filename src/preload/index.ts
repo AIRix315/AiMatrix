@@ -454,6 +454,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setModelAlias: (modelId: string, alias: string): Promise<void> =>
     ipcRenderer.invoke('model:set-alias', modelId, alias),
 
+  // ==================== 日志相关 ====================
+
+  /**
+   * 获取最近的日志
+   * @param limit 返回的最大日志条数
+   * @param levelFilter 过滤的日志级别（error/warn/info/debug）
+   */
+  getRecentLogs: (limit?: number, levelFilter?: string): Promise<any[]> =>
+    ipcRenderer.invoke('logs:get-recent', limit, levelFilter),
+
   // ==================== Settings相关 ====================
 
   /**
@@ -767,6 +777,7 @@ declare global {
       toggleModelVisibility: (modelId: string, hidden: boolean) => Promise<void>;
       toggleModelFavorite: (modelId: string, favorite: boolean) => Promise<void>;
       setModelAlias: (modelId: string, alias: string) => Promise<void>;
+      getRecentLogs: (limit?: number, levelFilter?: string) => Promise<any[]>;
       getAllSettings: () => Promise<any>;
       saveSettings: (config: any) => Promise<{ success: boolean }>;
       openDirectoryDialog: () => Promise<string | null>;

@@ -184,6 +184,62 @@ Closes #123
 
 --------------------------------------------
 
+## [0.3.4] - 2025-12-29
+
+### Added - Phase 9 第四阶段：优化和安全 (H2.14-H2.15)
+- feat(security): API密钥加密存储 (H2.14)
+  - APIKeyEncryption类 - AES-256-GCM认证加密算法（130行）
+    - encrypt() - 加密API密钥，格式：iv:authTag:encrypted
+    - decrypt() - 解密API密钥，支持错误处理
+    - isEncrypted() - 检测字符串是否已加密
+    - 使用机器ID作为密钥种子（machineIdSync + scryptSync）
+  - ConfigManager集成加密功能（+60行）
+    - encryptConfig() - 使用AES-256-GCM替代safeStorage
+    - decryptConfig() - 兼容新旧加密方式（aes-256-gcm和safeStorage）
+    - migrateToEncryptedKeys() - 自动检测并迁移明文/旧加密配置
+    - 在initialize()中自动调用迁移逻辑
+  - APIManager集成加密功能（+50行）
+    - saveProviders() - 保存前自动加密API Key
+    - loadProviders() - 加载后自动解密API Key
+    - 向后兼容：支持未加密配置的读取
+  - 安全特性：强加密（AES-256-GCM）+ 机器绑定 + 向后兼容 + 双重保护
+
+- feat(logging): 日志管理和底部状态栏 (H2.15)
+  - Logger服务扩展（+70行）
+    - getRecentLogs() - 读取最近的日志条目（支持限制数量和级别过滤）
+    - parseLogLine() - 解析日志行为LogEntry对象
+    - 正则表达式解析日志格式
+  - IPC通道logs:get-recent - 渲染进程可获取日志数据
+  - StatusBar组件（78行 + 90行CSS）
+    - 底部状态栏布局（工作区路径 + 系统状态 + 铃铛图标）
+    - 铃铛图标（lucide-react Bell组件）
+    - 错误红点徽章（显示错误数量，最多9+）
+    - 定时错误检查（每30秒）
+    - 铃铛摇动动画（检测到错误时）
+  - LogViewer组件（187行 + 260行CSS）
+    - Sheet弹出式查看器（从底部滑出，60vh高度）
+    - 5级过滤器（全部/错误/警告/信息/调试）
+    - 日志列表（时间戳、级别图标、服务名、消息、数据）
+    - 刷新按钮（带旋转动画）+ 关闭按钮
+    - 级别颜色区分（红/橙/蓝/绿）
+    - 滑入滑出动画
+
+### Changed
+- refactor(layout): Layout组件集成StatusBar
+  - 替换原有简单footer为StatusBar组件
+  - 导入StatusBar组件到Layout.tsx
+
+### Dependencies
+- chore(deps): 添加node-machine-id@1.1.2 - 用于API密钥加密
+
+### Summary
+- **新增代码**: 约925行（加密240行 + 日志685行）
+- **新增文件**: 6个（APIKeyEncryption + StatusBar + LogViewer + 3个CSS）
+- **修改文件**: 6个（Logger + ConfigManager + APIManager + index.ts + preload + Layout）
+- **Phase 9状态**: 第四阶段完成100%，全阶段15个任务全部完成✅
+
+--------------------------------------------
+
 ## [0.3.3] - 2025-12-29
 
 ### Added - Phase 9 第三阶段：工作流面板业务逻辑完善 (H2.13)

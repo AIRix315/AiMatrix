@@ -316,6 +316,77 @@ export class Logger {
   public getLogDirectory(): string {
     return this.logDir;
   }
+
+  /**
+   * 获取最近的日志条目
+   * @param limit 返回的最大日志条数
+   * @param levelFilter 过滤的日志级别（可选）
+   * @returns 日志条目数组
+   */
+  public async getRecentLogs(limit: number = 100, levelFilter?: LogLevel): Promise<LogEntry[]> {
+    try {
+      // 读取当前日志文件
+      const content = await fs.readFile(this.currentLogFile, 'utf-8');
+      const lines = content.split('\n').filter(line => line.trim());
+
+      // 解析日志行为 LogEntry 对象
+      const logs: LogEntry[] = [];
+      for (const line of lines) {
+        try {
+          const parsed = this.parseLogLine(line);
+          if (parsed) {
+            // 如果有级别过滤器，只返回匹配的日志
+            if (!levelFilter || parsed.level === levelFilter) {
+              logs.push(parsed);
+            }
+          }
+        } catch {
+          // 忽略解析失败的行
+        }
+      }
+
+      // 返回最后 N 条日志（最新的在前）
+      return logs.slice(-limit).reverse();
+    } catch (error) {
+      await this.warn('Failed to read recent logs', 'Logger', { error });
+      return [];
+    }
+  }
+
+  /**
+   * 解析日志行为 LogEntry 对象
+   * @param line 日志行字符串
+   * @returns LogEntry 对象或 null
+   */
+  private parseLogLine(line: string): LogEntry | null {
+    // 日志格式: 2025-12-29T12:34:56.789Z [INFO] [ServiceName] message {"data": "..."}
+    const regex = /^(\S+)\s+\[(\w+)\](?:\s+\[([^\]]+)\])?\s+(.+?)(?:\s+(\{.+\}))?$/;
+    const match = line.match(regex);
+
+    if (!match) {
+      return null;
+    }
+
+    const [, timestamp, level, service, message, dataStr] = match;
+
+    let data: unknown = undefined;
+    if (dataStr) {
+      try {
+        data = JSON.parse(dataStr);
+      } catch {
+        // 如果 JSON 解析失败，保留原始字符串
+        data = dataStr;
+      }
+    }
+
+    return {
+      timestamp: new Date(timestamp),
+      level: level.toLowerCase() as LogLevelType,
+      service,
+      message,
+      data
+    };
+  }
 }
 
 // 导出单例实例

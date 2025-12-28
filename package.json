@@ -1,6 +1,6 @@
 {
   "name": "matrix-ai-workflow",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "AI视频生成工作流管理平台",
   "main": "build/main/index.js",
   "homepage": "./",
@@ -56,6 +56,7 @@
     "langchain": "^1.2.3",
     "lucide-react": "^0.562.0",
     "nedb": "^1.8.0",
+    "node-machine-id": "^1.1.12",
     "process": "^0.11.10",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",

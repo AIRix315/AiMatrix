@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import WindowBar from './WindowBar';
 import GlobalNav from './GlobalNav';
+import StatusBar from '../layout/StatusBar';
 import './Layout.css';
 
 interface LayoutProps {
@@ -26,15 +27,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="status-bar">
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <span id="footer-status-project">工作区: D:/Work/Matrix</span>
-        </div>
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <span>系统就绪</span>
-        </div>
-      </footer>
+      {/* Status Bar - 底部状态栏（含日志查看器） */}
+      <StatusBar />
     </div>
   );
 };

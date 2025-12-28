@@ -1,0 +1,102 @@
+/* 状态栏容器 */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  padding: 0 12px;
+  background-color: oklch(0.25 0.02 var(--hue));
+  border-top: 1px solid oklch(0.3 0.03 var(--hue));
+  color: oklch(0.7 0.03 var(--hue));
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* 左侧区域 */
+.status-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* 右侧区域 */
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* 状态项 */
+.status-item {
+  color: oklch(0.7 0.03 var(--hue));
+  font-size: 12px;
+}
+
+/* 日志铃铛按钮 */
+.status-bell-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: oklch(0.7 0.03 var(--hue));
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.status-bell-button:hover {
+  background-color: oklch(0.3 0.03 var(--hue));
+  color: oklch(0.9 0.03 var(--hue));
+}
+
+.status-bell-button:active {
+  background-color: oklch(0.35 0.04 var(--hue));
+}
+
+/* 有错误时的铃铛样式 */
+.status-bell-button.has-error {
+  color: oklch(0.6 0.2 30); /* 橙色 */
+  animation: bellShake 0.5s ease-in-out;
+}
+
+.status-bell-button.has-error:hover {
+  color: oklch(0.7 0.25 30);
+}
+
+/* 错误红点徽章 */
+.error-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  background-color: oklch(0.55 0.22 25); /* 红色 */
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 7px;
+  border: 1.5px solid oklch(0.25 0.02 var(--hue));
+}
+
+/* 铃铛摇动动画 */
+@keyframes bellShake {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: rotate(-10deg);
+  }
+  20%, 40%, 60%, 80% {
+    transform: rotate(10deg);
+  }
+}

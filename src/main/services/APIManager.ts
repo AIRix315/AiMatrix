@@ -17,6 +17,7 @@ import * as path from 'path';
 import { app } from 'electron';
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
+import { APIKeyEncryption } from './ConfigManager'; // 导入加密工具
 import {
   APICategory,
   AuthType,
@@ -80,11 +81,13 @@ export class APIManager {
   private providers: Map<string, APIProviderConfig> = new Map(); // 新版Provider配置
   private providerStatus: Map<string, APIProviderStatus> = new Map(); // 新版Provider状态
   private providersConfigFile: string; // 新版配置文件路径
+  private encryption: APIKeyEncryption; // API 密钥加密工具
 
   constructor(configDir?: string) {
     const dir = configDir || path.join(app.getPath('userData'), 'config');
     this.configFile = path.join(dir, 'apis.json'); // 旧版配置文件
     this.providersConfigFile = path.join(dir, 'providers.json'); // 新版配置文件
+    this.encryption = new APIKeyEncryption(); // 初始化加密工具
     this.ensureConfigDir().catch(error => {
       logger.error('Failed to create config directory', 'APIManager', { error }).catch(() => {});
     });
@@ -124,15 +127,37 @@ export class APIManager {
 
   /**
    * 加载 Provider 配置文件（v2.0）
+   * 自动解密 API Keys
    */
   private async loadProviders(): Promise<void> {
     try {
       const content = await fs.readFile(this.providersConfigFile, 'utf-8');
-      const configs: APIProviderConfig[] = JSON.parse(content);
+      const configs: (APIProviderConfig & { _encrypted?: string })[] = JSON.parse(content);
 
       this.providers.clear();
       for (const config of configs) {
-        this.providers.set(config.id, config);
+        // 解密 API Key
+        if (config.apiKey && config._encrypted === 'aes-256-gcm') {
+          try {
+            const decryptedConfig = {
+              ...config,
+              apiKey: this.encryption.decrypt(config.apiKey)
+            };
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { _encrypted, ...rest } = decryptedConfig;
+            this.providers.set(rest.id, rest);
+          } catch (error) {
+            await logger.warn(`Failed to decrypt API key for provider ${config.id}`, 'APIManager', { error });
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { _encrypted, ...rest } = config;
+            this.providers.set(rest.id, rest);
+          }
+        } else {
+          // 未加密的配置，直接加载
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { _encrypted, ...rest } = config;
+          this.providers.set(rest.id, rest);
+        }
       }
       await logger.info(`Loaded ${configs.length} providers`, 'APIManager');
     } catch (error) {
@@ -143,10 +168,27 @@ export class APIManager {
 
   /**
    * 保存 Provider 配置文件（v2.0）
+   * 自动加密 API Keys
    */
   private async saveProviders(): Promise<void> {
     try {
-      const configs = Array.from(this.providers.values());
+      const configs = Array.from(this.providers.values()).map(config => {
+        // 加密 API Key
+        if (config.apiKey && !this.encryption.isEncrypted(config.apiKey)) {
+          try {
+            return {
+              ...config,
+              apiKey: this.encryption.encrypt(config.apiKey),
+              _encrypted: 'aes-256-gcm' // 标记加密算法
+            };
+          } catch (error) {
+            logger.warn(`Failed to encrypt API key for provider ${config.id}`, 'APIManager', { error }).catch(() => {});
+            return config;
+          }
+        }
+        return config;
+      });
+
       await fs.writeFile(this.providersConfigFile, JSON.stringify(configs, null, 2), 'utf-8');
       await logger.debug(`Saved ${configs.length} providers`, 'APIManager');
     } catch (error) {
