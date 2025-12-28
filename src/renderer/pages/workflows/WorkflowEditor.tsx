@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactFlow, {
   Node,
@@ -9,13 +9,15 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   Connection,
-  Panel as FlowPanel
+  Panel as FlowPanel,
+  NodeTypes
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Button, Toast, Loading } from '../../components/common';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import type { ToastType } from '../../components/common/Toast';
 import { validateWorkflow } from './utils/workflowValidator';
+import { InputNode, ExecuteNode, OutputNode } from '../../components/workflow/nodes';
 import './WorkflowEditor.css';
 
 const WorkflowEditor: React.FC = () => {
@@ -242,12 +244,9 @@ const WorkflowEditor: React.FC = () => {
 
   // 节点库
   const nodeLibrary = [
-    { type: 'input', label: '输入节点', icon: '📥' },
-    { type: 'process', label: '处理节点', icon: '⚙️' },
-    { type: 'output', label: '输出节点', icon: '📤' },
-    { type: 'api', label: 'API调用', icon: '🔌' },
-    { type: 'condition', label: '条件判断', icon: '🔀' },
-    { type: 'transform', label: '数据转换', icon: '🔄' }
+    { type: 'inputNode', label: '输入节点', icon: '📥', description: '资源选择和加载' },
+    { type: 'executeNode', label: '执行节点', icon: '⚙️', description: 'AI服务调用' },
+    { type: 'outputNode', label: '输出节点', icon: '📤', description: '结果保存' }
   ];
 
   const handleAddNode = async (nodeType: string, label: string) => {
@@ -255,7 +254,7 @@ const WorkflowEditor: React.FC = () => {
     const timestamp = await window.electronAPI.getCurrentTime();
     const newNode: Node = {
       id: `${nodeType}-${timestamp}`,
-      type: nodeType === 'input' ? 'input' : nodeType === 'output' ? 'output' : 'default',
+      type: nodeType,
       position: {
         x: Math.random() * 400 + 100,
         y: Math.random() * 400 + 100
@@ -272,6 +271,16 @@ const WorkflowEditor: React.FC = () => {
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
   }, []);
+
+  // 注册自定义节点类型
+  const nodeTypes: NodeTypes = useMemo(
+    () => ({
+      inputNode: InputNode,
+      executeNode: ExecuteNode,
+      outputNode: OutputNode
+    }),
+    []
+  );
 
   // 删除节点处理函数
   const handleDeleteNode = useCallback(() => {
@@ -395,6 +404,7 @@ const WorkflowEditor: React.FC = () => {
                 onConnect={onConnect}
                 onNodeClick={onNodeClick}
                 onPaneClick={onPaneClick}
+                nodeTypes={nodeTypes}
                 fitView
               >
                 <Background />

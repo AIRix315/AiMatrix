@@ -184,6 +184,42 @@ Closes #123
 
 --------------------------------------------
 
+## [0.3.2] - 2025-12-29
+
+### Added - Phase 9 第三阶段：业务功能补齐 (H2.11)
+- feat(workflow): 节点编辑器功能补充 - 通用工作台完善 (H2.11)
+  - 集成@xyflow/react库 - 现代化工作流画布引擎
+  - InputNode节点组件 - 资源输入节点（无左端口/有右端口）
+    - 资源类型选择器 - 5种类型（图片/视频/音频/文本/其他）
+    - 搜索框 - 资产快速查找
+    - 拖拽区域 - 支持从资产管理器拖拽资产（预留接口）
+  - ExecuteNode节点组件 - 执行节点（有左右端口）
+    - Provider选择下拉框 - 动态加载可用Provider列表
+    - 按category过滤Provider - 支持按功能分类筛选
+    - 参数配置按钮 - 触发右侧面板联动
+    - 参数预览 - 显示已配置参数数量
+  - OutputNode节点组件 - 输出节点（有左端口/无右端口）
+    - 输出格式选择器 - 支持4类14种格式（图片/视频/音频/文本）
+    - 保存位置配置 - 支持选择自定义目录
+    - 自动保存选项 - 支持自动保存到项目输出目录
+  - 节点连线和数据流 - Input → Execute → Output完整数据流
+  - 工作流保存/加载 - JSON配置，支持节点恢复（WorkflowEditor已实现）
+  - 自定义节点样式 - OKLCH色彩系统，深色主题优化
+
+### Changed
+- refactor(workflow): WorkflowEditor集成自定义节点类型
+  - 注册3种自定义节点类型（inputNode/executeNode/outputNode）
+  - 更新节点库 - 3种核心节点替代原6种通用节点
+  - 修复节点类型映射 - 使用自定义节点类型而非默认节点
+
+### Fixed
+- fix(workflow): 修复节点组件TypeScript类型错误
+  - 修复ExecuteNode的Provider加载 - 使用listProviders替代getAPIProviders
+  - 修复OutputNode的目录选择 - 使用openDirectoryDialog替代showOpenDialog
+  - 添加APIProviderConfig类型标注 - 消除隐式any类型错误
+
+--------------------------------------------
+
 ## [0.3.1] - 2025-12-29
 
 ### Added - Phase 9 第二阶段：API Provider架构重构 (H2.8-H2.10)

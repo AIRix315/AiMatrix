@@ -1,0 +1,173 @@
+/* Execute节点专用样式 */
+.execute-node {
+  min-width: 240px;
+}
+
+.execute-node .node-header {
+  position: relative;
+}
+
+.execute-node .settings-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: var(--secondary-text);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.execute-node .settings-btn:hover {
+  background: oklch(from var(--primary-bg) calc(l + 0.1) c h);
+  color: var(--accent-color);
+}
+
+.execute-node .provider-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.execute-node .provider-label {
+  font-size: 12px;
+  color: var(--secondary-text);
+  font-weight: 500;
+}
+
+.execute-node .dropdown-wrapper {
+  position: relative;
+}
+
+.execute-node .dropdown-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: oklch(from var(--primary-bg) calc(l + 0.03) c h);
+  border: 1px solid oklch(from var(--primary-bg) calc(l + 0.1) c h);
+  border-radius: 6px;
+  color: var(--primary-text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.execute-node .dropdown-btn:hover {
+  border-color: var(--accent-color);
+  background: oklch(from var(--primary-bg) calc(l + 0.05) c h);
+}
+
+.execute-node .dropdown-text {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.execute-node .dropdown-icon {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.execute-node .dropdown-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.execute-node .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: oklch(from var(--primary-bg) calc(l + 0.05) c h);
+  border: 1px solid oklch(from var(--primary-bg) calc(l + 0.15) c h);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.execute-node .dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 13px;
+  color: var(--primary-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.execute-node .dropdown-item:hover {
+  background: oklch(from var(--primary-bg) calc(l + 0.08) c h);
+}
+
+.execute-node .dropdown-item.active {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.execute-node .dropdown-item.disabled {
+  color: var(--secondary-text);
+  cursor: not-allowed;
+}
+
+.execute-node .dropdown-item.disabled:hover {
+  background: transparent;
+}
+
+.execute-node .provider-category {
+  font-size: 11px;
+  padding: 2px 6px;
+  background: oklch(from var(--primary-bg) calc(l + 0.1) c h);
+  border-radius: 4px;
+  color: var(--secondary-text);
+  margin-left: 8px;
+}
+
+.execute-node .dropdown-item.active .provider-category {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.execute-node .parameters-preview {
+  padding: 8px 10px;
+  background: oklch(from var(--primary-bg) calc(l + 0.03) c h);
+  border-radius: 6px;
+  border: 1px solid oklch(from var(--primary-bg) calc(l + 0.1) c h);
+}
+
+.execute-node .parameters-count {
+  font-size: 12px;
+  color: var(--accent-color);
+  text-align: center;
+}
+
+/* 滚动条样式 */
+.execute-node .dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.execute-node .dropdown-menu::-webkit-scrollbar-track {
+  background: oklch(from var(--primary-bg) calc(l + 0.03) c h);
+  border-radius: 3px;
+}
+
+.execute-node .dropdown-menu::-webkit-scrollbar-thumb {
+  background: oklch(from var(--primary-bg) calc(l + 0.15) c h);
+  border-radius: 3px;
+}
+
+.execute-node .dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: oklch(from var(--primary-bg) calc(l + 0.2) c h);
+}
