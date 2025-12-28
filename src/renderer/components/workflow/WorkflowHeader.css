@@ -1,0 +1,154 @@
+/**
+ * WorkflowHeader样式
+ * 统一头部布局：《项目下拉 - 标题 ----- 1-2-3-4-5 ----- X》
+ * 遵循V2设计规范：OKLCH色彩、高度56px、8px圆角
+ */
+
+.workflow-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px;
+  background: oklch(0.16 0 0);
+  border-bottom: 1px solid oklch(0.24 0 0);
+  flex-shrink: 0;
+}
+
+/* 左右侧栏切换按钮 */
+.workflow-header .panel-toggle-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: oklch(0.58 0 0);
+  transition: color 0.2s ease;
+}
+
+.workflow-header .panel-toggle-btn:hover {
+  color: oklch(0.85 0.22 160);
+}
+
+/* 关闭全部按钮 */
+.workflow-header .close-all-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: oklch(0.58 0 0);
+  transition: color 0.2s ease;
+}
+
+.workflow-header .close-all-btn:hover {
+  color: #ef4444;
+}
+
+/* 项目选择器（下拉框）*/
+.workflow-header .project-selector {
+  min-width: 180px;
+  height: 36px;
+  padding: 0 12px;
+  background: oklch(0.12 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 8px;
+  color: oklch(0.92 0 0);
+  font-size: 14px;
+  font-family: "Inter", system-ui, sans-serif;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.workflow-header .project-selector:hover {
+  border-color: oklch(0.85 0.22 160);
+}
+
+.workflow-header .project-selector:focus {
+  border-color: oklch(0.85 0.22 160);
+  box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
+}
+
+.workflow-header .project-selector option {
+  background: oklch(0.16 0 0);
+  color: oklch(0.92 0 0);
+}
+
+/* 工作流标题 */
+.workflow-header .workflow-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: oklch(0.92 0 0);
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  white-space: nowrap;
+}
+
+/* 步骤条容器 */
+.workflow-header .step-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+  margin: 0 16px;
+}
+
+/* 步骤按钮 */
+.workflow-header .step-bar .step-item {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid oklch(0.24 0 0);
+  background: oklch(0.12 0 0);
+  color: oklch(0.58 0 0);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.workflow-header .step-bar .step-item:hover:not(:disabled) {
+  border-color: oklch(0.85 0.22 160);
+  background: oklch(0.18 0 0);
+  transform: scale(1.1);
+}
+
+/* 当前激活步骤 */
+.workflow-header .step-bar .step-item.active {
+  background: oklch(0.85 0.22 160);
+  border-color: oklch(0.85 0.22 160);
+  color: oklch(0.12 0 0);
+  box-shadow: 0 0 0 4px oklch(0.85 0.22 160 / 0.15);
+}
+
+/* 已完成步骤 */
+.workflow-header .step-bar .step-item.completed {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.workflow-header .step-bar .step-item.completed:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+/* 待完成步骤（灰色） */
+.workflow-header .step-bar .step-item.pending {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 禁用状态 */
+.workflow-header .step-bar .step-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.workflow-header .step-bar .step-item:disabled:hover {
+  transform: none;
+  border-color: oklch(0.24 0 0);
+  background: oklch(0.12 0 0);
+}

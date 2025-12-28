@@ -17,6 +17,7 @@ import { TaskType } from './services/TaskScheduler';
 import { apiManager } from './services/APIManager';
 import { configManager } from './services/ConfigManager';
 import { timeService } from './services/TimeService';
+import { ShortcutManager } from './services/ShortcutManager';
 import { registerWorkflowHandlers } from './ipc/workflow-handlers';
 import { workflowRegistry } from './services/WorkflowRegistry';
 import { testWorkflowDefinition } from './workflows/test-workflow';
@@ -41,6 +42,7 @@ class MatrixApp {
   private projectManager: ProjectManager;
   private fileSystemService: FileSystemService;
   private assetManager: AssetManager;
+  private shortcutManager: ShortcutManager;
   private fileWatchers: Map<string, fsSync.FSWatcher> = new Map();
 
   constructor() {
@@ -49,6 +51,7 @@ class MatrixApp {
     this.projectManager = new ProjectManager();
     this.fileSystemService = fileSystemService;
     this.assetManager = getAssetManager(this.fileSystemService);
+    this.shortcutManager = ShortcutManager.getInstance(timeService, logger, configManager);
 
     this.initializeEventListeners();
   }
@@ -160,6 +163,7 @@ class MatrixApp {
     await pluginMarketService.initialize();
     await taskScheduler.initialize();
     await apiManager.initialize();
+    await this.shortcutManager.initialize();
 
     await logger.info('All Matrix services initialized successfully', 'MatrixApp');
   }
@@ -285,6 +289,20 @@ class MatrixApp {
     ipcMain.handle('window:isMaximized', () => {
       const window = BrowserWindow.getFocusedWindow();
       return window ? window.isMaximized() : false;
+    });
+
+    // 快捷方式相关IPC处理
+    ipcMain.handle('shortcut:add', async (_, item) => {
+      return await this.shortcutManager.addShortcut(item);
+    });
+    ipcMain.handle('shortcut:remove', async (_, id: string) => {
+      await this.shortcutManager.removeShortcut(id);
+    });
+    ipcMain.handle('shortcut:reorder', async (_, ids: string[]) => {
+      await this.shortcutManager.reorderShortcuts(ids);
+    });
+    ipcMain.handle('shortcut:list', async () => {
+      return await this.shortcutManager.listShortcuts();
     });
 
     // 项目相关IPC处理

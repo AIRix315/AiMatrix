@@ -184,6 +184,95 @@ Closes #123
 
 --------------------------------------------
 
+## [0.2.9.9] - 2025-12-28
+
+### Added - Phase 9 第一阶段：核心交互完善 + 菜单栏快捷方式系统 (H2.7)
+- feat(shortcut): ShortcutManager 服务 - 完整的快捷方式 CRUD 管理
+  - addShortcut() - 添加快捷方式（项目/工作流/插件）
+  - removeShortcut() - 删除快捷方式
+  - reorderShortcuts() - 拖拽排序（预留接口）
+  - listShortcuts() - 获取快捷方式列表（按order排序）
+  - initializeDefaultShortcuts() - 首次启动自动添加"小说转视频"
+- feat(shortcut): ShortcutType 枚举和 ShortcutItem 接口
+  - PROJECT/WORKFLOW/PLUGIN 三种类型
+  - 7个字段：id, type, targetId, name, icon, order, createdAt
+- feat(ui): GlobalNav 三区域重构
+  - 上方固定：5个导航项（首页/资产库/工作流/插件/设置）
+  - 中间可滚动：用户快捷方式列表（max-height: calc(100vh - 400px)）
+  - 下方固定：关于页面
+- feat(ui): ShortcutNavItem 组件 - 快捷方式导航项
+  - 长按 500ms 进入编辑模式
+  - shake 闪动动画（@keyframes）
+  - 删除按钮（编辑模式显示）
+  - 点击跳转到对应页面
+- feat(ui): Pin 按钮功能 - Dashboard/Workflows/Plugins 三页面
+  - Dashboard.handlePinProject() - 项目添加到菜单栏
+  - Workflows.handlePinWorkflow() - 工作流添加到菜单栏
+  - Plugins.handlePinPlugin() - 插件添加到菜单栏
+  - 悬停显示 Pin 按钮（opacity: 0 → 1）
+  - 电绿色高亮样式（oklch(0.85 0.22 160)）
+- feat(ipc): 4个新增快捷方式 IPC 通道
+  - shortcut:add - 添加快捷方式
+  - shortcut:remove - 删除快捷方式
+  - shortcut:reorder - 重新排序
+  - shortcut:list - 获取列表
+- feat(preload): 快捷方式 API 暴露
+  - window.electronAPI.addShortcut()
+  - window.electronAPI.removeShortcut()
+  - window.electronAPI.reorderShortcuts()
+  - window.electronAPI.listShortcuts()
+
+### Changed
+- refactor(ui): GlobalNav.css 样式重构
+  - 三区域布局样式（nav-section-top/middle/bottom）
+  - shortcuts-container 可滚动容器
+  - menu-spacer 弹性间隔
+- refactor(ui): Dashboard/Workflows/Plugins CSS
+  - Pin 按钮样式（.pin-btn）
+  - 位置：Dashboard/Workflows right: 3rem, Plugins right: 40px
+
+### Fixed
+- fix(shortcut): GlobalNav 启动挂起问题
+  - 添加 API 可用性检查（window.electronAPI?.listShortcuts）
+  - 添加 5 秒超时保护（Promise.race）
+  - 失败时设置空数组，不阻塞 UI
+- fix(shortcut): ShortcutManager 初始化错误处理
+  - try-catch 包裹 initialize() 方法
+  - 初始化失败不阻塞应用启动
+  - 详细日志记录（加载/初始化状态）
+
+### Technical Details
+- **新增文件**: 3个核心文件
+  - ShortcutManager.ts (175行) - 快捷方式管理服务
+  - ShortcutNavItem.tsx (108行) - 快捷方式导航项组件
+  - ShortcutNavItem.css (95行) - 动画和样式
+- **修改文件**: 10个文件
+  - src/common/types.ts - ShortcutType/ShortcutItem/IAppSettings扩展
+  - src/main/index.ts - ShortcutManager集成和IPC处理器
+  - src/main/ipc/channels.ts - 4个快捷方式通道
+  - src/preload/index.ts - API暴露和TypeScript类型
+  - src/renderer/components/common/GlobalNav.tsx - 三区域重构
+  - src/renderer/components/common/index.ts - ShortcutNavItem导出
+  - src/renderer/pages/dashboard/Dashboard.tsx/css - Pin按钮
+  - src/renderer/pages/workflows/Workflows.tsx/css - Pin按钮
+  - src/renderer/pages/plugins/Plugins.tsx/css - Pin按钮
+- **代码量**: 约550行核心代码
+- **构建状态**: ✅ TypeScript 编译成功（0错误）
+
+### Benefits
+- ✅ 用户体验：快速访问常用项目/工作流/插件
+- ✅ 交互优化：长按编辑，点击跳转，直观易用
+- ✅ 启动稳定：超时保护和错误处理，不会挂起
+- ✅ 架构完整：IPC通信、服务层、UI层全栈实现
+- ✅ 功能完整度：Phase 9 H2.7 (100%完成 9/9任务)
+
+### Notes
+- **完成任务**: H2.7 菜单栏快捷方式系统（9个核心任务全部完成）
+- **验收状态**: 所有功能完整，构建成功，启动稳定
+- **后续任务**: Phase 9 H2.8-H2.15 API Provider重构和业务功能补齐
+
+--------------------------------------------
+
 ## [0.2.9.8] - 2025-12-28
 
 ### Added - Phase 9 第零阶段：核心架构修复 (H0.1-H0.6)

@@ -69,6 +69,28 @@ contextBridge.exposeInMainWorld('electronAPI', {
    */
   isWindowMaximized: (): Promise<boolean> => ipcRenderer.invoke('window:isMaximized'),
 
+  // ==================== 快捷方式相关 ====================
+
+  /**
+   * 添加快捷方式
+   */
+  addShortcut: (item: any): Promise<any> => ipcRenderer.invoke('shortcut:add', item),
+
+  /**
+   * 删除快捷方式
+   */
+  removeShortcut: (id: string): Promise<void> => ipcRenderer.invoke('shortcut:remove', id),
+
+  /**
+   * 重新排序快捷方式
+   */
+  reorderShortcuts: (ids: string[]): Promise<void> => ipcRenderer.invoke('shortcut:reorder', ids),
+
+  /**
+   * 获取快捷方式列表
+   */
+  listShortcuts: (): Promise<any[]> => ipcRenderer.invoke('shortcut:list'),
+
   // ==================== 项目相关 ====================
   
   /**
@@ -602,6 +624,10 @@ declare global {
       maximizeWindow: () => Promise<void>;
       closeWindow: () => Promise<void>;
       isWindowMaximized: () => Promise<boolean>;
+      addShortcut: (item: any) => Promise<any>;
+      removeShortcut: (id: string) => Promise<void>;
+      reorderShortcuts: (ids: string[]) => Promise<void>;
+      listShortcuts: () => Promise<any[]>;
       createProject: (name: string, template?: string) => Promise<any>;
       loadProject: (projectId: string) => Promise<any>;
       saveProject: (projectId: string, config: any) => Promise<void>;

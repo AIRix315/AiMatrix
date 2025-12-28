@@ -21,7 +21,9 @@ import {
 } from 'lucide-react';
 import { Button, Loading, Toast } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
+import type { Task } from '../../components/common/TaskQueueSheet';
 import { RightSettingsPanel } from '../../components/workflow/RightSettingsPanel';
+import { WorkflowHeader } from '../../components/workflow/WorkflowHeader';
 import {
   ChapterSplitPanel,
   SceneCharacterPanel,
@@ -127,8 +129,51 @@ const WorkflowExecutor: React.FC = () => {
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [selectedResource, setSelectedResource] = useState<string | null>(null);
 
+  // 项目相关状态
+  const [currentProjectId, setCurrentProjectId] = useState('proj-001');
+  const [projects] = useState([
+    { id: 'proj-001', name: '我的第一个小说项目', status: 'in-progress' },
+    { id: 'proj-002', name: '测试项目', status: 'completed' },
+    { id: 'proj-003', name: '新项目草稿', status: 'in-progress' }
+  ]);
+  const [currentProject, setCurrentProject] = useState<{ id: string; status: string } | null>(
+    null
+  );
+
   // 当前步骤选中的项目（用于右侧属性面板）
   const [selectedStoryboardIds, setSelectedStoryboardIds] = useState<string[]>([]);
+
+  // 任务队列状态（模拟数据）
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: 'task-1',
+      name: '生成分镜图像 #1',
+      type: 'image',
+      status: 'running',
+      progress: 45,
+      estimatedTime: 120,
+      createdAt: new Date(),
+      startedAt: new Date()
+    },
+    {
+      id: 'task-2',
+      name: '生成分镜图像 #2',
+      type: 'image',
+      status: 'pending',
+      progress: 0,
+      createdAt: new Date()
+    },
+    {
+      id: 'task-3',
+      name: '生成配音音频',
+      type: 'audio',
+      status: 'completed',
+      progress: 100,
+      createdAt: new Date(),
+      startedAt: new Date(),
+      completedAt: new Date()
+    }
+  ]);
 
   // 模拟项目资源树数据
   const [resourceTree] = useState<ResourceTreeNode[]>([
@@ -177,6 +222,12 @@ const WorkflowExecutor: React.FC = () => {
   useEffect(() => {
     loadWorkflow();
   }, [workflowId]);
+
+  // 更新当前项目对象
+  useEffect(() => {
+    const project = projects.find((p) => p.id === currentProjectId);
+    setCurrentProject(project || null);
+  }, [currentProjectId, projects]);
 
   /**
    * 加载工作流
@@ -309,6 +360,57 @@ const WorkflowExecutor: React.FC = () => {
   };
 
   /**
+   * 判断步骤是否可点击
+   */
+  const canClickStep = (stepIndex: number): boolean => {
+    if (!currentProject || !workflowState) return false;
+
+    // 已完成项目: 所有步骤可点击
+    if (currentProject.status === 'completed') {
+      return true;
+    }
+
+    // 进行中项目: 当前步骤及之前的可点击
+    return stepIndex <= workflowState.currentStepIndex;
+  };
+
+  /**
+   * 处理步骤点击
+   */
+  const handleStepClick = (stepIndex: number) => {
+    if (!canClickStep(stepIndex) || !workflowState) return;
+
+    const steps = [...workflowState.steps];
+
+    // 更新步骤状态
+    steps[workflowState.currentStepIndex].status =
+      stepIndex > workflowState.currentStepIndex ? 'completed' : 'pending';
+    steps[stepIndex].status = 'in_progress';
+
+    setWorkflowState({
+      ...workflowState,
+      currentStepIndex: stepIndex,
+      steps
+    });
+  };
+
+  /**
+   * 处理项目切换
+   */
+  const handleProjectChange = (projectId: string) => {
+    setCurrentProjectId(projectId);
+    // TODO: 加载该项目的工作流实例状态
+  };
+
+  /**
+   * 关闭所有侧栏
+   */
+  const handleCloseAllPanels = () => {
+    setLeftPanelCollapsed(true);
+    setRightPanelCollapsed(true);
+  };
+
+  /**
    * 处理分镜选择变化
    */
   const handleStoryboardSelectionChange = (selectedIds: string[]) => {
@@ -358,15 +460,65 @@ const WorkflowExecutor: React.FC = () => {
   /**
    * 处理生成操作
    */
-  const handleGenerate = () => {
-    if (!workflowState || selectedStoryboardIds.length === 0) return;
-
-    setToast({
-      type: 'info',
-      message: `开始生成 ${selectedStoryboardIds.length} 个分镜...`
-    });
+  const handleGenerate = (mode: 'current' | 'auto-complete' | 'full-flow') => {
+    if (mode === 'full-flow') {
+      setToast({
+        type: 'info',
+        message: '启动全流程生成...'
+      });
+    } else if (mode === 'auto-complete') {
+      setToast({
+        type: 'info',
+        message: '启动自动补全...'
+      });
+    } else if (selectedStoryboardIds.length > 0) {
+      setToast({
+        type: 'info',
+        message: `开始生成 ${selectedStoryboardIds.length} 个分镜...`
+      });
+    }
 
     // TODO: 调用实际的生成API
+  };
+
+  /**
+   * 处理取消任务
+   */
+  const handleCancelTask = (taskId: string) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId ? { ...task, status: 'failed' as const, error: '用户取消' } : task
+      )
+    );
+  };
+
+  /**
+   * 处理重试任务
+   */
+  const handleRetryTask = (taskId: string) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId ? { ...task, status: 'pending' as const, error: undefined } : task
+      )
+    );
+  };
+
+  /**
+   * 处理暂停任务
+   */
+  const handlePauseTask = (taskId: string) => {
+    setTasks((prev) =>
+      prev.map((task) => (task.id === taskId ? { ...task, status: 'paused' as const } : task))
+    );
+  };
+
+  /**
+   * 处理恢复任务
+   */
+  const handleResumeTask = (taskId: string) => {
+    setTasks((prev) =>
+      prev.map((task) => (task.id === taskId ? { ...task, status: 'running' as const } : task))
+    );
   };
 
   if (loading) {
@@ -441,78 +593,24 @@ const WorkflowExecutor: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* 中间：步骤进度条 + 内容区 */}
+      {/* 中间：统一头部 + 内容区 */}
       <div className="workflow-middle-column">
-        {/* 步骤进度条 */}
-        <div className="workflow-progress">
-          <div className="progress-header">
-            <div className="progress-title">
-              <h2>小说转视频工作流</h2>
-            </div>
-            <div className="progress-controls">
-              {/* 左侧面板收缩按钮 */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="panel-toggle-btn"
-                onClick={() => setLeftPanelCollapsed(!leftPanelCollapsed)}
-                title={leftPanelCollapsed ? '展开项目资源' : '收缩项目资源'}
-              >
-                {leftPanelCollapsed ? (
-                  <PanelLeftOpen size={18} />
-                ) : (
-                  <PanelLeftClose size={18} />
-                )}
-              </Button>
-
-              {/* 右侧面板收缩按钮 */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="panel-toggle-btn"
-                onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
-                title={rightPanelCollapsed ? '展开属性面板' : '收缩属性面板'}
-              >
-                {rightPanelCollapsed ? (
-                  <PanelRightOpen size={18} />
-                ) : (
-                  <PanelRightClose size={18} />
-                )}
-              </Button>
-
-              <div className="progress-actions">
-                {workflowState.currentStepIndex > 0 && (
-                  <Button variant="ghost" onClick={handleGoBack}>
-                    ← 上一步
-                  </Button>
-                )}
-                <Button variant="ghost" onClick={() => navigate('/workflows')}>
-                  退出
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="steps-bar">
-            {workflowState.steps.map((step, index) => (
-              <div
-                key={step.id}
-                className={`step-item ${
-                  step.status === 'completed'
-                    ? 'completed'
-                    : step.status === 'in_progress'
-                    ? 'active'
-                    : 'pending'
-                }`}
-              >
-                <div className="step-indicator">
-                  {step.status === 'completed' ? '✓' : index + 1}
-                </div>
-                <div className="step-name">{step.name}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* 统一头部组件 */}
+        <WorkflowHeader
+          workflowName="小说转视频工作流"
+          currentProjectId={currentProjectId}
+          projects={projects}
+          onProjectChange={handleProjectChange}
+          steps={workflowState.steps}
+          currentStepIndex={workflowState.currentStepIndex}
+          onStepClick={handleStepClick}
+          canClickStep={canClickStep}
+          leftPanelCollapsed={leftPanelCollapsed}
+          rightPanelCollapsed={rightPanelCollapsed}
+          onToggleLeftPanel={() => setLeftPanelCollapsed(!leftPanelCollapsed)}
+          onToggleRightPanel={() => setRightPanelCollapsed(!rightPanelCollapsed)}
+          onCloseAllPanels={handleCloseAllPanels}
+        />
 
         {/* 当前步骤面板 */}
         <div className="workflow-content-area">
@@ -541,6 +639,7 @@ const WorkflowExecutor: React.FC = () => {
           >
             <RightSettingsPanel
               selectedItem={selectedItem}
+              selectedCount={selectedStoryboardIds.length}
               onPromptChange={handlePromptChange}
               onSettingsChange={handleSettingsChange}
               onGenerate={handleGenerate}
@@ -555,6 +654,11 @@ const WorkflowExecutor: React.FC = () => {
                 console.log('Remove asset:', assetId);
               }}
               isGenerating={false}
+              tasks={tasks}
+              onCancelTask={handleCancelTask}
+              onRetryTask={handleRetryTask}
+              onPauseTask={handlePauseTask}
+              onResumeTask={handleResumeTask}
             />
           </motion.aside>
         )}

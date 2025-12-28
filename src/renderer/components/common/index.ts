@@ -11,3 +11,7 @@ export { default as Modal } from './Modal';
 export { default as ConfirmDialog } from './ConfirmDialog';
 export { ProgressOrb } from './ProgressOrb';
 export { TaskQueueSheet, type Task } from './TaskQueueSheet';
+export { Collapsible } from './Collapsible';
+export { ViewSwitcher } from './ViewSwitcher';
+export { ListViewItem } from './ListView';
+export { ShortcutNavItem } from './ShortcutNavItem';

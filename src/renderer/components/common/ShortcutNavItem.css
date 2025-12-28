@@ -1,0 +1,106 @@
+/**
+ * 快捷方式导航项样式
+ *
+ * 功能：
+ * - 基础布局和悬停效果
+ * - 编辑模式闪动动画
+ * - 删除按钮样式
+ */
+
+.shortcut-nav-item {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: background 0.2s;
+  position: relative;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.shortcut-nav-item:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.05);
+}
+
+.shortcut-nav-item.pressing {
+  background: rgba(255,255,255,0.1);
+}
+
+/* ============ 编辑模式闪动动画 ============ */
+
+.shortcut-nav-item.editing {
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+/* ============ 图标和标签样式 ============ */
+
+.shortcut-nav-item .shortcut-icon-box {
+  width: var(--left-menu-collapsed);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.shortcut-nav-item .shortcut-icon {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shortcut-nav-item .shortcut-label {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.2s ease;
+}
+
+.global-menu:hover .shortcut-nav-item .shortcut-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ============ 删除按钮样式 ============ */
+
+.shortcut-nav-item .delete-btn {
+  position: absolute;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(0.5 0.2 0); /* 深红色 */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  color: #fff;
+}
+
+.global-menu:hover .shortcut-nav-item.editing .delete-btn {
+  opacity: 1;
+}
+
+.shortcut-nav-item .delete-btn:hover {
+  background: oklch(0.6 0.25 0); /* 亮红色 */
+}

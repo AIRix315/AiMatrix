@@ -6,8 +6,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Grid3x3, List, Maximize2, RefreshCw } from 'lucide-react';
-import { Button, Card, Loading, Toast } from '../../../components/common';
+import { Maximize2, RefreshCw } from 'lucide-react';
+import { Button, Card, Loading, Toast, ViewSwitcher } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
 import './StoryboardPanel.css';
 
@@ -243,22 +243,7 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
         <div className="header-right">
           {/* 视图切换按钮组 */}
           <div className="view-toggle-group">
-            <Button
-              variant={viewMode === 'grid' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-              title="卡片视图 (Ctrl+Shift+G)"
-            >
-              <Grid3x3 size={16} />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              title="列表视图 (Ctrl+Shift+G)"
-            >
-              <List size={16} />
-            </Button>
+            <ViewSwitcher viewMode={viewMode} onChange={setViewMode} />
             <div className="separator" />
             <Button
               variant="ghost"
@@ -438,17 +423,6 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
             )}
           </div>
         )}
-      </div>
-
-      {/* 底部操作栏 */}
-      <div className="panel-footer">
-        <Button
-          variant="primary"
-          onClick={handleNext}
-          disabled={storyboards.length === 0}
-        >
-          下一步 →
-        </Button>
       </div>
 
       {/* Toast通知 */}

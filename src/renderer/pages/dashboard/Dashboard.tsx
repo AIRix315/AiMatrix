@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Button, Modal, Toast, Loading, ConfirmDialog } from '../../components/common';
+import { Pin } from 'lucide-react';
+import { Button, Modal, Toast, Loading, ConfirmDialog, ViewSwitcher } from '../../components/common';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import type { ToastType } from '../../components/common/Toast';
+import { ShortcutType } from '../../../common/types';
 import './Dashboard.css';
 
 interface Project {
@@ -105,24 +107,32 @@ const Dashboard: React.FC = () => {
     navigate(`/projects/${projectId}`);
   };
 
+  const handlePinProject = async (e: React.MouseEvent, project: Project) => {
+    e.stopPropagation();
+    try {
+      await window.electronAPI.addShortcut({
+        type: ShortcutType.PROJECT,
+        targetId: project.id,
+        name: project.name,
+        icon: '📁'
+      });
+      setToast({
+        type: 'success',
+        message: `项目 "${project.name}" 已添加到菜单栏`
+      });
+    } catch (error) {
+      setToast({
+        type: 'error',
+        message: `添加快捷方式失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    }
+  };
+
   return (
     <div className="dashboard">
       <div className="dashboard-header">
         <div className="view-title">首页 <small>| 项目管理 (Project Management)</small></div>
-        <div className="view-switch-container">
-          <div
-            className={`view-switch-btn ${viewMode === 'list' ? 'active' : ''}`}
-            onClick={() => setViewMode('list')}
-          >
-            List (列表)
-          </div>
-          <div
-            className={`view-switch-btn ${viewMode === 'grid' ? 'active' : ''}`}
-            onClick={() => setViewMode('grid')}
-          >
-            Grid (视图)
-          </div>
-        </div>
+        <ViewSwitcher viewMode={viewMode} onChange={setViewMode} />
       </div>
 
       <div className="dashboard-content">
@@ -166,6 +176,13 @@ const Dashboard: React.FC = () => {
                   </CardFooter>
                 </Card>
                 <button
+                  className="pin-btn"
+                  onClick={(e) => handlePinProject(e, project)}
+                  title="添加到菜单栏"
+                >
+                  <Pin size={16} />
+                </button>
+                <button
                   className="delete-btn"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -206,6 +223,13 @@ const Dashboard: React.FC = () => {
                     {project.path}
                   </CardFooter>
                 </Card>
+                <button
+                  className="pin-btn"
+                  onClick={(e) => handlePinProject(e, project)}
+                  title="添加到菜单栏"
+                >
+                  <Pin size={16} />
+                </button>
                 <button
                   className="delete-btn"
                   onClick={(e) => {

@@ -12,6 +12,7 @@ import { FileText, Image as ImageIcon, Music, Video, FileCode, Folder } from 'lu
 import { AssetMetadata, AssetFilter } from '../../../shared/types/asset';
 import { AssetGrid } from '../../components/AssetGrid';
 import { AssetPreview } from '../../components/AssetPreview/AssetPreview';
+import { ViewSwitcher } from '../../components/common';
 import './Assets.css';
 
 // UI 资产类型定义（包含 'all' 用于显示）
@@ -224,20 +225,7 @@ export function Assets() {
       <div className="assets-main">
         <div className="dashboard-header">
           <div className="view-title">资产库 <small>| {selectedScope === 'all' ? '全部资源' : selectedScope === 'global' ? '全局库' : '项目资源'}</small></div>
-          <div className="view-switch-container">
-            <div
-              className={`view-switch-btn ${viewMode === 'list' ? 'active' : ''}`}
-              onClick={() => setViewMode('list')}
-            >
-              List (列表)
-            </div>
-            <div
-              className={`view-switch-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-            >
-              Grid (视图)
-            </div>
-          </div>
+          <ViewSwitcher viewMode={viewMode} onChange={setViewMode} />
         </div>
 
         <div className="dashboard-content">

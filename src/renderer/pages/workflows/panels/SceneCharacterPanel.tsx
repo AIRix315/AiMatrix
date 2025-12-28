@@ -371,17 +371,6 @@ export const SceneCharacterPanel: React.FC<PanelProps> = ({ workflowId, onComple
         )}
       </div>
 
-      {/* 底部操作栏 */}
-      <div className="panel-footer">
-        <Button
-          variant="primary"
-          onClick={handleNext}
-          disabled={scenes.length === 0 && characters.length === 0}
-        >
-          下一步 →
-        </Button>
-      </div>
-
       {/* 角色编辑对话框 */}
       {showCharacterModal && (
         <Modal

@@ -3,4 +3,5 @@
  */
 
 export { AssetGrid } from './AssetGrid';
+export { AssetGridVirtualized } from './AssetGridVirtualized';
 export { AssetGrid as default } from './AssetGrid';

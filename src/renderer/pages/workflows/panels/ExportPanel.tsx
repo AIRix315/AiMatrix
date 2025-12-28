@@ -226,17 +226,6 @@ export const ExportPanel: React.FC<PanelProps> = ({ onComplete, initialData }) =
         )}
       </div>
 
-      {/* 底部操作栏 */}
-      <div className="panel-footer">
-        <Button
-          variant="primary"
-          onClick={handleComplete}
-          disabled={!exportPath}
-        >
-          完成 ✓
-        </Button>
-      </div>
-
       {/* Toast通知 */}
       {toast && (
         <Toast

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Loading, Toast, ConfirmDialog, Modal } from '../../components/common';
+import { Pin } from 'lucide-react';
+import { Card, Button, Loading, Toast, ConfirmDialog, Modal, ViewSwitcher } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import MarketPluginCard from './components/MarketPluginCard';
 import { MarketPluginInfo, POPULAR_TAGS } from '../../../shared/types/plugin-market';
+import { ShortcutType } from '../../../common/types';
 import './Plugins.css';
 
 interface PluginInfo {
@@ -26,6 +28,7 @@ const Plugins: React.FC = () => {
   const [uninstallConfirm, setUninstallConfirm] = useState<{ pluginId: string; pluginName: string } | null>(null);
   const [selectedPlugin, setSelectedPlugin] = useState<PluginInfo | null>(null);
   const [isInstalling, setIsInstalling] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // 市场相关状态
   const [marketPlugins, setMarketPlugins] = useState<MarketPluginInfo[]>([]);
@@ -157,6 +160,27 @@ const Plugins: React.FC = () => {
     }
   };
 
+  const handlePinPlugin = async (e: React.MouseEvent, plugin: PluginInfo) => {
+    e.stopPropagation();
+    try {
+      await window.electronAPI.addShortcut({
+        type: ShortcutType.PLUGIN,
+        targetId: plugin.id,
+        name: plugin.name,
+        icon: plugin.icon || '🧩'
+      });
+      setToast({
+        type: 'success',
+        message: `插件 "${plugin.name}" 已添加到菜单栏`
+      });
+    } catch (error) {
+      setToast({
+        type: 'error',
+        message: `添加快捷方式失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    }
+  };
+
   // 查看市场插件详情
   const handleViewPluginDetails = (plugin: MarketPluginInfo) => {
     // 检查是否为内置插件
@@ -204,6 +228,7 @@ const Plugins: React.FC = () => {
               插件市场
             </div>
           </div>
+          <ViewSwitcher viewMode={viewMode} onChange={setViewMode} />
           <Button variant="primary" onClick={handleInstallPlugin} disabled={isInstalling}>
             {isInstalling ? '安装中...' : '+ 从ZIP安装'}
           </Button>
@@ -300,6 +325,13 @@ const Plugins: React.FC = () => {
                         onClick={() => handleOpenPlugin(plugin)}
                       />
                       <button
+                        className="pin-btn"
+                        onClick={(e) => handlePinPlugin(e, plugin)}
+                        title="添加到菜单栏"
+                      >
+                        <Pin size={16} />
+                      </button>
+                      <button
                         className="delete-btn"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -330,6 +362,13 @@ const Plugins: React.FC = () => {
                         hoverable
                         onClick={() => handleOpenPlugin(plugin)}
                       />
+                      <button
+                        className="pin-btn"
+                        onClick={(e) => handlePinPlugin(e, plugin)}
+                        title="添加到菜单栏"
+                      >
+                        <Pin size={16} />
+                      </button>
                       <button
                         className="delete-btn"
                         onClick={(e) => {

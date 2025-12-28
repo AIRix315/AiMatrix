@@ -53,6 +53,12 @@ export const IPC_CHANNELS = {
   APP_QUIT: 'app:quit',
   APP_RESTART: 'app:restart',
 
+  // 快捷方式相关
+  SHORTCUT_ADD: 'shortcut:add',
+  SHORTCUT_REMOVE: 'shortcut:remove',
+  SHORTCUT_REORDER: 'shortcut:reorder',
+  SHORTCUT_LIST: 'shortcut:list',
+
   // 事件通知
   EVENT_WORKFLOW_PROGRESS: 'event:workflow:progress',
   EVENT_WORKFLOW_COMPLETED: 'event:workflow:completed',

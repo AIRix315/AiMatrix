@@ -1,0 +1,64 @@
+/**
+ * ListView 样式
+ * 遵循 V2 设计规范：OKLCH色彩、8px圆角、4px间距
+ * 响应式缩略图（64x64+，等比缩放）
+ */
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: oklch(0.14 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.list-item:hover {
+  background: oklch(0.16 0 0);
+  border-color: oklch(0.85 0.22 160 / 0.5);
+}
+
+/* 响应式缩略图（最小64px，等比缩放）*/
+.thumbnail {
+  width: max(64px, calc(100vw / 40));
+  height: max(64px, calc(100vw / 40));
+  object-fit: contain;
+  background: oklch(0.12 0 0);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.info h3 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.92 0 0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.info p {
+  margin: 0;
+  font-size: 12px;
+  color: oklch(0.58 0 0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}

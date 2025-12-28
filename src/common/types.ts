@@ -75,6 +75,15 @@ export enum TaskStatus {
 }
 
 /**
+ * 快捷方式类型枚举
+ */
+export enum ShortcutType {
+  PROJECT = 'project',
+  WORKFLOW = 'workflow',
+  PLUGIN = 'plugin'
+}
+
+/**
  * 项目设置接口
  */
 export interface ProjectSettings {
@@ -495,6 +504,19 @@ export interface IPluginConfig {
 }
 
 /**
+ * 快捷方式项接口
+ */
+export interface ShortcutItem {
+  id: string;                    // 快捷方式唯一ID
+  type: ShortcutType;            // 类型（项目/工作流/插件）
+  targetId: string;              // 关联的项目/工作流/插件ID
+  name: string;                  // 显示名称
+  icon: string;                  // 图标（emoji或图片路径）
+  order: number;                 // 排序顺序（数字越小越靠上）
+  createdAt: string;             // 创建时间（ISO 8601）
+}
+
+/**
  * 应用完整配置接口
  */
 export interface IAppSettings {
@@ -502,4 +524,5 @@ export interface IAppSettings {
   providers: IProviderConfig[];
   mcpServers: IMCPServerConfig[];
   plugins?: Record<string, IPluginConfig>; // 插件配置（插件ID -> 配置）
+  shortcuts?: ShortcutItem[];    // 菜单栏快捷方式列表
 }

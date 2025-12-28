@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Grid3x3, List, Maximize2, Minimize2 } from 'lucide-react';
-import { Card, Button, Toast, Loading } from '../../components/common';
+import { Maximize2, Minimize2, Pin } from 'lucide-react';
+import { Card, Button, Toast, Loading, ViewSwitcher } from '../../components/common';
 import { ProjectSelectorDialog } from '../../components/workflow/ProjectSelectorDialog';
 import type { ToastType } from '../../components/common/Toast';
+import { ShortcutType } from '../../../common/types';
 import './Workflows.css';
 
 interface WorkflowDefinition {
@@ -140,6 +141,27 @@ const Workflows: React.FC = () => {
     navigate(`/workflows/${workflowId}`);
   };
 
+  const handlePinWorkflow = async (e: React.MouseEvent, workflow: Workflow) => {
+    e.stopPropagation();
+    try {
+      await window.electronAPI.addShortcut({
+        type: ShortcutType.WORKFLOW,
+        targetId: workflow.id,
+        name: workflow.name,
+        icon: '⚙️'
+      });
+      setToast({
+        type: 'success',
+        message: `工作流 "${workflow.name}" 已添加到菜单栏`
+      });
+    } catch (error) {
+      setToast({
+        type: 'error',
+        message: `添加快捷方式失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    }
+  };
+
   if (isLoading && workflowDefinitions.length === 0) {
     return <Loading size="lg" message="加载工作流..." fullscreen />;
   }
@@ -168,22 +190,7 @@ const Workflows: React.FC = () => {
 
           {/* 视图模式切换按钮 */}
           {activeTab === 'instances' && workflows.length > 0 && (
-            <div className="view-mode-buttons">
-              <button
-                className={`icon-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => setViewMode('grid')}
-                title="网格视图"
-              >
-                <Grid3x3 size={18} />
-              </button>
-              <button
-                className={`icon-btn ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => setViewMode('list')}
-                title="列表视图"
-              >
-                <List size={18} />
-              </button>
-            </div>
+            <ViewSwitcher viewMode={viewMode} onChange={setViewMode} />
           )}
 
           {/* 全屏切换按钮 */}
@@ -252,21 +259,36 @@ const Workflows: React.FC = () => {
                     hoverable
                     onClick={() => handleOpenWorkflow(workflow.id)}
                   />
+                  <button
+                    className="pin-btn"
+                    onClick={(e) => handlePinWorkflow(e, workflow)}
+                    title="添加到菜单栏"
+                  >
+                    <Pin size={16} />
+                  </button>
                 </div>
               ))}
             </div>
           ) : (
             <div className="project-grid">
               {workflows.map((workflow) => (
-                <Card
-                  key={workflow.id}
-                  tag={workflow.type}
-                  image={workflow.type === 'comfyui' ? '🔄' : workflow.type === 'n8n' ? '🔗' : '⚙️'}
-                  title={workflow.name}
-                  info={`Type: ${workflow.type} | ${workflow.lastModified}`}
-                  hoverable
-                  onClick={() => handleOpenWorkflow(workflow.id)}
-                />
+                <div key={workflow.id} className="workflow-card-wrapper">
+                  <Card
+                    tag={workflow.type}
+                    image={workflow.type === 'comfyui' ? '🔄' : workflow.type === 'n8n' ? '🔗' : '⚙️'}
+                    title={workflow.name}
+                    info={`Type: ${workflow.type} | ${workflow.lastModified}`}
+                    hoverable
+                    onClick={() => handleOpenWorkflow(workflow.id)}
+                  />
+                  <button
+                    className="pin-btn"
+                    onClick={(e) => handlePinWorkflow(e, workflow)}
+                    title="添加到菜单栏"
+                  >
+                    <Pin size={16} />
+                  </button>
+                </div>
               ))}
             </div>
           )

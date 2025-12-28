@@ -332,17 +332,6 @@ export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId, onComplete, i
         )}
       </div>
 
-      {/* 底部操作栏 */}
-      <div className="panel-footer">
-        <Button
-          variant="primary"
-          onClick={handleNext}
-          disabled={voiceovers.length === 0}
-        >
-          下一步 →
-        </Button>
-      </div>
-
       {/* Toast通知 */}
       {toast && (
         <Toast

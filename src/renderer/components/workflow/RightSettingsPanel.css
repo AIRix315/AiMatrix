@@ -1,5 +1,6 @@
 /**
  * RightSettingsPanel 样式
+ * H2.2增强：队列Tab、生成模式、Provider参数、可折叠区域
  * 遵循 V2 设计规范：OKLCH色彩、8px圆角、4px间距
  */
 
@@ -29,6 +30,10 @@
   transition: color 0.2s ease, background-color 0.2s ease;
   position: relative;
   font-family: "Inter", system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .tab-button:hover {
@@ -48,6 +53,20 @@
   right: 0;
   height: 2px;
   background: oklch(0.85 0.22 160);
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: oklch(0.85 0.22 160);
+  color: oklch(0.12 0 0);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 9px;
 }
 
 /* ========== 内容区 ========== */
@@ -99,6 +118,38 @@
   font-family: "JetBrains Mono", monospace;
 }
 
+.batch-indicator {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: oklch(0.85 0.22 160 / 0.15);
+  border: 1px solid oklch(0.85 0.22 160 / 0.3);
+  border-radius: 6px;
+  font-size: 12px;
+  color: oklch(0.85 0.22 160);
+  font-weight: 500;
+}
+
+.inspector-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid oklch(0.24 0 0);
+}
+
+.field-label {
+  font-size: 11px;
+  color: oklch(0.58 0 0);
+  font-weight: 600;
+}
+
+.field-value {
+  font-size: 12px;
+  color: oklch(0.7 0 0);
+  font-family: "JetBrains Mono", monospace;
+}
+
 .empty-text {
   font-size: 13px;
   color: oklch(0.58 0 0);
@@ -147,6 +198,49 @@
   font-size: 11px;
   color: oklch(0.58 0 0);
   font-family: "JetBrains Mono", monospace;
+}
+
+/* ========== 生成模式 ========== */
+.generation-mode {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mode-btn {
+  padding: 10px 12px;
+  background: oklch(0.14 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 6px;
+  color: oklch(0.7 0 0);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.mode-btn:hover:not(:disabled) {
+  background: oklch(0.16 0 0);
+  border-color: oklch(0.85 0.22 160 / 0.5);
+}
+
+.mode-btn.active {
+  background: oklch(0.85 0.22 160 / 0.15);
+  border-color: oklch(0.85 0.22 160);
+  color: oklch(0.85 0.22 160);
+}
+
+.mode-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mode-hint {
+  font-size: 11px;
+  color: oklch(0.58 0 0);
+  line-height: 1.4;
 }
 
 /* ========== 表单字段 ========== */
@@ -204,6 +298,42 @@
   margin-top: 4px;
 }
 
+/* ========== 宽高比网格 ========== */
+.aspect-ratio-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.aspect-btn {
+  padding: 10px;
+  background: oklch(0.14 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 6px;
+  color: oklch(0.7 0 0);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.aspect-btn:hover:not(:disabled) {
+  background: oklch(0.16 0 0);
+  border-color: oklch(0.85 0.22 160 / 0.5);
+}
+
+.aspect-btn.active {
+  background: oklch(0.85 0.22 160 / 0.15);
+  border-color: oklch(0.85 0.22 160);
+  color: oklch(0.85 0.22 160);
+}
+
+.aspect-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ========== 关联资产标签 ========== */
 .asset-tags {
   display: flex;
@@ -252,11 +382,161 @@
   color: oklch(0.577 0.245 27.325);
 }
 
-/* ========== 参数计数 ========== */
-.param-count {
-  font-size: 12px;
+/* ========== 队列内容 ========== */
+.queue-content {
+  /* padding is from parent .panel-content */
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-item {
+  padding: 12px;
+  background: oklch(0.14 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+
+.task-item.task-running {
+  border-color: oklch(0.85 0.22 160 / 0.5);
+}
+
+.task-item.task-failed {
+  border-color: oklch(0.577 0.245 27.325 / 0.5);
+}
+
+.task-item.task-completed {
+  border-color: oklch(0.576 0.214 141.2 / 0.5);
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.task-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: oklch(0.92 0 0);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.task-icon {
+  flex-shrink: 0;
+}
+
+.task-icon-pending {
   color: oklch(0.58 0 0);
+}
+
+.task-icon-running {
+  color: oklch(0.85 0.22 160);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.task-icon-completed {
+  color: oklch(0.576 0.214 141.2);
+}
+
+.task-icon-failed {
+  color: oklch(0.577 0.245 27.325);
+}
+
+.task-icon-paused {
+  color: oklch(0.653 0.176 42.91);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.task-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: oklch(0.18 0 0);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: oklch(0.85 0.22 160);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 11px;
+  color: oklch(0.58 0 0);
+  font-weight: 600;
   font-family: "JetBrains Mono", monospace;
+  min-width: 36px;
+  text-align: right;
+}
+
+.task-time {
+  font-size: 11px;
+  color: oklch(0.58 0 0);
+  margin-bottom: 8px;
+}
+
+.task-error {
+  font-size: 11px;
+  color: oklch(0.577 0.245 27.325);
+  background: oklch(0.577 0.245 27.325 / 0.1);
+  padding: 6px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.task-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.task-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: oklch(0.16 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 6px;
+  color: oklch(0.7 0 0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.task-action-btn:hover {
+  background: oklch(0.18 0 0);
+  border-color: oklch(0.85 0.22 160);
+  color: oklch(0.85 0.22 160);
+}
+
+.task-action-btn.task-action-cancel:hover {
+  border-color: oklch(0.577 0.245 27.325);
+  color: oklch(0.577 0.245 27.325);
 }
 
 /* ========== 底部生成按钮 ========== */

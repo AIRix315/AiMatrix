@@ -96,3 +96,63 @@
 .material-icons {
     font-size: 20px;
 }
+
+/* ============ 三区域结构样式 ============ */
+
+.nav-section {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.nav-section-top {
+    /* 上方固定区域 */
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-section-middle {
+    /* 中间可编辑区域（可滚动） */
+    flex-shrink: 0;
+    min-height: 0;
+}
+
+.shortcuts-container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(100vh - 400px); /* 为上下固定区域留出空间 */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) transparent;
+}
+
+.shortcuts-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.shortcuts-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.shortcuts-container::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 2px;
+}
+
+.nav-section-bottom {
+    /* 下方固定区域 */
+    border-top: 1px solid var(--border-color);
+}
+
+/* ============ 快捷方式样式 ============ */
+
+.shortcut-item {
+    /* 继承 .menu-item 的基础样式 */
+}
+
+.shortcut-icon {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

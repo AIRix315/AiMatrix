@@ -1,0 +1,51 @@
+/**
+ * Collapsible样式
+ * 遵循V2设计规范：OKLCH色彩、8px圆角
+ */
+
+.collapsible {
+  width: 100%;
+}
+
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: oklch(0.7 0 0);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Inter", system-ui, sans-serif;
+  transition: color 0.2s ease;
+  text-align: left;
+}
+
+.collapsible-header:hover {
+  color: oklch(0.85 0.22 160);
+}
+
+.collapsible-header svg {
+  flex-shrink: 0;
+  color: oklch(0.58 0 0);
+  transition: color 0.2s ease;
+}
+
+.collapsible-header:hover svg {
+  color: oklch(0.85 0.22 160);
+}
+
+.collapsible-title {
+  flex: 1;
+}
+
+.collapsible-content {
+  overflow: hidden;
+}
+
+.collapsible-inner {
+  padding-top: 8px;
+}

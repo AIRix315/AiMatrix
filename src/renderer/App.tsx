@@ -24,7 +24,7 @@ const AppContentWithRouter: React.FC = () => {
   const { toggleLeftSidebar, toggleRightSidebar } = useSidebar();
 
   // ProgressOrb 模拟状态（实际应从 TaskScheduler 或工作流状态获取）
-  const [queueCount] = useState(3); // setQueueCount 待集成真实 TaskScheduler 时使用
+  const [taskCount] = useState(3);
   const [progress, setProgress] = useState(45);
   const [isGenerating, setIsGenerating] = useState(true);
 
@@ -121,11 +121,14 @@ const AppContentWithRouter: React.FC = () => {
       </Routes>
 
       {/* 全局状态球 - 显示任务队列和进度 */}
-      {queueCount > 0 && (
+      {taskCount > 0 && (
         <ProgressOrb
-          queueCount={queueCount}
+          taskCount={taskCount}
           progress={progress}
           isGenerating={isGenerating}
+          onClickOrb={() => {
+            // 全局点击暂时无操作，真实逻辑在 WorkflowExecutor 中实现
+          }}
         />
       )}
     </>
