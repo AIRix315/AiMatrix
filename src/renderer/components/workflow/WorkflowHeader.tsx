@@ -6,6 +6,7 @@
 import React from 'react';
 import { PanelLeftOpen, PanelLeftClose, PanelRightOpen, PanelRightClose, X } from 'lucide-react';
 import { Button } from '../common';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import './WorkflowHeader.css';
 
 interface WorkflowHeaderProps {
@@ -55,17 +56,18 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
       </Button>
 
       {/* 项目选择器（下拉框）*/}
-      <select
-        className="project-selector"
-        value={currentProjectId}
-        onChange={(e) => onProjectChange(e.target.value)}
-      >
-        {projects.map((project) => (
-          <option key={project.id} value={project.id}>
-            {project.name} {project.status === 'completed' ? '(已完成)' : ''}
-          </option>
-        ))}
-      </select>
+      <Select value={currentProjectId} onValueChange={onProjectChange}>
+        <SelectTrigger className="project-selector w-[180px]">
+          <SelectValue placeholder="选择项目" />
+        </SelectTrigger>
+        <SelectContent>
+          {projects.map((project) => (
+            <SelectItem key={project.id} value={project.id}>
+              {project.name} {project.status === 'completed' ? '(已完成)' : ''}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {/* 工作流标题 */}
       <h2 className="workflow-title">{workflowName}</h2>

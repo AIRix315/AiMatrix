@@ -4,9 +4,39 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.8 fix1 | 2025-12-30 | BUG修复 | 修复工作流页面浅色主题颜色问题，统一绿色主题色系统，使用shadcn/ui Select组件 |
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 1.0.0 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.8 fix1] - 2025-12-30
+
+### Fixed
+- fix(theme): 修复浅色主题下主题色显示为纯黑色的问题
+  - 根本原因：`globals.css` 第53行浅色主题的 `--primary` 被错误定义为 `oklch(0.09 0 0)`（纯黑色）
+  - 修复方案：改为 `oklch(0.45 0.2 160)`（深绿色，适合浅色背景）
+  - 影响范围：TAB激活状态、队列徽章、步骤按钮激活状态等所有使用 `var(--primary)` 的元素
+  - 修复文件：`src/renderer/styles/globals.css`
+
+- fix(workflow): 修复工作流步骤按钮待完成状态颜色不一致问题
+  - 将待完成步骤从灰色改为绿色半透明背景（`hsl(var(--primary) / 0.15)`）
+  - 统一使用主题色变量，深浅主题自动适配
+  - 修复文件：`src/renderer/components/workflow/WorkflowHeader.css`
+
+### Changed
+- refactor(ui): 替换 WorkflowHeader 原生 select 为 shadcn/ui Select 组件
+  - 安装 `@radix-ui/react-select` 依赖包
+  - 创建 `src/renderer/components/ui/select.tsx` 组件
+  - 修复全屏模式下原生 select 可能被拉伸变形的问题
+  - 提高组件样式一致性和可维护性
+  - 修复文件：`src/renderer/components/workflow/WorkflowHeader.tsx`
+
+### Technical Details
+- 主题色统一原则：深色主题使用高亮度绿色（`oklch(0.85 0.22 160)`），浅色主题使用中亮度绿色（`oklch(0.45 0.2 160)`）
+- 透明度控制：使用 `hsl(var(--primary) / 0.15)` 替代固定灰色值，确保主题一致性
+- 组件系统：优先使用 shadcn/ui 组件替换原生 HTML 元素，提高跨平台兼容性
 
 ---
 
