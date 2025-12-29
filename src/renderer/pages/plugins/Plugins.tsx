@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Pin } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Pin, Trash2 } from 'lucide-react';
 import { Card, Button, Loading, Toast, ConfirmDialog, Modal, ViewSwitcher } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
-import MarketPluginCard from './components/MarketPluginCard';
-import { MarketPluginInfo, POPULAR_TAGS } from '../../../shared/types/plugin-market';
+// import MarketPluginCard from './components/MarketPluginCard';
+// import { MarketPluginInfo, POPULAR_TAGS } from '../../../shared/types/plugin-market';
 import { ShortcutType } from '../../../common/types';
 import './Plugins.css';
 
@@ -21,6 +22,7 @@ interface PluginInfo {
 }
 
 const Plugins: React.FC = () => {
+  const location = useLocation();
   const [plugins, setPlugins] = useState<PluginInfo[]>([]);
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,12 +32,12 @@ const Plugins: React.FC = () => {
   const [isInstalling, setIsInstalling] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // 市场相关状态
-  const [marketPlugins, setMarketPlugins] = useState<MarketPluginInfo[]>([]);
-  const [marketLoading, setMarketLoading] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'downloads' | 'rating' | 'updated'>('downloads');
+  // 市场相关状态（暂时保留，未来开发使用）
+  // const [marketPlugins, setMarketPlugins] = useState<MarketPluginInfo[]>([]);
+  // const [marketLoading, setMarketLoading] = useState(false);
+  // const [searchKeyword, setSearchKeyword] = useState('');
+  // const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  // const [sortBy, setSortBy] = useState<'downloads' | 'rating' | 'updated'>('downloads');
 
   useEffect(() => {
     loadPlugins();
@@ -47,6 +49,24 @@ const Plugins: React.FC = () => {
       if (window.electronAPI?.listPlugins) {
         const pluginList = await window.electronAPI.listPlugins();
         setPlugins(pluginList || []);
+
+        // 检查是否从快捷方式跳转过来，自动选中对应插件
+        const state = location.state as { selectedPluginId?: string } | null;
+        if (state?.selectedPluginId) {
+          const targetPlugin = pluginList.find(p => p.id === state.selectedPluginId);
+          if (targetPlugin) {
+            setSelectedPlugin(targetPlugin);
+            setToast({
+              type: 'info',
+              message: `已选中插件: ${targetPlugin.name}`
+            });
+          } else {
+            setToast({
+              type: 'warning',
+              message: `插件 "${state.selectedPluginId}" 未安装或未找到`
+            });
+          }
+        }
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -60,36 +80,34 @@ const Plugins: React.FC = () => {
     }
   };
 
-  // 加载市场插件列表
-  const loadMarketPlugins = async () => {
-    try {
-      setMarketLoading(true);
-      if (window.electronAPI?.getMarketPlugins) {
-        const plugins = await window.electronAPI.getMarketPlugins({
-          tag: selectedTag || undefined,
-          search: searchKeyword || undefined,
-          sortBy
-        });
-        setMarketPlugins(plugins || []);
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      // console.error('Failed to load market plugins:', error);
-      setToast({
-        type: 'error',
-        message: `加载市场插件失败: ${error instanceof Error ? error.message : String(error)}`
-      });
-    } finally {
-      setMarketLoading(false);
-    }
-  };
+  // 加载市场插件列表（暂时禁用，市场开发中）
+  // const loadMarketPlugins = async () => {
+  //   try {
+  //     setMarketLoading(true);
+  //     if (window.electronAPI?.getMarketPlugins) {
+  //       const plugins = await window.electronAPI.getMarketPlugins({
+  //         tag: selectedTag || undefined,
+  //         search: searchKeyword || undefined,
+  //         sortBy
+  //       });
+  //       setMarketPlugins(plugins || []);
+  //     }
+  //   } catch (error) {
+  //     setToast({
+  //       type: 'error',
+  //       message: `加载市场插件失败: ${error instanceof Error ? error.message : String(error)}`
+  //     });
+  //   } finally {
+  //     setMarketLoading(false);
+  //   }
+  // };
 
-  // 当切换到市场视图或筛选条件改变时，加载市场数据
-  useEffect(() => {
-    if (showInstallModal) {
-      loadMarketPlugins();
-    }
-  }, [showInstallModal, selectedTag, searchKeyword, sortBy]);
+  // 当切换到市场视图或筛选条件改变时，加载市场数据（暂时禁用）
+  // useEffect(() => {
+  //   if (showInstallModal) {
+  //     loadMarketPlugins();
+  //   }
+  // }, [showInstallModal, selectedTag, searchKeyword, sortBy]);
 
   const handleOpenPlugin = (plugin: PluginInfo) => {
     setSelectedPlugin(plugin);
@@ -181,30 +199,27 @@ const Plugins: React.FC = () => {
     }
   };
 
-  // 查看市场插件详情
-  const handleViewPluginDetails = (plugin: MarketPluginInfo) => {
-    // 检查是否为内置插件
-    if (!plugin.downloadUrl) {
-      setToast({
-        type: 'info',
-        message: `${plugin.name} 是系统内置插件，已预装在 plugins/${plugin.type}/ 目录`
-      });
-      return;
-    }
-
-    // 外部插件，显示仓库链接（如果有）
-    if (plugin.repository) {
-      setToast({
-        type: 'info',
-        message: `插件仓库: ${plugin.repository}。请访问仓库页面下载ZIP文件，然后使用"从ZIP安装"功能安装。`
-      });
-    } else {
-      setToast({
-        type: 'info',
-        message: '该插件暂无仓库信息。请从开发者处获取ZIP文件后使用"从ZIP安装"功能。'
-      });
-    }
-  };
+  // 查看市场插件详情（暂时禁用，市场开发中）
+  // const handleViewPluginDetails = (plugin: MarketPluginInfo) => {
+  //   if (!plugin.downloadUrl) {
+  //     setToast({
+  //       type: 'info',
+  //       message: `${plugin.name} 是系统内置插件，已预装在 plugins/${plugin.type}/ 目录`
+  //     });
+  //     return;
+  //   }
+  //   if (plugin.repository) {
+  //     setToast({
+  //       type: 'info',
+  //       message: `插件仓库: ${plugin.repository}。请访问仓库页面下载ZIP文件，然后使用"从ZIP安装"功能安装。`
+  //     });
+  //   } else {
+  //     setToast({
+  //       type: 'info',
+  //       message: '该插件暂无仓库信息。请从开发者处获取ZIP文件后使用"从ZIP安装"功能。'
+  //     });
+  //   }
+  // };
 
   const officialPlugins = plugins.filter(p => p.type === 'official');
   const communityPlugins = plugins.filter(p => p.type === 'community');
@@ -214,106 +229,53 @@ const Plugins: React.FC = () => {
       <div className="dashboard-header">
         <div className="view-title">插件 <small>| 插件市场 (Plugin Market)</small></div>
         <div className="view-actions">
-          <div className="view-switch-container">
-            <div
-              className={`view-switch-btn ${!showInstallModal ? 'active' : ''}`}
-              onClick={() => setShowInstallModal(false)}
-            >
-              已安装
-            </div>
-            <div
-              className={`view-switch-btn ${showInstallModal ? 'active' : ''}`}
-              onClick={() => setShowInstallModal(true)}
-            >
-              插件市场
-            </div>
-          </div>
           <ViewSwitcher viewMode={viewMode} onChange={setViewMode} />
-          <Button variant="primary" onClick={handleInstallPlugin} disabled={isInstalling}>
-            {isInstalling ? '安装中...' : '+ 从ZIP安装'}
-          </Button>
         </div>
       </div>
 
       <div className="dashboard-content">
+        {/* Tab 切换 */}
+        <div className="content-tab-switcher">
+          <div className="tab-buttons">
+            <button
+              className={`content-tab-btn ${!showInstallModal ? 'active' : ''}`}
+              onClick={() => setShowInstallModal(false)}
+            >
+              已安装
+            </button>
+            <button
+              className={`content-tab-btn ${showInstallModal ? 'active' : ''}`}
+              onClick={() => setShowInstallModal(true)}
+            >
+              插件市场
+            </button>
+          </div>
+          <Button variant="primary" onClick={handleInstallPlugin} disabled={isInstalling}>
+            {isInstalling ? '安装中...' : '+ 从ZIP安装'}
+          </Button>
+        </div>
         {isLoading ? (
           <Loading size="lg" message="加载插件列表..." fullscreen={false} />
         ) : showInstallModal ? (
           <div className="market-view">
-            {/* 搜索和筛选栏 */}
-            <div className="market-filters">
-              <div className="search-box">
-                <span className="search-icon">🔍</span>
-                <input
-                  type="text"
-                  placeholder="搜索插件..."
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  className="search-input"
-                />
-              </div>
-
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'downloads' | 'rating' | 'updated')}
-                className="sort-select"
-              >
-                <option value="downloads">按下载量</option>
-                <option value="rating">按评分</option>
-                <option value="updated">按更新时间</option>
-              </select>
+            {/* 插件市场 - 开发中 */}
+            <div className="empty-state">
+              <div className="empty-icon">🚧</div>
+              <h2>插件市场开发中</h2>
+              <p>插件市场功能正在开发中，敬请期待</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                当前请使用"从ZIP安装"功能手动安装插件
+              </p>
             </div>
-
-            {/* 标签筛选 */}
-            <div className="tag-filter">
-              {POPULAR_TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  className={`tag-button ${selectedTag === tag ? 'active' : ''}`}
-                  onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-
-            {/* 插件卡片网格 */}
-            {marketLoading ? (
-              <Loading size="lg" message="加载插件市场..." fullscreen={false} />
-            ) : marketPlugins.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">🔍</div>
-                <h2>未找到匹配的插件</h2>
-                <p>尝试使用不同的搜索关键词或筛选条件</p>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setSearchKeyword('');
-                    setSelectedTag(null);
-                  }}
-                >
-                  清除筛选
-                </Button>
-              </div>
-            ) : (
-              <div className="card-grid market-grid">
-                {marketPlugins.map((plugin) => (
-                  <MarketPluginCard
-                    key={plugin.id}
-                    plugin={plugin}
-                    onViewDetails={handleViewPluginDetails}
-                  />
-                ))}
-              </div>
-            )}
           </div>
-        ) : (
+        ) : viewMode === 'list' ? (
+          // 列表视图
           <>
             {/* 官方插件 */}
             {officialPlugins.length > 0 && (
               <div className="plugin-section">
                 <h3 className="section-title">官方插件</h3>
-                <div className="card-grid">
+                <div className="plugin-list">
                   {officialPlugins.map((plugin) => (
                     <div key={plugin.id} className="plugin-card-wrapper">
                       <Card
@@ -324,23 +286,25 @@ const Plugins: React.FC = () => {
                         hoverable
                         onClick={() => handleOpenPlugin(plugin)}
                       />
-                      <button
-                        className="pin-btn"
-                        onClick={(e) => handlePinPlugin(e, plugin)}
-                        title="添加到菜单栏"
-                      >
-                        <Pin size={16} />
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name });
-                        }}
-                        title="卸载插件"
-                      >
-                        ×
-                      </button>
+                      <div className="card-actions">
+                        <button
+                          className="pin-btn"
+                          onClick={(e) => handlePinPlugin(e, plugin)}
+                          title="添加到菜单栏"
+                        >
+                          <Pin size={16} />
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name });
+                          }}
+                          title="卸载插件"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -351,7 +315,7 @@ const Plugins: React.FC = () => {
             {communityPlugins.length > 0 && (
               <div className="plugin-section">
                 <h3 className="section-title">社区插件</h3>
-                <div className="card-grid">
+                <div className="plugin-list">
                   {communityPlugins.map((plugin) => (
                     <div key={plugin.id} className="plugin-card-wrapper">
                       <Card
@@ -362,23 +326,116 @@ const Plugins: React.FC = () => {
                         hoverable
                         onClick={() => handleOpenPlugin(plugin)}
                       />
-                      <button
-                        className="pin-btn"
-                        onClick={(e) => handlePinPlugin(e, plugin)}
-                        title="添加到菜单栏"
-                      >
-                        <Pin size={16} />
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name });
-                        }}
-                        title="卸载插件"
-                      >
-                        ×
-                      </button>
+                      <div className="card-actions">
+                        <button
+                          className="pin-btn"
+                          onClick={(e) => handlePinPlugin(e, plugin)}
+                          title="添加到菜单栏"
+                        >
+                          <Pin size={16} />
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name });
+                          }}
+                          title="卸载插件"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {plugins.length === 0 && (
+              <div className="empty-state">
+                <div className="empty-icon">🧩</div>
+                <h2>暂无插件</h2>
+                <p>浏览插件市场以扩展功能</p>
+              </div>
+            )}
+          </>
+        ) : (
+          // 网格视图
+          <>
+            {/* 官方插件 */}
+            {officialPlugins.length > 0 && (
+              <div className="plugin-section">
+                <h3 className="section-title">官方插件</h3>
+                <div className="project-grid">
+                  {officialPlugins.map((plugin) => (
+                    <div key={plugin.id} className="plugin-card-wrapper">
+                      <Card
+                        tag="Official"
+                        image={plugin.icon || '🧩'}
+                        title={plugin.name}
+                        info={`v${plugin.version} | ${plugin.author}`}
+                        hoverable
+                        onClick={() => handleOpenPlugin(plugin)}
+                      />
+                      <div className="card-actions">
+                        <button
+                          className="pin-btn"
+                          onClick={(e) => handlePinPlugin(e, plugin)}
+                          title="添加到菜单栏"
+                        >
+                          <Pin size={16} />
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name });
+                          }}
+                          title="卸载插件"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 社区插件 */}
+            {communityPlugins.length > 0 && (
+              <div className="plugin-section">
+                <h3 className="section-title">社区插件</h3>
+                <div className="project-grid">
+                  {communityPlugins.map((plugin) => (
+                    <div key={plugin.id} className="plugin-card-wrapper">
+                      <Card
+                        tag="Community"
+                        image={plugin.icon || '🧩'}
+                        title={plugin.name}
+                        info={plugin.description}
+                        hoverable
+                        onClick={() => handleOpenPlugin(plugin)}
+                      />
+                      <div className="card-actions">
+                        <button
+                          className="pin-btn"
+                          onClick={(e) => handlePinPlugin(e, plugin)}
+                          title="添加到菜单栏"
+                        >
+                          <Pin size={16} />
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name });
+                          }}
+                          title="卸载插件"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

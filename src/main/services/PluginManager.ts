@@ -171,23 +171,28 @@ export class PluginManager {
     await logger.info('Initializing PluginManager', 'PluginManager');
     await this.ensurePluginsDir();
 
-    // 自动加载 official 插件
-    const officialDir = path.join(this.pluginsDir, 'official');
-    try {
-      const officialPlugins = await fs.readdir(officialDir);
-      for (const pluginId of officialPlugins) {
-        try {
-          await this.loadPlugin(pluginId);
-        } catch (error) {
-          await logger.warn(
-            `Failed to auto-load official plugin: ${pluginId}`,
-            'PluginManager',
-            { error }
-          );
+    // 自动加载所有类型的插件（official, partner, community）
+    const pluginTypes = ['official', 'partner', 'community'];
+
+    for (const type of pluginTypes) {
+      const typeDir = path.join(this.pluginsDir, type);
+      try {
+        const plugins = await fs.readdir(typeDir);
+        for (const pluginId of plugins) {
+          try {
+            await this.loadPlugin(pluginId);
+          } catch (error) {
+            await logger.warn(
+              `Failed to auto-load ${type} plugin: ${pluginId}`,
+              'PluginManager',
+              { error }
+            );
+          }
         }
+        await logger.info(`Loaded ${type} plugins`, 'PluginManager');
+      } catch (error) {
+        await logger.debug(`No ${type} plugins directory found`, 'PluginManager');
       }
-    } catch (error) {
-      await logger.warn('No official plugins directory found', 'PluginManager', { error });
     }
 
     await logger.info('PluginManager initialized', 'PluginManager');
@@ -613,4 +618,11 @@ export class PluginManager {
 }
 
 // 导出单例实例
-export const pluginManager = new PluginManager();
+// 开发环境：使用项目根目录的 plugins/
+// 生产环境：使用 userData/plugins
+const isDev = !app.isPackaged;
+const pluginsDir = isDev
+  ? path.join(process.cwd(), 'plugins')
+  : path.join(app.getPath('userData'), 'plugins');
+
+export const pluginManager = new PluginManager(pluginsDir);

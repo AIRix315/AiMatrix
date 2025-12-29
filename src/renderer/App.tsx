@@ -148,7 +148,7 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="matrix-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="matrix-ui-theme">
       <SidebarProvider>
         <AppContent />
       </SidebarProvider>

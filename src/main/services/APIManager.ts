@@ -24,7 +24,6 @@ import {
   APIProviderConfig,
   APIProviderStatus,
   APICallParams,
-  APICallResult,
   ConnectionTestParams,
   ConnectionTestResult
 } from '../../shared/types/api';
@@ -1103,6 +1102,16 @@ export class APIManager {
     return errorHandler.wrapAsync(
       async () => {
         const config = await this.getProvider(providerId);
+        if (!config) {
+          return {
+            id: providerId,
+            name: 'Unknown',
+            category: APICategory.LLM,
+            status: 'unavailable',
+            error: 'Provider not found',
+            lastChecked: new Date().toISOString()
+          };
+        }
 
         // 检查缓存
         const cached = this.providerStatus.get(providerId);
@@ -1174,6 +1183,13 @@ export class APIManager {
     return errorHandler.wrapAsync(
       async () => {
         const config = await this.getProvider(params.providerId);
+        if (!config) {
+          return {
+            success: false,
+            error: 'Provider not found',
+            latency: 0
+          };
+        }
         const baseUrl = params.baseUrl || config.baseUrl;
         const apiKey = params.apiKey || config.apiKey;
 
@@ -1192,7 +1208,7 @@ export class APIManager {
             if (config.authType === AuthType.BEARER && apiKey) {
               headers['Authorization'] = `Bearer ${apiKey}`;
             }
-          } else if (config.id.includes('ollama')) {
+          } else if (config && config.id.includes('ollama')) {
             // Ollama: GET /api/tags
             modelsUrl = `${baseUrl}/api/tags`;
           } else {
@@ -1221,10 +1237,10 @@ export class APIManager {
 
           // 解析模型列表
           let models: string[] = [];
-          if (config.id.includes('ollama')) {
+          if (config && config.id.includes('ollama')) {
             // Ollama 返回格式: { models: [{ name: "..." }, ...] }
             models = data.models?.map((m: any) => m.name || m.model) || [];
-          } else if (config.category === APICategory.LLM) {
+          } else if (config && config.category === APICategory.LLM) {
             // OpenAI/SiliconFlow 返回格式: { data: [{ id: "..." }, ...] }
             models = data.data?.map((m: any) => m.id) || [];
           }

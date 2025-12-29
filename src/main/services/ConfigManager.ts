@@ -440,6 +440,20 @@ export class ConfigManager extends EventEmitter {
   }
 
   /**
+   * 获取完整设置（别名方法，为了兼容 ShortcutManager）
+   */
+  getSettings(): IAppSettings {
+    return this.getConfig();
+  }
+
+  /**
+   * 保存设置（别名方法，为了兼容 ShortcutManager）
+   */
+  async saveSettings(settings: IAppSettings): Promise<void> {
+    return this.saveConfig(settings);
+  }
+
+  /**
    * 清理资源
    */
   async cleanup(): Promise<void> {

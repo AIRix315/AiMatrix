@@ -62,12 +62,24 @@
     cursor: pointer;
     padding: 0 5px;
     transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .window-controls .control-item:hover {
     color: var(--text-main);
 }
 
-.window-controls .control-item:last-child:hover {
+/* 主题切换按钮特殊样式 */
+.window-controls .theme-toggle {
+    padding: 0 8px;
+}
+
+.window-controls .theme-toggle:hover {
+    color: oklch(0.85 0.22 160); /* 悬停时使用主题色 */
+}
+
+.window-controls .close-btn:hover {
     color: #ff5555;
 }

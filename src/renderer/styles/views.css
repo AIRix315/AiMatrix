@@ -1,6 +1,7 @@
 /* =========================================
    Dashboard Views (Home/Assets/Plugins)
    从设计原型提取的视图样式
+   使用CSS变量支持主题切换
    ========================================= */
 
 .dashboard-view {
@@ -32,7 +33,7 @@
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .view-title {
@@ -41,11 +42,12 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    color: var(--text-main);
 }
 
 .view-title small {
     font-size: 12px;
-    color: #666;
+    color: var(--text-muted);
     font-weight: normal;
 }
 
@@ -63,7 +65,7 @@
     align-items: center;
     justify-content: center;
     height: 60%;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .empty-icon {
@@ -73,16 +75,17 @@
 
 .empty-state h2 {
     margin-bottom: 10px;
-    color: #888;
+    color: var(--text-secondary);
 }
 
 .empty-state p {
     margin-bottom: 20px;
+    color: var(--text-muted);
 }
 
 .btn-create-large {
     background: var(--accent-color);
-    color: #000;
+    color: var(--primary-foreground);
     border: none;
     padding: 12px 24px;
     border-radius: 6px;

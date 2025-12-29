@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Sun, Moon } from 'lucide-react';
 import { useSidebar } from '../../contexts/SidebarContext';
+import { useTheme } from '../theme-provider';
 import './WindowBar.css';
 import { logger } from '../../utils/logger';
 
@@ -11,10 +12,29 @@ interface WindowBarProps {
 
 const WindowBar: React.FC<WindowBarProps> = ({
   title = 'MATRIX',
-  version = 'v0.2.9'
+  version = 'v0.3.7'
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const { leftSidebarCollapsed, toggleLeftSidebar } = useSidebar();
+  const { theme, setTheme } = useTheme();
+
+  // 获取实际应用的主题（处理 system 模式）
+  const getActualTheme = () => {
+    if (theme === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return theme;
+  };
+
+  // 切换主题
+  const toggleTheme = () => {
+    const actualTheme = getActualTheme();
+    if (actualTheme === 'light') {
+      setTheme('dark');
+    } else {
+      setTheme('light');
+    }
+  };
 
   useEffect(() => {
     // 检查窗口是否最大化
@@ -93,22 +113,34 @@ const WindowBar: React.FC<WindowBarProps> = ({
         </span>
       </div>
       <div className="window-controls">
-        <span 
-          className="control-item" 
+        {/* 主题切换按钮 */}
+        <span
+          className="control-item theme-toggle"
+          onClick={toggleTheme}
+          title={getActualTheme() === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
+        >
+          {getActualTheme() === 'dark' ? (
+            <Sun className="h-3.5 w-3.5" />
+          ) : (
+            <Moon className="h-3.5 w-3.5" />
+          )}
+        </span>
+        <span
+          className="control-item"
           onClick={handleMinimize}
           title="最小化"
         >
           ─
         </span>
-        <span 
-          className="control-item" 
+        <span
+          className="control-item"
           onClick={handleMaximize}
           title={isMaximized ? "还原" : "最大化"}
         >
           {isMaximized ? '❐' : '□'}
         </span>
-        <span 
-          className="control-item close-btn" 
+        <span
+          className="control-item close-btn"
           onClick={handleClose}
           title="关闭"
         >

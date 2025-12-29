@@ -4,7 +4,46 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 1.0.0 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.7] - 2025-12-29
+
+### Added
+- style(theme): 实现全局明暗主题切换系统
+  - 在窗口标题栏添加主题切换按钮（太阳/月亮图标）
+  - 支持深色主题和浅色主题无缝切换
+  - 主题状态持久化存储
+
+### Changed
+- style(ui): 全面主题化所有CSS文件
+  - 将所有硬编码的OKLCH颜色值替换为CSS变量
+  - 更新 globals.css、theme.css 的主题变量定义
+  - 主题化页面样式：Dashboard.css、Workflows.css、Plugins.css、Assets.css
+  - 主题化组件样式：Card.css、ListView.css、GlobalNav.css、ViewSwitcher.css
+  - 主题化全局样式：base.css、components.css、layout.css、settings.css、views.css
+
+- style(ui): 优化视图切换控件容器背景
+  - ViewSwitcher 容器背景改为主题色（绿色）
+  - 容器边框使用主题色增强视觉识别
+
+- style(icons): 图标颜色随主题自动调整
+  - 深色主题：图标自动反色为白色
+  - 浅色主题：图标保持原色
+
+### Fixed
+- fix(ui): 修复菜单栏第四个按钮下的双分割线问题
+  - 移除 .menu-separator 的冗余 border-top
+  - 只保留 .nav-section-top 的 border-bottom
+
+### Technical Details
+- 深色主题色值：background `oklch(0.12 0 0)`，foreground `oklch(0.92 0 0)`
+- 浅色主题色值：background `oklch(1 0 0)`，foreground `oklch(0.09 0 0)`
+- 主题色：深色 `#00E676`，浅色 `#00C853`
+
+---
 
 ## 全局要求
 

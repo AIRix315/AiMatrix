@@ -42,7 +42,19 @@
       "Bash(npx shadcn@latest add sheet)",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "Bash(if not exist \"plans\" mkdir plans)"
+      "Bash(if not exist \"plans\" mkdir plans)",
+      "Bash(npx vitest:*)",
+      "Bash(if exist \"tests\\\\integration\\\\ipc\\\\K02_COMPLETION_REPORT.md\" move /Y \"tests\\\\integration\\\\ipc\\\\K02_COMPLETION_REPORT.md\" \"docs\\\\ref\\\\Done-K02_COMPLETION_REPORT.md\")",
+      "Bash(if not exist \"tests\\\\e2e\" mkdir testse2e)",
+      "Bash(if not exist \"tests\\\\e2e\\\\setup\" mkdir testse2esetup)",
+      "Bash(if not exist \"tests\\\\e2e\\\\helpers\" mkdir testse2ehelpers)",
+      "Bash(if not exist \"tests\\\\e2e\\\\fixtures\" mkdir testse2efixtures)",
+      "Bash(npx playwright install chromium)",
+      "Bash(del \"E:\\\\Projects\\\\Matrix\\\\src\\\\renderer\\\\components\\\\common\\\\TaskQueueTrigger.tsx\" \"E:\\\\Projects\\\\Matrix\\\\src\\\\renderer\\\\components\\\\common\\\\TaskQueueTrigger.css\")",
+      "Bash(test:*)",
+      "Bash(git checkout:*)",
+      "Bash(fi)",
+      "Bash(done)"
     ]
   },
   "enabledPlugins": {

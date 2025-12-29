@@ -1,0 +1,62 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - button "收缩侧边栏" [ref=e6] [cursor=pointer]:
+          - img [ref=e7]
+        - generic [ref=e10]: MATRIX
+        - text: Studio
+        - generic [ref=e11]: v0.2.9
+      - generic [ref=e12]:
+        - generic "最小化" [ref=e13] [cursor=pointer]: ─
+        - generic "最大化" [ref=e14] [cursor=pointer]: □
+        - generic "关闭" [ref=e15] [cursor=pointer]: ✕
+    - generic [ref=e16]:
+      - navigation [ref=e17]:
+        - generic [ref=e18]:
+          - generic "首页 (Dashboard)" [ref=e19] [cursor=pointer]:
+            - img "首页" [ref=e21]
+            - generic [ref=e22]: 首页
+          - generic "资产库 (Assets)" [ref=e23] [cursor=pointer]:
+            - img "资产库" [ref=e25]
+            - generic [ref=e26]: 资产库
+          - generic "工作流 (Workflows)" [ref=e27] [cursor=pointer]:
+            - img "工作流" [ref=e29]
+            - generic [ref=e30]: 工作流
+          - generic "插件 (Plugins)" [ref=e31] [cursor=pointer]:
+            - img "插件" [ref=e33]
+            - generic [ref=e34]: 插件
+          - generic "设置 (Settings)" [ref=e35] [cursor=pointer]:
+            - img "设置" [ref=e37]
+            - generic [ref=e38]: 设置
+        - generic "关于" [ref=e41] [cursor=pointer]:
+          - img "关于" [ref=e43]
+          - generic [ref=e44]: 关于
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - generic [ref=e48]:
+            - text: 首页
+            - generic [ref=e49]: "| 项目管理 (Project Management)"
+          - generic [ref=e50]:
+            - button "网格视图" [ref=e51] [cursor=pointer]:
+              - img [ref=e52]
+            - button "列表视图" [ref=e54] [cursor=pointer]:
+              - img [ref=e55]
+        - generic [ref=e57]:
+          - generic [ref=e58]: 📂
+          - heading "欢迎使用 MATRIX Studio" [level=2] [ref=e59]
+          - paragraph [ref=e60]: 当前工作区为空，开始你的第一个创作吧。
+          - button "+ 新建项目" [ref=e61] [cursor=pointer]
+    - contentinfo [ref=e62]:
+      - generic [ref=e64]: "工作区: D:/Work/Matrix"
+      - generic [ref=e65]:
+        - generic [ref=e66]: 系统就绪
+        - button "1" [ref=e67] [cursor=pointer]:
+          - img [ref=e68]
+          - generic [ref=e71]: "1"
+  - generic "3 个任务 | 64% 完成 - 点击查看详情" [ref=e72] [cursor=pointer]:
+    - generic [ref=e76]: "3"
+```

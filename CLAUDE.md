@@ -16,8 +16,9 @@
 
 MATRIX Studio 是一个基于 Electron 的 AI 视频生成工作流管理平台。作为中间件，提供统一的工作流和物料管理功能，不直接参与视频渲染。
 
-- **当前版本**: v0.2.0
+- **当前版本**: v0.3.5
 - **技术栈**: Electron 39+, React 18, TypeScript 5, Webpack 5
+- **测试框架**: Vitest (替代 Jest)
 - **架构**: 三进程模型（主进程、预加载、渲染进程）
 
 ## 常用命令
@@ -35,11 +36,13 @@ MATRIX Studio 是一个基于 Electron 的 AI 视频生成工作流管理平台�
 - `npm run build:preload`: 仅构建预加载脚本
 
 ### 测试
-- `npm test`: 运行所有测试
-- `npm run test:unit`: 仅运行单元测试
-- `npm run test:integration`: 仅运行集成测试
-- `npm run test:e2e`: 仅运行端到端测试
-- `jest tests/path/to/specific.test.ts`: 运行单个测试文件
+- `npm test`: 运行所有测试 (使用 Vitest)
+- `npm run test:unit`: 仅运行单元测试 (tests/unit/)
+- `npm run test:integration`: 仅运行集成测试 (tests/integration/)
+- `npm run test:watch`: 监听模式运行测试
+- `npm run test:ui`: 启动 Vitest UI 界面
+- `npm run test:coverage`: 生成测试覆盖率报告
+- `npx vitest tests/path/to/specific.test.ts`: 运行单个测试文件
 
 ### 代码检查与格式化
 - `npm run lint`: 检查代码问题
@@ -61,8 +64,8 @@ MATRIX Studio 是一个基于 Electron 的 AI 视频生成工作流管理平台�
 
 1. **主进程** (`src/main/`): Node.js 环境，管理应用生命周期、窗口和系统集成
    - 入口: `src/main/index.ts`
-   - 核心服务: ProjectManager、AssetManager、TimeService
-   - IPC 处理器: 处理所有渲染进程的请求
+   - 核心服务: 17个服务（见下方服务架构部分）
+   - IPC 处理器: 80+ 个处理器，涵盖所有核心功能
 
 2. **预加载脚本** (`src/preload/`): 主进程与渲染进程之间的桥梁，使用 contextBridge
    - 入口: `src/preload/index.ts`
@@ -76,15 +79,32 @@ MATRIX Studio 是一个基于 Electron 的 AI 视频生成工作流管理平台�
 
 ### 服务架构
 
-主进程服务遵循管理器模式：
-- **ProjectManager**: 项目的 CRUD 操作和生命周期管理 ✅ 完整实现
-- **AssetManager**: 物料管理，基于作用域组织（全局/项目） ✅ 完整实现
-- **TimeService**: 集中式时间处理（NTP同步、时间验证） ✅ 完整实现
-- **Logger**: 统一日志系统（4级日志、文件轮转） ✅ 完整实现
-- **ServiceErrorHandler**: 统一错误处理（37个错误码） ✅ 完整实现
-- **PluginManager**: 插件加载/卸载/执行 🟡 MVP实现（缺少沙箱和签名验证）
-- **TaskScheduler**: 任务调度和执行 🟡 MVP实现（缺少持久化和成本估算）
-- **APIManager**: API注册和调用管理 🟡 MVP实现（缺少使用量跟踪）
+主进程服务遵循管理器模式，所有服务位于 `src/main/services/`：
+
+**核心服务**（完整实现）:
+- **ProjectManager**: 项目的 CRUD 操作和生命周期管理
+- **AssetManager**: 物料管理，支持全局/项目作用域，AI 属性追踪
+- **TimeService**: 集中式时间处理（NTP同步、时间验证）
+- **Logger**: 统一日志系统（4级日志、文件轮转）
+- **ServiceErrorHandler**: 统一错误处理（37个错误码）
+- **FileSystemService**: 文件系统操作封装（路径管理、JSON读写）
+- **ConfigManager**: 应用配置管理
+
+**工作流服务**:
+- **WorkflowRegistry**: 工作流注册和管理
+- **WorkflowStateManager**: 工作流状态管理和执行追踪
+- **SchemaRegistry**: Schema 验证和类型系统
+- **ModelRegistry**: AI 模型注册和管理
+
+**插件和任务系统**:
+- **PluginManager**: 插件加载/卸载/执行（含安全沙箱）
+- **PluginMarketService**: 插件市场集成
+- **TaskScheduler**: 任务调度和执行（支持持久化）
+- **APIManager**: API Provider 管理（支持 OpenAI、Anthropic 等）
+
+**辅助服务**:
+- **GenericAssetHelper**: 通用资产辅助工具
+- **ShortcutManager**: 快捷键管理
 
 ### IPC 通信
 
@@ -105,13 +125,49 @@ MATRIX Studio 是一个基于 Electron 的 AI 视频生成工作流管理平台�
 
 ## 关键要求
 
-### 时间处理
+### 时间处理 ⚠️ 最高优先级
 **重要**: 写入任何时间戳或时间相关数据前：
 1. 使用 TimeService 或 MCP 服务查询系统时间
 2. 使用查询到的时间进行所有操作
-3. 禁止直接使用 `Date.now()` 或 `new Date()` 而不经过验证
+3. **禁止直接使用 `Date.now()` 或 `new Date()` 而不经过验证**
 
-参考: `docs/02-technical-blueprint-v1.0.0.md`
+参考: `docs/00-global-requirements-v1.0.0.md` 和 `docs/02-technical-blueprint-v1.0.0.md`
+
+### IPC 通信规范
+添加新的 IPC 通道需要在三个地方同步修改：
+1. **主进程处理器**: `src/main/ipc/` - 注册 `ipcMain.handle()`
+2. **预加载脚本**: `src/preload/index.ts` - 使用 `ipcRenderer.invoke()` 暴露 API
+3. **类型定义**: `src/shared/types/` - 定义请求/响应类型
+
+示例：
+```typescript
+// 1. 主进程: src/main/ipc/example-handlers.ts
+ipcMain.handle('example:doSomething', async (_, arg: string) => {
+  return await exampleService.doSomething(arg);
+});
+
+// 2. 预加载: src/preload/index.ts
+contextBridge.exposeInMainWorld('electronAPI', {
+  example: {
+    doSomething: (arg: string) => ipcRenderer.invoke('example:doSomething', arg)
+  }
+});
+
+// 3. 类型: src/shared/types/electron-api.d.ts
+interface ElectronAPI {
+  example: {
+    doSomething: (arg: string) => Promise<Result>;
+  };
+}
+```
+
+### 服务间依赖
+服务初始化顺序很重要（参考 `src/main/index.ts`）：
+1. Logger（最先初始化）
+2. ServiceErrorHandler
+3. TimeService
+4. FileSystemService
+5. 其他服务（可并行初始化）
 
 ### 代码风格
 
@@ -133,11 +189,15 @@ const electron = require('electron');
 
 ### 测试规范
 
-- 使用 Jest 和 ts-jest 预设
+- 使用 Vitest 作为测试框架（配置文件: `vitest.config.ts`）
 - 在测试中模拟 Electron 模块（参考 `tests/utils/setup.ts`）
 - 测试文件: `*.test.ts` 或 `*.spec.ts`
-- 为提升性能，运行单个测试文件: `jest path/to/test.test.ts`
+- 测试目录结构:
+  - `tests/unit/`: 单元测试（服务、工具函数）
+  - `tests/integration/`: 集成测试（服务间交互、IPC通道）
+- 为提升性能，运行单个测试文件: `npx vitest tests/path/to/test.test.ts`
 - 代码更改后，运行类型检查和测试
+- 测试超时: 10秒（可在 vitest.config.ts 中配置）
 
 ## 路径别名
 
@@ -161,37 +221,97 @@ Webpack 配置必须镜像这些别名。
 ## 文档
 
 `/docs` 中的核心架构文档：
-- `00-global-requirements-v1.0.0.md`: 全局要求和约束
+- `00-global-requirements-v1.0.0.md`: 全局要求和约束（**必读**）
 - `01-architecture-design-v1.0.0.md`: 系统架构
 - `02-technical-blueprint-v1.0.0.md`: 技术实现细节
 - `04-initialization-guidelines-v1.0.0.md`: 设置和初始化
 - `05-project-structure-v1.0.1.md`: 目录结构
-- `06-core-services-design-v1.0.1.md`: 服务层设计
+- `06-core-services-design-v1.0.1.md`: 服务层设计（包含 AI 属性和作用域管理）
+- `07-plugin-development-guide.md`: 插件开发指南
+- `08-ui-design-specification-v1.0.0.md`: UI 设计规范
 
 参考 UI 设计: `docs/references/UI/matrix`
+项目归档文档: `docs/ref/` (已完成的实现报告和计划)
 
 ## 开发工作流
 
-1. 修改前务必先阅读相关文件
-2. 代码修改后运行类型检查: `npm run lint`
-3. 对受影响的区域运行测试（为提升速度，优先运行单个测试文件）
-4. 遵循现有的代码模式和服务结构
-5. 添加新功能时更新测试
-6. 添加新的主进程-渲染进程通信时检查 IPC 处理器
+1. **理解架构**: 修改前务必先阅读相关文件和 `docs/00-global-requirements-v1.0.0.md`
+2. **代码质量**:
+   - 运行类型检查: `npm run typecheck` 或 `npm run lint`
+   - 自动修复: `npm run lint:fix`
+   - 格式化: `npm run format`
+3. **测试**:
+   - 优先运行单个测试文件: `npx vitest tests/path/to/test.test.ts`
+   - 使用监听模式开发: `npm run test:watch`
+   - 生成覆盖率报告: `npm run test:coverage`
+4. **添加新功能**:
+   - 遵循现有的代码模式和服务结构
+   - 添加相应的单元测试或集成测试
+   - 更新类型定义（`src/shared/types/`）
+   - 如需 IPC 通信，在三个地方更新：主进程处理器、预加载脚本、类型定义
+5. **服务开发**:
+   - 新服务放在 `src/main/services/`
+   - 使用 Logger 记录关键操作
+   - 使用 ServiceErrorHandler 处理错误
+   - 使用 TimeService 获取时间戳（不要直接使用 `Date.now()`）
 
-## 注意事项
+## 项目当前状态 (v0.3.5)
 
-- **服务实现状态** (v0.2.0):
-  - 完整实现: ProjectManager、AssetManager、TimeService、Logger、ServiceErrorHandler (5/8)
-  - MVP实现: PluginManager、TaskScheduler、APIManager (3/8) - 基础功能可用，高级特性待完善
-- **IPC处理器状态**:
-  - 完整实现: 51个处理器 (应用、窗口、项目、资产、文件系统)
-  - 部分实现: 20个处理器 (工作流、插件、任务、API)
-  - 模拟实现: 9个处理器 (MCP和local服务) - 待后续真实集成
-- **UI实现状态**:
-  - 通用组件: 10/10 完整实现 (Button, Card, Modal, Toast, Loading等)
-  - 页面功能: Dashboard完整，其他页面为基础框架
-- **技术规范**:
-  - UI 遵循 V14 设计系统，使用原子化组件
-  - React 组件使用函数式组件和 Hooks (未使用Redux)
-  - 路由包装在 Layout 组件中以保持导航一致性
+- **服务层**: 17个核心服务全部实现，包含完整的单元测试和集成测试
+- **IPC处理器**: 80+ 个处理器，覆盖所有核心功能
+- **UI实现**:
+  - 基础组件: 完整实现 (Button, Card, Modal, Toast, Loading 等)
+  - 高级组件: Sheet, Dialog, Tabs, Switch, Checkbox 等 Radix UI 组件
+  - 页面实现: Dashboard、Assets、Workflows、Plugins、Settings 全功能实现
+  - 工作流编辑器: 基于 @xyflow/react 的节点编辑器，支持拖拽和连接
+- **测试覆盖**: 完善的单元测试和集成测试，使用 Vitest
+- **技术特性**:
+  - UI 遵循 V14 设计系统，使用 Tailwind CSS 和 shadcn/ui 原子化组件
+  - React 组件使用函数式组件和 Hooks (未使用 Redux)
+  - 工作流系统支持 Schema 验证和状态管理
+  - 插件系统支持沙箱隔离和市场集成
+  - 资产管理支持全局/项目作用域和 AI 属性追踪
+
+## 重要注意事项
+
+- **全局/项目作用域**: AssetManager 支持两级作用域，全局资产可在多个项目间复用
+- **AI 属性追踪**: 资产元数据包含 AI 生成参数（Prompt、Seed、LoRA 等），便于复用
+- **插件安全**: 插件使用 vm2 沙箱隔离，防止恶意代码执行
+- **Schema 验证**: 工作流节点输入输出使用 Zod 进行 Schema 验证
+- **API Provider 架构**: 支持多个 AI API Provider（OpenAI、Anthropic 等）统一管理
+
+## 常见问题
+
+### 测试相关
+**Q: 如何运行单个测试文件？**
+```bash
+npx vitest tests/unit/services/ProjectManager.test.ts
+```
+
+**Q: 测试超时怎么办？**
+- 检查 `vitest.config.ts` 中的 `testTimeout` 设置（默认 10秒）
+- 对于耗时操作，可以在具体测试中使用 `{ timeout: 20000 }`
+
+### 开发相关
+**Q: 修改主进程代码后没有生效？**
+- 确保 `npm run dev:main` 正在运行并成功编译
+- 重启 Electron: 关闭应用窗口，webpack 会自动重新启动
+
+**Q: 渲染进程热更新不工作？**
+- 确保 `npm run dev:renderer` 正在运行
+- 检查 webpack-dev-server 是否正常启动（默认端口 3000）
+
+**Q: 路径别名无法解析？**
+- 检查 `tsconfig.json`、`vitest.config.ts` 和对应的 webpack 配置是否都配置了相同的别名
+
+### 架构相关
+**Q: 如何添加新的服务？**
+1. 在 `src/main/services/` 创建服务类
+2. 在 `src/main/index.ts` 中初始化服务
+3. 创建对应的 IPC 处理器（如需要）
+4. 添加单元测试 `tests/unit/services/`
+
+**Q: 全局资产和项目资产的区别？**
+- 全局资产（scope: 'global'）：存储在全局库中，可被多个项目引用
+- 项目资产（scope: 'project'）：仅属于特定项目，不能跨项目使用
+- 使用 `AssetManager.promoteAssetToGlobal()` 可以将项目资产提升为全局资产

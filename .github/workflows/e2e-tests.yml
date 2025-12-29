@@ -1,0 +1,183 @@
+# E2E 测试 CI 工作流 - 跨平台测试
+name: E2E Tests
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
+
+jobs:
+  # Windows 平台 E2E 测试
+  test-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci --legacy-peer-deps
+
+      - name: 构建应用
+        run: npm run build
+
+      - name: 运行 E2E 测试
+        run: npm run test:e2e -- --project=electron-windows
+        env:
+          CI: true
+
+      - name: 上传测试报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-windows
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: 上传测试截图
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots-windows
+          path: test-results/screenshots/
+          retention-days: 7
+
+  # macOS 平台 E2E 测试
+  test-macos:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci --legacy-peer-deps
+
+      - name: 构建应用
+        run: npm run build
+
+      - name: 运行 E2E 测试
+        run: npm run test:e2e -- --project=electron-mac
+        env:
+          CI: true
+
+      - name: 上传测试报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-macos
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: 上传测试截图
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots-macos
+          path: test-results/screenshots/
+          retention-days: 7
+
+  # Linux 平台 E2E 测试
+  test-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装系统依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 \
+            libatk-bridge2.0-0 \
+            libdrm2 \
+            libxkbcommon0 \
+            libgbm1 \
+            libasound2 \
+            xvfb
+
+      - name: 安装依赖
+        run: npm ci --legacy-peer-deps
+
+      - name: 构建应用
+        run: npm run build
+
+      - name: 运行 E2E 测试（Xvfb）
+        run: xvfb-run --auto-servernum npm run test:e2e -- --project=electron-linux
+        env:
+          CI: true
+
+      - name: 上传测试报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-linux
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: 上传测试截图
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots-linux
+          path: test-results/screenshots/
+          retention-days: 7
+
+  # 汇总测试结果
+  summary:
+    runs-on: ubuntu-latest
+    needs: [test-windows, test-macos, test-linux]
+    if: always()
+
+    steps:
+      - name: 下载所有测试报告
+        uses: actions/download-artifact@v4
+        with:
+          pattern: e2e-report-*
+          path: reports/
+
+      - name: 生成汇总报告
+        run: |
+          echo "# E2E 测试汇总报告" > summary.md
+          echo "" >> summary.md
+          echo "## 测试平台" >> summary.md
+          echo "- Windows: ${{ needs.test-windows.result }}" >> summary.md
+          echo "- macOS: ${{ needs.test-macos.result }}" >> summary.md
+          echo "- Linux: ${{ needs.test-linux.result }}" >> summary.md
+
+      - name: 上传汇总报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-summary
+          path: summary.md
+          retention-days: 30

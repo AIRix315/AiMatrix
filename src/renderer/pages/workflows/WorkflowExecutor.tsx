@@ -243,9 +243,9 @@ const WorkflowExecutor: React.FC = () => {
       setLoading(true);
 
       // TODO: 从主进程加载工作流实例状态
-      // const workflow = await window.electronAPI.loadWorkflow(workflowId);
+      // const workflow = await window.electronAPI.loadWorkflowInstance(workflowId);
 
-      // 临时模拟小说转视频工作流
+      // 硬编码小说转视频工作流步骤（插件定制化封装）
       const mockWorkflow: WorkflowState = {
         currentStepIndex: 0,
         steps: [

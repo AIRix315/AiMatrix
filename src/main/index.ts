@@ -22,7 +22,6 @@ import { ShortcutManager } from './services/ShortcutManager';
 import { registerWorkflowHandlers } from './ipc/workflow-handlers';
 import { workflowRegistry } from './services/WorkflowRegistry';
 import { testWorkflowDefinition } from './workflows/test-workflow';
-import { novelToVideoWorkflow } from './workflows/novel-to-video-definition';
 
 // 注册自定义协议为特权协议（必须在 app.ready 之前）
 protocol.registerSchemesAsPrivileged([
@@ -109,10 +108,13 @@ class MatrixApp {
 
   /**
    * 注册测试工作流
+   *
+   * 注意：只注册普通的 Workflow 模板
+   * "小说转视频"是 WorkflowExecutor（插件形态），不在此注册
    */
   private registerTestWorkflows(): void {
     try {
-      // 注册测试工作流
+      // 注册测试工作流模板
       workflowRegistry.register(testWorkflowDefinition);
 
       logger.info('测试工作流已注册', 'MatrixApp', {
@@ -120,13 +122,8 @@ class MatrixApp {
         workflowType: testWorkflowDefinition.type
       });
 
-      // 注册小说转视频工作流
-      workflowRegistry.register(novelToVideoWorkflow);
-
-      logger.info('小说转视频工作流已注册', 'MatrixApp', {
-        workflowName: novelToVideoWorkflow.name,
-        workflowType: novelToVideoWorkflow.type
-      });
+      // 注意：小说转视频是系统插件（WorkflowExecutor），不是普通工作流
+      // 它通过 PluginManager 加载，不在 WorkflowRegistry 中注册
     } catch (error) {
       logger.error('注册工作流失败', 'MatrixApp', { error });
     }

@@ -45,6 +45,10 @@ const topNavItems: NavItem[] = [
     path: '/plugins',
     title: '插件 (Plugins)',
   },
+];
+
+// 下方固定区域导航项
+const bottomNavItems: NavItem[] = [
   {
     id: 'settings',
     label: '设置',
@@ -52,10 +56,6 @@ const topNavItems: NavItem[] = [
     path: '/settings',
     title: '设置 (Settings)',
   },
-];
-
-// 下方固定区域导航项
-const bottomNavItems: NavItem[] = [
   {
     id: 'about',
     label: '关于',
@@ -121,7 +121,8 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
         navigate(`/workflows/${shortcut.targetId}`);
         break;
       case 'plugin':
-        navigate(`/plugins/${shortcut.targetId}`);
+        // 插件类型：跳转到插件页面，通过 state 传递要高亮的插件 ID
+        navigate('/plugins', { state: { selectedPluginId: shortcut.targetId } });
         break;
     }
   };

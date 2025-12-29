@@ -7,7 +7,7 @@
   "license": "MIT",
   "type": "official",
   "category": "workflow",
-  "entryPoint": "dist/index.js",
+  "main": "dist/index.js",
   "permissions": [
     "file:read",
     "file:write",

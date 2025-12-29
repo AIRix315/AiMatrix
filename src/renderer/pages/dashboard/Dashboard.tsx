@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Pin } from 'lucide-react';
+import { Pin, Trash2 } from 'lucide-react';
 import { Button, Modal, Toast, Loading, ConfirmDialog, ViewSwitcher } from '../../components/common';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
@@ -175,23 +175,25 @@ const Dashboard: React.FC = () => {
                     {project.path}
                   </CardFooter>
                 </Card>
-                <button
-                  className="pin-btn"
-                  onClick={(e) => handlePinProject(e, project)}
-                  title="添加到菜单栏"
-                >
-                  <Pin size={16} />
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteConfirm({ projectId: project.id, projectName: project.name });
-                  }}
-                  title="删除项目"
-                >
-                  ×
-                </button>
+                <div className="card-actions">
+                  <button
+                    className="pin-btn"
+                    onClick={(e) => handlePinProject(e, project)}
+                    title="添加到菜单栏"
+                  >
+                    <Pin size={16} />
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteConfirm({ projectId: project.id, projectName: project.name });
+                    }}
+                    title="删除项目"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -223,23 +225,25 @@ const Dashboard: React.FC = () => {
                     {project.path}
                   </CardFooter>
                 </Card>
-                <button
-                  className="pin-btn"
-                  onClick={(e) => handlePinProject(e, project)}
-                  title="添加到菜单栏"
-                >
-                  <Pin size={16} />
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteConfirm({ projectId: project.id, projectName: project.name });
-                  }}
-                  title="删除项目"
-                >
-                  ×
-                </button>
+                <div className="card-actions">
+                  <button
+                    className="pin-btn"
+                    onClick={(e) => handlePinProject(e, project)}
+                    title="添加到菜单栏"
+                  >
+                    <Pin size={16} />
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteConfirm({ projectId: project.id, projectName: project.name });
+                    }}
+                    title="删除项目"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>

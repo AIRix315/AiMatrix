@@ -1,5 +1,15 @@
 /**
- * 小说转视频工作流定义
+ * 小说转视频工作流定义（仅作参考/文档用途）
+ *
+ * ⚠️ 重要说明：
+ * "小说转视频"是系统插件（WorkflowExecutor），不是普通的 Workflow 模板
+ *
+ * - 实际实现位于：plugins/official/novel-to-video/
+ * - 通过 PluginManager 加载和管理
+ * - 不应该注册到 WorkflowRegistry
+ * - 快捷方式类型为 PLUGIN，跳转到插件页面
+ *
+ * 此文件保留作为工作流步骤的参考定义，不会被直接使用
  *
  * 功能：将小说文本转换为短视频作品
  */
@@ -7,7 +17,8 @@
 import { WorkflowDefinition } from '../../shared/types/workflow'
 
 /**
- * 小说转视频工作流定义
+ * 小说转视频工作流步骤定义（参考）
+ * @deprecated 实际使用插件版本（plugins/official/novel-to-video/）
  */
 export const novelToVideoWorkflow: WorkflowDefinition = {
   id: 'novel-to-video-v1',

@@ -39,8 +39,8 @@
 }
 
 .menu-item:hover {
-    color: #fff;
-    background: rgba(255,255,255,0.05);
+    color: var(--text-main);
+    background: var(--bg-hover);
 }
 
 .menu-icon-box {
@@ -52,11 +52,21 @@
     flex-shrink: 0;
 }
 
-/* 图标样式 - 缩小至0.2倍并应用滤镜将黑色转为白色 */
+/* 图标样式 - 缩小至0.2倍并根据主题自动调整颜色 */
 .menu-icon-box img {
     width: 7.2px;
     height: 7.2px;
+}
+
+/* 深色主题：将黑色图标转为白色 */
+:root .menu-icon-box img,
+.dark .menu-icon-box img {
     filter: invert(1);
+}
+
+/* 浅色主题：保持图标原色 */
+.light .menu-icon-box img {
+    filter: invert(0);
 }
 
 /* content.ico 图标放大 */
@@ -89,7 +99,6 @@
     text-align: center;
     color: var(--text-muted);
     opacity: 0.5;
-    border-top: 1px solid var(--border-color);
     margin-top: 10px;
 }
 

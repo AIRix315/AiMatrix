@@ -1,6 +1,6 @@
 {
   "name": "matrix-ai-workflow",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "AI视频生成工作流管理平台",
   "main": "build/main/index.js",
   "homepage": "./",
@@ -24,6 +24,10 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:integration:novel-baseline": "vitest run tests/integration/phase7-baseline.test.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
@@ -74,6 +78,7 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@types/adm-zip": "^0.5.5",
     "@types/jest": "^30.0.0",
     "@types/mime-types": "^3.0.1",
@@ -102,6 +107,7 @@
     "html-webpack-plugin": "^5.0.0",
     "jest": "^29.0.0",
     "path-browserify": "^1.0.1",
+    "playwright": "^1.57.0",
     "postcss": "^8.5.6",
     "postcss-loader": "^8.2.0",
     "prettier": "^3.0.0",

@@ -1,0 +1,573 @@
+
+> matrix-ai-workflow@0.3.6 test:e2e
+> playwright test
+
+🚀 开始 E2E 测试环境设置...
+✅ 构建产物检查通过
+✅ E2E 测试环境设置完成
+
+Running 102 tests using 1 worker
+
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+🛑 关闭 Electron 应用...
+✅ Electron 应用已关闭
+  ✘    1 [electron-windows] › tests\e2e\01-app-launch.e2e.ts:8:7 › 应用启动和基本功能 › 应用成功启动并显示主窗口 (11.0s)
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+🛑 关闭 Electron 应用...
+✅ Electron 应用已关闭
+  ✘    2 [electron-windows] › tests\e2e\01-app-launch.e2e.ts:23:7 › 应用启动和基本功能 › 应用版本号正确 (10.9s)
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+🛑 关闭 Electron 应用...
+✅ Electron 应用已关闭
+  ✘    3 [electron-windows] › tests\e2e\01-app-launch.e2e.ts:32:7 › 应用启动和基本功能 › 主窗口尺寸合理 (10.9s)
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+✅ 全局导航菜单已渲染
+🛑 关闭 Electron 应用...
+✅ Electron 应用已关闭
+  ✓    4 [electron-windows] › tests\e2e\01-app-launch.e2e.ts:45:7 › 应用启动和基本功能 › 全局导航菜单渲染 (11.0s)
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+⚠️ 未找到导航项: Dashboard（可能使用图标）
+⚠️ 未找到导航项: Assets（可能使用图标）
+⚠️ 未找到导航项: Workflows（可能使用图标）
+⚠️ 未找到导航项: Plugins（可能使用图标）
+⚠️ 未找到导航项: Settings（可能使用图标）
+🛑 关闭 Electron 应用...
+✅ Electron 应用已关闭
+  ✓    5 [electron-windows] › tests\e2e\01-app-launch.e2e.ts:57:7 › 应用启动和基本功能 › 导航菜单包含核心页面链接 (10.9s)
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+🛑 关闭 Electron 应用...
+✅ Electron 应用已关闭
+  ✘    6 [electron-windows] › tests\e2e\01-app-launch.e2e.ts:93:7 › 应用启动和基本功能 › 应用路径配置正确 (10.9s)
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+🛑 关闭 Electron 应用...
+✅ Electron 应用已关闭
+  ✘    7 [electron-windows] › tests\e2e\01-app-launch.e2e.ts:107:7 › 应用启动和基本功能 › 窗口控制按钮工作正常 (10.9s)
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+⚠️ 使用导航辅助方法失败，尝试直接点击
+🛑 关闭 Electron 应用...
+✅ Electron 应用已关闭
+  ✘    8 [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:8:7 › 项目创建和管理流程 › 导航到 Dashboard 页面 (50.0s)
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+✅ 页面加载完成
+🛑 关闭 Electron 应用...
+  ✘    9 [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:36:7 › 项目创建和管理流程 › Dashboard 显示项目列表 (19.9s)
+✅ Electron 应用已关闭
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+✅ 页面加载完成
+⚠️ 未找到项目卡片（可能没有项目）
+🛑 关闭 Electron 应用...
+  ✘   10 [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:64:7 › 项目创建和管理流程 › 可以查看项目详情 (19.9s)
+✅ Electron 应用已关闭
+🚀 启动 Electron 应用...
+  可执行文件: E:\Projects\Matrix\node_modules\electron\dist\electron.exe
+  主脚本: E:\Projects\Matrix\build\main\index.js
+✅ Electron 应用启动成功
+✅ 应用已完全加载
+✅ 页面加载完成
+✅ 点击创建按钮: button:has-text("新建项目")
+⚠️ 未能验证项目创建（可能需要刷新或其他操作）
+🛑 关闭 Electron 应用...
+  ✘   11 [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:89:7 › 项目创建和管理流程 › 创建新项目 (23.0s)
+✅ Electron 应用已关闭
+  ✘   12 [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:216:7 › 项目创建和管理流程 › 删除项目 (0ms)
+  ✘   13 [electron-windows] › tests\e2e\03-asset-management.e2e.ts:9:7 › 资产管理流程 › 导航到 Assets 页面 (0ms)
+  -   14 [electron-windows] › tests\e2e\03-asset-management.e2e.ts:37:7 › 资产管理流程 › Assets 页面显示资产列表
+  -   15 [electron-windows] › tests\e2e\03-asset-management.e2e.ts:70:7 › 资产管理流程 › 资产分类导航存在
+  -   16 [electron-windows] › tests\e2e\03-asset-management.e2e.ts:91:7 › 资产管理流程 › 视图切换功能可用
+  -   17 [electron-windows] › tests\e2e\03-asset-management.e2e.ts:116:7 › 资产管理流程 › 导入资产功能可用
+  -   18 [electron-windows] › tests\e2e\03-asset-management.e2e.ts:135:7 › 资产管理流程 › 搜索资产功能可用
+  -   19 [electron-windows] › tests\e2e\03-asset-management.e2e.ts:153:7 › 资产管理流程 › 资产详情查看功能可用
+  ✘   20 [electron-windows] › tests\e2e\04-workflow-execution.e2e.ts:8:7 › 工作流执行流程 › 导航到 Workflows 页面 (0ms)
+  -   21 [electron-windows] › tests\e2e\04-workflow-execution.e2e.ts:35:7 › 工作流执行流程 › Workflows 页面显示工作流模板
+  -   22 [electron-windows] › tests\e2e\04-workflow-execution.e2e.ts:63:7 › 工作流执行流程 › 可以查看工作流模板详情
+  -   23 [electron-windows] › tests\e2e\04-workflow-execution.e2e.ts:88:7 › 工作流执行流程 › 创建工作流实例功能可用
+  -   24 [electron-windows] › tests\e2e\04-workflow-execution.e2e.ts:102:7 › 工作流执行流程 › 工作流编辑器功能可用
+  -   25 [electron-windows] › tests\e2e\04-workflow-execution.e2e.ts:119:7 › 工作流执行流程 › 工作流执行按钮可用
+  -   26 [electron-windows] › tests\e2e\04-workflow-execution.e2e.ts:135:7 › 工作流执行流程 › 工作流历史功能可用
+  ✘   27 [electron-windows] › tests\e2e\05-settings-and-plugins.e2e.ts:8:7 › 设置和插件管理 › 导航到 Settings 页面 (0ms)
+  -   28 [electron-windows] › tests\e2e\05-settings-and-plugins.e2e.ts:35:7 › 设置和插件管理 › Settings 页面显示配置选项
+  -   29 [electron-windows] › tests\e2e\05-settings-and-plugins.e2e.ts:49:7 › 设置和插件管理 › 导航到 Plugins 页面
+  -   30 [electron-windows] › tests\e2e\05-settings-and-plugins.e2e.ts:76:7 › 设置和插件管理 › Plugins 页面显示已安装插件
+  -   31 [electron-windows] › tests\e2e\05-settings-and-plugins.e2e.ts:90:7 › 设置和插件管理 › 插件市场功能可用
+  -   32 [electron-windows] › tests\e2e\05-settings-and-plugins.e2e.ts:107:7 › 设置和插件管理 › API Provider配置界面可用
+  -   33 [electron-windows] › tests\e2e\05-settings-and-plugins.e2e.ts:124:7 › 设置和插件管理 › 模型管理功能可用
+  ✘   34 [electron-windows] › tests\e2e\06-complete-workflow.e2e.ts:9:7 › 完整端到端流程：项目创建→资产导入→工作流执行→导出 › 完整用户流程测试 (0ms)
+  ✘   35 [electron-mac] › tests\e2e\01-app-launch.e2e.ts:8:7 › 应用启动和基本功能 › 应用成功启动并显示主窗口 (0ms)
+  -   36 [electron-mac] › tests\e2e\01-app-launch.e2e.ts:23:7 › 应用启动和基本功能 › 应用版本号正确
+  -   37 [electron-mac] › tests\e2e\01-app-launch.e2e.ts:32:7 › 应用启动和基本功能 › 主窗口尺寸合理
+  -   38 [electron-mac] › tests\e2e\01-app-launch.e2e.ts:45:7 › 应用启动和基本功能 › 全局导航菜单渲染
+  -   39 [electron-mac] › tests\e2e\01-app-launch.e2e.ts:57:7 › 应用启动和基本功能 › 导航菜单包含核心页面链接
+  -   40 [electron-mac] › tests\e2e\01-app-launch.e2e.ts:93:7 › 应用启动和基本功能 › 应用路径配置正确
+  -   41 [electron-mac] › tests\e2e\01-app-launch.e2e.ts:107:7 › 应用启动和基本功能 › 窗口控制按钮工作正常
+  ✘   42 [electron-mac] › tests\e2e\02-project-workflow.e2e.ts:8:7 › 项目创建和管理流程 › 导航到 Dashboard 页面 (0ms)
+  -   43 [electron-mac] › tests\e2e\02-project-workflow.e2e.ts:36:7 › 项目创建和管理流程 › Dashboard 显示项目列表
+  -   44 [electron-mac] › tests\e2e\02-project-workflow.e2e.ts:64:7 › 项目创建和管理流程 › 可以查看项目详情
+  -   45 [electron-mac] › tests\e2e\02-project-workflow.e2e.ts:89:7 › 项目创建和管理流程 › 创建新项目
+  -   46 [electron-mac] › tests\e2e\02-project-workflow.e2e.ts:216:7 › 项目创建和管理流程 › 删除项目
+  ✘   47 [electron-mac] › tests\e2e\03-asset-management.e2e.ts:9:7 › 资产管理流程 › 导航到 Assets 页面 (0ms)
+  -   48 [electron-mac] › tests\e2e\03-asset-management.e2e.ts:37:7 › 资产管理流程 › Assets 页面显示资产列表
+  -   49 [electron-mac] › tests\e2e\03-asset-management.e2e.ts:70:7 › 资产管理流程 › 资产分类导航存在
+  -   50 [electron-mac] › tests\e2e\03-asset-management.e2e.ts:91:7 › 资产管理流程 › 视图切换功能可用
+  -   51 [electron-mac] › tests\e2e\03-asset-management.e2e.ts:116:7 › 资产管理流程 › 导入资产功能可用
+  -   52 [electron-mac] › tests\e2e\03-asset-management.e2e.ts:135:7 › 资产管理流程 › 搜索资产功能可用
+  -   53 [electron-mac] › tests\e2e\03-asset-management.e2e.ts:153:7 › 资产管理流程 › 资产详情查看功能可用
+  ✘   54 [electron-mac] › tests\e2e\04-workflow-execution.e2e.ts:8:7 › 工作流执行流程 › 导航到 Workflows 页面 (0ms)
+  -   55 [electron-mac] › tests\e2e\04-workflow-execution.e2e.ts:35:7 › 工作流执行流程 › Workflows 页面显示工作流模板
+  -   56 [electron-mac] › tests\e2e\04-workflow-execution.e2e.ts:63:7 › 工作流执行流程 › 可以查看工作流模板详情
+  -   57 [electron-mac] › tests\e2e\04-workflow-execution.e2e.ts:88:7 › 工作流执行流程 › 创建工作流实例功能可用
+  -   58 [electron-mac] › tests\e2e\04-workflow-execution.e2e.ts:102:7 › 工作流执行流程 › 工作流编辑器功能可用
+  -   59 [electron-mac] › tests\e2e\04-workflow-execution.e2e.ts:119:7 › 工作流执行流程 › 工作流执行按钮可用
+  -   60 [electron-mac] › tests\e2e\04-workflow-execution.e2e.ts:135:7 › 工作流执行流程 › 工作流历史功能可用
+  ✘   61 [electron-mac] › tests\e2e\05-settings-and-plugins.e2e.ts:8:7 › 设置和插件管理 › 导航到 Settings 页面 (0ms)
+  -   62 [electron-mac] › tests\e2e\05-settings-and-plugins.e2e.ts:35:7 › 设置和插件管理 › Settings 页面显示配置选项
+  -   63 [electron-mac] › tests\e2e\05-settings-and-plugins.e2e.ts:49:7 › 设置和插件管理 › 导航到 Plugins 页面
+  -   64 [electron-mac] › tests\e2e\05-settings-and-plugins.e2e.ts:76:7 › 设置和插件管理 › Plugins 页面显示已安装插件
+  -   65 [electron-mac] › tests\e2e\05-settings-and-plugins.e2e.ts:90:7 › 设置和插件管理 › 插件市场功能可用
+  -   66 [electron-mac] › tests\e2e\05-settings-and-plugins.e2e.ts:107:7 › 设置和插件管理 › API Provider配置界面可用
+  -   67 [electron-mac] › tests\e2e\05-settings-and-plugins.e2e.ts:124:7 › 设置和插件管理 › 模型管理功能可用
+  ✘   68 [electron-mac] › tests\e2e\06-complete-workflow.e2e.ts:9:7 › 完整端到端流程：项目创建→资产导入→工作流执行→导出 › 完整用户流程测试 (0ms)
+  ✘   69 [electron-linux] › tests\e2e\01-app-launch.e2e.ts:8:7 › 应用启动和基本功能 › 应用成功启动并显示主窗口 (0ms)
+  -   70 [electron-linux] › tests\e2e\01-app-launch.e2e.ts:23:7 › 应用启动和基本功能 › 应用版本号正确
+  -   71 [electron-linux] › tests\e2e\01-app-launch.e2e.ts:32:7 › 应用启动和基本功能 › 主窗口尺寸合理
+  -   72 [electron-linux] › tests\e2e\01-app-launch.e2e.ts:45:7 › 应用启动和基本功能 › 全局导航菜单渲染
+  -   73 [electron-linux] › tests\e2e\01-app-launch.e2e.ts:57:7 › 应用启动和基本功能 › 导航菜单包含核心页面链接
+  -   74 [electron-linux] › tests\e2e\01-app-launch.e2e.ts:93:7 › 应用启动和基本功能 › 应用路径配置正确
+  -   75 [electron-linux] › tests\e2e\01-app-launch.e2e.ts:107:7 › 应用启动和基本功能 › 窗口控制按钮工作正常
+  ✘   76 [electron-linux] › tests\e2e\02-project-workflow.e2e.ts:8:7 › 项目创建和管理流程 › 导航到 Dashboard 页面 (0ms)
+  -   77 [electron-linux] › tests\e2e\02-project-workflow.e2e.ts:36:7 › 项目创建和管理流程 › Dashboard 显示项目列表
+  -   78 [electron-linux] › tests\e2e\02-project-workflow.e2e.ts:64:7 › 项目创建和管理流程 › 可以查看项目详情
+  -   79 [electron-linux] › tests\e2e\02-project-workflow.e2e.ts:89:7 › 项目创建和管理流程 › 创建新项目
+  -   80 [electron-linux] › tests\e2e\02-project-workflow.e2e.ts:216:7 › 项目创建和管理流程 › 删除项目
+  ✘   81 [electron-linux] › tests\e2e\03-asset-management.e2e.ts:9:7 › 资产管理流程 › 导航到 Assets 页面 (0ms)
+  -   82 [electron-linux] › tests\e2e\03-asset-management.e2e.ts:37:7 › 资产管理流程 › Assets 页面显示资产列表
+  -   83 [electron-linux] › tests\e2e\03-asset-management.e2e.ts:70:7 › 资产管理流程 › 资产分类导航存在
+  -   84 [electron-linux] › tests\e2e\03-asset-management.e2e.ts:91:7 › 资产管理流程 › 视图切换功能可用
+  -   85 [electron-linux] › tests\e2e\03-asset-management.e2e.ts:116:7 › 资产管理流程 › 导入资产功能可用
+  -   86 [electron-linux] › tests\e2e\03-asset-management.e2e.ts:135:7 › 资产管理流程 › 搜索资产功能可用
+  -   87 [electron-linux] › tests\e2e\03-asset-management.e2e.ts:153:7 › 资产管理流程 › 资产详情查看功能可用
+  ✘   88 [electron-linux] › tests\e2e\04-workflow-execution.e2e.ts:8:7 › 工作流执行流程 › 导航到 Workflows 页面 (0ms)
+  -   89 [electron-linux] › tests\e2e\04-workflow-execution.e2e.ts:35:7 › 工作流执行流程 › Workflows 页面显示工作流模板
+  -   90 [electron-linux] › tests\e2e\04-workflow-execution.e2e.ts:63:7 › 工作流执行流程 › 可以查看工作流模板详情
+  -   91 [electron-linux] › tests\e2e\04-workflow-execution.e2e.ts:88:7 › 工作流执行流程 › 创建工作流实例功能可用
+  -   92 [electron-linux] › tests\e2e\04-workflow-execution.e2e.ts:102:7 › 工作流执行流程 › 工作流编辑器功能可用
+  -   93 [electron-linux] › tests\e2e\04-workflow-execution.e2e.ts:119:7 › 工作流执行流程 › 工作流执行按钮可用
+  -   94 [electron-linux] › tests\e2e\04-workflow-execution.e2e.ts:135:7 › 工作流执行流程 › 工作流历史功能可用
+  ✘   95 [electron-linux] › tests\e2e\05-settings-and-plugins.e2e.ts:8:7 › 设置和插件管理 › 导航到 Settings 页面 (0ms)
+  -   96 [electron-linux] › tests\e2e\05-settings-and-plugins.e2e.ts:35:7 › 设置和插件管理 › Settings 页面显示配置选项
+  -   97 [electron-linux] › tests\e2e\05-settings-and-plugins.e2e.ts:49:7 › 设置和插件管理 › 导航到 Plugins 页面
+  -   98 [electron-linux] › tests\e2e\05-settings-and-plugins.e2e.ts:76:7 › 设置和插件管理 › Plugins 页面显示已安装插件
+  -   99 [electron-linux] › tests\e2e\05-settings-and-plugins.e2e.ts:90:7 › 设置和插件管理 › 插件市场功能可用
+  -  100 [electron-linux] › tests\e2e\05-settings-and-plugins.e2e.ts:107:7 › 设置和插件管理 › API Provider配置界面可用
+  -  101 [electron-linux] › tests\e2e\05-settings-and-plugins.e2e.ts:124:7 › 设置和插件管理 › 模型管理功能可用
+  ✘  102 [electron-linux] › tests\e2e\06-complete-workflow.e2e.ts:9:7 › 完整端到端流程：项目创建→资产导入→工作流执行→导出 › 完整用户流程测试 (0ms)
+🧹 开始 E2E 测试环境清理...
+✅ E2E 测试环境清理完成
+
+
+  1) [electron-windows] › tests\e2e\01-app-launch.e2e.ts:8:7 › 应用启动和基本功能 › 应用成功启动并显示主窗口 ────────────
+
+    Error: page.isVisible: selector: expected string, got undefined
+
+      12 |
+      13 |     // 验证主窗口可见
+    > 14 |     expect(await mainWindow.isVisible()).toBe(true);
+         |                             ^
+      15 |
+      16 |     // 验证窗口标题
+      17 |     const title = await mainWindow.title();
+        at E:\Projects\Matrix\tests\e2e\01-app-launch.e2e.ts:14:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用成功启动并显示主窗口-electron-windows\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用成功启动并显示主窗口-electron-windows\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用成功启动并显示主窗口-electron-windows\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用成功启动并显示主窗口-electron-windows\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [electron-windows] › tests\e2e\01-app-launch.e2e.ts:23:7 › 应用启动和基本功能 › 应用版本号正确 ────────────────
+
+    Error: electronApplication.evaluate: ReferenceError: require is not defined
+        at eval (eval at evaluate (:290:30), <anonymous>:4:11)
+        at UtilityScript.evaluate (<anonymous>:292:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:290:30), <anonymous>:4:11)
+        at UtilityScript.evaluate (<anonymous>:292:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at ElectronApp.evaluateInMain (E:\Projects\Matrix\tests\e2e\helpers\ElectronApp.ts:121:21)
+        at ElectronApp.getAppVersion (E:\Projects\Matrix\tests\e2e\helpers\ElectronApp.ts:143:17)
+        at E:\Projects\Matrix\tests\e2e\01-app-launch.e2e.ts:24:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用版本号正确-electron-windows\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用版本号正确-electron-windows\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用版本号正确-electron-windows\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用版本号正确-electron-windows\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [electron-windows] › tests\e2e\01-app-launch.e2e.ts:32:7 › 应用启动和基本功能 › 主窗口尺寸合理 ────────────────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeTruthy[2m()[22m
+
+    Received: [31mnull[39m
+
+      34 |
+      35 |     // 验证窗口尺寸（最小宽度 800px，最小高度 600px）
+    > 36 |     expect(viewport).toBeTruthy();
+         |                      ^
+      37 |     if (viewport) {
+      38 |       expect(viewport.width).toBeGreaterThanOrEqual(800);
+      39 |       expect(viewport.height).toBeGreaterThanOrEqual(600);
+        at E:\Projects\Matrix\tests\e2e\01-app-launch.e2e.ts:36:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-主窗口尺寸合理-electron-windows\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-主窗口尺寸合理-electron-windows\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-主窗口尺寸合理-electron-windows\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-主窗口尺寸合理-electron-windows\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [electron-windows] › tests\e2e\01-app-launch.e2e.ts:93:7 › 应用启动和基本功能 › 应用路径配置正确 ───────────────
+
+    Error: electronApplication.evaluate: ReferenceError: require is not defined
+        at eval (eval at evaluate (:290:30), <anonymous>:4:11)
+        at UtilityScript.evaluate (<anonymous>:292:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:290:30), <anonymous>:4:11)
+        at UtilityScript.evaluate (<anonymous>:292:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at ElectronApp.evaluateInMain (E:\Projects\Matrix\tests\e2e\helpers\ElectronApp.ts:121:21)
+        at ElectronApp.getAppPaths (E:\Projects\Matrix\tests\e2e\helpers\ElectronApp.ts:128:17)
+        at E:\Projects\Matrix\tests\e2e\01-app-launch.e2e.ts:94:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用路径配置正确-electron-windows\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用路径配置正确-electron-windows\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用路径配置正确-electron-windows\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-应用路径配置正确-electron-windows\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [electron-windows] › tests\e2e\01-app-launch.e2e.ts:107:7 › 应用启动和基本功能 › 窗口控制按钮工作正常 ────────────
+
+    Error: page.focus: selector: expected string, got undefined
+
+      109 |
+      110 |     // 验证窗口可以获取焦点
+    > 111 |     await mainWindow.focus();
+          |                      ^
+      112 |
+      113 |     // 验证窗口标题栏存在（间接验证窗口控制按钮）
+      114 |     const hasFrame = await mainWindow.evaluate(() => {
+        at E:\Projects\Matrix\tests\e2e\01-app-launch.e2e.ts:111:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-窗口控制按钮工作正常-electron-windows\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-窗口控制按钮工作正常-electron-windows\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-窗口控制按钮工作正常-electron-windows\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-artifacts\01-app-launch.e2e.ts-应用启动和基本功能-窗口控制按钮工作正常-electron-windows\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:8:7 › 项目创建和管理流程 › 导航到 Dashboard 页面 ──
+
+    TimeoutError: page.click: Timeout 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('nav a[href*="dashboard"]')[22m
+
+
+      12 |     } catch (error) {
+      13 |       console.warn('⚠️ 使用导航辅助方法失败，尝试直接点击');
+    > 14 |       await mainWindow.click('nav a[href*="dashboard"]');
+         |                        ^
+      15 |     }
+      16 |
+      17 |     // 等待路由切换
+        at E:\Projects\Matrix\tests\e2e\02-project-workflow.e2e.ts:14:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-导航到-Dashboard-页面-electron-windows\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-导航到-Dashboard-页面-electron-windows\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-导航到-Dashboard-页面-electron-windows\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-导航到-Dashboard-页面-electron-windows\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:36:7 › 项目创建和管理流程 › Dashboard 显示项目列表 ─
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      59 |     }
+      60 |
+    > 61 |     expect(projectListFound).toBe(true);
+         |                              ^
+      62 |   });
+      63 |
+      64 |   test('可以查看项目详情', async ({ electronApp, mainWindow }) => {
+        at E:\Projects\Matrix\tests\e2e\02-project-workflow.e2e.ts:61:30
+
+    Error: page.click: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('nav a[href*="dashboard"]')[22m
+
+
+      37 |     // 导航到 Dashboard
+      38 |     await electronApp.clickNavItem('Dashboard').catch(() => {
+    > 39 |       mainWindow.click('nav a[href*="dashboard"]');
+         |                  ^
+      40 |     });
+      41 |     await electronApp.waitForLoadComplete();
+      42 |
+        at E:\Projects\Matrix\tests\e2e\02-project-workflow.e2e.ts:39:18
+        at E:\Projects\Matrix\tests\e2e\02-project-workflow.e2e.ts:38:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-Dashboard-显示项目列表-electron-windows\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-Dashboard-显示项目列表-electron-windows\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-Dashboard-显示项目列表-electron-windows\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-Dashboard-显示项目列表-electron-windows\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:64:7 › 项目创建和管理流程 › 可以查看项目详情 ─────────
+
+    Error: page.click: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('nav a[href*="dashboard"]')[22m
+
+
+      65 |     // 导航到 Dashboard
+      66 |     await electronApp.clickNavItem('Dashboard').catch(() => {
+    > 67 |       mainWindow.click('nav a[href*="dashboard"]');
+         |                  ^
+      68 |     });
+      69 |     await electronApp.waitForLoadComplete();
+      70 |
+        at E:\Projects\Matrix\tests\e2e\02-project-workflow.e2e.ts:67:18
+        at E:\Projects\Matrix\tests\e2e\02-project-workflow.e2e.ts:66:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-可以查看项目详情-electron-windows\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-可以查看项目详情-electron-windows\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-可以查看项目详情-electron-windows\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:89:7 › 项目创建和管理流程 › 创建新项目 ────────────
+
+    Error: page.click: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('nav a[href*="dashboard"]')[22m
+
+
+      90 |     // 导航到 Dashboard
+      91 |     await electronApp.clickNavItem('Dashboard').catch(() => {
+    > 92 |       mainWindow.click('nav a[href*="dashboard"]');
+         |                  ^
+      93 |     });
+      94 |     await electronApp.waitForLoadComplete();
+      95 |
+        at E:\Projects\Matrix\tests\e2e\02-project-workflow.e2e.ts:92:18
+        at E:\Projects\Matrix\tests\e2e\02-project-workflow.e2e.ts:91:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-创建新项目-electron-windows\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-创建新项目-electron-windows\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-artifacts\02-project-workflow.e2e.ts-项目创建和管理流程-创建新项目-electron-windows\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:216:7 › 项目创建和管理流程 › 删除项目 ───────────
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  11) [electron-windows] › tests\e2e\03-asset-management.e2e.ts:9:7 › 资产管理流程 › 导航到 Assets 页面 ───────
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  12) [electron-windows] › tests\e2e\04-workflow-execution.e2e.ts:8:7 › 工作流执行流程 › 导航到 Workflows 页面 ─
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  13) [electron-windows] › tests\e2e\05-settings-and-plugins.e2e.ts:8:7 › 设置和插件管理 › 导航到 Settings 页面 
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  14) [electron-windows] › tests\e2e\06-complete-workflow.e2e.ts:9:7 › 完整端到端流程：项目创建→资产导入→工作流执行→导出 › 完整用户流程测试 
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  15) [electron-mac] › tests\e2e\01-app-launch.e2e.ts:8:7 › 应用启动和基本功能 › 应用成功启动并显示主窗口 ───────────────
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  16) [electron-mac] › tests\e2e\02-project-workflow.e2e.ts:8:7 › 项目创建和管理流程 › 导航到 Dashboard 页面 ─────
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  17) [electron-mac] › tests\e2e\03-asset-management.e2e.ts:9:7 › 资产管理流程 › 导航到 Assets 页面 ───────────
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  18) [electron-mac] › tests\e2e\04-workflow-execution.e2e.ts:8:7 › 工作流执行流程 › 导航到 Workflows 页面 ─────
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  19) [electron-mac] › tests\e2e\05-settings-and-plugins.e2e.ts:8:7 › 设置和插件管理 › 导航到 Settings 页面 ────
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  20) [electron-mac] › tests\e2e\06-complete-workflow.e2e.ts:9:7 › 完整端到端流程：项目创建→资产导入→工作流执行→导出 › 完整用户流程测试 
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  21) [electron-linux] › tests\e2e\01-app-launch.e2e.ts:8:7 › 应用启动和基本功能 › 应用成功启动并显示主窗口 ─────────────
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  22) [electron-linux] › tests\e2e\02-project-workflow.e2e.ts:8:7 › 项目创建和管理流程 › 导航到 Dashboard 页面 ───
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  23) [electron-linux] › tests\e2e\03-asset-management.e2e.ts:9:7 › 资产管理流程 › 导航到 Assets 页面 ─────────
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  24) [electron-linux] › tests\e2e\04-workflow-execution.e2e.ts:8:7 › 工作流执行流程 › 导航到 Workflows 页面 ───
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  25) [electron-linux] › tests\e2e\05-settings-and-plugins.e2e.ts:8:7 › 设置和插件管理 › 导航到 Settings 页面 ──
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  26) [electron-linux] › tests\e2e\06-complete-workflow.e2e.ts:9:7 › 完整端到端流程：项目创建→资产导入→工作流执行→导出 › 完整用户流程测试 
+
+    Error: worker process exited unexpectedly (code=3221225794, signal=null)
+
+  26 failed
+    [electron-windows] › tests\e2e\01-app-launch.e2e.ts:8:7 › 应用启动和基本功能 › 应用成功启动并显示主窗口 ─────────────
+    [electron-windows] › tests\e2e\01-app-launch.e2e.ts:23:7 › 应用启动和基本功能 › 应用版本号正确 ─────────────────
+    [electron-windows] › tests\e2e\01-app-launch.e2e.ts:32:7 › 应用启动和基本功能 › 主窗口尺寸合理 ─────────────────
+    [electron-windows] › tests\e2e\01-app-launch.e2e.ts:93:7 › 应用启动和基本功能 › 应用路径配置正确 ────────────────
+    [electron-windows] › tests\e2e\01-app-launch.e2e.ts:107:7 › 应用启动和基本功能 › 窗口控制按钮工作正常 ─────────────
+    [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:8:7 › 项目创建和管理流程 › 导航到 Dashboard 页面 ───
+    [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:36:7 › 项目创建和管理流程 › Dashboard 显示项目列表 ──
+    [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:64:7 › 项目创建和管理流程 › 可以查看项目详情 ──────────
+    [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:89:7 › 项目创建和管理流程 › 创建新项目 ─────────────
+    [electron-windows] › tests\e2e\02-project-workflow.e2e.ts:216:7 › 项目创建和管理流程 › 删除项目 ─────────────
+    [electron-windows] › tests\e2e\03-asset-management.e2e.ts:9:7 › 资产管理流程 › 导航到 Assets 页面 ─────────
+    [electron-windows] › tests\e2e\04-workflow-execution.e2e.ts:8:7 › 工作流执行流程 › 导航到 Workflows 页面 ───
+    [electron-windows] › tests\e2e\05-settings-and-plugins.e2e.ts:8:7 › 设置和插件管理 › 导航到 Settings 页面 ──
+    [electron-windows] › tests\e2e\06-complete-workflow.e2e.ts:9:7 › 完整端到端流程：项目创建→资产导入→工作流执行→导出 › 完整用户流程测试 
+    [electron-mac] › tests\e2e\01-app-launch.e2e.ts:8:7 › 应用启动和基本功能 › 应用成功启动并显示主窗口 ─────────────────
+    [electron-mac] › tests\e2e\02-project-workflow.e2e.ts:8:7 › 项目创建和管理流程 › 导航到 Dashboard 页面 ───────
+    [electron-mac] › tests\e2e\03-asset-management.e2e.ts:9:7 › 资产管理流程 › 导航到 Assets 页面 ─────────────
+    [electron-mac] › tests\e2e\04-workflow-execution.e2e.ts:8:7 › 工作流执行流程 › 导航到 Workflows 页面 ───────
+    [electron-mac] › tests\e2e\05-settings-and-plugins.e2e.ts:8:7 › 设置和插件管理 › 导航到 Settings 页面 ──────
+    [electron-mac] › tests\e2e\06-complete-workflow.e2e.ts:9:7 › 完整端到端流程：项目创建→资产导入→工作流执行→导出 › 完整用户流程测试 
+    [electron-linux] › tests\e2e\01-app-launch.e2e.ts:8:7 › 应用启动和基本功能 › 应用成功启动并显示主窗口 ───────────────
+    [electron-linux] › tests\e2e\02-project-workflow.e2e.ts:8:7 › 项目创建和管理流程 › 导航到 Dashboard 页面 ─────
+    [electron-linux] › tests\e2e\03-asset-management.e2e.ts:9:7 › 资产管理流程 › 导航到 Assets 页面 ───────────
+    [electron-linux] › tests\e2e\04-workflow-execution.e2e.ts:8:7 › 工作流执行流程 › 导航到 Workflows 页面 ─────
+    [electron-linux] › tests\e2e\05-settings-and-plugins.e2e.ts:8:7 › 设置和插件管理 › 导航到 Settings 页面 ────
+    [electron-linux] › tests\e2e\06-complete-workflow.e2e.ts:9:7 › 完整端到端流程：项目创建→资产导入→工作流执行→导出 › 完整用户流程测试 
+  74 did not run
+  2 passed (3.3m)

@@ -1,0 +1,4429 @@
+{
+  "config": {
+    "configFile": "E:\\Projects\\Matrix\\playwright.config.ts",
+    "rootDir": "E:/Projects/Matrix/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "E:\\Projects\\Matrix\\tests\\e2e\\setup\\global-setup.ts",
+    "globalTeardown": "E:\\Projects\\Matrix\\tests\\e2e\\setup\\global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "E:/Projects/Matrix/test-results/e2e-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "electron-windows",
+        "name": "electron-windows",
+        "testDir": "E:/Projects/Matrix/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.e2e\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "E:/Projects/Matrix/test-results/e2e-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "electron-mac",
+        "name": "electron-mac",
+        "testDir": "E:/Projects/Matrix/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.e2e\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "E:/Projects/Matrix/test-results/e2e-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "electron-linux",
+        "name": "electron-linux",
+        "testDir": "E:/Projects/Matrix/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.e2e\\.ts/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.57.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "01-app-launch.e2e.ts",
+      "file": "01-app-launch.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "应用启动和基本功能",
+          "file": "01-app-launch.e2e.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "应用成功启动并显示主窗口",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 11013,
+                      "error": {
+                        "message": "Error: page.isVisible: selector: expected string, got undefined",
+                        "stack": "Error: page.isVisible: selector: expected string, got undefined\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:14:29",
+                        "location": {
+                          "file": "E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts",
+                          "column": 29,
+                          "line": 14
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[90m// 验证主窗口可见\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     expect(\u001b[36mawait\u001b[39m mainWindow\u001b[33m.\u001b[39misVisible())\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[90m// 验证窗口标题\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[36mconst\u001b[39m title \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m mainWindow\u001b[33m.\u001b[39mtitle()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts",
+                            "column": 29,
+                            "line": 14
+                          },
+                          "message": "Error: page.isVisible: selector: expected string, got undefined\n\n  12 |\n  13 |     // 验证主窗口可见\n> 14 |     expect(await mainWindow.isVisible()).toBe(true);\n     |                             ^\n  15 |\n  16 |     // 验证窗口标题\n  17 |     const title = await mainWindow.title();\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:14:29"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用已关闭\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:24:22.200Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-应用成功启动并显示主窗口-electron-windows\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-应用成功启动并显示主窗口-electron-windows\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-应用成功启动并显示主窗口-electron-windows\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts",
+                        "column": 29,
+                        "line": 14
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-025e4a5fea2fe0b1f0b0",
+              "file": "01-app-launch.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "应用版本号正确",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10878,
+                      "error": {
+                        "message": "Error: electronApplication.evaluate: ReferenceError: require is not defined\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: electronApplication.evaluate: ReferenceError: require is not defined\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at ElectronApp.evaluateInMain (E:\\Projects\\Matrix\\tests\\e2e\\helpers\\ElectronApp.ts:121:21)\n    at ElectronApp.getAppVersion (E:\\Projects\\Matrix\\tests\\e2e\\helpers\\ElectronApp.ts:143:17)\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:24:39",
+                        "location": {
+                          "file": "eval at evaluate (:290:30), <anonymous>",
+                          "column": 11,
+                          "line": 4
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "eval at evaluate (:290:30), <anonymous>",
+                            "column": 11,
+                            "line": 4
+                          },
+                          "message": "Error: electronApplication.evaluate: ReferenceError: require is not defined\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at ElectronApp.evaluateInMain (E:\\Projects\\Matrix\\tests\\e2e\\helpers\\ElectronApp.ts:121:21)\n    at ElectronApp.getAppVersion (E:\\Projects\\Matrix\\tests\\e2e\\helpers\\ElectronApp.ts:143:17)\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:24:39"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用已关闭\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:24:34.245Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-应用版本号正确-electron-windows\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-应用版本号正确-electron-windows\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-应用版本号正确-electron-windows\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "eval at evaluate (:290:30), <anonymous>",
+                        "column": 11,
+                        "line": 4
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-5af8add8906b1a2120c5",
+              "file": "01-app-launch.e2e.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "主窗口尺寸合理",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10910,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mnull\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mnull\u001b[39m\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:36:22",
+                        "location": {
+                          "file": "E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts",
+                          "column": 22,
+                          "line": 36
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 34 |\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[90m// 验证窗口尺寸（最小宽度 800px，最小高度 600px）\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 36 |\u001b[39m     expect(viewport)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 37 |\u001b[39m     \u001b[36mif\u001b[39m (viewport) {\n \u001b[90m 38 |\u001b[39m       expect(viewport\u001b[33m.\u001b[39mwidth)\u001b[33m.\u001b[39mtoBeGreaterThanOrEqual(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 39 |\u001b[39m       expect(viewport\u001b[33m.\u001b[39mheight)\u001b[33m.\u001b[39mtoBeGreaterThanOrEqual(\u001b[35m600\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts",
+                            "column": 22,
+                            "line": 36
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mnull\u001b[39m\n\n  34 |\n  35 |     // 验证窗口尺寸（最小宽度 800px，最小高度 600px）\n> 36 |     expect(viewport).toBeTruthy();\n     |                      ^\n  37 |     if (viewport) {\n  38 |       expect(viewport.width).toBeGreaterThanOrEqual(800);\n  39 |       expect(viewport.height).toBeGreaterThanOrEqual(600);\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:36:22"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用已关闭\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:24:46.129Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-主窗口尺寸合理-electron-windows\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-主窗口尺寸合理-electron-windows\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-主窗口尺寸合理-electron-windows\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts",
+                        "column": 22,
+                        "line": 36
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-8f28b1f5030bc095a4b4",
+              "file": "01-app-launch.e2e.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "全局导航菜单渲染",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10953,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "✅ 全局导航菜单已渲染\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用已关闭\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:24:58.075Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-1eab49fa339befc6b900",
+              "file": "01-app-launch.e2e.ts",
+              "line": 45,
+              "column": 7
+            },
+            {
+              "title": "导航菜单包含核心页面链接",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10882,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用已关闭\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "⚠️ 未找到导航项: Dashboard（可能使用图标）\n"
+                        },
+                        {
+                          "text": "⚠️ 未找到导航项: Assets（可能使用图标）\n"
+                        },
+                        {
+                          "text": "⚠️ 未找到导航项: Workflows（可能使用图标）\n"
+                        },
+                        {
+                          "text": "⚠️ 未找到导航项: Plugins（可能使用图标）\n"
+                        },
+                        {
+                          "text": "⚠️ 未找到导航项: Settings（可能使用图标）\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:25:09.048Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-fa3b329eb16c8bbf7882",
+              "file": "01-app-launch.e2e.ts",
+              "line": 57,
+              "column": 7
+            },
+            {
+              "title": "应用路径配置正确",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10853,
+                      "error": {
+                        "message": "Error: electronApplication.evaluate: ReferenceError: require is not defined\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: electronApplication.evaluate: ReferenceError: require is not defined\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at ElectronApp.evaluateInMain (E:\\Projects\\Matrix\\tests\\e2e\\helpers\\ElectronApp.ts:121:21)\n    at ElectronApp.getAppPaths (E:\\Projects\\Matrix\\tests\\e2e\\helpers\\ElectronApp.ts:128:17)\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:94:37",
+                        "location": {
+                          "file": "eval at evaluate (:290:30), <anonymous>",
+                          "column": 11,
+                          "line": 4
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "eval at evaluate (:290:30), <anonymous>",
+                            "column": 11,
+                            "line": 4
+                          },
+                          "message": "Error: electronApplication.evaluate: ReferenceError: require is not defined\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at eval (eval at evaluate (:290:30), <anonymous>:4:11)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at ElectronApp.evaluateInMain (E:\\Projects\\Matrix\\tests\\e2e\\helpers\\ElectronApp.ts:121:21)\n    at ElectronApp.getAppPaths (E:\\Projects\\Matrix\\tests\\e2e\\helpers\\ElectronApp.ts:128:17)\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:94:37"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用已关闭\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:25:19.942Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-应用路径配置正确-electron-windows\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-应用路径配置正确-electron-windows\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-应用路径配置正确-electron-windows\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "eval at evaluate (:290:30), <anonymous>",
+                        "column": 11,
+                        "line": 4
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-6b23863e76abf5f2768b",
+              "file": "01-app-launch.e2e.ts",
+              "line": 93,
+              "column": 7
+            },
+            {
+              "title": "窗口控制按钮工作正常",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10897,
+                      "error": {
+                        "message": "Error: page.focus: selector: expected string, got undefined",
+                        "stack": "Error: page.focus: selector: expected string, got undefined\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:111:22",
+                        "location": {
+                          "file": "E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts",
+                          "column": 22,
+                          "line": 111
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 109 |\u001b[39m\n \u001b[90m 110 |\u001b[39m     \u001b[90m// 验证窗口可以获取焦点\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 111 |\u001b[39m     \u001b[36mawait\u001b[39m mainWindow\u001b[33m.\u001b[39mfocus()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 112 |\u001b[39m\n \u001b[90m 113 |\u001b[39m     \u001b[90m// 验证窗口标题栏存在（间接验证窗口控制按钮）\u001b[39m\n \u001b[90m 114 |\u001b[39m     \u001b[36mconst\u001b[39m hasFrame \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m mainWindow\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts",
+                            "column": 22,
+                            "line": 111
+                          },
+                          "message": "Error: page.focus: selector: expected string, got undefined\n\n  109 |\n  110 |     // 验证窗口可以获取焦点\n> 111 |     await mainWindow.focus();\n      |                      ^\n  112 |\n  113 |     // 验证窗口标题栏存在（间接验证窗口控制按钮）\n  114 |     const hasFrame = await mainWindow.evaluate(() => {\n    at E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts:111:22"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用已关闭\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:25:31.843Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-窗口控制按钮工作正常-electron-windows\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-窗口控制按钮工作正常-electron-windows\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\01-app-launch.e2e.ts-应用启动和基本功能-窗口控制按钮工作正常-electron-windows\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "E:\\Projects\\Matrix\\tests\\e2e\\01-app-launch.e2e.ts",
+                        "column": 22,
+                        "line": 111
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-f25ecd3d07ae06d817a9",
+              "file": "01-app-launch.e2e.ts",
+              "line": 107,
+              "column": 7
+            },
+            {
+              "title": "应用成功启动并显示主窗口",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.033Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-9c04e7a3d5b68cb18826",
+              "file": "01-app-launch.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "应用版本号正确",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.033Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-799945564c5cf9cec72b",
+              "file": "01-app-launch.e2e.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "主窗口尺寸合理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-ee08a9fb86d5753de9a3",
+              "file": "01-app-launch.e2e.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "全局导航菜单渲染",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-9f7ffac7b66049b12886",
+              "file": "01-app-launch.e2e.ts",
+              "line": 45,
+              "column": 7
+            },
+            {
+              "title": "导航菜单包含核心页面链接",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-be82cffa97345df64548",
+              "file": "01-app-launch.e2e.ts",
+              "line": 57,
+              "column": 7
+            },
+            {
+              "title": "应用路径配置正确",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-0fe22cd1538f238ecf78",
+              "file": "01-app-launch.e2e.ts",
+              "line": 93,
+              "column": 7
+            },
+            {
+              "title": "窗口控制按钮工作正常",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-8f2af718336f03fce653",
+              "file": "01-app-launch.e2e.ts",
+              "line": 107,
+              "column": 7
+            },
+            {
+              "title": "应用成功启动并显示主窗口",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-a65ea5ac6cac6cfc0fa4",
+              "file": "01-app-launch.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "应用版本号正确",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-2d46dc81cf376d15fe50",
+              "file": "01-app-launch.e2e.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "主窗口尺寸合理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-28b5aeb7d31e4184bf28",
+              "file": "01-app-launch.e2e.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "全局导航菜单渲染",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-3f9e1a0dd1b34507bda3",
+              "file": "01-app-launch.e2e.ts",
+              "line": 45,
+              "column": 7
+            },
+            {
+              "title": "导航菜单包含核心页面链接",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-3ccb955ffae97d373af4",
+              "file": "01-app-launch.e2e.ts",
+              "line": 57,
+              "column": 7
+            },
+            {
+              "title": "应用路径配置正确",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-4e1d321cfc92addcc077",
+              "file": "01-app-launch.e2e.ts",
+              "line": 93,
+              "column": 7
+            },
+            {
+              "title": "窗口控制按钮工作正常",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55d568672c524c6d3d33-e6d408654056ad80bc7a",
+              "file": "01-app-launch.e2e.ts",
+              "line": 107,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "02-project-workflow.e2e.ts",
+      "file": "02-project-workflow.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "项目创建和管理流程",
+          "file": "02-project-workflow.e2e.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "导航到 Dashboard 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 50024,
+                      "error": {
+                        "message": "TimeoutError: page.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n",
+                        "stack": "TimeoutError: page.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:14:24",
+                        "location": {
+                          "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                          "column": 24,
+                          "line": 14
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m     } \u001b[36mcatch\u001b[39m (error) {\n \u001b[90m 13 |\u001b[39m       console\u001b[33m.\u001b[39mwarn(\u001b[32m'⚠️ 使用导航辅助方法失败，尝试直接点击'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m       \u001b[36mawait\u001b[39m mainWindow\u001b[33m.\u001b[39mclick(\u001b[32m'nav a[href*=\"dashboard\"]'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     }\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[90m// 等待路由切换\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                            "column": 24,
+                            "line": 14
+                          },
+                          "message": "TimeoutError: page.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n\n\n  12 |     } catch (error) {\n  13 |       console.warn('⚠️ 使用导航辅助方法失败，尝试直接点击');\n> 14 |       await mainWindow.click('nav a[href*=\"dashboard\"]');\n     |                        ^\n  15 |     }\n  16 |\n  17 |     // 等待路由切换\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:14:24"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用已关闭\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "⚠️ 使用导航辅助方法失败，尝试直接点击\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:25:43.768Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-导航到-Dashboard-页面-electron-windows\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-导航到-Dashboard-页面-electron-windows\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-导航到-Dashboard-页面-electron-windows\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                        "column": 24,
+                        "line": 14
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-9b62318be0b1c3328d86",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "Dashboard 显示项目列表",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19879,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:61:30",
+                        "location": {
+                          "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                          "column": 30,
+                          "line": 61
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 59 |\u001b[39m     }\n \u001b[90m 60 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 61 |\u001b[39m     expect(projectListFound)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 62 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 63 |\u001b[39m\n \u001b[90m 64 |\u001b[39m   test(\u001b[32m'可以查看项目详情'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ electronApp\u001b[33m,\u001b[39m mainWindow }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                            "column": 30,
+                            "line": 61
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  59 |     }\n  60 |\n> 61 |     expect(projectListFound).toBe(true);\n     |                              ^\n  62 |   });\n  63 |\n  64 |   test('可以查看项目详情', async ({ electronApp, mainWindow }) => {\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:61:30"
+                        },
+                        {
+                          "location": {
+                            "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                            "column": 18,
+                            "line": 39
+                          },
+                          "message": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n\n\n  37 |     // 导航到 Dashboard\n  38 |     await electronApp.clickNavItem('Dashboard').catch(() => {\n> 39 |       mainWindow.click('nav a[href*=\"dashboard\"]');\n     |                  ^\n  40 |     });\n  41 |     await electronApp.waitForLoadComplete();\n  42 |\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:39:18\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:38:5"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "✅ 页面加载完成\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:26:34.820Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-Dashboard-显示项目列表-electron-windows\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-Dashboard-显示项目列表-electron-windows\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-Dashboard-显示项目列表-electron-windows\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                        "column": 30,
+                        "line": 61
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-c423a1314f84b983ea80",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "可以查看项目详情",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19890,
+                      "error": {
+                        "message": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n",
+                        "stack": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:67:18\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:66:5",
+                        "location": {
+                          "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                          "column": 18,
+                          "line": 67
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 65 |\u001b[39m     \u001b[90m// 导航到 Dashboard\u001b[39m\n \u001b[90m 66 |\u001b[39m     \u001b[36mawait\u001b[39m electronApp\u001b[33m.\u001b[39mclickNavItem(\u001b[32m'Dashboard'\u001b[39m)\u001b[33m.\u001b[39m\u001b[36mcatch\u001b[39m(() \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 67 |\u001b[39m       mainWindow\u001b[33m.\u001b[39mclick(\u001b[32m'nav a[href*=\"dashboard\"]'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 68 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 69 |\u001b[39m     \u001b[36mawait\u001b[39m electronApp\u001b[33m.\u001b[39mwaitForLoadComplete()\u001b[33m;\u001b[39m\n \u001b[90m 70 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                            "column": 18,
+                            "line": 67
+                          },
+                          "message": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n\n\n  65 |     // 导航到 Dashboard\n  66 |     await electronApp.clickNavItem('Dashboard').catch(() => {\n> 67 |       mainWindow.click('nav a[href*=\"dashboard\"]');\n     |                  ^\n  68 |     });\n  69 |     await electronApp.waitForLoadComplete();\n  70 |\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:67:18\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:66:5"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "✅ 页面加载完成\n"
+                        },
+                        {
+                          "text": "⚠️ 未找到项目卡片（可能没有项目）\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:26:55.861Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-可以查看项目详情-electron-windows\\test-failed-1.png"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-可以查看项目详情-electron-windows\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                        "column": 18,
+                        "line": 67
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-a58b11bdfe137c5842b4",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 64,
+              "column": 7
+            },
+            {
+              "title": "创建新项目",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 22963,
+                      "error": {
+                        "message": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n",
+                        "stack": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:92:18\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:91:5",
+                        "location": {
+                          "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                          "column": 18,
+                          "line": 92
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 90 |\u001b[39m     \u001b[90m// 导航到 Dashboard\u001b[39m\n \u001b[90m 91 |\u001b[39m     \u001b[36mawait\u001b[39m electronApp\u001b[33m.\u001b[39mclickNavItem(\u001b[32m'Dashboard'\u001b[39m)\u001b[33m.\u001b[39m\u001b[36mcatch\u001b[39m(() \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 92 |\u001b[39m       mainWindow\u001b[33m.\u001b[39mclick(\u001b[32m'nav a[href*=\"dashboard\"]'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 93 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 94 |\u001b[39m     \u001b[36mawait\u001b[39m electronApp\u001b[33m.\u001b[39mwaitForLoadComplete()\u001b[33m;\u001b[39m\n \u001b[90m 95 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                            "column": 18,
+                            "line": 92
+                          },
+                          "message": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('nav a[href*=\"dashboard\"]')\u001b[22m\n\n\n  90 |     // 导航到 Dashboard\n  91 |     await electronApp.clickNavItem('Dashboard').catch(() => {\n> 92 |       mainWindow.click('nav a[href*=\"dashboard\"]');\n     |                  ^\n  93 |     });\n  94 |     await electronApp.waitForLoadComplete();\n  95 |\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:92:18\n    at E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts:91:5"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 启动 Electron 应用...\n"
+                        },
+                        {
+                          "text": "  可执行文件: E:\\Projects\\Matrix\\node_modules\\electron\\dist\\electron.exe\n"
+                        },
+                        {
+                          "text": "  主脚本: E:\\Projects\\Matrix\\build\\main\\index.js\n"
+                        },
+                        {
+                          "text": "✅ Electron 应用启动成功\n"
+                        },
+                        {
+                          "text": "✅ 应用已完全加载\n"
+                        },
+                        {
+                          "text": "✅ 页面加载完成\n"
+                        },
+                        {
+                          "text": "✅ 点击创建按钮: button:has-text(\"新建项目\")\n"
+                        },
+                        {
+                          "text": "⚠️ 未能验证项目创建（可能需要刷新或其他操作）\n"
+                        },
+                        {
+                          "text": "🛑 关闭 Electron 应用...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:16.880Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-创建新项目-electron-windows\\test-failed-1.png"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "E:\\Projects\\Matrix\\test-results\\e2e-artifacts\\02-project-workflow.e2e.ts-项目创建和管理流程-创建新项目-electron-windows\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "E:\\Projects\\Matrix\\tests\\e2e\\02-project-workflow.e2e.ts",
+                        "column": 18,
+                        "line": 92
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-0ece5b332e6dfd706279",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 89,
+              "column": 7
+            },
+            {
+              "title": "删除项目",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.011Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-9d6d26ca63f4bc25ae12",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 216,
+              "column": 7
+            },
+            {
+              "title": "导航到 Dashboard 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-8ed33e7a351571e70571",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "Dashboard 显示项目列表",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-0d591777f54e063bda84",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "可以查看项目详情",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-8919255e1e339a5a4d17",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 64,
+              "column": 7
+            },
+            {
+              "title": "创建新项目",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-fe54ba0c72377beeb028",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 89,
+              "column": 7
+            },
+            {
+              "title": "删除项目",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-fd62fd53563c180810eb",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 216,
+              "column": 7
+            },
+            {
+              "title": "导航到 Dashboard 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-8638d22e53438d6045c9",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "Dashboard 显示项目列表",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-1fe747a3977fefd3a568",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "可以查看项目详情",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-f4c7e44911fe8f967ead",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 64,
+              "column": 7
+            },
+            {
+              "title": "创建新项目",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-b829f7ee510ebfa59906",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 89,
+              "column": 7
+            },
+            {
+              "title": "删除项目",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.058Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "10583701fb1f473a9aac-4974f68c72e1fd8bf8ce",
+              "file": "02-project-workflow.e2e.ts",
+              "line": 216,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "03-asset-management.e2e.ts",
+      "file": "03-asset-management.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "资产管理流程",
+          "file": "03-asset-management.e2e.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "导航到 Assets 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.011Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-a166386e6684d9ef29ba",
+              "file": "03-asset-management.e2e.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "Assets 页面显示资产列表",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.011Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-9bd57d5b4740083a9900",
+              "file": "03-asset-management.e2e.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "资产分类导航存在",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.012Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-0e556b7ba6736b9745a1",
+              "file": "03-asset-management.e2e.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "视图切换功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.012Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-fe4e744669e6bd3cc651",
+              "file": "03-asset-management.e2e.ts",
+              "line": 91,
+              "column": 7
+            },
+            {
+              "title": "导入资产功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.012Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-cdf0d60cbc4d4c54f53c",
+              "file": "03-asset-management.e2e.ts",
+              "line": 116,
+              "column": 7
+            },
+            {
+              "title": "搜索资产功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.012Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-9fea0f64ed92fc9890ec",
+              "file": "03-asset-management.e2e.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "资产详情查看功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.012Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-fa226097edc5e027f804",
+              "file": "03-asset-management.e2e.ts",
+              "line": 153,
+              "column": 7
+            },
+            {
+              "title": "导航到 Assets 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.041Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-9031c48fdec18b11e1dd",
+              "file": "03-asset-management.e2e.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "Assets 页面显示资产列表",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-0fe6de866a25fb2c8794",
+              "file": "03-asset-management.e2e.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "资产分类导航存在",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-fdcc82978d04d021bad6",
+              "file": "03-asset-management.e2e.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "视图切换功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-58f46b0bee3f40781aa5",
+              "file": "03-asset-management.e2e.ts",
+              "line": 91,
+              "column": 7
+            },
+            {
+              "title": "导入资产功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-3272ea9bee09de811394",
+              "file": "03-asset-management.e2e.ts",
+              "line": 116,
+              "column": 7
+            },
+            {
+              "title": "搜索资产功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-02197a2b3754bfc0fdd2",
+              "file": "03-asset-management.e2e.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "资产详情查看功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-1e3daea7b736411ebb0c",
+              "file": "03-asset-management.e2e.ts",
+              "line": 153,
+              "column": 7
+            },
+            {
+              "title": "导航到 Assets 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.065Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-7a8a3913c6cbfd79913a",
+              "file": "03-asset-management.e2e.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "Assets 页面显示资产列表",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.065Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-dda624e40741531f1a67",
+              "file": "03-asset-management.e2e.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "资产分类导航存在",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.065Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-a7ad5c99839ba4d58fac",
+              "file": "03-asset-management.e2e.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "视图切换功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.065Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-164d54e494ef85e48da3",
+              "file": "03-asset-management.e2e.ts",
+              "line": 91,
+              "column": 7
+            },
+            {
+              "title": "导入资产功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.065Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-f922eed854bc9edf1c83",
+              "file": "03-asset-management.e2e.ts",
+              "line": 116,
+              "column": 7
+            },
+            {
+              "title": "搜索资产功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.065Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-dbfc4c4fc38f0ae3d6da",
+              "file": "03-asset-management.e2e.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "资产详情查看功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.065Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "26f9a97e65b596f677e2-d7e75e82b1c6f6307197",
+              "file": "03-asset-management.e2e.ts",
+              "line": 153,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "04-workflow-execution.e2e.ts",
+      "file": "04-workflow-execution.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "工作流执行流程",
+          "file": "04-workflow-execution.e2e.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "导航到 Workflows 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.018Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-2add509841cf63c088a1",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "Workflows 页面显示工作流模板",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.018Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-dcad7d17360dad867415",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "可以查看工作流模板详情",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-03687396275796a26e50",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 63,
+              "column": 7
+            },
+            {
+              "title": "创建工作流实例功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-9ca2356e196b1754ae46",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 88,
+              "column": 7
+            },
+            {
+              "title": "工作流编辑器功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-09293e3df68c41a7c5d7",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 102,
+              "column": 7
+            },
+            {
+              "title": "工作流执行按钮可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-a43bc0b76a06fc5fcc62",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 119,
+              "column": 7
+            },
+            {
+              "title": "工作流历史功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-50dafa0230e0c7e6df04",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "导航到 Workflows 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-368c3dd374d36407a5f3",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "Workflows 页面显示工作流模板",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-f1aa030d0815c6157522",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "可以查看工作流模板详情",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-f1270e4c7ce2d3497a16",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 63,
+              "column": 7
+            },
+            {
+              "title": "创建工作流实例功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-146fbb80268eba9730b5",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 88,
+              "column": 7
+            },
+            {
+              "title": "工作流编辑器功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.043Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-a1f3ce19def0c5d4e81d",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 102,
+              "column": 7
+            },
+            {
+              "title": "工作流执行按钮可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.043Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-37cff67a12f5aeb88ec6",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 119,
+              "column": 7
+            },
+            {
+              "title": "工作流历史功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.043Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-f85c5593863c0708bfe2",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "导航到 Workflows 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.066Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-fe55d1e3b6de9d92e2ec",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "Workflows 页面显示工作流模板",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.066Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-a082edc9f91a220a2699",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "可以查看工作流模板详情",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.066Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-e9d07ae91c389a75aab3",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 63,
+              "column": 7
+            },
+            {
+              "title": "创建工作流实例功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.066Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-6bcf89c2a27ab73b0388",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 88,
+              "column": 7
+            },
+            {
+              "title": "工作流编辑器功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.066Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-48af53d084d9354349ac",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 102,
+              "column": 7
+            },
+            {
+              "title": "工作流执行按钮可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.066Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-aa2bb2e5400439b745e4",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 119,
+              "column": 7
+            },
+            {
+              "title": "工作流历史功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.066Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e074c21f269a775cfa20-5239ab3b61cc41369cfa",
+              "file": "04-workflow-execution.e2e.ts",
+              "line": 135,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "05-settings-and-plugins.e2e.ts",
+      "file": "05-settings-and-plugins.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "设置和插件管理",
+          "file": "05-settings-and-plugins.e2e.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "导航到 Settings 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "70f9123173b19e300119-bd3239ba499fda7409af",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "Settings 页面显示配置选项",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-7f4984ada37dfd78d16e",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "导航到 Plugins 页面",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-60ee220a0a4def549b34",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 49,
+              "column": 7
+            },
+            {
+              "title": "Plugins 页面显示已安装插件",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-0744c51d19bb9d3c72c4",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 76,
+              "column": 7
+            },
+            {
+              "title": "插件市场功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-d68322e4fcf14e684b80",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 90,
+              "column": 7
+            },
+            {
+              "title": "API Provider配置界面可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-c41d85f382a8eab6e667",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 107,
+              "column": 7
+            },
+            {
+              "title": "模型管理功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.020Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-0d6f088e108a1a38f442",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 124,
+              "column": 7
+            },
+            {
+              "title": "导航到 Settings 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "70f9123173b19e300119-23f0606c02f163d6c196",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "Settings 页面显示配置选项",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-b11f4709ea6888b61ecb",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "导航到 Plugins 页面",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-bc9e3f209584f3fa35a6",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 49,
+              "column": 7
+            },
+            {
+              "title": "Plugins 页面显示已安装插件",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-10e7f2419963c3202a7a",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 76,
+              "column": 7
+            },
+            {
+              "title": "插件市场功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-3b2a4d8aec4b009cbbcd",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 90,
+              "column": 7
+            },
+            {
+              "title": "API Provider配置界面可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-8d33bedce331e6c7bf50",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 107,
+              "column": 7
+            },
+            {
+              "title": "模型管理功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-2d7d16b877682234442c",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 124,
+              "column": 7
+            },
+            {
+              "title": "导航到 Settings 页面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "70f9123173b19e300119-a2d357820d39a4d350af",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "Settings 页面显示配置选项",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-63b4d529f6471656ec14",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "导航到 Plugins 页面",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-050f5d0a10c88ff4175d",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 49,
+              "column": 7
+            },
+            {
+              "title": "Plugins 页面显示已安装插件",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-18303e758f6454cab451",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 76,
+              "column": 7
+            },
+            {
+              "title": "插件市场功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-a92ef11fb697e13382bb",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 90,
+              "column": 7
+            },
+            {
+              "title": "API Provider配置界面可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-edcf56fe527e0fa04acb",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 107,
+              "column": 7
+            },
+            {
+              "title": "模型管理功能可用",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f9123173b19e300119-614e864234ac2239225c",
+              "file": "05-settings-and-plugins.e2e.ts",
+              "line": 124,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "06-complete-workflow.e2e.ts",
+      "file": "06-complete-workflow.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "完整端到端流程：项目创建→资产导入→工作流执行→导出",
+          "file": "06-complete-workflow.e2e.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "完整用户流程测试",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-windows",
+                  "projectName": "electron-windows",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.026Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "5d5db3b615a56ada74bc-9fa8aa7d687b8fdb08d5",
+              "file": "06-complete-workflow.e2e.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "完整用户流程测试",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-mac",
+                  "projectName": "electron-mac",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "5d5db3b615a56ada74bc-28befa349e4a8a6af05c",
+              "file": "06-complete-workflow.e2e.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "完整用户流程测试",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "electron-linux",
+                  "projectName": "electron-linux",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: worker process exited unexpectedly (code=3221225794, signal=null)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-29T04:27:40.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "5d5db3b615a56ada74bc-d309688242eb65a7af78",
+              "file": "06-complete-workflow.e2e.ts",
+              "line": 9,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-12-29T04:24:21.014Z",
+    "duration": 199062.57,
+    "expected": 2,
+    "skipped": 74,
+    "unexpected": 26,
+    "flaky": 0
+  }
+}

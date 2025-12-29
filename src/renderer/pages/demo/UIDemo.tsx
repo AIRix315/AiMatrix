@@ -251,7 +251,7 @@ export default function UIDemo() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm">版本:</span>
-              <Badge variant="outline">v0.2.9.5</Badge>
+              <Badge variant="outline">v0.3.7</Badge>
             </div>
           </div>
         </CardContent>

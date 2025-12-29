@@ -1,6 +1,7 @@
 /* =========================================
    Settings Page Styles (设置页样式)
    从 docs/references/UI/matrix 提取
+   使用CSS变量支持主题切换
    ========================================= */
 
 /* =========================================
@@ -17,8 +18,8 @@
    ========================================= */
 .settings-sidebar {
     width: 260px;
-    background: #1a1a1a;
-    border-right: 1px solid #333;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -29,7 +30,7 @@
    ========================================= */
 .settings-search-box {
     padding: 15px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border-color);
 }
 
 /* =========================================
@@ -47,20 +48,20 @@
     padding: 10px 20px;
     cursor: pointer;
     border-left: 3px solid transparent;
-    color: #aaa;
+    color: var(--text-secondary);
     transition: background 0.2s;
     gap: 10px;
 }
 
 .provider-item:hover {
-    background: #222;
-    color: #ddd;
+    background: var(--bg-tertiary);
+    color: var(--text-main);
 }
 
 .provider-item.active {
-    background: #252525;
+    background: var(--bg-card);
     border-left-color: var(--accent-color);
-    color: #fff;
+    color: var(--text-main);
     font-weight: 500;
 }
 
@@ -71,13 +72,13 @@
     width: 20px;
     height: 20px;
     border-radius: 4px;
-    background: #333;
+    background: var(--bg-tertiary);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 10px;
     font-weight: bold;
-    color: #ccc;
+    color: var(--text-secondary);
 }
 
 /* =========================================
@@ -87,7 +88,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #444;
+    background: var(--border-secondary);
     margin-left: auto;
 }
 
@@ -101,7 +102,7 @@
    ========================================= */
 .sidebar-bottom-actions {
     padding: 15px;
-    border-top: 1px solid #333;
+    border-top: 1px solid var(--border-color);
 }
 
 /* =========================================
@@ -109,7 +110,7 @@
    ========================================= */
 .settings-content {
     flex: 1;
-    background: #141414;
+    background: var(--bg-header);
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -135,12 +136,12 @@
    ========================================= */
 .settings-content-header {
     height: 60px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 30px;
-    background: #1a1a1a;
+    background: var(--bg-secondary);
     flex-shrink: 0;
 }
 
@@ -153,6 +154,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    color: var(--text-main);
 }
 
 /* =========================================
@@ -179,7 +181,7 @@
 .config-label {
     font-size: 12px;
     font-weight: bold;
-    color: #888;
+    color: var(--text-secondary);
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -197,7 +199,7 @@
    ========================================= */
 .input-label {
     display: block;
-    color: #ccc;
+    color: var(--text-main);
     margin-bottom: 6px;
     font-size: 13px;
 }
@@ -215,8 +217,8 @@
    Model Item Card
    ========================================= */
 .model-item-card {
-    background: #1f1f1f;
-    border: 1px solid #333;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 12px;
     display: flex;
@@ -226,8 +228,8 @@
 }
 
 .model-item-card:hover {
-    border-color: #555;
-    background: #252525;
+    border-color: var(--border-secondary);
+    background: var(--bg-hover);
 }
 
 /* =========================================
@@ -236,7 +238,7 @@
 .model-icon {
     width: 32px;
     height: 32px;
-    background: #333;
+    background: var(--bg-tertiary);
     border-radius: 4px;
     display: flex;
     align-items: center;
@@ -258,7 +260,7 @@
 .model-id {
     font-weight: bold;
     font-size: 13px;
-    color: #fff;
+    color: var(--text-main);
     margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
@@ -270,7 +272,7 @@
    ========================================= */
 .model-ctx {
     font-size: 11px;
-    color: #777;
+    color: var(--text-muted);
 }
 
 /* =========================================

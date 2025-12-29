@@ -1,15 +1,16 @@
 /* =========================================
    Component Styles
    从设计原型提取的组件样式
+   使用CSS变量支持主题切换
    ========================================= */
 
 /* =========================================
    Action Buttons
    ========================================= */
 .action-btn {
-    background: #333;
-    border: 1px solid #444;
-    color: #fff;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
     padding: 6px 12px;
     border-radius: 4px;
     cursor: pointer;
@@ -22,27 +23,27 @@
 
 .action-btn.primary {
     background: var(--accent-color);
-    color: #000;
+    color: var(--primary-foreground);
     border: none;
     font-weight: bold;
 }
 
 .action-btn:hover {
     opacity: 0.9;
-    border-color: #666;
+    border-color: var(--border-secondary);
 }
 
 .action-btn.active {
-    background: #555;
-    border-color: #777;
+    background: var(--bg-hover);
+    border-color: var(--border-secondary);
 }
 
 .action-btn.disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: #222;
-    border-color: #333;
-    color: #777;
+    background: var(--bg-secondary);
+    border-color: var(--border-primary);
+    color: var(--text-muted);
 }
 
 /* =========================================
@@ -62,8 +63,8 @@
 }
 
 .project-card {
-    background: #252525;
-    border: 1px solid #333;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     overflow: hidden;
     cursor: pointer;
@@ -78,11 +79,11 @@
 
 .card-img {
     height: 120px;
-    background: #333;
+    background: var(--bg-tertiary);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #555;
+    color: var(--text-muted);
     font-size: 30px;
 }
 
@@ -94,23 +95,24 @@
     font-weight: bold;
     font-size: 14px;
     margin-bottom: 4px;
+    color: var(--text-main);
 }
 
 .card-info {
     font-size: 11px;
-    color: #888;
+    color: var(--text-secondary);
 }
 
 .card-tag {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgba(0,0,0,0.6);
+    background: var(--bg-canvas);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 10px;
-    color: #ccc;
-    border: 1px solid #444;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
 }
 
 /* =========================================
@@ -136,7 +138,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #333;
+    background-color: var(--bg-tertiary);
     transition: .4s;
     border-radius: 20px;
 }
@@ -148,7 +150,7 @@
     width: 14px;
     left: 3px;
     bottom: 3px;
-    background-color: white;
+    background-color: var(--foreground);
     transition: .4s;
     border-radius: 50%;
 }
@@ -166,8 +168,8 @@ input:checked + .slider:before {
    ========================================= */
 .input-field {
     width: 100%;
-    background: #0f0f0f;
-    border: 1px solid #333;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
     color: var(--text-main);
     padding: 10px;
     border-radius: 6px;
@@ -183,9 +185,9 @@ input:checked + .slider:before {
 
 .search-input {
     width: 100%;
-    background: #111;
-    border: 1px solid #444;
-    color: #fff;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
     padding: 6px 10px;
     border-radius: 4px;
     font-size: 12px;
@@ -215,7 +217,7 @@ input:checked + .slider:before {
 }
 
 .layout-btn:hover {
-    background: rgba(255,255,255,0.1);
+    background: var(--bg-hover);
     color: var(--text-main);
 }
 
@@ -224,11 +226,11 @@ input:checked + .slider:before {
    ========================================= */
 .view-switch-container {
     display: flex;
-    background: #222;
+    background: var(--bg-secondary);
     border-radius: 4px;
     padding: 2px;
     margin-right: 16px;
-    border: 1px solid #333;
+    border: 1px solid var(--border-color);
     transition: opacity 0.3s;
 }
 
@@ -236,21 +238,21 @@ input:checked + .slider:before {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px;
+    padding: 3px 10px;
     cursor: pointer;
     border-radius: 3px;
     font-size: 11px;
-    color: #888;
+    color: var(--text-secondary);
     transition: all 0.2s;
 }
 
 .view-switch-btn:hover {
-    color: #ccc;
+    color: var(--text-main);
 }
 
 .view-switch-btn.active {
-    background: #333;
-    color: #fff;
+    background: var(--bg-tertiary);
+    color: var(--text-main);
     font-weight: 500;
     box-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }

@@ -11,7 +11,7 @@ const About: React.FC = () => {
     <div className="about-page">
       <div className="about-content">
         <h2 style={{ marginBottom: '10px', color: 'var(--accent-color)' }}>MATRIX Studio</h2>
-        <p style={{ color: '#aaa', fontSize: '12px', marginBottom: '20px' }}>Version v0.2.9.5</p>
+        <p style={{ color: '#aaa', fontSize: '12px', marginBottom: '20px' }}>Version v0.3.7</p>
         <p style={{ color: '#666', fontSize: '11px', marginBottom: '20px' }}>All systems operational.</p>
 
         <div style={{ marginTop: '30px', display: 'flex', gap: '15px', justifyContent: 'center' }}>

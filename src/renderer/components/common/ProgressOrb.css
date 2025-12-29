@@ -5,15 +5,20 @@
  */
 
 .progress-orb {
+  /* 半径控制变量（缩减1/3：50 * 2/3 ≈ 33） */
+  --radius: 33px;
+
   position: fixed;
   right: 0;
   top: 50%;
   transform: translateY(-50%);
 
   /* 半圆形状（左半圆吸附右侧边缘）*/
-  width: 80px;
-  height: 80px;
-  border-radius: 50% 0 0 50%;
+  /* 宽度 = 半径，高度 = 直径 */
+  width: var(--radius);
+  height: calc(var(--radius) * 2);
+  /* 左上、右上、右下、左下 */
+  border-radius: var(--radius) 0 0 var(--radius);
 
   background: oklch(0.16 0 0);
   border: 2px solid oklch(0.24 0 0);
@@ -45,7 +50,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: 50% 0 0 50%;
+  border-radius: var(--radius) 0 0 var(--radius);
 }
 
 /* 水位填充 */
@@ -91,11 +96,11 @@
 .task-count {
   position: relative;
   z-index: 2;
-  font-size: 24px;
-  font-weight: 700;
-  color: oklch(0.92 0 0);
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
   font-family: "JetBrains Mono", monospace;
-  text-shadow: 0 0 8px oklch(0 0 0 / 0.5);
+  text-shadow: 0 0 4px oklch(0 0 0 / 0.3);
 }
 
 /* 生成中脉动动画 */
