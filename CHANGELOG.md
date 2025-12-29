@@ -4,8 +4,56 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 1.0.0 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.8] - 2025-12-29
+
+### Fixed
+- fix(routing): 修复快捷方式路由逻辑混乱问题
+  - 区分插件类型快捷方式（`plugin`）和工作流类型快捷方式（`workflow`）
+  - 插件快捷方式：跳转到 `/workflows/{pluginId}`（WorkflowExecutor，步骤面板执行）
+  - 工作流快捷方式：跳转到 `/workflows/editor/{workflowId}`（WorkflowEditor，节点图编辑）
+  - 修复文件：`src/renderer/components/common/GlobalNav.tsx`
+
+- fix(workflow): 修复 WorkflowExecutor 硬编码"小说转视频"步骤的问题
+  - 从 `workflowRegistry` 动态加载工作流定义，支持多种插件工作流
+  - 添加组件映射表（`componentMap`），根据 `componentType` 动态渲染步骤面板
+  - 工作流名称从定义中读取，不再硬编码
+  - 修复文件：`src/renderer/pages/workflows/WorkflowExecutor.tsx`
+
+- fix(plugin): 修复插件页面点击插件卡片无法启动工作流的问题
+  - 点击插件卡片：直接启动工作流（跳转到执行界面）
+  - 新增"查看详情"按钮（ⓘ）：查看插件信息（版本、作者、权限、路径等）
+  - 保留"添加快捷方式"按钮（📌）和"卸载"按钮（🗑️）
+  - 修复文件：`src/renderer/pages/plugins/Plugins.tsx`
+
+### Changed
+- chore(registry): 注册"小说转视频"工作流定义到 WorkflowRegistry
+  - 在应用启动时注册 `novelToVideoWorkflow` 定义
+  - 添加注册验证逻辑，确保工作流可被查询
+  - 修复文件：`src/main/index.ts`
+
+- chore(logging): 增强工作流查询调试日志
+  - 记录查询的工作流类型（`type`）
+  - 列出所有已注册的工作流类型，便于排查注册问题
+  - 记录查询成功/失败的详细信息
+  - 修复文件：`src/main/ipc/workflow-handlers.ts`
+
+### Technical Details
+- 快捷方式类型定义：
+  - `project`：项目快捷方式 → `/projects/{projectId}`
+  - `workflow`：工作流快捷方式 → `/workflows/editor/{workflowId}`（WorkflowEditor）
+  - `plugin`：插件快捷方式 → `/workflows/{pluginId}`（WorkflowExecutor）
+- 工作流架构澄清：
+  - **工作流/插件** = **模板**（定义流程逻辑，无数据）
+  - **项目** = **实例**（带命名的文件夹，包含数据和资源）
+  - **WorkflowEditor**：节点图编辑器，用于创建自定义工作流（基于 @xyflow/react）
+  - **WorkflowExecutor**：步骤化面板，用于执行插件封装的工作流（如"小说转视频"）
+- 核心关系：（本项目工作流）→（打包封装）→（插件）
 
 ---
 

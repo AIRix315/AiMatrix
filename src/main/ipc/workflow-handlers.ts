@@ -35,10 +35,24 @@ export function registerWorkflowHandlers(): void {
    */
   ipcMain.handle('workflow:getDefinition', async (_event, type: string) => {
     try {
+      logger.info(`查询工作流定义: ${type}`, 'workflow-handlers')
+
+      // 调试：列出所有已注册的工作流
+      const allDefinitions = workflowRegistry.listAll()
+      logger.info(`当前已注册的工作流数量: ${allDefinitions.length}`, 'workflow-handlers', {
+        types: allDefinitions.map(d => d.type)
+      })
+
       const definition = workflowRegistry.getDefinition(type)
       if (!definition) {
+        logger.error(`工作流定义不存在: ${type}`, 'workflow-handlers', {
+          requestedType: type,
+          availableTypes: allDefinitions.map(d => d.type)
+        })
         throw new Error(`工作流定义不存在: ${type}`)
       }
+
+      logger.info(`成功获取工作流定义: ${definition.name}`, 'workflow-handlers')
       return definition
     } catch (error) {
       logger.error('获取工作流定义失败', 'workflow-handlers', { error, type })

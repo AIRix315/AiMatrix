@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Pin, Trash2 } from 'lucide-react';
 import { Card, Button, Loading, Toast, ConfirmDialog, Modal, ViewSwitcher } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
@@ -23,6 +23,7 @@ interface PluginInfo {
 
 const Plugins: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [plugins, setPlugins] = useState<PluginInfo[]>([]);
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -110,6 +111,13 @@ const Plugins: React.FC = () => {
   // }, [showInstallModal, selectedTag, searchKeyword, sortBy]);
 
   const handleOpenPlugin = (plugin: PluginInfo) => {
+    // 插件类型（如"小说转视频"）：直接跳转到工作流执行器
+    // 用户可以通过右键菜单或其他方式查看插件详情
+    navigate(`/workflows/${plugin.id}`);
+  };
+
+  const handleViewPluginDetails = (e: React.MouseEvent, plugin: PluginInfo) => {
+    e.stopPropagation();
     setSelectedPlugin(plugin);
   };
 
@@ -295,6 +303,14 @@ const Plugins: React.FC = () => {
                           <Pin size={16} />
                         </button>
                         <button
+                          className="info-btn"
+                          onClick={(e) => handleViewPluginDetails(e, plugin)}
+                          title="查看详情"
+                          style={{ padding: '4px 8px', fontSize: '12px' }}
+                        >
+                          ⓘ
+                        </button>
+                        <button
                           className="delete-btn"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -333,6 +349,14 @@ const Plugins: React.FC = () => {
                           title="添加到菜单栏"
                         >
                           <Pin size={16} />
+                        </button>
+                        <button
+                          className="info-btn"
+                          onClick={(e) => handleViewPluginDetails(e, plugin)}
+                          title="查看详情"
+                          style={{ padding: '4px 8px', fontSize: '12px' }}
+                        >
+                          ⓘ
                         </button>
                         <button
                           className="delete-btn"
@@ -386,6 +410,14 @@ const Plugins: React.FC = () => {
                           <Pin size={16} />
                         </button>
                         <button
+                          className="info-btn"
+                          onClick={(e) => handleViewPluginDetails(e, plugin)}
+                          title="查看详情"
+                          style={{ padding: '4px 8px', fontSize: '12px' }}
+                        >
+                          ⓘ
+                        </button>
+                        <button
                           className="delete-btn"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -424,6 +456,14 @@ const Plugins: React.FC = () => {
                           title="添加到菜单栏"
                         >
                           <Pin size={16} />
+                        </button>
+                        <button
+                          className="info-btn"
+                          onClick={(e) => handleViewPluginDetails(e, plugin)}
+                          title="查看详情"
+                          style={{ padding: '4px 8px', fontSize: '12px' }}
+                        >
+                          ⓘ
                         </button>
                         <button
                           className="delete-btn"

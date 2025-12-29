@@ -118,11 +118,12 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
         navigate(`/projects/${shortcut.targetId}`);
         break;
       case 'workflow':
-        navigate(`/workflows/${shortcut.targetId}`);
+        // 工作流类型：跳转到工作流编辑器（自定义工作流用节点图编辑）
+        navigate(`/workflows/editor/${shortcut.targetId}`);
         break;
       case 'plugin':
-        // 插件类型：跳转到插件页面，通过 state 传递要高亮的插件 ID
-        navigate('/plugins', { state: { selectedPluginId: shortcut.targetId } });
+        // 插件类型：跳转到工作流执行器（插件工作流用步骤面板执行）
+        navigate(`/workflows/${shortcut.targetId}`);
         break;
     }
   };

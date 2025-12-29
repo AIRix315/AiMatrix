@@ -41,6 +41,7 @@ interface WorkflowStep {
 }
 
 interface WorkflowState {
+  name: string;
   currentStepIndex: number;
   steps: WorkflowStep[];
   data: Record<string, any>;
@@ -242,48 +243,46 @@ const WorkflowExecutor: React.FC = () => {
     try {
       setLoading(true);
 
-      // TODO: 从主进程加载工作流实例状态
-      // const workflow = await window.electronAPI.loadWorkflowInstance(workflowId);
+      // eslint-disable-next-line no-console
+      console.log('WorkflowExecutor: 加载工作流', { workflowId });
 
-      // 硬编码小说转视频工作流步骤（插件定制化封装）
-      const mockWorkflow: WorkflowState = {
-        currentStepIndex: 0,
-        steps: [
-          {
-            id: 'split-chapters',
-            name: '章节拆分',
-            component: ChapterSplitPanel,
-            status: 'in_progress'
-          },
-          {
-            id: 'extract-scenes',
-            name: '场景角色提取',
-            component: SceneCharacterPanel,
-            status: 'pending'
-          },
-          {
-            id: 'generate-storyboard',
-            name: '分镜脚本生成',
-            component: StoryboardPanel,
-            status: 'pending'
-          },
-          {
-            id: 'generate-voiceover',
-            name: '配音生成',
-            component: VoiceoverPanel,
-            status: 'pending'
-          },
-          {
-            id: 'export',
-            name: '导出成品',
-            component: ExportPanel,
-            status: 'pending'
-          }
-        ],
-        data: {}
+      // 从主进程加载工作流定义
+      const definition = await window.electronAPI.getWorkflowDefinition(workflowId);
+
+      // eslint-disable-next-line no-console
+      console.log('WorkflowExecutor: 获取到工作流定义', { definition });
+
+      if (!definition) {
+        // eslint-disable-next-line no-console
+        console.error('WorkflowExecutor: 工作流定义不存在', { workflowId });
+        setToast({ type: 'error', message: `工作流定义不存在: ${workflowId}` });
+        setLoading(false);
+        return;
+      }
+
+      // 组件映射表（将 componentType 字符串映射到实际组件）
+      const componentMap: Record<string, React.ComponentType<any>> = {
+        ChapterSplitPanel,
+        SceneCharacterPanel,
+        StoryboardPanel,
+        VoiceoverPanel,
+        ExportPanel
       };
 
-      setWorkflowState(mockWorkflow);
+      // 将工作流定义转换为 WorkflowState
+      const workflow: WorkflowState = {
+        name: definition.name || '未命名工作流',
+        currentStepIndex: 0,
+        steps: definition.steps.map((step: any, index: number) => ({
+          id: step.id,
+          name: step.name,
+          component: componentMap[step.componentType] || (() => <div>组件未找到: {step.componentType}</div>),
+          status: index === 0 ? 'in_progress' : 'pending'
+        })),
+        data: definition.defaultState || {}
+      };
+
+      setWorkflowState(workflow);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('加载工作流失败:', error);
@@ -597,7 +596,7 @@ const WorkflowExecutor: React.FC = () => {
       <div className="workflow-middle-column">
         {/* 统一头部组件 */}
         <WorkflowHeader
-          workflowName="小说转视频工作流"
+          workflowName={workflowState?.name || '加载中...'}
           currentProjectId={currentProjectId}
           projects={projects}
           onProjectChange={handleProjectChange}
