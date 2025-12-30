@@ -12,7 +12,7 @@
  *
  * 导入标准资产元数据类型
  */
-import type { AssetMetadata } from '../shared/types/asset';
+import type { AssetMetadata } from '@/shared/types';
 
 /**
  * 资产类型枚举
@@ -117,8 +117,8 @@ export interface AIAssetAttributes {
   generationParams?: any;
   duration?: number;
   dimensions?: { width: number; height: number };
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string; // ISO 8601
+  updatedAt?: string; // ISO 8601
 }
 
 /**
@@ -132,8 +132,8 @@ export interface AssetConfig {
   metadata: AssetMetadata;
   aiAttributes?: AIAssetAttributes;
   tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
 }
 
 /**
@@ -152,8 +152,8 @@ export interface ProjectConfig {
   id: string;
   name: string;
   path: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
   settings: ProjectSettings;
   workflows: string[];
   assets: AssetConfig[];
@@ -196,8 +196,8 @@ export interface PluginInfo {
   manifest: PluginManifest;
   isEnabled: boolean;
   isLoaded: boolean;
-  loadTime?: Date;
-  lastUsed?: Date;
+  loadTime?: string; // ISO 8601
+  lastUsed?: string; // ISO 8601
 }
 
 /**
@@ -210,8 +210,8 @@ export interface TaskConfig {
   config: Record<string, any>;
   inputs?: TaskInput[];
   outputs?: TaskOutput[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
 }
 
 /**
@@ -243,8 +243,8 @@ export interface TaskExecution {
   id: string;
   taskId: string;
   status: TaskStatus;
-  startTime: Date;
-  endTime?: Date;
+  startTime: string; // ISO 8601
+  endTime?: string; // ISO 8601
   inputs?: Record<string, any>;
   outputs?: Record<string, any>;
   error?: string;
@@ -257,7 +257,7 @@ export interface TaskExecution {
 export interface APIStatus {
   id: string;
   isAvailable: boolean;
-  lastChecked: Date;
+  lastChecked: string; // ISO 8601
   responseTime?: number;
   error?: string;
 }
@@ -271,8 +271,8 @@ export interface APIUsage {
   requests: number;
   cost: number;
   currency: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string; // ISO 8601
+  endDate: string; // ISO 8601
 }
 
 /**
@@ -281,7 +281,7 @@ export interface APIUsage {
 export interface LogEntry {
   level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
-  timestamp: Date;
+  timestamp: string; // ISO 8601
   service?: string;
   operation?: string;
   data?: any;
@@ -379,7 +379,7 @@ export const LIBRARY_CHANNELS = {
 export interface ServiceError {
   code: string;
   message: string;
-  timestamp: Date;
+  timestamp: string; // ISO 8601
   service: string;
   operation?: string;
 }
@@ -395,8 +395,8 @@ export interface AssetSearchQuery {
   name?: string;
   text?: string;
   dateRange?: {
-    start: Date;
-    end: Date;
+    start: string; // ISO 8601
+    end: string; // ISO 8601
   };
   limit?: number;
   offset?: number;

@@ -29,7 +29,7 @@ export interface MarketPluginInfo {
   downloads: number; // 下载量
   rating: number; // 评分 (0-5)
   reviewCount: number; // 评论数
-  lastUpdated: Date; // 最后更新时间
+  lastUpdated: string; // 最后更新时间 (ISO 8601)
   homepage?: string; // 主页链接
   repository?: string; // 仓库链接
   downloadUrl: string; // 下载地址（ZIP），空字符串表示内置插件

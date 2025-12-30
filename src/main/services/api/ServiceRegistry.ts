@@ -34,7 +34,7 @@ export interface ServiceCallRecord {
   name: string;
   method: string;
   caller?: string;
-  timestamp: Date;
+  timestamp: string; // ISO 8601
   duration?: number;
   success: boolean;
   error?: string;
@@ -107,7 +107,7 @@ export class ServiceRegistry {
       name,
       method,
       caller,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       success: false
     };
 

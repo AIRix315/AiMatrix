@@ -33,7 +33,7 @@ import {
   AssetImportParams,
   AssetFileChangeEvent,
   AspectRatio
-} from '../../shared/types/asset';
+} from '@/shared/types';
 
 /**
  * 资产管理器类（新实现）

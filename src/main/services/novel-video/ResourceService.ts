@@ -7,7 +7,7 @@
 import { NovelVideoAPIService } from './NovelVideoAPIService';
 import { TaskScheduler, TaskType } from '../TaskScheduler';
 import { Logger } from '../Logger';
-import type { AssetMetadata } from '../../../shared/types/asset';
+import type { AssetMetadata } from '@/shared/types';
 
 /**
  * ResourceService服务类

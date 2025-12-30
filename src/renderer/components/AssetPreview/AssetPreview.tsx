@@ -12,7 +12,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { AssetMetadata, AssetType } from '../../../shared/types/asset';
+import { AssetMetadata, AssetType } from '@/shared/types';
 import './AssetPreview.css';
 
 interface AssetPreviewProps {

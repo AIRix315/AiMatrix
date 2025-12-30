@@ -6,8 +6,8 @@
 
 import { NovelVideoAssetHelper } from './NovelVideoAssetHelper';
 import { Logger } from '../Logger';
-import type { AssetMetadata } from '../../../shared/types/asset';
-import type { NovelVideoFields } from '../../../shared/types/novel-video';
+import type { AssetMetadata } from '@/shared/types';
+import type { NovelVideoFields } from '@/shared/types';
 
 /**
  * 分镜脚本生成器接口

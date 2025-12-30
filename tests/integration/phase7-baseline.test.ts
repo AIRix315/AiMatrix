@@ -16,8 +16,8 @@ import { FileSystemService } from '../../src/main/services/FileSystemService';
 import { AssetManagerClass } from '../../src/main/services/AssetManager';
 import { NovelVideoAssetHelper } from '../../src/main/services/novel-video/NovelVideoAssetHelper';
 import { ChapterService } from '../../src/main/services/novel-video/ChapterService';
-import type { AssetMetadata } from '../../src/shared/types/asset';
-import type { NovelVideoFields } from '../../src/shared/types/novel-video';
+import type { AssetMetadata } from '@/shared/types';
+import type { NovelVideoFields } from '@/shared/types';
 
 describe('Phase 7 基准快照测试 - 小说转视频流程', () => {
   let fsService: FileSystemService;

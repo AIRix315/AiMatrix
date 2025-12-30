@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { Search, FileImage, FileVideo, FileAudio, FileText, File } from 'lucide-react';
-import type { AssetType, AssetMetadata } from '../../../../shared/types/asset';
+import type { AssetType, AssetMetadata } from '@/shared/types';
 import './InputNode.css';
 
 export interface InputNodeData {

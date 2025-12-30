@@ -9,7 +9,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { FileSystemService } from '../../../src/main/services/FileSystemService';
 import { SchemaRegistry } from '../../../src/main/services/SchemaRegistry';
-import type { AssetSchemaDefinition } from '../../../src/shared/types/schema';
+import type { AssetSchemaDefinition } from '@/shared/types';
 
 describe('SchemaRegistry单元测试', () => {
   let fsService: FileSystemService;

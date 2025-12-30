@@ -9,7 +9,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { FileText, Image as ImageIcon, Music, Video, FileCode, Folder } from 'lucide-react';
-import { AssetMetadata, AssetFilter } from '../../../shared/types/asset';
+import { AssetMetadata, AssetFilter } from '@/shared/types';
 import { AssetGrid } from '../../components/AssetGrid';
 import { AssetPreview } from '../../components/AssetPreview/AssetPreview';
 import { ViewSwitcher } from '../../components/common';

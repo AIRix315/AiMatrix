@@ -3,7 +3,7 @@
  * 用于验证工作流引擎的完整流程
  */
 
-import { WorkflowDefinition } from '../../shared/types/workflow'
+import { WorkflowDefinition } from '@/shared/types'
 
 /**
  * 测试工作流定义

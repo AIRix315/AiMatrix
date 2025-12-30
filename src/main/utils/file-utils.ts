@@ -40,16 +40,16 @@ export class FileUtils {
 
   public static async getFileStats(filePath: string): Promise<{
     size: number;
-    created: Date;
-    modified: Date;
+    created: string; // ISO 8601
+    modified: string; // ISO 8601
     isFile: boolean;
     isDirectory: boolean;
   }> {
     const stats = await fs.stat(filePath);
     return {
       size: stats.size,
-      created: stats.birthtime,
-      modified: stats.mtime,
+      created: stats.birthtime.toISOString(),
+      modified: stats.mtime.toISOString(),
       isFile: stats.isFile(),
       isDirectory: stats.isDirectory()
     };

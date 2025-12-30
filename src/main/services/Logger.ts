@@ -178,7 +178,7 @@ export class Logger {
    */
   private formatLogEntry(entry: LogEntry): string {
     const parts = [
-      entry.timestamp.toISOString(),
+      entry.timestamp, // 已经是 ISO 8601 字符串
       `[${entry.level.toUpperCase()}]`
     ];
 
@@ -219,7 +219,7 @@ export class Logger {
     }
 
     const entry: LogEntry = {
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       level: level as LogLevelType,
       service,
       message,
@@ -380,7 +380,7 @@ export class Logger {
     }
 
     return {
-      timestamp: new Date(timestamp),
+      timestamp: timestamp, // 保持 ISO 8601 字符串格式
       level: level.toLowerCase() as LogLevelType,
       service,
       message,

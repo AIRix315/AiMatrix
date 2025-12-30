@@ -80,11 +80,11 @@ export interface ChainTaskExecution {
   /** 执行状态 */
   status: 'running' | 'completed' | 'failed' | 'cancelled';
 
-  /** 开始时间 */
-  startedAt: Date;
+  /** 开始时间 (ISO 8601) */
+  startedAt: string;
 
-  /** 结束时间 */
-  endedAt?: Date;
+  /** 结束时间 (ISO 8601) */
+  endedAt?: string;
 
   /** 节点执行状态 */
   nodeStatus: Map<string, {
@@ -129,7 +129,7 @@ export class ChainTaskExecutor {
       id: executionId,
       chainId: definition.id,
       status: 'running',
-      startedAt: new Date(),
+      startedAt: new Date().toISOString(),
       nodeStatus: new Map(),
       results: new Map()
     };
@@ -151,7 +151,7 @@ export class ChainTaskExecutor {
       });
 
       execution.status = 'failed';
-      execution.endedAt = new Date();
+      execution.endedAt = new Date().toISOString();
 
       if (definition.onError) {
         try {
@@ -191,11 +191,11 @@ export class ChainTaskExecutor {
 
       // 全部完成
       execution.status = 'completed';
-      execution.endedAt = new Date();
+      execution.endedAt = new Date().toISOString();
 
       await logger.info('链式任务执行完成', 'ChainTaskExecutor', {
         executionId: execution.id,
-        duration: execution.endedAt.getTime() - execution.startedAt.getTime()
+        duration: new Date(execution.endedAt).getTime() - new Date(execution.startedAt).getTime()
       });
 
       // 调用完成回调
@@ -459,7 +459,7 @@ export class ChainTaskExecutor {
     }
 
     execution.status = 'cancelled';
-    execution.endedAt = new Date();
+    execution.endedAt = new Date().toISOString();
 
     // 取消所有运行中的任务
     for (const [nodeId, nodeStatus] of execution.nodeStatus.entries()) {

@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { AssetIndex } from '../../../shared/types/asset';
+import { AssetIndex } from '@/shared/types';
 import './AssetSidebar.css';
 
 interface AssetSidebarProps {

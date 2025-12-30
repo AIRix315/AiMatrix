@@ -13,7 +13,7 @@
 import { AssetManagerClass } from './AssetManager';
 import { SchemaRegistry } from './SchemaRegistry';
 import { Logger } from './Logger';
-import type { AssetMetadata, AssetFilter, AssetScope } from '../../shared/types/asset';
+import type { AssetMetadata, AssetFilter, AssetScope } from '@/shared/types';
 
 /**
  * 通用资产创建参数

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { MarketPluginInfo } from '../../../../shared/types/plugin-market';
+import { MarketPluginInfo } from '@/shared/types';
 import { Button } from '../../../components/common';
 
 interface MarketPluginCardProps {

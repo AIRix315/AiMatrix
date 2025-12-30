@@ -16,16 +16,14 @@ import { FileSystemService } from '../FileSystemService';
 import { Logger } from '../Logger';
 import { timeService } from '../TimeService';
 import {
-  AssetMetadata
-} from '../../../shared/types/asset';
-import {
+  AssetMetadata,
   NovelVideoFields,
   ChapterData,
   SceneData,
   CharacterData,
   StoryboardData,
   VoiceoverData
-} from '../../../shared/types/novel-video';
+} from '@/shared/types';
 
 export class NovelVideoAssetHelper {
   private assetManager: AssetManagerClass;

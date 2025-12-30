@@ -12,7 +12,7 @@
  */
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { AssetMetadata, AssetFilter, AssetScanResult } from '../../../shared/types/asset';
+import { AssetMetadata, AssetFilter, AssetScanResult } from '@/shared/types';
 import { AssetCard } from '../AssetCard';
 import './AssetGrid.css';
 

@@ -15,7 +15,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Grid as FixedSizeGrid } from 'react-window';
 import { useInfiniteLoader } from 'react-window-infinite-loader';
 import { AutoSizer } from 'react-virtualized-auto-sizer';
-import { AssetMetadata, AssetFilter, AssetScanResult } from '../../../shared/types/asset';
+import { AssetMetadata, AssetFilter, AssetScanResult } from '@/shared/types';
 import { AssetCard } from '../AssetCard';
 import './AssetGrid.css';
 

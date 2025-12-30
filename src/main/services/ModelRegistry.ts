@@ -21,7 +21,7 @@ import {
   ModelDefinition,
   UserModelConfig,
   ModelConfigFile
-} from '../../shared/types/api';
+} from '@/shared/types';
 
 /**
  * ModelRegistry 服务类

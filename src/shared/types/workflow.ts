@@ -41,15 +41,15 @@ export interface WorkflowState {
   /** 步骤状态映射 */
   steps: Record<string, {
     status: WorkflowStepStatus
-    updatedAt: number
+    updatedAt: string // ISO 8601
     data?: unknown
   }>
   /** 工作流全局数据 */
   data?: Record<string, unknown>
-  /** 创建时间 */
-  createdAt: number
-  /** 更新时间 */
-  updatedAt: number
+  /** 创建时间 (ISO 8601) */
+  createdAt: string
+  /** 更新时间 (ISO 8601) */
+  updatedAt: string
 }
 
 /**
@@ -90,10 +90,10 @@ export interface WorkflowInstance {
   projectId: string
   /** 当前状态 */
   state: WorkflowState
-  /** 创建时间 */
-  createdAt: number
-  /** 更新时间 */
-  updatedAt: number
+  /** 创建时间 (ISO 8601) */
+  createdAt: string
+  /** 更新时间 (ISO 8601) */
+  updatedAt: string
 }
 
 /**

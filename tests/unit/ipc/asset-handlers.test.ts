@@ -14,7 +14,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { FileSystemService } from '../../../src/main/services/FileSystemService';
 import { AssetManagerClass } from '../../../src/main/services/AssetManager';
-import type { AssetFilter } from '../../../src/shared/types/asset';
+import type { AssetFilter } from '@/shared/types';
 
 describe('Asset IPC Handlers 测试', () => {
   let fsService: FileSystemService;

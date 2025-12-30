@@ -7,8 +7,8 @@
 import { NovelVideoAssetHelper } from './NovelVideoAssetHelper';
 import { NovelVideoAPIService } from './NovelVideoAPIService';
 import { Logger } from '../Logger';
-import type { AssetMetadata } from '../../../shared/types/asset';
-import type { NovelVideoFields } from '../../../shared/types/novel-video';
+import type { AssetMetadata } from '@/shared/types';
+import type { NovelVideoFields } from '@/shared/types';
 
 /**
  * 对白数据

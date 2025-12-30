@@ -1,7 +1,7 @@
 import React, { memo, useState, useEffect } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { Settings, ChevronDown } from 'lucide-react';
-import type { APIProviderConfig, APICategory } from '../../../../shared/types/api';
+import type { APIProviderConfig, APICategory } from '@/shared/types';
 import './ExecuteNode.css';
 
 export interface ExecuteNodeData {

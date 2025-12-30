@@ -26,7 +26,7 @@ import {
   APICallParams,
   ConnectionTestParams,
   ConnectionTestResult
-} from '../../shared/types/api';
+} from '@/shared/types';
 
 /**
  * 旧版 API 提供商类型（向后兼容）

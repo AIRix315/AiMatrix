@@ -16,7 +16,7 @@ import * as path from 'path';
 import { FileSystemService } from '../../../src/main/services/FileSystemService';
 import { AssetManagerClass } from '../../../src/main/services/AssetManager';
 import { logger } from '../../../src/main/services/Logger';
-import type { AssetFilter, AssetMetadata } from '../../../src/shared/types/asset';
+import type { AssetFilter, AssetMetadata } from '@/shared/types';
 
 describe('AssetManager 集成测试', () => {
   let fsService: FileSystemService;

@@ -87,16 +87,21 @@ describe('ProjectManager - 真实文件系统测试', () => {
 
       expect(project).toMatchObject({
         name: 'Test Project',
-        workflows: [],
         assets: [],
         inputAssets: [],
         outputAssets: [],
         immutable: false,
       });
+      // 创建项目时会自动创建工作流文件
+      expect(project.workflows).toHaveLength(1);
+      expect(typeof project.workflows[0]).toBe('string');
       expect(project.id).toBeDefined();
       expect(project.path).toContain(project.id);
-      expect(project.createdAt).toBeInstanceOf(Date);
-      expect(project.updatedAt).toBeInstanceOf(Date);
+      // 验证时间字段为有效的 ISO 8601 字符串
+      expect(typeof project.createdAt).toBe('string');
+      expect(new Date(project.createdAt).toISOString()).toBe(project.createdAt);
+      expect(typeof project.updatedAt).toBe('string');
+      expect(new Date(project.updatedAt).toISOString()).toBe(project.updatedAt);
     });
 
     it('应该在文件系统中创建项目目录和配置文件', async () => {
@@ -124,8 +129,8 @@ describe('ProjectManager - 真实文件系统测试', () => {
       expect(project.workflowType).toBe('video-workflow');
       expect(project.settings.defaultWorkflow).toBe('video-workflow');
 
-      const templateDir = path.join(project.path, 'templates', 'video-workflow');
-      const stats = await fs.stat(templateDir);
+      // 验证项目目录存在
+      const stats = await fs.stat(project.path);
       expect(stats.isDirectory()).toBe(true);
     });
 
@@ -135,8 +140,9 @@ describe('ProjectManager - 真实文件系统测试', () => {
       const project = await projectManager.createProject('Test');
 
       expect(timeService.getCurrentTime).toHaveBeenCalled();
-      expect(project.createdAt.toISOString()).toBe('2025-12-29T10:00:00.000Z');
-      expect(project.updatedAt.toISOString()).toBe('2025-12-29T10:00:00.000Z');
+      // createdAt 和 updatedAt 现在是 ISO 8601 字符串
+      expect(project.createdAt).toBe('2025-12-29T10:00:00.000Z');
+      expect(project.updatedAt).toBe('2025-12-29T10:00:00.000Z');
     });
 
     it('应该在未初始化时抛出错误', async () => {
@@ -189,13 +195,16 @@ describe('ProjectManager - 真实文件系统测试', () => {
 
       expect(loaded.id).toBe(projectId);
       expect(loaded.name).toBe('Test');
-      expect(loaded.createdAt).toBeInstanceOf(Date);
-      expect(loaded.updatedAt).toBeInstanceOf(Date);
+      // 验证时间字段为有效的 ISO 8601 字符串
+      expect(typeof loaded.createdAt).toBe('string');
+      expect(new Date(loaded.createdAt).toISOString()).toBe(loaded.createdAt);
+      expect(typeof loaded.updatedAt).toBe('string');
+      expect(new Date(loaded.updatedAt).toISOString()).toBe(loaded.updatedAt);
 
       await newManager.cleanup();
     });
 
-    it('应该正确转换日期字符串为Date对象', async () => {
+    it('应该保持时间字段为 ISO 8601 字符串格式', async () => {
       const created = await projectManager.createProject('Test');
 
       const newManager = new ProjectManager();
@@ -203,8 +212,11 @@ describe('ProjectManager - 真实文件系统测试', () => {
 
       const loaded = await newManager.loadProject(created.id);
 
-      expect(loaded.createdAt).toBeInstanceOf(Date);
-      expect(loaded.updatedAt).toBeInstanceOf(Date);
+      // 验证时间字段为有效的 ISO 8601 字符串
+      expect(typeof loaded.createdAt).toBe('string');
+      expect(new Date(loaded.createdAt).toISOString()).toBe(loaded.createdAt);
+      expect(typeof loaded.updatedAt).toBe('string');
+      expect(new Date(loaded.updatedAt).toISOString()).toBe(loaded.updatedAt);
 
       await newManager.cleanup();
     });

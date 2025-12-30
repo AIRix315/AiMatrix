@@ -9,7 +9,7 @@
 
 import { logger } from './Logger'
 import { errorHandler, ErrorCode } from './ServiceErrorHandler'
-import { WorkflowDefinition } from '../../shared/types/workflow'
+import { WorkflowDefinition } from '@/shared/types'
 
 /**
  * WorkflowRegistry 服务类

@@ -27,8 +27,8 @@ export interface PersistedTask {
   id: string;
   configJson: string; // TaskConfig的JSON字符串
   status: TaskStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
   lastExecutionId?: string;
 }
 
@@ -39,8 +39,8 @@ export interface PersistedExecution {
   id: string;
   taskId: string;
   status: TaskStatus;
-  startTime: Date;
-  endTime?: Date;
+  startTime: string; // ISO 8601
+  endTime?: string; // ISO 8601
   progress: number;
   resultJson?: string; // result的JSON字符串
   error?: string;
@@ -171,7 +171,7 @@ export class TaskPersistence {
     return new Promise((resolve, reject) => {
       this.tasksDb.update(
         { id: taskId },
-        { $set: { status, updatedAt: new Date() } },
+        { $set: { status, updatedAt: new Date().toISOString() } },
         {},
         (err: Error) => {
           if (err) {
@@ -269,7 +269,7 @@ export class TaskPersistence {
       if (result !== undefined) update.resultJson = JSON.stringify(result);
       if (error !== undefined) update.error = error;
       if (status === TaskStatus.COMPLETED || status === TaskStatus.FAILED || status === TaskStatus.CANCELLED) {
-        update.endTime = new Date();
+        update.endTime = new Date().toISOString();
       }
 
       this.executionsDb.update(

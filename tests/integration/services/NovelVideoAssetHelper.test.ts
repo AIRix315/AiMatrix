@@ -14,8 +14,8 @@ import { performance } from 'perf_hooks';
 import { FileSystemService } from '../../../src/main/services/FileSystemService';
 import { AssetManagerClass } from '../../../src/main/services/AssetManager';
 import { NovelVideoAssetHelper } from '../../../src/main/services/novel-video/NovelVideoAssetHelper';
-import type { AssetMetadata } from '../../../src/shared/types/asset';
-import type { NovelVideoFields } from '../../../src/shared/types/novel-video';
+import type { AssetMetadata } from '@/shared/types';
+import type { NovelVideoFields } from '@/shared/types';
 
 describe('NovelVideoAssetHelper 集成测试', () => {
   let fsService: FileSystemService;

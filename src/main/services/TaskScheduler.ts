@@ -19,7 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
 import { apiManager } from './APIManager';
-import { APICallParams } from '../../shared/types/api';
+import { APICallParams } from '@/shared/types';
 
 /**
  * 任务状态
@@ -64,8 +64,8 @@ export interface Task {
   id: string;
   config: TaskConfig;
   status: TaskStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
   executions: TaskExecution[];
 }
 
@@ -76,8 +76,8 @@ export interface TaskExecution {
   id: string;
   taskId: string;
   status: TaskStatus;
-  startTime: Date;
-  endTime?: Date;
+  startTime: string; // ISO 8601
+  endTime?: string; // ISO 8601
   progress: number;
   result?: unknown;
   error?: string;
@@ -112,8 +112,8 @@ export class TaskScheduler {
           id: taskId,
           config,
           status: TaskStatus.PENDING,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           executions: []
         };
 
@@ -146,7 +146,7 @@ export class TaskScheduler {
           id: executionId,
           taskId,
           status: TaskStatus.PENDING,
-          startTime: new Date(),
+          startTime: new Date().toISOString(),
           progress: 0,
           inputs
         };
@@ -213,20 +213,20 @@ export class TaskScheduler {
       execution.status = TaskStatus.COMPLETED;
       execution.progress = 100;
       execution.result = result;
-      execution.endTime = new Date();
+      execution.endTime = new Date().toISOString();
 
       task.status = TaskStatus.COMPLETED;
-      task.updatedAt = new Date();
+      task.updatedAt = new Date().toISOString();
 
       await logger.info(`Task completed: ${execution.id}`, 'TaskScheduler');
     } catch (error) {
       // 任务失败
       execution.status = TaskStatus.FAILED;
       execution.error = error instanceof Error ? error.message : String(error);
-      execution.endTime = new Date();
+      execution.endTime = new Date().toISOString();
 
       task.status = TaskStatus.FAILED;
-      task.updatedAt = new Date();
+      task.updatedAt = new Date().toISOString();
 
       await logger.error(`Task failed: ${execution.id}`, 'TaskScheduler', { error });
     } finally {
@@ -350,14 +350,14 @@ export class TaskScheduler {
         }
 
         execution.status = TaskStatus.CANCELLED;
-        execution.endTime = new Date();
+        execution.endTime = new Date().toISOString();
 
         this.runningExecutions.delete(executionId);
 
         const task = this.tasks.get(execution.taskId);
         if (task) {
           task.status = TaskStatus.CANCELLED;
-          task.updatedAt = new Date();
+          task.updatedAt = new Date().toISOString();
         }
 
         await logger.info(`Task cancelled: ${executionId}`, 'TaskScheduler');

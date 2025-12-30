@@ -20,7 +20,7 @@ import {
   AssetType,
   AssetMetadata,
   AssetImportParams,
-} from '../../../src/shared/types/asset';
+} from '@/shared/types';
 
 // Mock TimeService 保证时间戳一致
 vi.mock('../../../src/main/services/TimeService', () => ({

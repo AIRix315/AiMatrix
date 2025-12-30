@@ -52,7 +52,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_MANAGER_INIT_FAILED',
         message: `项目管理器初始化失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'initialize'
       };
@@ -76,7 +76,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_MANAGER_CLEANUP_FAILED',
         message: `项目管理器清理失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'cleanup'
       };
@@ -114,7 +114,7 @@ export class ProjectManager implements IProjectManager {
       await this.createWorkflowFile(workflowId, name, template || 'workflow');
 
       // 创建项目配置
-      const currentTime = await timeService.getCurrentTime();
+      const currentTime = (await timeService.getCurrentTime()).toISOString();
       const defaultSettings: ProjectSettings = {
         defaultWorkflow: template || 'default',
         outputFormat: 'mp4',
@@ -153,7 +153,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_CREATE_FAILED',
         message: `创建项目失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'createProject'
       };
@@ -189,11 +189,9 @@ export class ProjectManager implements IProjectManager {
       const configPath = path.join(this.projectsPath, projectId, 'project.json');
       const configData = await fs.readFile(configPath, 'utf-8');
       const projectConfig: ProjectConfig = JSON.parse(configData);
-      
-      // 转换日期字符串为Date对象
-      projectConfig.createdAt = new Date(projectConfig.createdAt);
-      projectConfig.updatedAt = new Date(projectConfig.updatedAt);
-      
+
+      // 保持 ISO 8601 字符串格式，无需转换
+
       // 添加到内存
       this.projects.set(projectId, projectConfig);
       
@@ -203,7 +201,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_LOAD_FAILED',
         message: `加载项目失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'loadProject'
       };
@@ -231,7 +229,7 @@ export class ProjectManager implements IProjectManager {
 
     try {
       // 更新时间戳
-      config.updatedAt = await timeService.getCurrentTime();
+      config.updatedAt = (await timeService.getCurrentTime()).toISOString();
       
       // 保存到文件
       await this.saveProjectConfig(config);
@@ -244,7 +242,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_SAVE_FAILED',
         message: `保存项目失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'saveProject'
       };
@@ -290,7 +288,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_ADD_INPUT_ASSET_FAILED',
         message: `添加输入资源失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'addInputAsset'
       };
@@ -336,7 +334,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_ADD_OUTPUT_ASSET_FAILED',
         message: `添加输出资源失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'addOutputAsset'
       };
@@ -388,7 +386,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_DELETE_FAILED',
         message: `删除项目失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'deleteProject'
       };
@@ -422,7 +420,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_LIST_FAILED',
         message: `列出项目失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'listProjects'
       };
@@ -468,7 +466,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_LINK_ASSET_FAILED',
         message: `链接全局资产失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'linkGlobalAsset'
       };
@@ -527,7 +525,7 @@ export class ProjectManager implements IProjectManager {
       const serviceError: ServiceError = {
         code: 'PROJECT_GET_LINKED_ASSETS_FAILED',
         message: `获取链接资产失败: ${error instanceof Error ? error.message : String(error)}`,
-        timestamp: await timeService.getCurrentTime(),
+        timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
         operation: 'getLinkedAssets'
       };
@@ -551,8 +549,7 @@ export class ProjectManager implements IProjectManager {
             const configData = await fs.readFile(configPath, 'utf-8');
             const projectConfig: ProjectConfig = JSON.parse(configData);
 
-            projectConfig.createdAt = new Date(projectConfig.createdAt);
-            projectConfig.updatedAt = new Date(projectConfig.updatedAt);
+            // 保持 ISO 8601 字符串格式，无需转换
 
             this.projects.set(projectConfig.id, projectConfig);
             this.log('info', `项目加载成功: ${projectConfig.id}`);

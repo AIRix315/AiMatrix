@@ -14,7 +14,7 @@
  * 功能：将小说文本转换为短视频作品
  */
 
-import { WorkflowDefinition } from '../../shared/types/workflow'
+import { WorkflowDefinition } from '@/shared/types'
 
 /**
  * 小说转视频工作流步骤定义（参考）

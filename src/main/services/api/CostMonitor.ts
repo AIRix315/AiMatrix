@@ -23,7 +23,7 @@ export interface CostRecord {
   apiName: string;
   provider: APIProvider;
   model?: string;
-  timestamp: Date;
+  timestamp: string; // ISO 8601
   tokenUsage?: {
     prompt: number;
     completion: number;
@@ -129,7 +129,7 @@ export class CostMonitor {
   public async recordCost(record: Omit<CostRecord, 'id' | 'timestamp' | 'estimatedCost'>): Promise<CostRecord> {
     const fullRecord: CostRecord = {
       id: `cost-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       estimatedCost: this.calculateCost(record),
       ...record
     };
@@ -242,8 +242,8 @@ export class CostMonitor {
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const total = this.records.reduce((sum, r) => sum + (r.estimatedCost || 0), 0);
-    const todayRecords = this.records.filter(r => r.timestamp >= today);
-    const monthRecords = this.records.filter(r => r.timestamp >= thisMonth);
+    const todayRecords = this.records.filter(r => new Date(r.timestamp) >= today);
+    const monthRecords = this.records.filter(r => new Date(r.timestamp) >= thisMonth);
 
     const byProvider: Record<string, number> = {};
     for (const record of this.records) {
@@ -289,11 +289,11 @@ export class CostMonitor {
     let filtered = this.records;
 
     if (startDate) {
-      filtered = filtered.filter(r => r.timestamp >= startDate);
+      filtered = filtered.filter(r => new Date(r.timestamp) >= startDate);
     }
 
     if (endDate) {
-      filtered = filtered.filter(r => r.timestamp <= endDate);
+      filtered = filtered.filter(r => new Date(r.timestamp) <= endDate);
     }
 
     return filtered;

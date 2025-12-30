@@ -2,7 +2,7 @@
   "sceneCount": 3,
   "scenes": [
     {
-      "sceneId": "scene-1767078642285",
+      "sceneId": "scene-1767080572832",
       "location": "卧室",
       "story": "清晨的阳光透过窗户洒进卧室，张三缓缓睁开双眼",
       "imagePrompt": "温馨的卧室，清晨阳光，柔和光线",
@@ -18,7 +18,7 @@
       }
     },
     {
-      "sceneId": "scene-1767078642301",
+      "sceneId": "scene-1767080572848",
       "location": "窗边",
       "story": "张三起身走向窗边，窗外的城市已经苏醒",
       "imagePrompt": "城市窗景，早晨街道，人来人往",
@@ -34,7 +34,7 @@
       }
     },
     {
-      "sceneId": "scene-1767078642321",
+      "sceneId": "scene-1767080572863",
       "location": "咖啡馆",
       "story": "店内温暖舒适，空气中弥漫着咖啡的香气",
       "imagePrompt": "温暖的咖啡馆，舒适氛围，咖啡香气",
@@ -50,5 +50,5 @@
       }
     }
   ],
-  "timestamp": "2025-12-30T07:10:42.408Z"
+  "timestamp": "2025-12-30T07:42:52.930Z"
 }

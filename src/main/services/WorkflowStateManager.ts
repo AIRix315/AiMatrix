@@ -18,7 +18,7 @@ import {
   WorkflowStepStatus,
   WorkflowInstance,
   CreateWorkflowInstanceParams
-} from '../../shared/types/workflow'
+} from '@/shared/types'
 import { workflowRegistry } from './WorkflowRegistry'
 
 /**
@@ -50,8 +50,8 @@ export class WorkflowStateManager {
         )
       }
 
-      // 获取当前时间（转换为时间戳）
-      const currentTime = (await timeService.getCurrentTime()).getTime()
+      // 获取当前时间（ISO 8601 字符串）
+      const currentTime = (await timeService.getCurrentTime()).toISOString()
 
       // 生成实例ID
       const instanceId = this.generateInstanceId(params.type)
@@ -122,8 +122,8 @@ export class WorkflowStateManager {
 
       const statePath = this.getStatePath(workflowId)
 
-      // 更新时间戳
-      state.updatedAt = (await timeService.getCurrentTime()).getTime()
+      // 更新时间戳（ISO 8601 字符串）
+      state.updatedAt = (await timeService.getCurrentTime()).toISOString()
 
       // 保存状态文件
       await this.fsService.saveJSON(statePath, state)
@@ -202,8 +202,8 @@ export class WorkflowStateManager {
         )
       }
 
-      // 获取当前时间（转换为时间戳）
-      const currentTime = (await timeService.getCurrentTime()).getTime()
+      // 获取当前时间（ISO 8601 字符串）
+      const currentTime = (await timeService.getCurrentTime()).toISOString()
 
       // 更新步骤状态
       state.steps[stepId] = {

@@ -13,7 +13,7 @@ import type {
   CustomViewProps,
   ViewState,
   ViewActions
-} from '../../shared/types/plugin-view';
+} from '@/shared/types';
 import Modal from './common/Modal';
 import Toast from './common/Toast';
 import './ViewContainer.css';

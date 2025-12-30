@@ -7,8 +7,8 @@
 import * as fs from 'fs/promises';
 import { NovelVideoAssetHelper } from './NovelVideoAssetHelper';
 import { Logger } from '../Logger';
-import type { AssetMetadata } from '../../../shared/types/asset';
-import type { NovelVideoFields } from '../../../shared/types/novel-video';
+import type { AssetMetadata } from '@/shared/types';
+import type { NovelVideoFields } from '@/shared/types';
 
 // 导入AI实现
 // 注意：RuleBasedChapterSplitter 和 AgentSceneCharacterExtractor 需要在实际使用时调整导入路径

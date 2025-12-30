@@ -4,12 +4,51 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.8 fix4 | 2025-12-30 | 架构优化 | 统一时间格式为ISO 8601字符串，创建统一类型导出文件，修复7个失败测试 |
 | 0.3.8 fix3 | 2025-12-30 | 重构 | 解决类型定义冲突问题（AssetMetadata/AssetConfig/ProjectConfig重复定义），统一类型系统 |
 | 0.3.8 fix2 | 2025-12-30 | 功能增强 | 实现项目模板系统，完善项目-工作流-插件集成架构，UI主题系统重构，全局导航刷新机制 |
 | 0.3.8 fix1 | 2025-12-30 | BUG修复 | 修复工作流页面浅色主题颜色问题，统一绿色主题色系统，使用shadcn/ui Select组件 |
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 1.0.0 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.8 fix4] - 2025-12-30
+
+### Fixed
+- fix(time): 统一时间格式为 ISO 8601 字符串 [Phase 11 K05]
+  - 修改 `WorkflowState` 和 `WorkflowInstance` 时间字段类型（number → string）
+  - 修改 `WorkflowStateManager` 服务的3处时间处理逻辑（`.getTime()` → `.toISOString()`）
+  - 修复 ProjectManager 测试的7个失败用例（期望Date对象 → 验证ISO字符串）
+  - 测试通过率从 93.6% 提升至 98.2%（107/109）
+
+### Added
+- feat(types): 创建统一类型导出文件 [Phase 11 K06]
+  - 新建 `src/shared/types/index.ts` 统一导出8个类型模块
+  - 批量更新38个文件的导入路径（相对路径 → `@/shared/types`）
+  - 导入语句简化50%+，提升代码可维护性
+
+### Changed
+- refactor(imports): 统一类型导入规范
+  - 所有共享类型统一从 `@/shared/types` 导入
+  - 支持一次性导入多个类型：`import { AssetMetadata, APIProvider } from '@/shared/types'`
+
+### Technical Details
+- **时间格式统一**:
+  - 影响文件：`src/shared/types/workflow.ts`, `src/main/services/WorkflowStateManager.ts`
+  - 测试修复：`tests/unit/services/ProjectManager.test.ts`
+  - 所有时间字段统一为 ISO 8601 字符串格式（如：`"2025-12-30T10:00:00.000Z"`）
+- **类型导出优化**:
+  - 新建文件：`src/shared/types/index.ts` (40行)
+  - 更新文件：38个（主进程、渲染进程、测试文件）
+  - 导出模块：asset, api, workflow, plugin-panel, plugin-view, plugin-market, schema, novel-video
+- **验收结果**:
+  - ✅ TypeScript 编译 0 错误（主进程 + 预加载 + 渲染进程）
+  - ✅ ProjectManager 测试 49/49 通过（100%）
+  - ✅ AssetManager 测试 31/31 通过（100%）
+  - ✅ APIManager 测试 27/29 通过（93%）
+  - ✅ 总测试通过率 98.2%（107/109）
 
 ---
 

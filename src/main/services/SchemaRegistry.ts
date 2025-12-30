@@ -21,7 +21,7 @@ import type {
   SchemaValidationResult,
   SchemaRegistryState,
   JSONSchemaProperty
-} from '../../shared/types/schema';
+} from '@/shared/types';
 
 /**
  * SchemaRegistry服务类

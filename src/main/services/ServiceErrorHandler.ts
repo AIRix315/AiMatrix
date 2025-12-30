@@ -79,7 +79,7 @@ export class ServiceError extends Error implements IServiceError {
   public readonly code: string;
   public readonly service: string;
   public readonly operation: string;
-  public readonly timestamp: Date;
+  public readonly timestamp: string; // ISO 8601
   public readonly context?: Record<string, unknown>;
 
   constructor(
@@ -94,7 +94,7 @@ export class ServiceError extends Error implements IServiceError {
     this.code = code;
     this.service = service;
     this.operation = operation;
-    this.timestamp = new Date();
+    this.timestamp = new Date().toISOString();
     this.context = context;
 
     // 维护正确的原型链
@@ -111,7 +111,7 @@ export class ServiceError extends Error implements IServiceError {
       message: this.message,
       service: this.service,
       operation: this.operation,
-      timestamp: this.timestamp.toISOString(),
+      timestamp: this.timestamp,
       context: this.context
     };
   }

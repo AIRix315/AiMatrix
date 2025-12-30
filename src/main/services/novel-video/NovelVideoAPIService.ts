@@ -8,7 +8,7 @@ import * as path from 'path';
 import { APIManager } from '../APIManager';
 import { NovelVideoAssetHelper } from './NovelVideoAssetHelper';
 import { Logger } from '../Logger';
-import type { AssetMetadata } from '../../../shared/types/asset';
+import type { AssetMetadata } from '@/shared/types';
 
 export class NovelVideoAPIService {
   private apiManager: APIManager;

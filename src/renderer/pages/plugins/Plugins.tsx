@@ -5,7 +5,7 @@ import { Card, Button, Loading, Toast, ConfirmDialog, Modal, ViewSwitcher } from
 import type { ToastType } from '../../components/common/Toast';
 // import MarketPluginCard from './components/MarketPluginCard';
 // import { MarketPluginInfo, POPULAR_TAGS } from '../../../shared/types/plugin-market';
-import { ShortcutType } from '../../../common/types';
+import { ShortcutType } from '@/common/types';
 import './Plugins.css';
 
 interface PluginInfo {

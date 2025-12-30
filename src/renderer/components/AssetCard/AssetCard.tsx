@@ -14,7 +14,7 @@
  */
 
 import React, { useState } from 'react';
-import { AssetMetadata, AssetType, ResourceStatus } from '../../../shared/types/asset';
+import { AssetMetadata, AssetType, ResourceStatus } from '@/shared/types';
 import './AssetCard.css';
 
 interface AssetCardProps {

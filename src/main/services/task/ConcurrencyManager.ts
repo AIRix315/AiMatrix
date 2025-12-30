@@ -46,7 +46,7 @@ interface QueuedTask {
   handler: () => Promise<unknown>;
   resolve: (value: unknown) => void;
   reject: (error: Error) => void;
-  queuedAt: Date;
+  queuedAt: string; // ISO 8601
 }
 
 /**
@@ -55,7 +55,7 @@ interface QueuedTask {
 interface RunningTask {
   id: string;
   type: TaskType;
-  startedAt: Date;
+  startedAt: string; // ISO 8601
 }
 
 /**
@@ -169,12 +169,12 @@ export class ConcurrencyManager {
     this.running.set(task.id, {
       id: task.id,
       type: task.type,
-      startedAt: new Date()
+      startedAt: new Date().toISOString()
     });
 
     this.runningByType.get(task.type)!.add(task.id);
 
-    const queueTime = Date.now() - task.queuedAt.getTime();
+    const queueTime = Date.now() - new Date(task.queuedAt).getTime();
 
     await logger.info(
       `Task started: ${task.id}`,
@@ -241,7 +241,7 @@ export class ConcurrencyManager {
         handler,
         resolve: resolve as (value: unknown) => void,
         reject,
-        queuedAt: new Date()
+        queuedAt: new Date().toISOString()
       };
 
       // 如果可以立即运行，则运行

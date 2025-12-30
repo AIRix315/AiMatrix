@@ -18,7 +18,7 @@ import type {
   PanelAction,
   PanelTab,
   FieldType
-} from '../../shared/types/plugin-panel';
+} from '@/shared/types';
 import './PluginPanelRenderer.css';
 
 export interface PluginPanelRendererProps {

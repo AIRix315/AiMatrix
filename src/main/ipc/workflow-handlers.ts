@@ -7,7 +7,7 @@ import { logger } from '../services/Logger'
 import { workflowRegistry } from '../services/WorkflowRegistry'
 import { WorkflowStateManager } from '../services/WorkflowStateManager'
 import { FileSystemService } from '../services/FileSystemService'
-import { CreateWorkflowInstanceParams } from '../../shared/types/workflow'
+import { CreateWorkflowInstanceParams } from '@/shared/types'
 
 // 创建WorkflowStateManager实例
 const fsService = new FileSystemService()

@@ -15,7 +15,7 @@
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
 import { PluginType, PluginPermission } from '../../common/types';
-import { MarketPluginInfo, MarketFilter } from '../../shared/types/plugin-market';
+import { MarketPluginInfo, MarketFilter } from '@/shared/types';
 
 /**
  * 硬编码示例插件数据
@@ -39,7 +39,7 @@ const SAMPLE_MARKET_PLUGINS: MarketPluginInfo[] = [
     downloads: 1520,
     rating: 4.8,
     reviewCount: 45,
-    lastUpdated: new Date('2025-12-20'),
+    lastUpdated: '2025-12-20T00:00:00.000Z',
     homepage: 'https://matrix.studio/plugins/novel-to-video',
     repository: 'https://github.com/matrix/novel-to-video',
     downloadUrl: '', // 空字符串，表示内置插件无需下载
@@ -64,7 +64,7 @@ const SAMPLE_MARKET_PLUGINS: MarketPluginInfo[] = [
     downloads: 856,
     rating: 4.2,
     reviewCount: 28,
-    lastUpdated: new Date('2025-12-15'),
+    lastUpdated: '2025-12-15T00:00:00.000Z',
     homepage: '',
     repository: 'https://github.com/someone/image-enhancer',
     downloadUrl: '', // 提示：请从仓库下载ZIP后本地安装
@@ -88,7 +88,7 @@ const SAMPLE_MARKET_PLUGINS: MarketPluginInfo[] = [
     downloads: 634,
     rating: 4.5,
     reviewCount: 18,
-    lastUpdated: new Date('2025-12-18'),
+    lastUpdated: '2025-12-18T00:00:00.000Z',
     homepage: 'https://audiopro.studio',
     repository: 'https://github.com/audiopro/mixer-plugin',
     downloadUrl: '', // 请从官网或仓库下载
@@ -153,7 +153,7 @@ export class PluginMarketService {
         } else if (filter?.sortBy === 'rating') {
           plugins.sort((a, b) => b.rating - a.rating);
         } else if (filter?.sortBy === 'updated') {
-          plugins.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime());
+          plugins.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
         }
 
         // 分页（如果需要）

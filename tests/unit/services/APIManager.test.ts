@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { APIManager } from '../../../src/main/services/APIManager';
-import { APIProviderConfig, APICategory, AuthType } from '../../../src/shared/types/api';
+import { APIProviderConfig, APICategory, AuthType } from '@/shared/types';
 
 describe('APIManager 单元测试', () => {
   let apiManager: APIManager;
