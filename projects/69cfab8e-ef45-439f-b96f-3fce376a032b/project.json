@@ -1,0 +1,20 @@
+{
+  "id": "69cfab8e-ef45-439f-b96f-3fce376a032b",
+  "name": "222",
+  "path": "E:\\Projects\\Matrix\\projects\\69cfab8e-ef45-439f-b96f-3fce376a032b",
+  "createdAt": "2025-12-30T05:31:26.725Z",
+  "updatedAt": "2025-12-30T05:31:26.725Z",
+  "settings": {
+    "defaultWorkflow": "novel-to-video",
+    "outputFormat": "mp4",
+    "quality": 80
+  },
+  "workflows": [
+    "32424e9b-8fa6-4abb-a044-a0341fc0ce75"
+  ],
+  "assets": [],
+  "workflowType": "novel-to-video",
+  "inputAssets": [],
+  "outputAssets": [],
+  "immutable": false
+}

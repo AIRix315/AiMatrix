@@ -55,7 +55,9 @@
       "Bash(git checkout:*)",
       "Bash(fi)",
       "Bash(done)",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(if not exist \"E:\\\\Projects\\\\Matrix\\\\docs\\\\audit\" mkdir \"E:\\\\Projects\\\\Matrix\\\\docs\\\\audit\")",
+      "Bash(del \"E:\\\\Projects\\\\Matrix\\\\src\\\\main\\\\models\\\\project.ts\")"
     ]
   },
   "enabledPlugins": {

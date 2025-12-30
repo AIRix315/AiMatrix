@@ -64,7 +64,7 @@ const AssetPreview: React.FC<AssetPreviewProps> = ({ asset, onClose }) => {
           </div>
           <div className="info-row">
             <span className="info-label">大小:</span>
-            <span className="info-value">{formatFileSize(asset.metadata.fileSize)}</span>
+            <span className="info-value">{formatFileSize(asset.metadata.size)}</span>
           </div>
           <div className="info-row">
             <span className="info-label">创建时间:</span>

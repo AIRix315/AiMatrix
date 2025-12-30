@@ -1,0 +1,20 @@
+{
+  "id": "b24c0429-a19f-46f3-819f-cb1a2fb33864",
+  "name": "111",
+  "path": "E:\\Projects\\Matrix\\projects\\b24c0429-a19f-46f3-819f-cb1a2fb33864",
+  "createdAt": "2025-12-30T05:31:20.966Z",
+  "updatedAt": "2025-12-30T05:31:20.966Z",
+  "settings": {
+    "defaultWorkflow": "workflow",
+    "outputFormat": "mp4",
+    "quality": 80
+  },
+  "workflows": [
+    "39af4599-8d44-4ee9-b625-5b976e695612"
+  ],
+  "assets": [],
+  "workflowType": "workflow",
+  "inputAssets": [],
+  "outputAssets": [],
+  "immutable": false
+}

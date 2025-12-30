@@ -518,7 +518,121 @@
 *   **CI集成**: GitHub Actions 跨平台测试工作流
 *   **文档**: README.md (400行) + K03_COMPLETION_REPORT.md
 
-### [ ] [K04] 交付前验证
+---
+
+## 📋 Phase 11: 代码质量修复与规范化 (v0.3.9)
+**目标**: 解决审计报告发现的严重问题，统一代码规范
+**状态**: 🔴 待启动
+**参考**: `docs/audit/04-audit-report.md` (2025-12-30审计报告)
+**总计**: 6个任务（K04-K09）
+- 高优先级（必须立即解决）: 3个任务（K04-K06）
+- 中优先级（2周内完成）: 3个任务（K07-K09）
+
+---
+
+### 🔴 高优先级：严重问题修复（v0.3.9.1）
+
+### [ ] [K04] 类型定义冲突解决 🔴 严重
+*   **文件**: `src/common/types.ts`, `src/shared/types/asset.ts`, `src/main/models/project.ts`
+*   **参考**:
+    - 问题描述: `docs/audit/01-terminology-dictionary.md` (2.1-2.3节 命名冲突)
+    - 详细分析: `docs/audit/04-audit-report.md` (三.1节)
+*   **任务内容**:
+    1.  删除 `src/main/models/project.ts` 中的重复定义（AssetConfig、ProjectConfig）
+    2.  删除 `src/common/types.ts:122` 中的简化版 `AssetMetadata`
+    3.  统一使用 `src/shared/types/asset.ts` 中的标准 `AssetMetadata`（30+字段）
+    4.  更新所有引用这些类型的文件（搜索并替换导入路径）
+    5.  运行 `npm run typecheck` 验证无类型错误
+    6.  运行 `npm test` 确保测试通过
+*   **验收**: TypeScript编译无错误，无类型冲突，所有测试通过
+*   **预计工作量**: 2-3小时
+*   **影响文件数**: 约10-15个
+
+### [ ] [K05] 时间格式统一 🔴 严重
+*   **文件**: `src/shared/types/*.ts`, `src/main/services/*.ts`, `src/renderer/pages/*.tsx`
+*   **参考**:
+    - 问题描述: `docs/audit/01-terminology-dictionary.md` (三.1节 时间处理术语)
+    - 详细分析: `docs/audit/04-audit-report.md` (三.2节)
+*   **任务内容**:
+    1.  统一所有时间字段为 **ISO 8601 字符串**格式（推荐）
+    2.  更新接口定义（AssetMetadata, ProjectConfig, WorkflowState等）
+    3.  修改服务层时间处理逻辑（Date对象 → ISO字符串）
+    4.  更新数据迁移脚本（如需要，转换现有数据）
+    5.  更新时间相关工具函数（TimeService保持现有API，内部转换）
+*   **验收**: 所有时间字段使用统一格式，数据持久化一致
+*   **预计工作量**: 4-6小时
+*   **影响范围**: 约20-30个文件
+
+### [ ] [K06] 统一类型导出文件 🟠 重要
+*   **文件**: `src/shared/types/index.ts`（新建）
+*   **参考**:
+    - 建议: `docs/audit/04-audit-report.md` (七.1节 高优先级任务3)
+*   **任务内容**:
+    1.  创建 `src/shared/types/index.ts` 文件
+    2.  导出所有共享类型（asset、api、workflow、plugin-*、schema、novel-video）
+    3.  更新项目中的导入语句（使用统一入口）
+    4.  更新 tsconfig.json 路径别名（如需要）
+*   **验收**: 可通过 `import { AssetMetadata } from '@/shared/types'` 统一导入
+*   **预计工作量**: 1小时
+*   **代码示例**:
+    ```typescript
+    // src/shared/types/index.ts
+    export * from './asset';
+    export * from './api';
+    export * from './workflow';
+    export * from './plugin-panel';
+    export * from './plugin-view';
+    export * from './plugin-market';
+    export * from './schema';
+    export * from './novel-video';
+    ```
+
+---
+
+### 🔹 中优先级：功能完善（v0.3.9.2）
+
+### [ ] [K07] 快捷方式拖拽排序 🟠 中等
+*   **文件**: `src/renderer/components/common/ShortcutNavItem.tsx`, `src/renderer/components/common/GlobalNav.tsx`
+*   **参考**:
+    - 原始需求: `docs/ref/Done-implementation-audit-report-2025-12-28.md` (UI-7)
+    - 当前状态: H2.7已实现基础功能，缺少拖拽排序
+*   **任务内容**:
+    1.  集成 react-beautiful-dnd 或原生 HTML5 Drag API
+    2.  实现拖拽排序逻辑（onDragStart、onDragOver、onDrop）
+    3.  调用 `window.electronAPI.reorderShortcuts(newOrder)` 持久化
+    4.  添加拖拽视觉反馈（拖动时高亮、放置位置指示器）
+*   **验收**: 可在编辑模式下拖拽快捷方式调整顺序
+*   **预计工作量**: 4-6小时
+
+### [ ] [K08] UI交互修正 🟠 中等
+*   **文件**: `src/renderer/components/workflow/WorkflowHeader.tsx`, `src/renderer/components/workflow/RightSettingsPanel.tsx`
+*   **参考**:
+    - 问题清单: `docs/audit/04-audit-report.md` (五.1节 设计稿偏差)
+    - 原始需求: `docs/ref/Done-implementation-audit-report-2025-12-28.md` (UI-1, UI-4)
+*   **任务内容**:
+    1.  **项目选择器增强**: 支持筛选"当前插件支持的项目"（按workflowType和pluginId）
+    2.  **项目状态显示**: 项目下拉框显示状态标识（进行中/已完成）
+    3.  **右侧面板模式按钮**: 新增"当前选择/自动补全/全流程"三个模式按钮
+    4.  **下分栏参数**: 根据选中Provider动态显示参数（如Sora2宽高比选择）
+*   **验收**: 项目选择器可过滤，右侧面板有3个生成模式，下分栏动态显示
+*   **预计工作量**: 8-12小时
+
+### [ ] [K09] 资产文件组织完善 🟡 轻微
+*   **文件**: `src/main/services/AssetManager.ts`
+*   **参考**:
+    - 设计要求: `docs/audit/03-data-flow.md` (三.1节 导入资产流程 - 步骤3)
+    - 问题描述: `docs/audit/04-audit-report.md` (四.2节)
+*   **任务内容**:
+    1.  验证日期文件夹逻辑是否正确执行（`YYYYMMDD/`）
+    2.  确保项目输出资产按日期文件夹组织
+    3.  用户上传资产直接存储在 `user_uploaded/`（无日期文件夹）
+    4.  添加日志记录文件保存路径，便于调试
+*   **验收**: 项目输出资产正确按日期文件夹分隔
+*   **预计工作量**: 2-3小时
+
+---
+
+### [ ] [K10] 交付前验证
 *   **任务**:
     1.  **规范自查**: 检查是否满足 docs/00-global-requirements-v1.0.0.md 的所有强制要求。
     2.  **构建打包**: 生成 Windows 安装包 (.exe)。
@@ -526,7 +640,7 @@
     4.  **安全审计**: 检查文件系统路径遍历、XSS、注入等漏洞。
 *   **验收**: 可发布生产就绪版本
 
-### [ ] [K05] 文档完善
+### [ ] [K11] 文档完善
 *   **任务**:
     1.  完善用户文档 (安装、配置、使用教程)。
     2.  完善开发者文档 (架构、API、插件开发)。
@@ -536,7 +650,7 @@
 
 ---
 
-### [ ] [K06] 工作流生态建设
+### [ ] [K12] 工作流生态建设
 *   **任务**:
     1.  基于工作流引擎实现第二个工作流插件 (如图片批量生成)。
     2.  编写插件开发规范文档。

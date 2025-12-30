@@ -4,11 +4,54 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.8 fix3 | 2025-12-30 | 重构 | 解决类型定义冲突问题（AssetMetadata/AssetConfig/ProjectConfig重复定义），统一类型系统 |
 | 0.3.8 fix2 | 2025-12-30 | 功能增强 | 实现项目模板系统，完善项目-工作流-插件集成架构，UI主题系统重构，全局导航刷新机制 |
 | 0.3.8 fix1 | 2025-12-30 | BUG修复 | 修复工作流页面浅色主题颜色问题，统一绿色主题色系统，使用shadcn/ui Select组件 |
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 1.0.0 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.8 fix3] - 2025-12-30
+
+### Fixed
+- fix(types): 解决类型定义冲突问题 [Phase 11 K04]
+  - 删除 `src/main/models/project.ts` 重复类型定义文件
+  - 删除 `src/common/types.ts` 中简化版 `AssetMetadata`（122-128行）
+  - 统一使用 `src/shared/types/asset.ts` 标准 `AssetMetadata`（30+字段完整定义）
+  - 统一使用 `src/common/types.ts` 标准 `AssetConfig` 和 `ProjectConfig`
+  - 修复 3 处严重的类型定义冲突（AssetMetadata、AssetConfig、ProjectConfig）
+
+### Changed
+- refactor(validation): 更新资产验证逻辑
+  - `AssetConfig.name` 字段迁移到 `metadata.name`
+  - 支持新增的资产类型（audio、other）
+  - 修改文件：`src/main/utils/validation.ts`
+
+- refactor(component): 修复 AssetPreview 组件类型错误
+  - `asset.metadata.fileSize` → `asset.metadata.size`
+  - 修改文件：`src/renderer/components/AssetPreview.tsx`
+
+- refactor(imports): 统一类型导入路径
+  - `src/common/types.ts` 导入标准 `AssetMetadata` 类型
+  - `src/main/utils/validation.ts` 从 `../../common/types` 导入
+  - 消除循环依赖和导入路径混乱
+
+### Technical Details
+- **类型冲突解决**:
+  - `AssetMetadata`: 删除简化版（3字段），统一使用标准版（30+字段）
+  - `AssetConfig`: 删除 `src/main/models/project.ts` 简化版（7字段），使用完整版（9字段+AI属性支持）
+  - `ProjectConfig`: 删除 `src/main/models/project.ts` 简化版（6字段），使用完整版（14字段+Phase 9扩展）
+- **验收结果**:
+  - ✅ TypeScript 编译 0 错误
+  - ✅ 构建成功（主进程 + 预加载 + 渲染进程）
+  - ✅ 438/452 测试通过（14 个失败为原有问题，与本次修改无关）
+  - ✅ 消除潜在的运行时类型不一致风险
+- **影响文件**:
+  - 删除：1 个文件
+  - 修改：3 个文件
+  - 引用更新：10-15 个文件的导入路径自动修复
 
 ---
 

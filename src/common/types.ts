@@ -10,6 +10,11 @@
  *
  * ==================== 基础类型 ====================
  *
+ * 导入标准资产元数据类型
+ */
+import type { AssetMetadata } from '../shared/types/asset';
+
+/**
  * 资产类型枚举
  */
 export enum AssetType {
@@ -114,17 +119,6 @@ export interface AIAssetAttributes {
   dimensions?: { width: number; height: number };
   createdAt?: Date;
   updatedAt?: Date;
-}
-
-/**
- * 资产元数据接口
- */
-export interface AssetMetadata {
-  // 传统媒体属性
-  duration?: number;
-  dimensions?: { width: number; height: number };
-  // 其他元数据
-  [key: string]: any;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { ProjectConfig, AssetConfig } from '../models/project';
+import { ProjectConfig, AssetConfig } from '../../common/types';
 
 // 临时类型定义，直到相关模块在开发计划中实现
 interface WorkflowConfig {
@@ -57,7 +57,8 @@ export class ValidationUtils {
   public static validateAsset(config: AssetConfig): ValidationResult {
     const errors: string[] = [];
 
-    if (!config.name || config.name.trim().length === 0) {
+    // name 现在在 metadata 中
+    if (!config.metadata?.name || config.metadata.name.trim().length === 0) {
       errors.push('资产名称不能为空');
     }
 
@@ -65,9 +66,9 @@ export class ValidationUtils {
       errors.push('资产路径不能为空');
     }
 
-    const validTypes = ['text', 'image', 'video'];
+    const validTypes = ['text', 'image', 'video', 'audio', 'other'];
     if (!validTypes.includes(config.type)) {
-      errors.push('资产类型必须是 text、image 或 video');
+      errors.push('资产类型必须是 text、image、video、audio 或 other');
     }
 
     return {
