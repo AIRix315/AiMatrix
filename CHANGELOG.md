@@ -4,6 +4,7 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.9 | 2025-12-30 | 功能增强 | 快捷方式拖拽排序、资产文件组织完善（日期文件夹分隔） |
 | 0.3.8 fix4 | 2025-12-30 | 架构优化 | 统一时间格式为ISO 8601字符串，创建统一类型导出文件，修复7个失败测试 |
 | 0.3.8 fix3 | 2025-12-30 | 重构 | 解决类型定义冲突问题（AssetMetadata/AssetConfig/ProjectConfig重复定义），统一类型系统 |
 | 0.3.8 fix2 | 2025-12-30 | 功能增强 | 实现项目模板系统，完善项目-工作流-插件集成架构，UI主题系统重构，全局导航刷新机制 |
@@ -11,6 +12,51 @@
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 1.0.0 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.9] - 2025-12-30
+
+### Added
+- feat(shortcut): 快捷方式拖拽排序功能 [Phase 11 K07]
+  - 实现原生 HTML5 Drag API 拖拽排序（轻量级，无需额外依赖）
+  - 仅编辑模式可拖拽（长按 500ms 进入编辑模式）
+  - 完整视觉反馈：拖拽时半透明、目标位置蓝色指示器、抓手光标
+  - 持久化：调用 `reorderShortcuts` API 保存新顺序
+  - 错误处理：失败时自动回滚，重新加载快捷方式列表
+
+- feat(asset): 资产文件组织完善 [Phase 11 K09]
+  - **项目输出资产**：按日期文件夹分隔（`WorkSpace/assets/project_outputs/{projectId}/{YYYYMMDD}/`）
+  - **用户上传资产**：直接存储（`WorkSpace/assets/user_uploaded/`）
+  - 日期文件夹自动生成（YYYYMMDD 格式，如 20251230）
+  - 详细日志记录：所有文件操作记录完整路径、大小、scope
+  - 支持平铺和子目录两种结构（buildIndex 智能扫描）
+
+### Changed
+- refactor(asset): 优化资产索引路径
+  - 全局索引：`WorkSpace/assets/index.json`
+  - 项目索引：`WorkSpace/assets/project_outputs/{projectId}/index.json`
+  - 项目名称从正确路径读取：`WorkSpace/projects/{projectId}/project.json`
+
+- style(shortcut): 拖拽视觉效果优化
+  - `.dragging`: 正在拖拽的元素（opacity: 0.4 + grabbing 光标）
+  - `.drag-over`: 拖拽目标位置（高亮背景 + 蓝色顶部边框指示器）
+  - `.editing:not(.dragging)`: 编辑模式显示 grab 光标
+
+### Technical Details
+- **快捷方式拖拽排序**:
+  - 修改文件：`ShortcutNavItem.tsx` (+50 行), `GlobalNav.tsx` (+40 行), `ShortcutNavItem.css` (+21 行)
+  - 代码量：约 111 行核心代码
+  - 无新增依赖（使用原生 HTML5 API）
+- **资产文件组织**:
+  - 修改文件：`AssetManager.ts` (+70 行), `FileSystemService.ts` (+10 行)
+  - 测试更新：`AssetManager.test.ts`（修复 6 个测试用例）
+  - 代码量：约 120 行核心代码
+- **验收结果**:
+  - ✅ 构建成功（主进程 + 预加载 + 渲染进程 0 错误）
+  - ✅ AssetManager 测试 31/31 通过（100%）
+  - ✅ 拖拽排序功能完整（视觉反馈 + 持久化 + 错误处理）
+  - ✅ 资产文件按设计要求正确组织（日期文件夹 + 路径分离）
 
 ---
 

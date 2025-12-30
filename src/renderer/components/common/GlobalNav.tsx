@@ -76,6 +76,9 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
   const { leftSidebarCollapsed } = useSidebar();
   const [shortcuts, setShortcuts] = useState<ShortcutItem[]>([]);
   const [editingShortcutId, setEditingShortcutId] = useState<string | null>(null);
+  // 拖拽状态
+  const [draggedShortcutId, setDraggedShortcutId] = useState<string | null>(null);
+  const [dragOverShortcutId, setDragOverShortcutId] = useState<string | null>(null);
 
   // 加载快捷方式列表
   useEffect(() => {
@@ -151,6 +154,51 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
     setEditingShortcutId(isEditing ? shortcutId : null);
   };
 
+  // 拖拽事件处理
+  const handleDragStart = (shortcutId: string) => {
+    setDraggedShortcutId(shortcutId);
+  };
+
+  const handleDragOver = (targetShortcutId: string) => {
+    if (draggedShortcutId && draggedShortcutId !== targetShortcutId) {
+      setDragOverShortcutId(targetShortcutId);
+    }
+  };
+
+  const handleDragEnd = async () => {
+    // 如果有拖拽操作且目标位置有效
+    if (draggedShortcutId && dragOverShortcutId && draggedShortcutId !== dragOverShortcutId) {
+      try {
+        // 计算新的顺序
+        const newShortcuts = [...shortcuts];
+        const draggedIndex = newShortcuts.findIndex(s => s.id === draggedShortcutId);
+        const targetIndex = newShortcuts.findIndex(s => s.id === dragOverShortcutId);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          // 移除被拖拽的项
+          const [draggedItem] = newShortcuts.splice(draggedIndex, 1);
+          // 插入到目标位置
+          newShortcuts.splice(targetIndex, 0, draggedItem);
+
+          // 更新本地状态（立即反馈）
+          setShortcuts(newShortcuts);
+
+          // 调用 API 持久化新的顺序
+          const newOrder = newShortcuts.map(s => s.id);
+          await window.electronAPI.reorderShortcuts(newOrder);
+        }
+      } catch (err) {
+        console.error('重新排序快捷方式失败:', err);
+        // 失败时重新加载
+        await loadShortcuts();
+      }
+    }
+
+    // 清除拖拽状态
+    setDraggedShortcutId(null);
+    setDragOverShortcutId(null);
+  };
+
   const isActive = (path: string) => {
     if (path === '/') {
       return location.pathname === '/' || location.pathname === '/dashboard';
@@ -184,6 +232,10 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
       onClick={() => handleShortcutClick(shortcut)}
       onDelete={() => handleDeleteShortcut(shortcut.id)}
       onEditModeChange={(isEditing) => handleEditModeChange(shortcut.id, isEditing)}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      isDragOver={dragOverShortcutId === shortcut.id}
     />
   );
 

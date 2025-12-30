@@ -119,9 +119,11 @@ export class FileSystemService {
    */
   getAssetIndexPath(projectId?: string): string {
     if (projectId) {
-      return path.join(this.getProjectAssetDir(projectId), 'index.json');
+      // 项目索引：WorkSpace/assets/project_outputs/{projectId}/index.json
+      return path.join(this.dataDir, 'assets', 'project_outputs', projectId, 'index.json');
     }
-    return path.join(this.getGlobalAssetDir(), 'index.json');
+    // 全局索引：WorkSpace/assets/index.json
+    return path.join(this.dataDir, 'assets', 'index.json');
   }
 
   /**

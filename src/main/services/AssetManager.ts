@@ -153,8 +153,8 @@ export class AssetManagerClass {
 
       const indexPath = this.fsService.getAssetIndexPath(projectId);
       const baseDir = projectId
-        ? this.fsService.getProjectAssetDir(projectId)
-        : this.fsService.getGlobalAssetDir();
+        ? path.join(this.fsService.getDataDir(), 'assets', 'project_outputs', projectId)
+        : path.join(this.fsService.getDataDir(), 'assets', 'user_uploaded');
 
       // 确保基础目录存在
       await this.fsService.ensureDir(baseDir);
@@ -175,8 +175,11 @@ export class AssetManagerClass {
 
       // 如果是项目索引，读取项目名称
       if (projectId) {
+        // 项目配置在 WorkSpace/projects/{projectId}/project.json
         const projectJsonPath = path.join(
-          path.dirname(baseDir),
+          this.fsService.getDataDir(),
+          'projects',
+          projectId,
           'project.json'
         );
         const projectData = await this.fsService.readJSON<{ name: string }>(projectJsonPath);
@@ -185,9 +188,40 @@ export class AssetManagerClass {
         }
       }
 
-      // 扫描所有子目录
+      // 扫描所有子目录和直接文件
       const entries = await this.fsService.readDirWithFileTypes(baseDir);
 
+      // 先扫描直接放在 baseDir 下的文件（例如 user_uploaded 平铺结构）
+      const directFiles: AssetMetadata[] = [];
+      for (const entry of entries) {
+        if (entry.isDirectory) continue;
+
+        // 跳过特殊文件
+        if (entry.name === 'index.json' || entry.name.startsWith('.') || entry.name.endsWith('.meta.json')) {
+          continue;
+        }
+
+        const filePath = path.join(baseDir, entry.name);
+        try {
+          const metadata = await this.getMetadata(filePath);
+          if (metadata) {
+            directFiles.push(metadata);
+          }
+        } catch (error) {
+          await this.logger.warn(`跳过无效文件: ${entry.name}`, 'AssetManager', { error });
+        }
+      }
+
+      // 如果有直接文件，添加到统计中
+      if (directFiles.length > 0) {
+        index.statistics.total += directFiles.length;
+        directFiles.forEach(file => {
+          index.statistics.byType[file.type] =
+            (index.statistics.byType[file.type] || 0) + 1;
+        });
+      }
+
+      // 然后扫描子目录（例如分类目录或日期文件夹）
       for (const entry of entries) {
         if (!entry.isDirectory) continue;
 
@@ -681,30 +715,50 @@ export class AssetManagerClass {
       // 检测或验证资产类型
       const assetType = type || this.detectAssetType(sourcePath);
 
-      // 确定目标目录
+      // 确定目标目录（按照审计文档的设计要求）
       let targetDir: string;
+      const fileName = path.basename(sourcePath);
+
       if (scope === 'project') {
+        // 项目输出资产：WorkSpace/assets/project_outputs/{projectId}/{YYYYMMDD}/
         if (!projectId) {
           throw new Error('项目作用域必须提供projectId');
         }
-        targetDir = this.fsService.getProjectAssetDir(
+
+        // 生成日期文件夹（YYYYMMDD格式）
+        const dateFolder = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        targetDir = path.join(
+          this.fsService.getDataDir(),
+          'assets',
+          'project_outputs',
           projectId,
-          category || (assetType === 'image' ? 'images' : assetType + 's')
+          dateFolder
+        );
+
+        await this.logger.info(
+          `项目资产目标路径（带日期文件夹）: ${targetDir}`,
+          'AssetManager',
+          { projectId, dateFolder, fileName }
         );
       } else {
-        // 全局资产：优先使用 category，否则使用 assetType 目录
-        if (category) {
-          targetDir = path.join(this.fsService.getGlobalAssetDir(), category);
-        } else {
-          targetDir = this.fsService.getGlobalAssetDir(assetType);
-        }
+        // 用户上传资产：WorkSpace/assets/user_uploaded/
+        targetDir = path.join(
+          this.fsService.getDataDir(),
+          'assets',
+          'user_uploaded'
+        );
+
+        await this.logger.info(
+          `全局资产目标路径: ${targetDir}`,
+          'AssetManager',
+          { fileName }
+        );
       }
 
       // 确保目标目录存在
       await this.fsService.ensureDir(targetDir);
 
       // 复制文件到目标目录
-      const fileName = path.basename(sourcePath);
       const targetPath = path.join(targetDir, fileName);
 
       // 检查目标文件是否已存在
@@ -717,7 +771,17 @@ export class AssetManagerClass {
         const newTargetPath = path.join(targetDir, newFileName);
 
         await this.fsService.copyFile(sourcePath, newTargetPath);
-        await this.logger.info(`文件已存在，使用新文件名: ${fileName} -> ${newFileName}`, 'AssetManager');
+        await this.logger.info(
+          `文件已存在，使用新文件名保存`,
+          'AssetManager',
+          {
+            originalName: fileName,
+            newName: newFileName,
+            targetPath: newTargetPath,
+            scope,
+            projectId
+          }
+        );
 
         // 使用新路径创建元数据
         return await this.createImportedMetadata(
@@ -731,6 +795,17 @@ export class AssetManagerClass {
         );
       } else {
         await this.fsService.copyFile(sourcePath, targetPath);
+        await this.logger.info(
+          `资产文件复制成功`,
+          'AssetManager',
+          {
+            fileName,
+            targetPath,
+            scope,
+            projectId,
+            size: (await this.fsService.getFileInfo(targetPath)).size
+          }
+        );
 
         // 创建元数据
         return await this.createImportedMetadata(

@@ -171,8 +171,13 @@ describe('AssetManager - 真实文件系统测试', () => {
         'utf-8'
       );
 
-      // 创建项目资产目录
-      const projectAssetDir = fsService.getProjectAssetDir(projectId);
+      // 创建项目资产目录（新结构：assets/project_outputs/{projectId}/）
+      const projectAssetDir = path.join(
+        fsService.getDataDir(),
+        'assets',
+        'project_outputs',
+        projectId
+      );
       await fs.mkdir(projectAssetDir, { recursive: true });
 
       // 构建项目索引
@@ -192,13 +197,13 @@ describe('AssetManager - 真实文件系统测试', () => {
     });
 
     it('应该统计资产数量和类型', async () => {
-      // 创建多个类型的资产
-      const imageDir = fsService.getGlobalAssetDir('image');
-      const videoDir = fsService.getGlobalAssetDir('video');
+      // 创建多个类型的资产在 user_uploaded 目录
+      const userUploadedDir = path.join(fsService.getDataDir(), 'assets', 'user_uploaded');
+      await fs.mkdir(userUploadedDir, { recursive: true });
 
-      await fs.writeFile(path.join(imageDir, 'image1.jpg'), 'data', 'utf-8');
-      await fs.writeFile(path.join(imageDir, 'image2.png'), 'data', 'utf-8');
-      await fs.writeFile(path.join(videoDir, 'video1.mp4'), 'data', 'utf-8');
+      await fs.writeFile(path.join(userUploadedDir, 'image1.jpg'), 'data', 'utf-8');
+      await fs.writeFile(path.join(userUploadedDir, 'image2.png'), 'data', 'utf-8');
+      await fs.writeFile(path.join(userUploadedDir, 'video1.mp4'), 'data', 'utf-8');
 
       // 构建索引
       const index = await assetManager.buildIndex();
@@ -269,9 +274,10 @@ describe('AssetManager - 真实文件系统测试', () => {
       // 初始构建索引
       await assetManager.buildIndex();
 
-      // 添加新资产
-      const imageDir = fsService.getGlobalAssetDir('image');
-      await fs.writeFile(path.join(imageDir, 'new-image.jpg'), 'data', 'utf-8');
+      // 添加新资产到 user_uploaded 目录
+      const userUploadedDir = path.join(fsService.getDataDir(), 'assets', 'user_uploaded');
+      await fs.mkdir(userUploadedDir, { recursive: true });
+      await fs.writeFile(path.join(userUploadedDir, 'new-image.jpg'), 'data', 'utf-8');
 
       // 更新索引
       await assetManager.updateIndex();
@@ -473,8 +479,8 @@ describe('AssetManager - 真实文件系统测试', () => {
       expect(metadata.tags).toEqual(['imported', 'test']);
       expect(metadata.isUserUploaded).toBe(true);
 
-      // 验证文件已复制
-      const targetDir = fsService.getGlobalAssetDir('image');
+      // 验证文件已复制到 user_uploaded 目录
+      const targetDir = path.join(fsService.getDataDir(), 'assets', 'user_uploaded');
       const targetPath = path.join(targetDir, 'source-image.jpg');
       const exists = await fsService.exists(targetPath);
       expect(exists).toBe(true);
@@ -517,8 +523,15 @@ describe('AssetManager - 真实文件系统测试', () => {
       expect(metadata.projectId).toBe(projectId);
       expect(metadata.tags).toEqual(['project', 'test']);
 
-      // 验证文件已复制到项目目录
-      const targetDir = fsService.getProjectAssetDir(projectId, 'videos');
+      // 验证文件已复制到项目输出目录（带日期文件夹）
+      const dateFolder = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const targetDir = path.join(
+        fsService.getDataDir(),
+        'assets',
+        'project_outputs',
+        projectId,
+        dateFolder
+      );
       const targetPath = path.join(targetDir, 'source-video.mp4');
       const exists = await fsService.exists(targetPath);
       expect(exists).toBe(true);
