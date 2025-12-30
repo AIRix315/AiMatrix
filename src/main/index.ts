@@ -91,6 +91,9 @@ class MatrixApp {
       // 注册测试工作流
       this.registerTestWorkflows();
 
+      // 确保插件默认文件存在
+      await this.ensurePluginDefaultFiles();
+
       // 注册自定义协议处理器
       this.registerCustomProtocols();
 
@@ -122,23 +125,49 @@ class MatrixApp {
         workflowType: testWorkflowDefinition.type
       });
 
-      // 注册"小说转视频"工作流模板
+      // 注册"小说转视频"工作流定义
+      // 注意：虽然"小说转视频"是插件，但仍需注册到 WorkflowRegistry 以提供步骤定义
+      // WorkflowExecutor 需要通过 type 从 Registry 获取定义
+      // 路由：/plugins/novel-to-video（不是 /workflows/novel-to-video）
       workflowRegistry.register(novelToVideoWorkflow);
-      logger.info('小说转视频工作流已注册', 'MatrixApp', {
-        workflowName: novelToVideoWorkflow.name,
-        workflowType: novelToVideoWorkflow.type,
-        workflowId: novelToVideoWorkflow.id
+      logger.info('小说转视频工作流定义已注册（插件模式）', 'MatrixApp', {
+        workflowType: novelToVideoWorkflow.type
       });
-
-      // 验证注册是否成功
-      const registered = workflowRegistry.getDefinition('novel-to-video');
-      if (registered) {
-        logger.info('验证成功：可以查询到小说转视频工作流', 'MatrixApp');
-      } else {
-        logger.error('验证失败：无法查询到小说转视频工作流', 'MatrixApp');
-      }
     } catch (error) {
       logger.error('注册工作流失败', 'MatrixApp', { error });
+    }
+  }
+
+  /**
+   * 确保插件默认工作流文件存在
+   * 插件（如 novel-to-video）需要一个默认的工作流实例文件
+   */
+  private async ensurePluginDefaultFiles(): Promise<void> {
+    try {
+      const workspacePath = configManager.getGeneralSettings().workspacePath;
+      const workflowsDir = path.join(workspacePath, 'workflows');
+      const novelToVideoFile = path.join(workflowsDir, 'novel-to-video.json');
+
+      // 检查文件是否存在
+      try {
+        await fs.access(novelToVideoFile);
+        logger.debug('小说转视频插件文件已存在', 'MatrixApp');
+      } catch {
+        // 文件不存在，创建默认文件
+        const defaultWorkflow = {
+          id: 'novel-to-video',
+          name: '小说转视频',
+          type: 'novel-to-video',
+          description: '将小说文本转换为短视频作品',
+          status: 'draft',
+          lastModified: new Date().toISOString()
+        };
+
+        await fs.writeFile(novelToVideoFile, JSON.stringify(defaultWorkflow, null, 2), 'utf-8');
+        logger.info('创建小说转视频插件默认文件', 'MatrixApp', { path: novelToVideoFile });
+      }
+    } catch (error) {
+      logger.error('创建插件默认文件失败', 'MatrixApp', { error });
     }
   }
 
@@ -492,6 +521,21 @@ class MatrixApp {
       const filePath = path.join(workflowsDir, `${workflowId}.json`);
       await fs.writeFile(filePath, JSON.stringify(config, null, 2), 'utf-8');
       return { success: true };
+    });
+    ipcMain.handle('workflow:delete', async (_, workflowId) => {
+      try {
+        const workspacePath = configManager.getGeneralSettings().workspacePath;
+        const workflowsDir = path.join(workspacePath, 'workflows');
+        const filePath = path.join(workflowsDir, `${workflowId}.json`);
+
+        // 删除工作流定义文件
+        await fs.unlink(filePath);
+
+        logger.info(`工作流定义已删除: ${workflowId}`);
+      } catch (error) {
+        logger.error('删除工作流定义失败', 'main', { workflowId, error });
+        throw error;
+      }
     });
     ipcMain.handle('workflow:load', async (_, workflowId) => {
       const workspacePath = configManager.getGeneralSettings().workspacePath;

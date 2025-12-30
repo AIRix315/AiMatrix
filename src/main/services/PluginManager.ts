@@ -42,6 +42,7 @@ export interface PluginInfo {
   author: string;
   icon?: string;
   type: PluginType;
+  category?: string;
   isEnabled: boolean;
   permissions: PluginPermission[];
   path: string;
@@ -266,6 +267,7 @@ export class PluginManager {
           author: manifest.author,
           icon: manifest.icon,
           type: pluginType,
+          category: manifest.category,
           isEnabled,
           permissions: manifest.permissions,
           path: pluginPath

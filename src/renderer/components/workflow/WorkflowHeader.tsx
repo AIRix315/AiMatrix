@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import './WorkflowHeader.css';
 
 interface WorkflowHeaderProps {
-  workflowName: string;
   currentProjectId: string;
   projects: Array<{ id: string; name: string; status?: string }>;
   onProjectChange: (projectId: string) => void;
@@ -28,7 +27,6 @@ interface WorkflowHeaderProps {
 }
 
 export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
-  workflowName,
   currentProjectId,
   projects,
   onProjectChange,
@@ -61,16 +59,26 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
           <SelectValue placeholder="选择项目" />
         </SelectTrigger>
         <SelectContent>
-          {projects.map((project) => (
-            <SelectItem key={project.id} value={project.id}>
-              {project.name} {project.status === 'completed' ? '(已完成)' : ''}
-            </SelectItem>
-          ))}
+          {/* 新建项目选项（特殊项） */}
+          <SelectItem value="__CREATE_NEW__" className="text-primary font-medium">
+            + 新建项目
+          </SelectItem>
+
+          {/* 现有项目列表 */}
+          {projects.length > 0 && (
+            <>
+              <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                现有项目
+              </div>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name} {project.status === 'completed' ? '(已完成)' : ''}
+                </SelectItem>
+              ))}
+            </>
+          )}
         </SelectContent>
       </Select>
-
-      {/* 工作流标题 */}
-      <h2 className="workflow-title">{workflowName}</h2>
 
       {/* 步骤条（可点击）*/}
       <div className="step-bar">

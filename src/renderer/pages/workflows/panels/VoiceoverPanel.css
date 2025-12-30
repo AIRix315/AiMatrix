@@ -8,7 +8,7 @@
   flex-direction: column;
   height: 100%;
   padding: 24px;
-  background: oklch(0.12 0 0);
+  background: var(--bg-primary);
   box-sizing: border-box;
 }
 
@@ -20,14 +20,14 @@
 .panel-header h2 {
   font-size: 20px;
   font-weight: 600;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
   margin: 0 0 8px 0;
   font-family: "Inter", system-ui, sans-serif;
 }
 
 .panel-description {
   font-size: 13px;
-  color: oklch(0.58 0 0);
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -46,9 +46,9 @@
   gap: 16px;
   margin-bottom: 24px;
   padding: 16px;
-  background: oklch(0.16 0 0);
+  background: var(--bg-secondary);
   border-radius: 8px;
-  border: 1px solid oklch(0.24 0 0);
+  border: 1px solid var(--border-color);
 }
 
 .option-group {
@@ -60,15 +60,15 @@
 .option-group label {
   font-size: 14px;
   font-weight: 500;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
   font-family: "Inter", system-ui, sans-serif;
 }
 
 .option-group select {
   padding: 8px 12px;
-  background: oklch(0.14 0 0);
-  color: oklch(0.92 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
   font-family: "Inter", system-ui, sans-serif;
@@ -77,13 +77,13 @@
 }
 
 .option-group select:hover {
-  border-color: oklch(0.85 0.22 160 / 0.5);
+  border-color: color-mix(in srgb, var(--accent-color) 50%, transparent);
 }
 
 .option-group select:focus {
   outline: none;
-  border-color: oklch(0.85 0.22 160);
-  box-shadow: 0 0 0 3px oklch(0.85 0.22 160 / 0.1);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 10%, transparent);
 }
 
 /* ========== 统计信息 ========== */
@@ -101,13 +101,13 @@
 
 .stat-label {
   font-size: 14px;
-  color: oklch(0.58 0 0);
+  color: var(--text-muted);
 }
 
 .stat-value {
   font-size: 18px;
   font-weight: 600;
-  color: oklch(0.85 0.22 160);
+  color: var(--accent-color);
 }
 
 /* ========== 配音列表 ========== */
@@ -118,7 +118,7 @@
 .voiceover-list-section h3 {
   font-size: 18px;
   font-weight: 600;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
   margin: 0 0 16px 0;
   font-family: "Inter", system-ui, sans-serif;
 }
@@ -134,15 +134,15 @@
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: oklch(0.16 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .voiceover-item:hover {
-  background: oklch(0.18 0 0);
-  border-color: oklch(0.85 0.22 160 / 0.3);
+  background: var(--bg-hover);
+  border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
 }
 
 .voiceover-item.generating {
@@ -161,9 +161,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: oklch(0.14 0 0);
+  background: var(--bg-tertiary);
   border-radius: 8px;
-  color: oklch(0.85 0.22 160);
+  color: var(--accent-color);
 }
 
 /* 中间内容 */
@@ -182,7 +182,7 @@
 .voiceover-title {
   font-size: 15px;
   font-weight: 600;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
   margin: 0;
   font-family: "Inter", system-ui, sans-serif;
 }
@@ -200,7 +200,7 @@
 
 .voiceover-text {
   font-size: 13px;
-  color: oklch(0.7 0 0);
+  color: var(--text-secondary);
   line-height: 1.5;
   margin: 0 0 8px 0;
 }
@@ -219,8 +219,8 @@
 }
 
 .status-badge.completed {
-  background: oklch(0.85 0.22 160 / 0.2);
-  color: oklch(0.85 0.22 160);
+  background: color-mix(in srgb, var(--accent-color) 20%, transparent);
+  color: var(--accent-color);
 }
 
 .status-badge.generating {
@@ -235,7 +235,7 @@
 
 .status-badge.pending {
   background: oklch(0.58 0 0 / 0.2);
-  color: oklch(0.58 0 0);
+  color: var(--text-muted);
 }
 
 /* 右侧操作按钮 */
@@ -265,6 +265,6 @@
   display: flex;
   justify-content: flex-end;
   padding-top: 24px;
-  border-top: 1px solid oklch(0.24 0 0);
+  border-top: 1px solid var(--border-color);
   margin-top: 24px;
 }

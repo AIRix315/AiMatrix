@@ -19,7 +19,7 @@
 ## 📋 Phase 9: 核心功能补齐与架构优化 (v0.2.9.8-v0.3.5)
 **目标**: 修复核心架构问题、完善工作流交互、重构API Provider架构、补充节点编辑器、补齐业务逻辑
 **状态**: 🔄 进行中
-**参考**: `plans/implementation-audit-report-2025-12-28.md` (详细背景、目的、方法)
+**参考**: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (详细背景、目的、方法)
 **总计**: 21个任务（新增4个UI修正任务）
 - 第零阶段（架构修复）: 6个任务（H0.1-H0.6）
 - 第一阶段（核心交互+UI修正）: 7个任务（H2.1-H2.7）
@@ -35,8 +35,8 @@
 #### [*] [H0.1] 项目-资源绑定架构实现
 *   **文件**: `src/main/services/ProjectManager.ts`, `src/shared/types/project.ts`, `src/common/types.ts`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A1.项目管理 - 核心架构缺失, UI-2)
-    - 实现方法: `plans/code-references-phase9.md` (REF-001 ProjectConfig扩展字段定义)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A1.项目管理 - 核心架构缺失, UI-2)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-001 ProjectConfig扩展字段定义)
 *   **任务内容**:
     1.  扩展 ProjectConfig 接口（7个新字段：workflowType, pluginId, status, inputAssets, outputAssets, immutable等）
     2.  实现资源绑定方法（addInputAsset, addOutputAsset）
@@ -46,8 +46,8 @@
 #### [*] [H0.2] AssetManager 项目作用域支持
 *   **文件**: `src/main/services/AssetManager.ts`, `src/shared/types/asset.ts`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A2.资源库 - 核心架构缺失)
-    - 实现方法: `plans/code-references-phase9.md` (REF-002 AssetMetadata扩展字段 + 文件组织结构)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A2.资源库 - 核心架构缺失)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-002 AssetMetadata扩展字段 + 文件组织结构)
 *   **任务内容**:
     1.  扩展 AssetMetadata 接口（projectId, isUserUploaded字段）
     2.  修改资源保存路径逻辑（user_uploaded vs project_outputs/<projectId>/<YYYYMMDD>）
@@ -58,8 +58,8 @@
 #### [*] [H0.3] 工作流实例绑定项目
 *   **文件**: `src/main/services/WorkflowStateManager.ts`, `src/shared/types/workflow.ts`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台 - 核心架构缺失)
-    - 实现方法: `plans/code-references-phase9.md` (REF-003 WorkflowState接口定义)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台 - 核心架构缺失)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-003 WorkflowState接口定义)
 *   **任务内容**:
     1.  扩展 WorkflowState 接口（添加必填 projectId 字段）
     2.  修改 `createInstance(type, projectId)` 方法签名
@@ -69,8 +69,8 @@
 #### [*] [H0.4] 前端项目选择流程
 *   **文件**: `src/renderer/pages/workflows/Workflows.tsx`, `src/renderer/components/workflow/ProjectSelectorDialog.tsx` (新建)
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台 - 核心架构缺失)
-    - 实现方法: `plans/code-references-phase9.md` (REF-004 项目选择对话框UI实现)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台 - 核心架构缺失)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-004 项目选择对话框UI实现)
 *   **任务内容**:
     1.  创建 ProjectSelectorDialog 组件（含已有项目列表 + 新建表单）
     2.  集成到 Workflows.tsx（点击模板 → 弹出对话框 → 创建实例）
@@ -80,8 +80,8 @@
 #### [*] [H0.5] Assets页面项目导航
 *   **文件**: `src/renderer/pages/assets/Assets.tsx`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A2.资源库 - 核心架构缺失)
-    - 实现方法: `plans/code-references-phase9.md` (REF-002 AssetManager扩展方法)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A2.资源库 - 核心架构缺失)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-002 AssetManager扩展方法)
 *   **任务内容**:
     1.  左侧导航增加"项目"分类树（树形展示所有项目）
     2.  点击项目节点调用 `scanAssets('project', projectId)` 过滤资源
@@ -91,8 +91,8 @@
 #### [*] [H0.6] IPC通道扩展
 *   **文件**: `src/main/ipc/`, `src/preload/index.ts`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A1/A2/A4 IPC通信扩展)
-    - 实现方法: `plans/code-references-phase9.md` (REF-001/002/003 服务方法签名)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A1/A2/A4 IPC通信扩展)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-001/002/003 服务方法签名)
 *   **任务内容**:
     1.  新增4个IPC通道处理器（project:add-input-asset, project:add-output-asset, asset:get-references）
     2.  修改 `workflow:create-instance` 处理器（增加 projectId 参数校验）
@@ -106,8 +106,8 @@
 #### [x] [H2.1] WorkflowHeader 统一头部组件（UI-1）
 *   **文件**: `src/renderer/components/workflow/WorkflowHeader.tsx` (新建), `WorkflowHeader.css` (新建)
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-1)
-    - 实现方法: `plans/code-references-phase9.md` (REF-005 WorkflowHeader组件完整实现)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-1)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-005 WorkflowHeader组件完整实现)
 *   **任务内容**:
     1.  创建完整的WorkflowHeader组件（含6个交互控件：左侧收缩、项目下拉、标题、步骤条、关闭全部、右侧收缩）
     2.  实现步骤条点击逻辑（参考REF-006）
@@ -117,8 +117,8 @@
 #### [x] [H2.2] WorkflowExecutor 右侧属性面板联动与增强（UI-4）
 *   **文件**: `src/renderer/pages/workflows/WorkflowExecutor.tsx`, `src/renderer/components/workflow/RightSettingsPanel.tsx`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台 章节, UI-4)
-    - 实现方法: `plans/code-references-phase9.md` (REF-005 WorkflowHeader组件含联动逻辑示例)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台 章节, UI-4)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-005 WorkflowHeader组件含联动逻辑示例)
 *   **任务内容**（8个子功能）:
     1.  实现分镜卡片点击 → 右侧面板数据同步（handleStoryboardSelectionChange）
     2.  实现Prompt编辑 → 分镜数据更新（双向绑定）
@@ -133,8 +133,8 @@
 #### [x] [H2.3] ProgressOrb 重设计（UI-3）
 *   **文件**: `src/renderer/components/common/ProgressOrb.tsx`, `src/renderer/components/common/ProgressOrb.css`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-3)
-    - 实现方法: `plans/code-references-phase9.md` (REF-007 ProgressOrb半圆形状和潮汐动画)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-3)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-007 ProgressOrb半圆形状和潮汐动画)
 *   **任务内容**:
     1.  修改形状为半圆（border-radius: 50% 0 0 50%）+ 吸附右侧边缘 ✅
     2.  实现潮汐注水动画（水位填充 + 波浪@keyframes）✅
@@ -146,8 +146,8 @@
 #### [x] [H2.4] 步骤导航交互修正（UI-5）
 *   **文件**: `src/renderer/pages/workflows/WorkflowExecutor.tsx`, `src/renderer/pages/workflows/panels/*.tsx`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-5)
-    - 实现方法: `plans/code-references-phase9.md` (REF-006 步骤条点击逻辑实现)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-5)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-006 步骤条点击逻辑实现)
 *   **任务内容**:
     1.  删除底部"下一步"按钮（所有工作流面板）✅
     2.  步骤条改为可点击（实现handleStepClick和canClickStep）✅ (已在H2.1完成)
@@ -158,8 +158,8 @@
 #### [x] [H2.5] 全局视图切换器组件（UI-6）
 *   **文件**: `src/renderer/components/common/ViewSwitcher.tsx`（新建）, `src/renderer/components/common/ListView.tsx`（新建）
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-6)
-    - 实现方法: `plans/code-references-phase9.md` (REF-008 ViewSwitcher全局组件)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-6)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-008 ViewSwitcher全局组件)
 *   **任务内容**:
     1.  创建ViewSwitcher组件（Grid3x3/List图标切换）✅
     2.  创建ListView组件（统一列表视图样式，64x64+缩略图）✅
@@ -171,8 +171,8 @@
 #### [x] [H2.6] 资产网格虚拟滚动 ✅
 *   **文件**: `src/renderer/components/AssetGrid/AssetGridVirtualized.tsx`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A2.资源库 - 性能优化)
-    - 实现方法: `plans/code-references-phase9.md` (REF-009 react-window虚拟滚动集成)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A2.资源库 - 性能优化)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-009 react-window虚拟滚动集成)
 *   **任务内容**:
     1.  集成react-window（FixedSizeGrid + useInfiniteLoader hook） ✅
     2.  实现虚拟滚动列表（Cell渲染器 + AutoSizer） ✅
@@ -193,8 +193,8 @@
     - `src/main/index.ts`（集成）
     - `src/preload/index.ts`（扩展）
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (UI-7)
-    - 实现方法: `plans/code-references-phase9.md` (REF-010 ShortcutManager服务, REF-011 GlobalNav三区域重构, REF-012 ShortcutNavItem长按编辑)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-7)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-010 ShortcutManager服务, REF-011 GlobalNav三区域重构, REF-012 ShortcutNavItem长按编辑)
 *   **完成内容** (9/9个核心任务) - 全部完成:
     1.  ✅ 扩展数据模型（ShortcutType枚举、ShortcutItem接口、IAppSettings扩展）
     2.  ✅ 创建ShortcutManager服务（addShortcut/removeShortcut/reorderShortcuts/listShortcuts/initializeDefaultShortcuts）
@@ -229,8 +229,8 @@
 #### [x] [H2.8] 统一 Provider 配置模型 ✅ 2025-12-29
 *   **文件**: `src/main/services/APIManager.ts`, `src/shared/types/api.ts`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 核心架构问题)
-    - 实现方法: `plans/code-references-phase9.md` (REF-013 API Provider统一配置模型)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置 - 核心架构问题)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-013 API Provider统一配置模型)
 *   **完成内容**:
     1.  ✅ 创建 `src/shared/types/api.ts` - 统一API类型定义（9个枚举和接口）
     2.  ✅ 重构 `APIManager.ts` - 升级到v2.0架构（保持向后兼容）
@@ -251,8 +251,8 @@
 #### [x] [H2.9] 模型注册表系统 ✅ 2025-12-29
 *   **文件**: `src/main/services/ModelRegistry.ts`（新建）, `config/models/default-models.json`（新建）
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 模型注册表系统)
-    - 实现方法: `plans/code-references-phase9.md` (REF-014 ModelRegistry数据结构)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置 - 模型注册表系统)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-014 ModelRegistry数据结构)
 *   **完成内容**:
     1.  ✅ 扩展 `src/shared/types/api.ts` - 添加5个模型相关类型（ModelParameters、ModelDefinition、UserModelConfig等）
     2.  ✅ 创建 `config/models/default-models.json` - 11个默认模型（SD XL、GPT-4、Sora 2等）
@@ -281,8 +281,8 @@
 #### [x] [H2.10] Settings 页面重构 ✅ 2025-12-29
 *   **文件**: `src/renderer/pages/settings/Settings.tsx`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置)
-    - 实现方法: `plans/code-references-phase9.md` (REF-013 API Provider统一配置模型UI设计, REF-014 ModelRegistry数据结构)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-013 API Provider统一配置模型UI设计, REF-014 ModelRegistry数据结构)
 *   **任务内容**:
     1.  ✅ 按功能分类Provider列表（左侧分类导航：图像生成、视频生成、LLM、工作流等）
     2.  ✅ 实现ProviderConfigCard组件（右侧Provider配置列表）
@@ -312,7 +312,7 @@
 *   **文件**: `src/renderer/components/workflow/nodes/*.tsx`（已创建）
 *   **依赖**: H0.3（工作流实例绑定项目）✅ 已完成
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台 - 节点编辑器功能待补充)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台 - 节点编辑器功能待补充)
 *   **任务内容**:
     1.  ✅ 集成ReactFlow库（安装@xyflow/react，配置工作流画布）
     2.  ✅ 创建Input节点组件（无左端口有右端口，资源类型选择，拖拽资产，搜索框）
@@ -326,8 +326,8 @@
 #### [x] [H2.12] 场景/角色素材专用管理 ✅ 2025-12-29
 *   **文件**: `src/main/services/AssetManager.ts`, `src/renderer/pages/assets/Assets.tsx`, `src/shared/types/asset.ts`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A2.资源库 - 场景/角色素材专用管理)
-    - 实现方法: `plans/code-references-phase9.md` (REF-015 场景/角色customFields Schema)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A2.资源库 - 场景/角色素材专用管理)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-015 场景/角色customFields Schema)
 *   **任务内容**:
     1.  ✅ 扩展资产类型（添加"场景"和"角色"分类到Assets页面）
     2.  ✅ 利用customFields存储专用数据（SceneCustomFields/CharacterCustomFields接口）
@@ -339,7 +339,7 @@
 #### [x] [H2.13] 工作流面板业务逻辑完善（小说转视频插件）✅ 2025-12-29
 *   **文件**: `src/renderer/pages/workflows/panels/*.tsx`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A4.工作台)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台)
 *   **任务内容**:
     1.  ✅ **ChapterSplitPanel**: 实现小说文件上传（txt/docx）、AI章节识别、章节列表编辑
     2.  ✅ **SceneCharacterPanel**: 实现场景卡片展示、角色管理（添加/编辑/删除）、场景角色提取调用
@@ -366,8 +366,8 @@
 #### [x] [H2.14] API密钥加密存储 ✅ 2025-12-29
 *   **文件**: `src/main/services/ConfigManager.ts`, `src/main/services/APIManager.ts`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 安全性改进)
-    - 实现方法: `plans/code-references-phase9.md` (REF-016 API密钥加密实现)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置 - 安全性改进)
+    - 实现方法: `docs\ref\code-references-phase9.md` (REF-016 API密钥加密实现)
 *   **任务内容**:
     1.  ✅ 实现AES-256-GCM加密算法（APIKeyEncryption类，使用machine-id作为密钥种子）
     2.  ✅ 修改配置读写逻辑（saveProvider自动加密，getProvider自动解密）
@@ -407,7 +407,7 @@
 #### [x] [H2.15] 日志管理（底部状态栏）✅ 2025-12-29
 *   **文件**: `src/renderer/components/layout/StatusBar.tsx`, `src/renderer/components/layout/LogViewer.tsx`, `src/main/services/Logger.ts`
 *   **参考**:
-    - 背景和要求: `plans/implementation-audit-report-2025-12-28.md` (A5.设置 - 日志管理)
+    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置 - 日志管理)
 *   **任务内容**:
     1.  ✅ 在底部状态栏添加铃铛图标（🔔）
     2.  ✅ 重要错误时在铃铛上显示红点提示

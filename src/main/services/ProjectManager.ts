@@ -12,7 +12,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { timeService } from './TimeService';
-import { 
+import { configManager } from './ConfigManager';
+import {
   ProjectManager as IProjectManager,
   ProjectConfig,
   ProjectSettings,
@@ -104,10 +105,14 @@ export class ProjectManager implements IProjectManager {
     try {
       const projectId = uuidv4();
       const projectPath = path.join(this.projectsPath, projectId);
-      
+
       // 创建项目目录
       await fs.mkdir(projectPath, { recursive: true });
-      
+
+      // 创建工作流JSON文件
+      const workflowId = uuidv4();
+      await this.createWorkflowFile(workflowId, name, template || 'workflow');
+
       // 创建项目配置
       const currentTime = await timeService.getCurrentTime();
       const defaultSettings: ProjectSettings = {
@@ -123,7 +128,7 @@ export class ProjectManager implements IProjectManager {
         createdAt: currentTime,
         updatedAt: currentTime,
         settings: defaultSettings,
-        workflows: [],
+        workflows: [workflowId],
         assets: [],
         workflowType: template,
         inputAssets: [],
@@ -587,16 +592,133 @@ export class ProjectManager implements IProjectManager {
   }
 
   /**
+   * 创建工作流JSON文件
+   * @param workflowId 工作流ID
+   * @param projectName 项目名称
+   * @param template 模板类型
+   * @private
+   */
+  private async createWorkflowFile(
+    workflowId: string,
+    projectName: string,
+    template: string
+  ): Promise<void> {
+    // 从配置管理器获取正确的工作区路径
+    const workspacePath = configManager.getGeneralSettings().workspacePath;
+    const workflowsDir = path.join(workspacePath, 'workflows');
+    await fs.mkdir(workflowsDir, { recursive: true });
+
+    const timestamp = await timeService.getCurrentTime();
+
+    const workflowType = template === 'novel-to-video' ? 'novel-to-video' : 'custom';
+
+    const workflow = {
+      id: workflowId,
+      name: projectName,  // 直接使用项目名称
+      type: workflowType,
+      nodes: [],
+      edges: [],
+      config: {},
+      createdAt: timestamp.toISOString(),
+      updatedAt: timestamp.toISOString()
+    };
+
+    const filePath = path.join(workflowsDir, `${workflowId}.json`);
+    await fs.writeFile(filePath, JSON.stringify(workflow, null, 2), 'utf-8');
+
+    await this.log('info', `工作流文件创建: ${filePath}`);
+  }
+
+  /**
    * 应用项目模板
    * @private
    */
   private async applyTemplate(projectPath: string, template: string): Promise<void> {
-    // 这里应该实现模板应用逻辑
-    // 暂时创建一个模板目录
-    const templatePath = path.join(projectPath, 'templates', template);
-    await fs.mkdir(templatePath, { recursive: true });
-    
     this.log('info', `应用项目模板: ${template} -> ${projectPath}`);
+
+    switch (template) {
+      case 'workflow':
+        // 默认工作流：创建空的工作流配置
+        await this.createWorkflowTemplate(projectPath);
+        break;
+
+      case 'novel-to-video':
+        // 小说转视频：创建插件所需的子文件夹结构
+        await this.createNovelToVideoTemplate(projectPath);
+        break;
+
+      default:
+        // 未知模板：尝试从插件获取模板
+        await this.applyPluginTemplate(projectPath, template);
+    }
+  }
+
+  /**
+   * 创建默认工作流模板
+   * @private
+   */
+  private async createWorkflowTemplate(projectPath: string): Promise<void> {
+    // 创建基础工作流目录
+    const dirs = ['workflows', 'assets', 'output'];
+
+    for (const dir of dirs) {
+      await fs.mkdir(path.join(projectPath, dir), { recursive: true });
+    }
+
+    this.log('info', `创建工作流模板完成: ${projectPath}`);
+  }
+
+  /**
+   * 创建小说转视频模板
+   * @private
+   */
+  private async createNovelToVideoTemplate(projectPath: string): Promise<void> {
+    // 创建小说转视频插件所需的目录结构
+    const dirs = [
+      'chapters',        // 章节文本
+      'scenes',          // 场景分析
+      'characters',      // 角色设定
+      'storyboards',     // 分镜脚本
+      'voiceovers',      // 配音文件
+      'video_clips',     // 视频片段
+      'output'           // 最终输出
+    ];
+
+    for (const dir of dirs) {
+      await fs.mkdir(path.join(projectPath, dir), { recursive: true });
+    }
+
+    // 使用TimeService获取时间
+    const timestamp = await timeService.getCurrentTime();
+
+    // 创建初始配置文件
+    const config = {
+      template: 'novel-to-video',
+      pluginId: 'novel-to-video',
+      folders: dirs,
+      createdAt: timestamp.toISOString()
+    };
+
+    await fs.writeFile(
+      path.join(projectPath, 'template.json'),
+      JSON.stringify(config, null, 2),
+      'utf-8'
+    );
+
+    this.log('info', `创建小说转视频模板完成: ${projectPath}`);
+  }
+
+  /**
+   * 应用插件模板
+   * @private
+   */
+  private async applyPluginTemplate(projectPath: string, pluginId: string): Promise<void> {
+    // 未来扩展：调用插件 API 获取模板
+    // 目前创建一个基础的插件目录结构
+    const baseDir = path.join(projectPath, 'plugin_data');
+    await fs.mkdir(baseDir, { recursive: true });
+
+    this.log('warn', `使用默认插件模板: ${pluginId}`);
   }
 
   /**

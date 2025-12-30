@@ -8,13 +8,13 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: oklch(0.1 0 0);
+  background: var(--sidebar);
 }
 
 /* ========== Tab切换 ========== */
 .panel-tabs {
   display: flex;
-  border-bottom: 1px solid oklch(0.24 0 0);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -23,7 +23,7 @@
   padding: 12px 16px;
   background: transparent;
   border: none;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -37,12 +37,12 @@
 }
 
 .tab-button:hover {
-  background: oklch(0.14 0 0);
-  color: oklch(0.7 0 0);
+  background: var(--input);
+  color: var(--sidebar-foreground);
 }
 
 .tab-button.active {
-  color: oklch(0.85 0.22 160);
+  color: var(--primary);
 }
 
 .tab-button.active::after {
@@ -52,7 +52,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: oklch(0.85 0.22 160);
+  background: var(--primary);
 }
 
 .tab-badge {
@@ -62,8 +62,8 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  background: oklch(0.85 0.22 160);
-  color: oklch(0.12 0 0);
+  background: var(--primary);
+  color: var(--background);
   font-size: 11px;
   font-weight: 600;
   border-radius: 9px;
@@ -89,7 +89,7 @@
   display: block;
   font-size: 11px;
   font-weight: 600;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
@@ -99,33 +99,33 @@
 /* ========== 检查器 ========== */
 .inspector-info {
   padding: 12px;
-  background: oklch(0.14 0 0);
+  background: var(--input);
   border-radius: 8px;
-  border: 1px solid oklch(0.24 0 0);
+  border: 1px solid var(--border);
 }
 
 .selected-item-name {
   font-size: 14px;
   font-weight: 600;
-  color: oklch(0.92 0 0);
+  color: var(--foreground);
   margin: 0 0 4px 0;
   font-family: "Inter", system-ui, sans-serif;
 }
 
 .selected-item-type {
   font-size: 12px;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   font-family: "JetBrains Mono", monospace;
 }
 
 .batch-indicator {
   margin-top: 8px;
   padding: 6px 10px;
-  background: oklch(0.85 0.22 160 / 0.15);
-  border: 1px solid oklch(0.85 0.22 160 / 0.3);
+  background: hsl(var(--primary) / 0.15);
+  border: 1px solid hsl(var(--primary) / 0.3);
   border-radius: 6px;
   font-size: 12px;
-  color: oklch(0.85 0.22 160);
+  color: var(--primary);
   font-weight: 500;
 }
 
@@ -135,24 +135,24 @@
   gap: 8px;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid oklch(0.24 0 0);
+  border-top: 1px solid var(--border);
 }
 
 .field-label {
   font-size: 11px;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   font-weight: 600;
 }
 
 .field-value {
   font-size: 12px;
-  color: oklch(0.7 0 0);
+  color: var(--sidebar-foreground);
   font-family: "JetBrains Mono", monospace;
 }
 
 .empty-text {
   font-size: 13px;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   text-align: center;
   padding: 16px;
   margin: 0;
@@ -162,10 +162,10 @@
 .prompt-textarea {
   width: 100%;
   padding: 12px;
-  background: oklch(0.14 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--input);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  color: oklch(0.92 0 0);
+  color: var(--foreground);
   font-size: 13px;
   line-height: 1.6;
   resize: vertical;
@@ -175,8 +175,8 @@
 
 .prompt-textarea:focus {
   outline: none;
-  border-color: oklch(0.85 0.22 160);
-  box-shadow: 0 0 0 3px oklch(0.85 0.22 160 / 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
 }
 
 .prompt-textarea:disabled {
@@ -185,7 +185,7 @@
 }
 
 .prompt-textarea::placeholder {
-  color: oklch(0.58 0 0 / 0.5);
+  color: hsl(var(--muted-foreground) / 0.5);
 }
 
 .textarea-hint {
@@ -196,7 +196,7 @@
 
 .char-count {
   font-size: 11px;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   font-family: "JetBrains Mono", monospace;
 }
 
@@ -210,10 +210,10 @@
 
 .mode-btn {
   padding: 10px 12px;
-  background: oklch(0.14 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--input);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: oklch(0.7 0 0);
+  color: var(--sidebar-foreground);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -222,14 +222,14 @@
 }
 
 .mode-btn:hover:not(:disabled) {
-  background: oklch(0.16 0 0);
-  border-color: oklch(0.85 0.22 160 / 0.5);
+  background: var(--card);
+  border-color: hsl(var(--primary) / 0.5);
 }
 
 .mode-btn.active {
-  background: oklch(0.85 0.22 160 / 0.15);
-  border-color: oklch(0.85 0.22 160);
-  color: oklch(0.85 0.22 160);
+  background: hsl(var(--primary) / 0.15);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .mode-btn:disabled {
@@ -239,7 +239,7 @@
 
 .mode-hint {
   font-size: 11px;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   line-height: 1.4;
 }
 
@@ -256,7 +256,7 @@
   display: block;
   font-size: 12px;
   font-weight: 500;
-  color: oklch(0.7 0 0);
+  color: var(--sidebar-foreground);
   margin-bottom: 6px;
   font-family: "Inter", system-ui, sans-serif;
 }
@@ -265,10 +265,10 @@
 .form-input {
   width: 100%;
   padding: 8px 12px;
-  background: oklch(0.14 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--input);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: oklch(0.92 0 0);
+  color: var(--foreground);
   font-size: 13px;
   font-family: "Inter", system-ui, sans-serif;
   transition: border-color 0.2s ease;
@@ -277,8 +277,8 @@
 .form-select:focus,
 .form-input:focus {
   outline: none;
-  border-color: oklch(0.85 0.22 160);
-  box-shadow: 0 0 0 3px oklch(0.85 0.22 160 / 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
 }
 
 .form-select:disabled,
@@ -294,7 +294,7 @@
 .field-hint {
   display: block;
   font-size: 11px;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   margin-top: 4px;
 }
 
@@ -307,10 +307,10 @@
 
 .aspect-btn {
   padding: 10px;
-  background: oklch(0.14 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--input);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: oklch(0.7 0 0);
+  color: var(--sidebar-foreground);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -319,14 +319,14 @@
 }
 
 .aspect-btn:hover:not(:disabled) {
-  background: oklch(0.16 0 0);
-  border-color: oklch(0.85 0.22 160 / 0.5);
+  background: var(--card);
+  border-color: hsl(var(--primary) / 0.5);
 }
 
 .aspect-btn.active {
-  background: oklch(0.85 0.22 160 / 0.15);
-  border-color: oklch(0.85 0.22 160);
-  color: oklch(0.85 0.22 160);
+  background: hsl(var(--primary) / 0.15);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .aspect-btn:disabled {
@@ -346,16 +346,16 @@
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background: oklch(0.14 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--input);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 12px;
-  color: oklch(0.7 0 0);
+  color: var(--sidebar-foreground);
   transition: background-color 0.2s ease;
 }
 
 .asset-tag:hover {
-  background: oklch(0.16 0 0);
+  background: var(--card);
 }
 
 .tag-name {
@@ -371,15 +371,15 @@
   padding: 0;
   background: transparent;
   border: none;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   cursor: pointer;
   border-radius: 3px;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .tag-remove:hover {
-  background: oklch(0.577 0.245 27.325 / 0.2);
-  color: oklch(0.577 0.245 27.325);
+  background: hsl(var(--destructive) / 0.2);
+  color: hsl(var(--destructive));
 }
 
 /* ========== 队列内容 ========== */
@@ -395,22 +395,22 @@
 
 .task-item {
   padding: 12px;
-  background: oklch(0.14 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--input);
+  border: 1px solid var(--border);
   border-radius: 8px;
   transition: border-color 0.2s ease;
 }
 
 .task-item.task-running {
-  border-color: oklch(0.85 0.22 160 / 0.5);
+  border-color: hsl(var(--primary) / 0.5);
 }
 
 .task-item.task-failed {
-  border-color: oklch(0.577 0.245 27.325 / 0.5);
+  border-color: hsl(var(--destructive) / 0.5);
 }
 
 .task-item.task-completed {
-  border-color: oklch(0.576 0.214 141.2 / 0.5);
+  border-color: hsl(var(--success) / 0.5);
 }
 
 .task-header {
@@ -424,7 +424,7 @@
   flex: 1;
   font-size: 13px;
   font-weight: 500;
-  color: oklch(0.92 0 0);
+  color: var(--foreground);
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -433,24 +433,24 @@
 }
 
 .task-icon-pending {
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
 }
 
 .task-icon-running {
-  color: oklch(0.85 0.22 160);
+  color: var(--primary);
   animation: pulse 2s ease-in-out infinite;
 }
 
 .task-icon-completed {
-  color: oklch(0.576 0.214 141.2);
+  color: hsl(var(--success));
 }
 
 .task-icon-failed {
-  color: oklch(0.577 0.245 27.325);
+  color: hsl(var(--destructive));
 }
 
 .task-icon-paused {
-  color: oklch(0.653 0.176 42.91);
+  color: hsl(var(--warning));
 }
 
 @keyframes pulse {
@@ -472,20 +472,20 @@
 .progress-bar {
   flex: 1;
   height: 6px;
-  background: oklch(0.18 0 0);
+  background: var(--sidebar-accent);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: oklch(0.85 0.22 160);
+  background: var(--primary);
   transition: width 0.3s ease;
 }
 
 .progress-text {
   font-size: 11px;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   font-weight: 600;
   font-family: "JetBrains Mono", monospace;
   min-width: 36px;
@@ -494,14 +494,14 @@
 
 .task-time {
   font-size: 11px;
-  color: oklch(0.58 0 0);
+  color: var(--muted-foreground);
   margin-bottom: 8px;
 }
 
 .task-error {
   font-size: 11px;
-  color: oklch(0.577 0.245 27.325);
-  background: oklch(0.577 0.245 27.325 / 0.1);
+  color: hsl(var(--destructive));
+  background: hsl(var(--destructive) / 0.1);
   padding: 6px 8px;
   border-radius: 4px;
   margin-bottom: 8px;
@@ -520,30 +520,30 @@
   width: 28px;
   height: 28px;
   padding: 0;
-  background: oklch(0.16 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: oklch(0.7 0 0);
+  color: var(--sidebar-foreground);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .task-action-btn:hover {
-  background: oklch(0.18 0 0);
-  border-color: oklch(0.85 0.22 160);
-  color: oklch(0.85 0.22 160);
+  background: var(--sidebar-accent);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .task-action-btn.task-action-cancel:hover {
-  border-color: oklch(0.577 0.245 27.325);
-  color: oklch(0.577 0.245 27.325);
+  border-color: hsl(var(--destructive));
+  color: hsl(var(--destructive));
 }
 
 /* ========== 底部生成按钮 ========== */
 .panel-footer {
   flex-shrink: 0;
   padding: 16px;
-  border-top: 1px solid oklch(0.24 0 0);
+  border-top: 1px solid var(--border);
 }
 
 .generate-button {
@@ -552,8 +552,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: oklch(0.85 0.22 160);
-  color: oklch(0.12 0 0);
+  background: var(--primary);
+  color: var(--background);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -561,7 +561,7 @@
 }
 
 .generate-button:hover:not(:disabled) {
-  background: oklch(0.88 0.22 160);
+  background: hsl(var(--primary) / 0.9);
 }
 
 .generate-button:active:not(:disabled) {

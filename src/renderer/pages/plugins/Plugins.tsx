@@ -111,9 +111,9 @@ const Plugins: React.FC = () => {
   // }, [showInstallModal, selectedTag, searchKeyword, sortBy]);
 
   const handleOpenPlugin = (plugin: PluginInfo) => {
-    // 插件类型（如"小说转视频"）：直接跳转到工作流执行器
-    // 用户可以通过右键菜单或其他方式查看插件详情
-    navigate(`/workflows/${plugin.id}`);
+    // 插件类型（如"小说转视频"）：跳转到插件执行器页面
+    // 按照 docs/workflow-vs-executor.md 规范，使用 /plugins/{pluginId} 路径
+    navigate(`/plugins/${plugin.id}`);
   };
 
   const handleViewPluginDetails = (e: React.MouseEvent, plugin: PluginInfo) => {

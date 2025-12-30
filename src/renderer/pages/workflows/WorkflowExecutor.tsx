@@ -19,7 +19,7 @@ import {
   Folder,
   FolderOpen
 } from 'lucide-react';
-import { Button, Loading, Toast } from '../../components/common';
+import { Button, Loading, Toast, Modal } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import type { Task } from '../../components/common/TaskQueueSheet';
 import { RightSettingsPanel } from '../../components/workflow/RightSettingsPanel';
@@ -119,7 +119,9 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, level, selectedResource, onSe
 };
 
 const WorkflowExecutor: React.FC = () => {
-  const { workflowId } = useParams<{ workflowId: string }>();
+  const { workflowId, pluginId } = useParams<{ workflowId?: string; pluginId?: string }>();
+  // 统一处理：pluginId 和 workflowId 都可以作为工作流ID使用
+  const actualWorkflowId = pluginId || workflowId;
   const navigate = useNavigate();
   const [workflowState, setWorkflowState] = useState<WorkflowState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -131,15 +133,16 @@ const WorkflowExecutor: React.FC = () => {
   const [selectedResource, setSelectedResource] = useState<string | null>(null);
 
   // 项目相关状态
-  const [currentProjectId, setCurrentProjectId] = useState('proj-001');
-  const [projects] = useState([
-    { id: 'proj-001', name: '我的第一个小说项目', status: 'in-progress' },
-    { id: 'proj-002', name: '测试项目', status: 'completed' },
-    { id: 'proj-003', name: '新项目草稿', status: 'in-progress' }
-  ]);
+  const [currentProjectId, setCurrentProjectId] = useState('');
+  const [projects, setProjects] = useState<Array<{ id: string; name: string; status: string }>>([]);
   const [currentProject, setCurrentProject] = useState<{ id: string; status: string } | null>(
     null
   );
+
+  // 新建项目对话框状态
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
 
   // 当前步骤选中的项目（用于右侧属性面板）
   const [selectedStoryboardIds, setSelectedStoryboardIds] = useState<string[]>([]);
@@ -222,7 +225,7 @@ const WorkflowExecutor: React.FC = () => {
 
   useEffect(() => {
     loadWorkflow();
-  }, [workflowId]);
+  }, [actualWorkflowId]);
 
   // 更新当前项目对象
   useEffect(() => {
@@ -231,10 +234,17 @@ const WorkflowExecutor: React.FC = () => {
   }, [currentProjectId, projects]);
 
   /**
+   * 页面加载时获取项目列表
+   */
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  /**
    * 加载工作流
    */
   const loadWorkflow = async () => {
-    if (!workflowId) {
+    if (!actualWorkflowId) {
       setToast({ type: 'error', message: '工作流ID不存在' });
       setLoading(false);
       return;
@@ -244,18 +254,28 @@ const WorkflowExecutor: React.FC = () => {
       setLoading(true);
 
       // eslint-disable-next-line no-console
-      console.log('WorkflowExecutor: 加载工作流', { workflowId });
+      console.log('WorkflowExecutor: 加载工作流', { workflowId: actualWorkflowId, isPlugin: !!pluginId });
 
-      // 从主进程加载工作流定义
-      const definition = await window.electronAPI.getWorkflowDefinition(workflowId);
-
+      // 步骤1：先加载工作流实例（从文件系统）
+      const workflowInstance = await window.electronAPI.loadWorkflow(actualWorkflowId);
       // eslint-disable-next-line no-console
-      console.log('WorkflowExecutor: 获取到工作流定义', { definition });
+      console.log('WorkflowExecutor: 工作流实例加载成功', {
+        type: workflowInstance.type,
+        name: workflowInstance.name
+      });
+
+      // 步骤2：用type查询工作流定义（从Registry）
+      const definition = await window.electronAPI.getWorkflowDefinition(workflowInstance.type);
+      // eslint-disable-next-line no-console
+      console.log('WorkflowExecutor: 工作流定义获取成功', {
+        definitionName: definition.name,
+        stepCount: definition.steps.length
+      });
 
       if (!definition) {
         // eslint-disable-next-line no-console
-        console.error('WorkflowExecutor: 工作流定义不存在', { workflowId });
-        setToast({ type: 'error', message: `工作流定义不存在: ${workflowId}` });
+        console.error('WorkflowExecutor: 工作流定义不存在', { type: workflowInstance.type });
+        setToast({ type: 'error', message: `工作流定义不存在: ${workflowInstance.type}` });
         setLoading(false);
         return;
       }
@@ -269,9 +289,9 @@ const WorkflowExecutor: React.FC = () => {
         ExportPanel
       };
 
-      // 将工作流定义转换为 WorkflowState
+      // 步骤3：合并定义和实例，创建工作流状态
       const workflow: WorkflowState = {
-        name: definition.name || '未命名工作流',
+        name: workflowInstance.name || definition.name || '未命名工作流',
         currentStepIndex: 0,
         steps: definition.steps.map((step: any, index: number) => ({
           id: step.id,
@@ -292,6 +312,91 @@ const WorkflowExecutor: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * 加载项目列表
+   */
+  const loadProjects = async () => {
+    try {
+      if (window.electronAPI?.listProjects) {
+        const projectList = await window.electronAPI.listProjects();
+
+        // 过滤只显示"小说转视频"类型的项目
+        const novelProjects = projectList
+          .filter((p: any) => p.workflowType === 'novel-to-video')
+          .map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            status: p.status || 'in-progress'
+          }));
+
+        setProjects(novelProjects);
+
+        // 如果当前项目ID为空且有项目列表，设置第一个为当前项目
+        if (!currentProjectId && novelProjects.length > 0) {
+          setCurrentProjectId(novelProjects[0].id);
+        }
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('加载项目列表失败:', error);
+      setToast({
+        type: 'error',
+        message: '加载项目列表失败'
+      });
+    }
+  };
+
+  /**
+   * 处理创建新项目
+   */
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) {
+      setToast({
+        type: 'error',
+        message: '请输入项目名称'
+      });
+      return;
+    }
+
+    try {
+      setIsCreatingProject(true);
+
+      // 创建项目（使用 novel-to-video 模板）
+      if (window.electronAPI?.createProject) {
+        await window.electronAPI.createProject(newProjectName, 'novel-to-video');
+
+        // 重新加载项目列表
+        await loadProjects();
+
+        // 自动选择新创建的项目
+        const updatedProjects = await window.electronAPI.listProjects();
+        const newProject = updatedProjects.find(
+          (p: any) => p.name === newProjectName && p.workflowType === 'novel-to-video'
+        );
+
+        if (newProject) {
+          setCurrentProjectId(newProject.id);
+        }
+
+        // 关闭对话框
+        setShowCreateProjectModal(false);
+        setNewProjectName('');
+
+        setToast({
+          type: 'success',
+          message: `项目 "${newProjectName}" 创建成功`
+        });
+      }
+    } catch (error) {
+      setToast({
+        type: 'error',
+        message: `创建项目失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    } finally {
+      setIsCreatingProject(false);
     }
   };
 
@@ -396,9 +501,27 @@ const WorkflowExecutor: React.FC = () => {
   /**
    * 处理项目切换
    */
-  const handleProjectChange = (projectId: string) => {
-    setCurrentProjectId(projectId);
-    // TODO: 加载该项目的工作流实例状态
+  const handleProjectChange = async (projectId: string) => {
+    // 检测是否为"新建项目"特殊值
+    if (projectId === '__CREATE_NEW__') {
+      setShowCreateProjectModal(true);
+      return;
+    }
+
+    try {
+      setCurrentProjectId(projectId);
+
+      // 重新加载工作流（切换到新项目的工作流）
+      // 这里需要根据projectId加载对应的工作流
+      // 暂时只切换ID，后续可以扩展
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('切换项目失败:', error);
+      setToast({
+        type: 'error',
+        message: '切换项目失败'
+      });
+    }
   };
 
   /**
@@ -596,7 +719,6 @@ const WorkflowExecutor: React.FC = () => {
       <div className="workflow-middle-column">
         {/* 统一头部组件 */}
         <WorkflowHeader
-          workflowName={workflowState?.name || '加载中...'}
           currentProjectId={currentProjectId}
           projects={projects}
           onProjectChange={handleProjectChange}
@@ -613,16 +735,38 @@ const WorkflowExecutor: React.FC = () => {
 
         {/* 当前步骤面板 */}
         <div className="workflow-content-area">
-          <CurrentPanelComponent
-            workflowId={workflowId || ''}
-            onComplete={handleStepComplete}
-            initialData={workflowState.data}
-            onStoryboardSelectionChange={
-              currentStep.id === 'generate-storyboard'
-                ? handleStoryboardSelectionChange
-                : undefined
-            }
-          />
+          {!currentProjectId || currentProjectId === '__CREATE_NEW__' ? (
+            // 空状态引导
+            <div className="empty-state-guide">
+              <div className="empty-icon">📁</div>
+              <h2>开始使用小说转视频</h2>
+              <p>请先创建或选择一个项目</p>
+              <Button
+                variant="primary"
+                onClick={() => setShowCreateProjectModal(true)}
+                className="mt-4"
+              >
+                + 新建项目
+              </Button>
+              {projects.length > 0 && (
+                <p className="text-sm text-muted-foreground mt-4">
+                  或从上方下拉框中选择现有项目
+                </p>
+              )}
+            </div>
+          ) : (
+            // 原有的步骤面板组件
+            <CurrentPanelComponent
+              workflowId={actualWorkflowId || ''}
+              onComplete={handleStepComplete}
+              initialData={workflowState.data}
+              onStoryboardSelectionChange={
+                currentStep.id === 'generate-storyboard'
+                  ? handleStoryboardSelectionChange
+                  : undefined
+              }
+            />
+          )}
         </div>
       </div>
 
@@ -671,6 +815,57 @@ const WorkflowExecutor: React.FC = () => {
           onClose={() => setToast(null)}
         />
       )}
+
+      {/* 新建项目对话框 */}
+      <Modal
+        isOpen={showCreateProjectModal}
+        title="新建小说转视频项目"
+        onClose={() => {
+          setShowCreateProjectModal(false);
+          setNewProjectName('');
+        }}
+        width="400px"
+      >
+        <div className="form-group">
+          <label htmlFor="new-project-name">项目名称</label>
+          <input
+            id="new-project-name"
+            type="text"
+            value={newProjectName}
+            onChange={(e) => setNewProjectName(e.target.value)}
+            placeholder="例如：我的第一个小说"
+            className="input-field"
+            autoFocus
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleCreateProject();
+              }
+            }}
+          />
+          <p className="text-sm text-muted-foreground mt-2">
+            项目将自动创建章节、场景、角色、分镜、配音等文件夹
+          </p>
+        </div>
+
+        <div className="modal-actions">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setShowCreateProjectModal(false);
+              setNewProjectName('');
+            }}
+          >
+            取消
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleCreateProject}
+            disabled={!newProjectName.trim() || isCreatingProject}
+          >
+            {isCreatingProject ? '创建中...' : '创建项目'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };

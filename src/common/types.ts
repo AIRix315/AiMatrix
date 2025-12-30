@@ -186,6 +186,7 @@ export interface PluginManifest {
   name: string;
   version: string;
   type: PluginType;
+  category?: string;
   verificationSignature?: string;
   description: string;
   author: string;

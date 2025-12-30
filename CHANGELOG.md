@@ -4,10 +4,107 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.8 fix2 | 2025-12-30 | 功能增强 | 实现项目模板系统，完善项目-工作流-插件集成架构，UI主题系统重构，全局导航刷新机制 |
 | 0.3.8 fix1 | 2025-12-30 | BUG修复 | 修复工作流页面浅色主题颜色问题，统一绿色主题色系统，使用shadcn/ui Select组件 |
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 1.0.0 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.8 fix2] - 2025-12-30
+
+### Added
+- feat(project): 实现项目模板系统
+  - 支持创建不同类型的项目（workflow/novel-to-video/plugin）
+  - 项目创建时自动生成对应的工作流JSON文件
+  - 自动创建项目文件夹结构（chapters/scenes/storyboards等）
+  - Dashboard新增模板选择下拉框（动态加载插件提供的模板）
+  - 修改文件：`src/main/services/ProjectManager.ts` (+140行)
+
+- feat(plugin): 插件支持分类标签
+  - PluginManifest和PluginInfo新增`category`字段
+  - 支持插件作为项目模板（category='workflow'）
+  - 修改文件：`src/common/types.ts`, `src/main/services/PluginManager.ts`
+
+- feat(nav): 全局导航刷新机制
+  - 新增工具函数：`src/renderer/utils/globalNavHelper.ts`
+  - 添加快捷方式后自动刷新导航栏
+  - GlobalNav组件支持动态刷新
+  - 修改文件：`src/renderer/components/common/GlobalNav.tsx`
+
+- feat(workflow): Dashboard和WorkflowExecutor支持新建项目
+  - Dashboard：点击"新建项目"按钮创建项目并选择模板
+  - WorkflowExecutor：在执行器内创建对应类型的项目
+  - 修改文件：`src/renderer/pages/dashboard/Dashboard.tsx`, `src/renderer/pages/workflows/WorkflowExecutor.tsx`
+
+- feat(ipc): 新增工作流删除IPC通道
+  - 新增 `workflow:delete` IPC处理器
+  - 支持删除工作流定义文件
+  - 修改文件：`src/main/index.ts`, `src/preload/index.ts`
+
+### Changed
+- refactor(dashboard): 项目管理功能增强 (+204行)
+  - 打开项目时根据 `workflowType` 智能跳转（novel-to-video → WorkflowExecutor，其他 → WorkflowEditor）
+  - 项目卡片显示工作流类型Badge（"小说转视频" / "工作流"）
+  - 添加内容区工具栏和"新建项目"按钮
+  - 添加快捷方式后立即刷新全局导航
+  - 修改文件：`src/renderer/pages/dashboard/Dashboard.tsx`
+
+- refactor(executor): WorkflowExecutor执行器重构 (+259行)
+  - 支持 `pluginId` 参数（统一处理插件和工作流执行）
+  - 项目列表动态加载（从主进程同步，过滤对应类型）
+  - 工作流加载分两步：①加载实例文件 ②查询定义Registry
+  - 新增"新建项目"对话框（Modal组件）
+  - 修改文件：`src/renderer/pages/workflows/WorkflowExecutor.tsx`
+
+- refactor(router): 路由系统优化
+  - 新增 `/plugins/:pluginId` 路由（插件执行使用WorkflowExecutor）
+  - 修正插件快捷方式跳转为 `/plugins/{id}`
+  - 修改文件：`src/renderer/App.tsx`, `src/renderer/components/common/GlobalNav.tsx`
+
+- refactor(theme): UI主题系统全面重构
+  - 所有CSS文件从硬编码 `oklch()` 颜色改为CSS变量
+  - 统一使用 `var(--primary)`, `var(--background)`, `var(--foreground)` 等
+  - 确保明暗主题完全适配
+  - 修改文件：`WorkflowHeader.css`, `RightSettingsPanel.css`, `WorkflowExecutor.css`, 所有工作流Panel CSS, `Dashboard.css`, `theme.css` 等
+
+- refactor(modal): Modal组件改进
+  - AnimatePresence添加 `mode="wait"` 属性
+  - 添加内联样式确保 `z-index: 99999` 正确应用
+  - 修复遮罩层样式（fixed定位、全屏覆盖）
+  - 修改文件：`src/renderer/components/common/Modal.tsx`
+
+- refactor(main): 主进程服务增强
+  - 添加 `ensurePluginDefaultFiles()` 确保插件默认文件存在
+  - 注册"小说转视频"工作流定义到Registry（插件模式）
+  - 修改文件：`src/main/index.ts`
+
+### Fixed
+- fix(project): 修复项目创建后工作流文件不存在的问题
+  - 创建项目时自动生成工作流JSON文件
+  - 工作流ID自动添加到项目配置的 `workflows` 数组
+  - 修改文件：`src/main/services/ProjectManager.ts`
+
+- fix(workflow): 修复工作流定义查询失败的问题
+  - WorkflowExecutor改为先加载实例，再用type查询定义
+  - 添加详细日志记录工作流加载过程
+  - 修改文件：`src/renderer/pages/workflows/WorkflowExecutor.tsx`
+
+### Technical Details
+- **项目模板系统架构**:
+  - `workflow`（默认模板）：创建 workflows/assets/output 文件夹
+  - `novel-to-video`（小说转视频）：创建 chapters/scenes/characters/storyboards/voiceovers/video_clips/output 文件夹
+  - 自定义插件模板：调用插件API获取模板配置
+- **工作流文件命名规则**: `{workflowId}.json`（存储在 `workspace/workflows/` 目录）
+- **项目-工作流关联**: ProjectConfig.workflows 数组存储工作流ID列表（当前1对1关系）
+- **路由规范**:
+  - 项目快捷方式 → `/projects/{projectId}`
+  - 工作流快捷方式 → `/workflows/editor/{workflowId}`（WorkflowEditor）
+  - 插件快捷方式 → `/plugins/{pluginId}`（WorkflowExecutor）
+- **变更统计**: 28个文件，+1082行/-453行
+- **新增文件**: `src/renderer/utils/globalNavHelper.ts`
+- **核心改进**: 完善了项目-工作流-插件三者的关联架构，实现了模板化项目创建
 
 ---
 

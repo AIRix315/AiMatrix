@@ -133,7 +133,7 @@
 }
 
 .status-running {
-    background: #FF9800;
+    background: var(--warning-color);
 }
 
 .status-completed {

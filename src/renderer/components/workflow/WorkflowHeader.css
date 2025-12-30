@@ -1,6 +1,6 @@
 /**
  * WorkflowHeader样式
- * 统一头部布局：《项目下拉 - 标题 ----- 1-2-3-4-5 ----- X》
+ * 统一头部布局：《项目下拉 ----- 1-2-3-4-5 ----- X》
  * 遵循V2设计规范：OKLCH色彩、高度56px、8px圆角
  */
 
@@ -69,16 +69,6 @@
 .workflow-header .project-selector option {
   background: var(--card);
   color: var(--foreground);
-}
-
-/* 工作流标题 */
-.workflow-header .workflow-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin: 0;
-  font-family: "Inter", system-ui, sans-serif;
-  white-space: nowrap;
 }
 
 /* 步骤条容器 */

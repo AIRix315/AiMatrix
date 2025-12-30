@@ -211,3 +211,40 @@
     border-color: hsl(var(--primary));
     font-weight: 500;
 }
+
+/* ==================== 内容区工具栏样式 ==================== */
+.content-tab-switcher {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.content-tab-btn {
+    padding: 0.5rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.content-tab-btn:hover {
+    color: var(--text-main);
+}
+
+.content-tab-btn.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}

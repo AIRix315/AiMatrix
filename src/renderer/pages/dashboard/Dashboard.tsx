@@ -7,15 +7,23 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../comp
 import { Badge } from '../../components/ui/badge';
 import type { ToastType } from '../../components/common/Toast';
 import { ShortcutType } from '../../../common/types';
+import { refreshGlobalNav } from '../../utils/globalNavHelper';
 import './Dashboard.css';
 
 interface Project {
   id: string;
   name: string;
   path: string;
+  workflows?: string[];
+  workflowType?: string;
   tag?: string;
   image?: string;
   lastModified?: string;
+}
+
+interface TemplateOption {
+  id: string;
+  name: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -23,6 +31,9 @@ const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('workflow');
+  const [workspacePath, setWorkspacePath] = useState('');
+  const [availableTemplates, setAvailableTemplates] = useState<TemplateOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
@@ -33,6 +44,14 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     loadProjects();
   }, []);
+
+  // 打开对话框时加载模板和工作路径
+  useEffect(() => {
+    if (showNewProjectModal) {
+      loadAvailableTemplates();
+      loadWorkspacePath();
+    }
+  }, [showNewProjectModal]);
 
   const loadProjects = async () => {
     try {
@@ -53,21 +72,70 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const loadAvailableTemplates = async () => {
+    try {
+      const templates: TemplateOption[] = [{ id: 'workflow', name: '工作流' }];
+
+      // 获取插件列表
+      if (window.electronAPI?.listPlugins) {
+        const plugins = await window.electronAPI.listPlugins();
+
+        // 筛选提供模板的插件（通过 category='workflow' 判断）
+        plugins.forEach((plugin: any) => {
+          if (plugin.category === 'workflow' && plugin.isEnabled) {
+            templates.push({
+              id: plugin.id,
+              name: plugin.name
+            });
+          }
+        });
+      }
+
+      setAvailableTemplates(templates);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('加载模板列表失败:', error);
+    }
+  };
+
+  const loadWorkspacePath = async () => {
+    try {
+      if (window.electronAPI?.getAllSettings) {
+        const settings = await window.electronAPI.getAllSettings();
+        setWorkspacePath(settings.general.workspacePath);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('加载工作路径失败:', error);
+    }
+  };
+
   const handleCreateProject = async () => {
+    // 验证输入
     if (!newProjectName.trim()) {
+      setToast({
+        type: 'error',
+        message: '请输入项目名称'
+      });
       return;
     }
 
     try {
       setIsCreating(true);
       if (window.electronAPI?.createProject) {
-        await window.electronAPI.createProject(newProjectName);
+        // 传递模板参数
+        await window.electronAPI.createProject(newProjectName, selectedTemplate);
+
+        // 关闭对话框并清空状态
         setShowNewProjectModal(false);
         setNewProjectName('');
+        setSelectedTemplate('workflow');
+
         setToast({
           type: 'success',
           message: `项目 "${newProjectName}" 创建成功`
         });
+
         // 重新加载项目列表
         await loadProjects();
       }
@@ -104,7 +172,34 @@ const Dashboard: React.FC = () => {
   };
 
   const handleOpenProject = (projectId: string) => {
-    navigate(`/projects/${projectId}`);
+    const project = projects.find(p => p.id === projectId);
+
+    if (!project) {
+      setToast({
+        type: 'error',
+        message: '项目不存在'
+      });
+      return;
+    }
+
+    // 检查项目是否有关联的工作流
+    if (!project.workflows || project.workflows.length === 0) {
+      setToast({
+        type: 'error',
+        message: '该项目没有关联的工作流'
+      });
+      return;
+    }
+
+    // 获取第一个工作流ID（当前1对1关系）
+    const workflowId = project.workflows[0];
+
+    // 根据工作流类型跳转到不同的页面
+    if (project.workflowType === 'novel-to-video') {
+      navigate(`/workflows/${workflowId}`);
+    } else {
+      navigate(`/workflows/editor/${workflowId}`);
+    }
   };
 
   const handlePinProject = async (e: React.MouseEvent, project: Project) => {
@@ -120,6 +215,8 @@ const Dashboard: React.FC = () => {
         type: 'success',
         message: `项目 "${project.name}" 已添加到菜单栏`
       });
+      // 立即刷新菜单栏
+      await refreshGlobalNav();
     } catch (error) {
       setToast({
         type: 'error',
@@ -136,6 +233,21 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="dashboard-content">
+        {/* 内容区工具栏（仅在有项目时显示） */}
+        {!isLoading && projects.length > 0 && (
+          <div className="content-tab-switcher">
+            <div className="tab-buttons">
+              {/* 预留 Tab 按钮位置，未来可扩展 */}
+            </div>
+            <Button
+              variant="primary"
+              onClick={() => setShowNewProjectModal(true)}
+            >
+              + 新建项目
+            </Button>
+          </div>
+        )}
+
         {isLoading ? (
           <Loading size="lg" message="加载项目列表..." fullscreen={false} />
         ) : projects.length === 0 ? (
@@ -163,7 +275,9 @@ const Dashboard: React.FC = () => {
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{project.name}</CardTitle>
-                      <Badge variant="secondary">{project.tag || 'Project'}</Badge>
+                      <Badge variant="secondary">
+                        {project.workflowType === 'novel-to-video' ? '小说转视频' : '工作流'}
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="pb-2">
@@ -213,7 +327,9 @@ const Dashboard: React.FC = () => {
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{project.name}</CardTitle>
-                      <Badge variant="secondary">{project.tag || 'Project'}</Badge>
+                      <Badge variant="secondary">
+                        {project.workflowType === 'novel-to-video' ? '小说转视频' : '工作流'}
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="pb-2 flex-1">
@@ -257,36 +373,56 @@ const Dashboard: React.FC = () => {
         onClose={() => setShowNewProjectModal(false)}
         width="480px"
       >
-        <div className="form-group">
-          <label htmlFor="project-name">项目名称</label>
-          <input
-            id="project-name"
-            type="text"
-            value={newProjectName}
-            onChange={(e) => setNewProjectName(e.target.value)}
-            placeholder="输入项目名称"
-            className="input-field"
-            autoFocus
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && newProjectName.trim()) {
-                handleCreateProject();
-              }
-            }}
-          />
-        </div>
-        <div className="modal-actions">
-          <Button variant="ghost" onClick={() => setShowNewProjectModal(false)}>
-            取消
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleCreateProject}
-            disabled={!newProjectName.trim() || isCreating}
-          >
-            {isCreating ? '创建中...' : '创建'}
-          </Button>
-        </div>
-      </Modal>
+          <div className="form-group">
+            <label htmlFor="project-name">项目名称</label>
+            <input
+              id="project-name"
+              type="text"
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
+              placeholder="我的新项目"
+              className="input-field"
+              autoFocus
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="project-template">项目模板</label>
+            <select
+              id="project-template"
+              value={selectedTemplate}
+              onChange={(e) => setSelectedTemplate(e.target.value)}
+              className="input-field"
+              style={{ cursor: 'pointer' }}
+            >
+              {availableTemplates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="modal-actions">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowNewProjectModal(false);
+                setNewProjectName('');
+                setSelectedTemplate('workflow');
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCreateProject}
+              disabled={!newProjectName.trim() || isCreating}
+            >
+              {isCreating ? '创建中...' : '创建'}
+            </Button>
+          </div>
+        </Modal>
 
       {/* 删除确认对话框 */}
       {deleteConfirm && (

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useSidebar } from '../../contexts/SidebarContext';
 import { ShortcutItem } from '../../../common/types';
 import { ShortcutNavItem } from './ShortcutNavItem';
+import { setGlobalNavRefresh } from '../../utils/globalNavHelper';
 import './GlobalNav.css';
 
 export interface NavItem {
@@ -79,6 +80,13 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
   // 加载快捷方式列表
   useEffect(() => {
     loadShortcuts();
+    // 注册全局刷新函数
+    setGlobalNavRefresh(loadShortcuts);
+
+    return () => {
+      // 组件卸载时清除
+      setGlobalNavRefresh(async () => {});
+    };
   }, []);
 
   const loadShortcuts = async () => {
@@ -122,8 +130,8 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
         navigate(`/workflows/editor/${shortcut.targetId}`);
         break;
       case 'plugin':
-        // 插件类型：跳转到工作流执行器（插件工作流用步骤面板执行）
-        navigate(`/workflows/${shortcut.targetId}`);
+        // 插件类型：跳转到插件页面（按 docs/workflow-vs-executor.md 规范）
+        navigate(`/plugins/${shortcut.targetId}`);
         break;
     }
   };

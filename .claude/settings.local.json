@@ -54,7 +54,8 @@
       "Bash(test:*)",
       "Bash(git checkout:*)",
       "Bash(fi)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npx shadcn@latest add:*)"
     ]
   },
   "enabledPlugins": {

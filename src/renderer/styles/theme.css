@@ -34,6 +34,14 @@
 
     /* 文字反色 */
     --text-dim: #505050;
+
+    /* 语义化状态颜色 */
+    --error-color: #ff5555;
+    --destructive-color: #ef4444;
+    --success-color: #10b981;
+    --success-hover: #059669;
+    --warning-color: #FF9800;
+    --info-color: #7c3aed;
 }
 
 .light {
@@ -67,6 +75,14 @@
 
     /* 文字反色 - 用于深色背景 */
     --text-dim: #757575;
+
+    /* 语义化状态颜色（浅色主题） */
+    --error-color: #dc2626;
+    --destructive-color: #b91c1c;
+    --success-color: #059669;
+    --success-hover: #047857;
+    --warning-color: #ea580c;
+    --info-color: #7c3aed;
 }
 
 /* 尺寸变量 - 对所有主题通用 */

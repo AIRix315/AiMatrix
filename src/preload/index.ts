@@ -243,8 +243,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 保存工作流
    */
-  saveWorkflow: (workflowId: string, config: any): Promise<void> => 
+  saveWorkflow: (workflowId: string, config: any): Promise<void> =>
     ipcRenderer.invoke('workflow:save', workflowId, config),
+
+  /**
+   * 删除工作流
+   */
+  deleteWorkflow: (workflowId: string): Promise<void> =>
+    ipcRenderer.invoke('workflow:delete', workflowId),
   
   /**
    * 加载工作流
@@ -744,6 +750,7 @@ declare global {
       cancelWorkflow: (jobId: string) => Promise<void>;
       listWorkflows: () => Promise<any[]>;
       saveWorkflow: (workflowId: string, config: any) => Promise<void>;
+      deleteWorkflow: (workflowId: string) => Promise<void>;
       loadWorkflow: (workflowId: string) => Promise<any>;
       installPlugin: (pluginPackage: any) => Promise<void>;
       uninstallPlugin: (pluginId: string) => Promise<void>;

@@ -107,6 +107,8 @@ const AppContentWithRouter: React.FC = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="assets" element={<Assets />} />
           <Route path="plugins" element={<Plugins />} />
+          {/* 插件执行器（如"小说转视频"）- 使用工作流执行器UI */}
+          <Route path="plugins/:pluginId" element={<WorkflowExecutor />} />
           <Route path="workflow" element={<Workflows />} />
           <Route path="workflows" element={<Workflows />} />
           {/* 自定义工作流编辑器（可视化流程图） */}

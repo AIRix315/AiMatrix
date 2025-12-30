@@ -5,6 +5,7 @@ import { Card, Button, Toast, Loading, ViewSwitcher, TaskQueueSheet, ConfirmDial
 import { WorkflowListItem } from '../../components/workflow/WorkflowListItem';
 import type { ToastType } from '../../components/common/Toast';
 import { ShortcutType } from '../../../common/types';
+import { refreshGlobalNav } from '../../utils/globalNavHelper';
 import './Workflows.css';
 
 interface Workflow {
@@ -49,14 +50,18 @@ const Workflows: React.FC = () => {
       if (window.electronAPI?.listWorkflows) {
         const workflowList = await window.electronAPI.listWorkflows();
         // 转换后端数据格式为前端格式
-        const formattedWorkflows: Workflow[] = workflowList.map((w) => ({
-          id: w.id,
-          name: w.name,
-          description: w.description || '暂无描述',
-          type: w.type || 'custom',
-          lastModified: w.lastModified || '未知',
-          status: w.status || 'draft'
-        }));
+        const formattedWorkflows: Workflow[] = workflowList
+          .map((w) => ({
+            id: w.id,
+            name: w.name,
+            description: w.description || '暂无描述',
+            type: w.type || 'custom',
+            lastModified: w.lastModified || '未知',
+            status: w.status || 'draft'
+          }))
+          // 过滤掉插件工作流（如 novel-to-video），防止在工作流列表中显示和被误删
+          // 插件工作流应该从插件页面访问，而非工作流页面
+          .filter((w) => w.id !== 'novel-to-video' && w.type !== 'novel-to-video');
         setWorkflows(formattedWorkflows);
       }
     } catch (error) {
@@ -91,6 +96,8 @@ const Workflows: React.FC = () => {
         type: 'success',
         message: `工作流 "${workflow.name}" 已添加到菜单栏`
       });
+      // 立即刷新菜单栏
+      await refreshGlobalNav();
     } catch (error) {
       setToast({
         type: 'error',
@@ -101,14 +108,27 @@ const Workflows: React.FC = () => {
 
   const handleDeleteWorkflow = async (workflowId: string) => {
     try {
-      if (window.electronAPI?.deleteWorkflowInstance) {
-        await window.electronAPI.deleteWorkflowInstance(workflowId);
-        setToast({
-          type: 'success',
-          message: '工作流删除成功'
-        });
-        await loadWorkflows();
+      // 删除工作流定义文件
+      if (window.electronAPI?.deleteWorkflow) {
+        await window.electronAPI.deleteWorkflow(workflowId);
       }
+
+      // 同时删除工作流实例数据（如果存在）
+      if (window.electronAPI?.deleteWorkflowInstance) {
+        try {
+          await window.electronAPI.deleteWorkflowInstance(workflowId);
+        } catch (e) {
+          // 实例可能不存在，忽略错误
+        }
+      }
+
+      setToast({
+        type: 'success',
+        message: '工作流删除成功'
+      });
+
+      // 刷新列表
+      await loadWorkflows();
     } catch (error) {
       setToast({
         type: 'error',

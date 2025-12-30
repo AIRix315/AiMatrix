@@ -8,7 +8,7 @@
   flex-direction: column;
   height: 100%;
   padding: 24px;
-  background: oklch(0.12 0 0);
+  background: var(--bg-primary);
   box-sizing: border-box;
 }
 
@@ -24,14 +24,14 @@
 .header-left h2 {
   font-size: 20px;
   font-weight: 600;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
   margin: 0 0 8px 0;
   font-family: "Inter", system-ui, sans-serif;
 }
 
 .panel-description {
   font-size: 13px;
-  color: oklch(0.58 0 0);
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -45,15 +45,15 @@
   align-items: center;
   gap: 8px;
   padding: 4px;
-  background: oklch(0.16 0 0);
+  background: var(--bg-secondary);
   border-radius: 8px;
-  border: 1px solid oklch(0.24 0 0);
+  border: 1px solid var(--border-color);
 }
 
 .view-toggle-group .separator {
   width: 1px;
   height: 20px;
-  background: oklch(0.24 0 0);
+  background: var(--border-color);
   margin: 0 4px;
 }
 
@@ -68,7 +68,7 @@
   display: flex;
   justify-content: flex-end;
   padding-top: 24px;
-  border-top: 1px solid oklch(0.24 0 0);
+  border-top: 1px solid var(--border-color);
   margin-top: 24px;
 }
 
@@ -80,9 +80,9 @@
   gap: 16px;
   margin-bottom: 24px;
   padding: 16px;
-  background: oklch(0.16 0 0);
+  background: var(--bg-secondary);
   border-radius: 8px;
-  border: 1px solid oklch(0.24 0 0);
+  border: 1px solid var(--border-color);
 }
 
 .option-group {
@@ -94,7 +94,7 @@
 .option-group label {
   font-size: 14px;
   font-weight: 500;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
 }
 
 .radio-group {
@@ -108,7 +108,7 @@
   gap: 8px;
   cursor: pointer;
   font-size: 14px;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
 }
 
 .radio-label input[type="radio"] {
@@ -136,13 +136,13 @@
 
 .stat-label {
   font-size: 14px;
-  color: oklch(0.58 0 0);
+  color: var(--text-muted);
 }
 
 .stat-value {
   font-size: 18px;
   font-weight: 600;
-  color: oklch(0.85 0.22 160);
+  color: var(--accent-color);
 }
 
 /* ========== 分镜列表 ========== */
@@ -153,7 +153,7 @@
 .storyboard-list-section h3 {
   font-size: 18px;
   font-weight: 600;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
   margin: 0 0 16px 0;
   font-family: "Inter", system-ui, sans-serif;
 }
@@ -173,7 +173,7 @@
 }
 
 .storyboard-card-wrapper.selected {
-  box-shadow: 0 0 0 3px oklch(0.85 0.22 160 / 0.4);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 40%, transparent);
 }
 
 .storyboard-card-wrapper:active {
@@ -215,8 +215,8 @@
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: oklch(0.16 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
@@ -224,14 +224,14 @@
 }
 
 .list-item:hover {
-  background: oklch(0.18 0 0);
-  border-color: oklch(0.85 0.22 160 / 0.3);
+  background: var(--bg-hover);
+  border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
 }
 
 .list-item.selected {
-  background: oklch(0.18 0 0);
-  border-color: oklch(0.85 0.22 160);
-  box-shadow: 0 0 0 3px oklch(0.85 0.22 160 / 0.2);
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent);
 }
 
 .list-item:active {
@@ -254,7 +254,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: oklch(0.14 0 0);
+  background: var(--bg-tertiary);
   border-radius: 8px;
 }
 
@@ -273,7 +273,7 @@
 .list-item-title {
   font-size: 15px;
   font-weight: 600;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
   margin: 0;
   font-family: "Inter", system-ui, sans-serif;
 }
@@ -299,7 +299,7 @@
 
 .list-item-prompt {
   font-size: 13px;
-  color: oklch(0.7 0 0);
+  color: var(--text-secondary);
   margin: 0 0 8px 0;
   line-height: 1.5;
 }
@@ -318,8 +318,8 @@
 }
 
 .status-badge.completed {
-  background: oklch(0.85 0.22 160 / 0.2);
-  color: oklch(0.85 0.22 160);
+  background: color-mix(in srgb, var(--accent-color) 20%, transparent);
+  color: var(--accent-color);
 }
 
 .status-badge.generating {
@@ -355,8 +355,8 @@
 .prompt-edit-container {
   margin-top: 8px;
   padding: 12px;
-  background: oklch(0.14 0 0);
-  border: 1px solid oklch(0.85 0.22 160 / 0.3);
+  background: var(--bg-tertiary);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
   border-radius: 6px;
 }
 
@@ -368,10 +368,10 @@
   width: 100%;
   min-height: 60px;
   padding: 8px;
-  background: oklch(0.12 0 0);
-  border: 1px solid oklch(0.24 0 0);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  color: oklch(0.92 0 0);
+  color: var(--text-primary);
   font-size: 13px;
   font-family: "Inter", system-ui, sans-serif;
   line-height: 1.5;
@@ -381,7 +381,7 @@
 
 .prompt-edit-textarea:focus {
   outline: none;
-  border-color: oklch(0.85 0.22 160);
+  border-color: var(--accent-color);
 }
 
 .prompt-edit-textarea::placeholder {
@@ -403,23 +403,23 @@
   height: 28px;
   border: none;
   border-radius: 6px;
-  background: oklch(0.18 0 0);
-  color: oklch(0.92 0 0);
+  background: var(--bg-hover);
+  color: var(--text-primary);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .icon-btn:hover {
-  background: oklch(0.22 0 0);
+  background: var(--bg-hover);
 }
 
 .icon-btn.save-btn {
-  background: oklch(0.85 0.22 160 / 0.2);
-  color: oklch(0.85 0.22 160);
+  background: color-mix(in srgb, var(--accent-color) 20%, transparent);
+  color: var(--accent-color);
 }
 
 .icon-btn.save-btn:hover {
-  background: oklch(0.85 0.22 160 / 0.3);
+  background: color-mix(in srgb, var(--accent-color) 30%, transparent);
 }
 
 .icon-btn.cancel-btn {
@@ -445,19 +445,19 @@
 }
 
 .card-prompt-edit {
-  background: oklch(0.14 0 0);
-  border: 1px solid oklch(0.85 0.22 160 / 0.3);
+  background: var(--bg-tertiary);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
   border-radius: 6px;
 }
 
 .card-prompt-display {
-  background: oklch(0.14 0 0);
+  background: var(--bg-tertiary);
   border-radius: 6px;
 }
 
 .card-prompt-text {
   font-size: 12px;
-  color: oklch(0.7 0 0);
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
   display: -webkit-box;

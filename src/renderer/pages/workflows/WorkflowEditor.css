@@ -90,7 +90,7 @@
 }
 
 .collapse-btn:hover {
-  background: #252525;
+  background: var(--bg-hover);
   border-color: var(--accent-color);
 }
 
@@ -148,7 +148,7 @@
 }
 
 .node-item:hover {
-  background: #1a1a1a;
+  background: var(--bg-secondary);
   border-color: var(--accent-color);
   transform: translateX(2px);
 }
@@ -210,7 +210,7 @@
 
 .property-action button {
   width: 100%;
-  color: #ff5555;
+  color: var(--error-color);
 }
 
 /* 拖拽手柄样式 */
@@ -291,7 +291,7 @@
 }
 
 .react-flow__controls-button:hover {
-  background: #252525;
+  background: var(--bg-hover);
 }
 
 .react-flow__controls-button:last-child {
