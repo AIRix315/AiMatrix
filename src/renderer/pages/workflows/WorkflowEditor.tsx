@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import ReactFlow, {
   Node,
   Controls,
@@ -35,16 +36,22 @@ const WorkflowEditor: React.FC = () => {
 
   // 面板折叠状态
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
-  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 切换左侧面板折叠状态
   const toggleLeftPanel = () => {
     setLeftPanelCollapsed((prev) => !prev);
   };
 
-  // 切换右侧面板折叠状态
-  const toggleRightPanel = () => {
-    setRightPanelCollapsed((prev) => !prev);
+  // 全屏切换
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
   };
 
   // 执行监控相关状态
@@ -244,9 +251,9 @@ const WorkflowEditor: React.FC = () => {
 
   // 节点库
   const nodeLibrary = [
-    { type: 'inputNode', label: '输入节点', icon: '📥', description: '资源选择和加载' },
-    { type: 'executeNode', label: '执行节点', icon: '⚙️', description: 'AI服务调用' },
-    { type: 'outputNode', label: '输出节点', icon: '📤', description: '结果保存' }
+    { type: 'inputNode', label: '输入节点', icon: 'input', description: '资源选择和加载' },
+    { type: 'executeNode', label: '执行节点', icon: 'settings', description: 'AI服务调用' },
+    { type: 'outputNode', label: '输出节点', icon: 'output', description: '结果保存' }
   ];
 
   const handleAddNode = async (nodeType: string, label: string) => {
@@ -379,16 +386,15 @@ const WorkflowEditor: React.FC = () => {
                   <Button variant="primary" onClick={handleSave} disabled={isSaving}>
                     {isSaving ? '保存中...' : '保存'}
                   </Button>
+                  {/* 全屏切换按钮 */}
+                  <button
+                    className="icon-btn"
+                    onClick={toggleFullscreen}
+                    title={isFullscreen ? '退出全屏' : '全屏显示'}
+                  >
+                    {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                  </button>
                 </div>
-
-                {/* 右侧折叠按钮 */}
-                <button
-                  className={`collapse-btn ${rightPanelCollapsed ? 'collapsed' : ''}`}
-                  onClick={toggleRightPanel}
-                  title={rightPanelCollapsed ? '展开右侧面板' : '折叠右侧面板'}
-                >
-                  <span className="collapse-icon">{rightPanelCollapsed ? '▶' : '◀'}</span>
-                </button>
               </div>
             </Panel>
 
@@ -431,55 +437,6 @@ const WorkflowEditor: React.FC = () => {
           </PanelGroup>
         </Panel>
 
-        <PanelResizeHandle className="resize-handle" />
-
-        {/* 右侧：属性面板 (区域D) */}
-        <Panel
-          id="right-panel"
-          defaultSize={250}
-          minSize={0}
-          maxSize={250}
-          collapsible
-          collapsedSize={0}
-          data-panel-collapsed={rightPanelCollapsed ? 'true' : 'false'}
-        >
-          <div className="properties-panel">
-            <h3>属性</h3>
-            {selectedNode ? (
-              <div className="property-content">
-                <div className="property-group">
-                  <label>节点ID:</label>
-                  <span>{selectedNode.id}</span>
-                </div>
-                <div className="property-group">
-                  <label>节点类型:</label>
-                  <span>{selectedNode.type || 'default'}</span>
-                </div>
-                <div className="property-group">
-                  <label>标签:</label>
-                  <span>{selectedNode.data?.label}</span>
-                </div>
-                <div className="property-group">
-                  <label>位置:</label>
-                  <span>
-                    X: {Math.round(selectedNode.position.x)},
-                    Y: {Math.round(selectedNode.position.y)}
-                  </span>
-                </div>
-                <div className="property-action">
-                  <Button
-                    variant="ghost"
-                    onClick={handleDeleteNode}
-                  >
-                    删除节点
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <p className="no-selection">选择节点以查看属性</p>
-            )}
-          </div>
-        </Panel>
       </PanelGroup>
 
       {/* Toast通知 */}

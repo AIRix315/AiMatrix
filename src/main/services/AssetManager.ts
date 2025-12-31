@@ -357,6 +357,7 @@ export class AssetManagerClass {
         type,
         tags,
         status,
+        isUserUploaded,
         search,
         sortBy = 'modifiedAt',
         sortOrder = 'desc',
@@ -411,6 +412,10 @@ export class AssetManagerClass {
 
               if (status) {
                 match = match && metadata.status === status;
+              }
+
+              if (isUserUploaded !== undefined) {
+                match = match && metadata.isUserUploaded === isUserUploaded;
               }
 
               if (search) {

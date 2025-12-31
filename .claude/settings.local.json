@@ -57,7 +57,9 @@
       "Bash(done)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(if not exist \"E:\\\\Projects\\\\Matrix\\\\docs\\\\audit\" mkdir \"E:\\\\Projects\\\\Matrix\\\\docs\\\\audit\")",
-      "Bash(del \"E:\\\\Projects\\\\Matrix\\\\src\\\\main\\\\models\\\\project.ts\")"
+      "Bash(del \"E:\\\\Projects\\\\Matrix\\\\src\\\\main\\\\models\\\\project.ts\")",
+      "Bash(timeout 30 git push:*)",
+      "Bash(del audio.ico brightness.ico close.ico gallery.ico maximize.ico minimize.ico pause.ico play.ico restore.ico shot.ico video.ico)"
     ]
   },
   "enabledPlugins": {

@@ -337,13 +337,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 取消任务
    */
-  cancelTask: (executionId: string): Promise<void> => 
+  cancelTask: (executionId: string): Promise<void> =>
     ipcRenderer.invoke('task:cancel', executionId),
-  
+
+  /**
+   * 重试任务
+   */
+  retryTask: (executionId: string): Promise<void> =>
+    ipcRenderer.invoke('task:retry', executionId),
+
   /**
    * 获取任务结果
    */
-  getTaskResults: (executionId: string): Promise<any> => 
+  getTaskResults: (executionId: string): Promise<any> =>
     ipcRenderer.invoke('task:results', executionId),
 
   // ==================== API相关 ====================
@@ -696,7 +702,35 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onServiceStatus: (callback: (data: any) => void) => {
     ipcRenderer.on('event:service:status', (_, data) => callback(data));
   },
-  
+
+  /**
+   * 监听任务创建事件
+   */
+  onTaskCreated: (callback: (task: any) => void) => {
+    ipcRenderer.on('task:created', (_, task) => callback(task));
+  },
+
+  /**
+   * 监听任务更新事件
+   */
+  onTaskUpdated: (callback: (taskUpdate: any) => void) => {
+    ipcRenderer.on('task:updated', (_, taskUpdate) => callback(taskUpdate));
+  },
+
+  /**
+   * 监听任务完成事件
+   */
+  onTaskCompleted: (callback: (taskId: string) => void) => {
+    ipcRenderer.on('task:completed', (_, taskId) => callback(taskId));
+  },
+
+  /**
+   * 监听任务失败事件
+   */
+  onTaskFailed: (callback: (taskId: string, error: string) => void) => {
+    ipcRenderer.on('task:failed', (_, taskId, error) => callback(taskId, error));
+  },
+
   /**
    * 移除事件监听器
    */
@@ -765,6 +799,7 @@ declare global {
       executeTask: (taskId: string, inputs: any) => Promise<string>;
       getTaskStatus: (executionId: string) => Promise<any>;
       cancelTask: (executionId: string) => Promise<void>;
+      retryTask: (executionId: string) => Promise<void>;
       getTaskResults: (executionId: string) => Promise<any>;
       callAPI: (name: string, params: any) => Promise<any>;
       setAPIKey: (name: string, key: string) => Promise<void>;
@@ -820,6 +855,10 @@ declare global {
       onWorkflowError: (callback: (data: any) => void) => void;
       onFileChanged: (callback: (data: any) => void) => void;
       onServiceStatus: (callback: (data: any) => void) => void;
+      onTaskCreated: (callback: (task: any) => void) => void;
+      onTaskUpdated: (callback: (taskUpdate: any) => void) => void;
+      onTaskCompleted: (callback: (taskId: string) => void) => void;
+      onTaskFailed: (callback: (taskId: string, error: string) => void) => void;
       removeAllListeners: (channel: string) => void;
     };
   }

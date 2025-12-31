@@ -14,6 +14,7 @@
  */
 
 import React, { useState } from 'react';
+import { Image, Video, AudioWaveform, FileText, Package, Sparkles, Folder } from 'lucide-react';
 import { AssetMetadata, AssetType, ResourceStatus } from '@/shared/types';
 import './AssetCard.css';
 
@@ -99,7 +100,7 @@ export function AssetCard({
           />
         ) : (
           <div className="thumbnail-placeholder">
-            <span className="file-icon">{getFileTypeIcon(asset.type)}</span>
+            {getFileTypeIconComponent(asset.type)}
           </div>
         )}
 
@@ -113,7 +114,7 @@ export function AssetCard({
         {/* AI生成指示器 */}
         {asset.prompt && (
           <div className="ai-indicator" title="AI生成资产">
-            ✨
+            <Sparkles className="h-4 w-4 text-yellow-500" />
           </div>
         )}
 
@@ -150,17 +151,17 @@ export function AssetCard({
 }
 
 /**
- * 获取文件类型图标
+ * 获取文件类型图标组件
  */
-function getFileTypeIcon(type: AssetType): string {
-  const iconMap: Record<AssetType, string> = {
-    image: '🖼️',
-    video: '🎥',
-    audio: '🔊',
-    text: '📝',
-    other: '📦'
+function getFileTypeIconComponent(type: AssetType): React.ReactNode {
+  const iconMap: Record<AssetType, React.ReactNode> = {
+    image: <Image className="h-12 w-12 text-muted-foreground" />,
+    video: <Video className="h-12 w-12 text-muted-foreground" />,
+    audio: <AudioWaveform className="h-12 w-12 text-muted-foreground" />,
+    text: <FileText className="h-12 w-12 text-muted-foreground" />,
+    other: <Package className="h-12 w-12 text-muted-foreground" />
   };
-  return iconMap[type] || '📁';
+  return iconMap[type] || <Folder className="h-12 w-12 text-muted-foreground" />;
 }
 
 /**

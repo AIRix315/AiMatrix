@@ -3,7 +3,7 @@ import './Card.css';
 
 interface CardProps {
   tag?: string;
-  image?: string;
+  image?: React.ReactNode;
   title: string;
   info?: string;
   hoverable?: boolean;

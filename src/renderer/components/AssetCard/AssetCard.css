@@ -85,6 +85,11 @@
   line-height: 1;
 }
 
+/* SVG图标在占位符中的样式 */
+.thumbnail-placeholder svg {
+  opacity: 0.5;
+}
+
 /* 状态徽章 */
 .status-badge {
   position: absolute;
@@ -125,7 +130,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(138, 43, 226, 0.9);
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
   font-size: 14px;
   backdrop-filter: blur(8px);

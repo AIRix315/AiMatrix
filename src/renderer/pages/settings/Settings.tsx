@@ -9,6 +9,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import {
+  Palette, Film, Music, Bot, Workflow, Speech, Ear, Binary, Globe,
+  Settings as SettingsIcon, Package
+} from 'lucide-react';
 import { Button, Toast } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import { ProviderConfigCard } from './components/ProviderConfigCard';
@@ -17,15 +21,15 @@ import './Settings.css';
 
 // API 分类定义
 const API_CATEGORIES = [
-  { id: 'image-generation', name: '图像生成', icon: '🎨' },
-  { id: 'video-generation', name: '视频生成', icon: '🎬' },
-  { id: 'audio-generation', name: '音频生成', icon: '🎵' },
-  { id: 'llm', name: '大语言模型', icon: '🤖' },
-  { id: 'workflow', name: '工作流', icon: '🔗' },
-  { id: 'tts', name: '语音合成', icon: '🗣️' },
-  { id: 'stt', name: '语音识别', icon: '👂' },
-  { id: 'embedding', name: '向量嵌入', icon: '🧮' },
-  { id: 'translation', name: '翻译', icon: '🌐' }
+  { id: 'image-generation', name: '图像生成', Icon: Palette },
+  { id: 'video-generation', name: '视频生成', Icon: Film },
+  { id: 'audio-generation', name: '音频生成', Icon: Music },
+  { id: 'llm', name: '大语言模型', Icon: Bot },
+  { id: 'workflow', name: '工作流', Icon: Workflow },
+  { id: 'tts', name: '语音合成', Icon: Speech },
+  { id: 'stt', name: '语音识别', Icon: Ear },
+  { id: 'embedding', name: '向量嵌入', Icon: Binary },
+  { id: 'translation', name: '翻译', Icon: Globe }
 ];
 
 interface LoggingConfig {
@@ -260,7 +264,9 @@ const Settings: React.FC = () => {
             className={`provider-item ${currentTab === 'global' ? 'active' : ''}`}
             onClick={() => handleTabChange('global')}
           >
-            <div className="provider-icon">⚙️</div>
+            <div className="provider-icon">
+              <SettingsIcon className="h-5 w-5 text-foreground" />
+            </div>
             <span>全局配置</span>
           </div>
 
@@ -271,7 +277,9 @@ const Settings: React.FC = () => {
             className={`provider-item ${currentTab === 'models' ? 'active' : ''}`}
             onClick={() => handleTabChange('models')}
           >
-            <div className="provider-icon">📦</div>
+            <div className="provider-icon">
+              <Package className="h-5 w-5 text-foreground" />
+            </div>
             <span>模型管理</span>
           </div>
 
@@ -284,7 +292,9 @@ const Settings: React.FC = () => {
               className={`provider-item ${currentTab === category.id ? 'active' : ''}`}
               onClick={() => handleTabChange(category.id)}
             >
-              <div className="provider-icon">{category.icon}</div>
+              <div className="provider-icon">
+                <category.Icon className="h-5 w-5 text-foreground" />
+              </div>
               <span>{category.name}</span>
             </div>
           ))}

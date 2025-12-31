@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { Play, Pause, Volume2, RefreshCw } from 'lucide-react';
+import { Play, Pause, Volume2, RefreshCw, Mic } from 'lucide-react';
 import { Button, Loading, Toast } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
 import './VoiceoverPanel.css';
@@ -230,7 +230,12 @@ export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId, onComplete, i
             </select>
           </div>
           <Button onClick={handleGenerate} disabled={loading || storyboards.length === 0}>
-            {loading ? '生成中...' : '🎙️ 生成配音'}
+            {loading ? '生成中...' : (
+              <>
+                <Mic className="h-4 w-4 mr-2 inline" />
+                生成配音
+              </>
+            )}
           </Button>
         </div>
 

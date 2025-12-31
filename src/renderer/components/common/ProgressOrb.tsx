@@ -28,10 +28,7 @@ export const ProgressOrb: React.FC<ProgressOrbProps> = ({
 }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
-  // 如果没有任务，不显示状态球
-  if (taskCount === 0) {
-    return null;
-  }
+  // 浮动球永远显示，作为全局控件（即使taskCount为0）
 
   return (
     <Draggable

@@ -5,24 +5,16 @@
  * H02 重构：三栏布局(左项目树 + 中内容区 + 右属性面板)
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   PanelLeftOpen,
-  PanelLeftClose,
-  PanelRightOpen,
-  PanelRightClose,
-  ChevronRight,
-  File,
-  FileText,
-  Folder,
-  FolderOpen
+  PanelLeftClose
 } from 'lucide-react';
 import { Button, Loading, Toast, Modal } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
-import type { Task } from '../../components/common/TaskQueueSheet';
-import { RightSettingsPanel } from '../../components/workflow/RightSettingsPanel';
+import { useSelection } from '../../contexts/SelectionContext';
 import { WorkflowHeader } from '../../components/workflow/WorkflowHeader';
 import {
   ChapterSplitPanel,
@@ -31,6 +23,8 @@ import {
   VoiceoverPanel,
   ExportPanel
 } from './panels';
+import { UnifiedAssetPanel, AssetCategoryId } from '../../components/UnifiedAssetPanel';
+import { AssetMetadata, AssetFilter, AssetType } from '@/shared/types';
 import './WorkflowExecutor.css';
 
 interface WorkflowStep {
@@ -47,90 +41,23 @@ interface WorkflowState {
   data: Record<string, any>;
 }
 
-// 项目资源树节点类型
-interface ResourceTreeNode {
-  id: string;
-  name: string;
-  type: 'folder' | 'file';
-  children?: ResourceTreeNode[];
-}
-
-// 资源树节点组件
-interface TreeNodeProps {
-  node: ResourceTreeNode;
-  level: number;
-  selectedResource: string | null;
-  onSelectResource: (id: string) => void;
-}
-
-const TreeNode: React.FC<TreeNodeProps> = ({ node, level, selectedResource, onSelectResource }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const hasChildren = node.children && node.children.length > 0;
-  const isSelected = selectedResource === node.id;
-
-  return (
-    <div>
-      <div
-        className={`resource-tree-node ${isSelected ? 'selected' : ''}`}
-        style={{ paddingLeft: `${level * 16 + 8}px` }}
-        onClick={() => {
-          if (node.type === 'folder' && hasChildren) {
-            setIsExpanded(!isExpanded);
-          } else {
-            onSelectResource(node.id);
-          }
-        }}
-      >
-        {node.type === 'folder' ? (
-          <>
-            <ChevronRight
-              className={`tree-chevron ${isExpanded ? 'expanded' : ''}`}
-              size={14}
-            />
-            {isExpanded ? <FolderOpen size={16} /> : <Folder size={16} />}
-          </>
-        ) : (
-          <>
-            <span className="tree-spacer" />
-            {node.name.includes('.txt') || node.name.includes('.docx') ? (
-              <FileText size={16} />
-            ) : (
-              <File size={16} />
-            )}
-          </>
-        )}
-        <span className="tree-node-name">{node.name}</span>
-      </div>
-      {hasChildren && isExpanded && (
-        <div className="tree-children">
-          {node.children!.map((child) => (
-            <TreeNode
-              key={child.id}
-              node={child}
-              level={level + 1}
-              selectedResource={selectedResource}
-              onSelectResource={onSelectResource}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const WorkflowExecutor: React.FC = () => {
   const { workflowId, pluginId } = useParams<{ workflowId?: string; pluginId?: string }>();
   // 统一处理：pluginId 和 workflowId 都可以作为工作流ID使用
   const actualWorkflowId = pluginId || workflowId;
   const navigate = useNavigate();
+  const { setSelectedItem, setSelectedCount } = useSelection();
   const [workflowState, setWorkflowState] = useState<WorkflowState | null>(null);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
-  // 三栏布局状态
+  // 左侧面板状态（右侧面板改用全局控制）
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
-  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
-  const [selectedResource, setSelectedResource] = useState<string | null>(null);
+
+  // 资产相关状态
+  const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
+  const [selectedScope, setSelectedScope] = useState<'global' | 'project'>('project');
+  const [selectedCategory, setSelectedCategory] = useState<AssetCategoryId>('all');
 
   // 项目相关状态
   const [currentProjectId, setCurrentProjectId] = useState('');
@@ -144,84 +71,56 @@ const WorkflowExecutor: React.FC = () => {
   const [newProjectName, setNewProjectName] = useState('');
   const [isCreatingProject, setIsCreatingProject] = useState(false);
 
-  // 当前步骤选中的项目（用于右侧属性面板）
+  // 当前步骤选中的项目
   const [selectedStoryboardIds, setSelectedStoryboardIds] = useState<string[]>([]);
 
-  // 任务队列状态（模拟数据）
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: 'task-1',
-      name: '生成分镜图像 #1',
-      type: 'image',
-      status: 'running',
-      progress: 45,
-      estimatedTime: 120,
-      createdAt: new Date(),
-      startedAt: new Date()
-    },
-    {
-      id: 'task-2',
-      name: '生成分镜图像 #2',
-      type: 'image',
-      status: 'pending',
-      progress: 0,
-      createdAt: new Date()
-    },
-    {
-      id: 'task-3',
-      name: '生成配音音频',
-      type: 'audio',
-      status: 'completed',
-      progress: 100,
-      createdAt: new Date(),
-      startedAt: new Date(),
-      completedAt: new Date()
-    }
-  ]);
+  // 构建资产过滤器
+  const getAssetFilter = useCallback((): AssetFilter => {
+    const filter: AssetFilter = {
+      scope: selectedScope,
+      projectId: selectedScope === 'project' ? currentProjectId : undefined,
+      sortBy: 'modifiedAt',
+      sortOrder: 'desc'
+    };
 
-  // 模拟项目资源树数据
-  const [resourceTree] = useState<ResourceTreeNode[]>([
-    {
-      id: 'chapters',
-      name: '章节',
-      type: 'folder',
-      children: [
-        { id: 'chapter-1', name: '第一章：开端', type: 'file' },
-        { id: 'chapter-2', name: '第二章：冲突', type: 'file' },
-        { id: 'chapter-3', name: '第三章：高潮', type: 'file' }
-      ]
-    },
-    {
-      id: 'scenes',
-      name: '场景',
-      type: 'folder',
-      children: [
-        { id: 'scene-1', name: '场景1：清晨的咖啡馆', type: 'file' },
-        { id: 'scene-2', name: '场景2：雨夜街头', type: 'file' }
-      ]
-    },
-    {
-      id: 'characters',
-      name: '角色',
-      type: 'folder',
-      children: [
-        { id: 'char-1', name: '主角：李明', type: 'file' },
-        { id: 'char-2', name: '女主：王芳', type: 'file' }
-      ]
-    },
-    {
-      id: 'storyboards',
-      name: '分镜脚本',
-      type: 'folder',
-      children: []
-    },
-    {
-      id: 'voiceovers',
-      name: '配音文件',
-      type: 'folder',
-      children: []
+    // 全局Tab分类过滤
+    if (selectedScope === 'global') {
+      if (selectedCategory === 'input') {
+        // 输入分类：过滤用户上传的资产
+        filter.isUserUploaded = true;
+      } else if (selectedCategory !== 'all') {
+        // 文件类型分类
+        filter.type = selectedCategory as AssetType;
+      }
     }
-  ]);
+    // 项目Tab分类过滤
+    else if (selectedScope === 'project') {
+      if (selectedCategory !== 'all') {
+        // 工作流分类
+        filter.category = selectedCategory;
+      }
+    }
+
+    return filter;
+  }, [selectedScope, selectedCategory, currentProjectId]);
+
+  // 处理资产选择
+  const handleAssetSelect = useCallback((asset: AssetMetadata, multiSelect: boolean) => {
+    setSelectedAssets((prev) => {
+      const newSet = new Set(prev);
+      if (multiSelect) {
+        if (newSet.has(asset.id)) {
+          newSet.delete(asset.id);
+        } else {
+          newSet.add(asset.id);
+        }
+      } else {
+        newSet.clear();
+        newSet.add(asset.id);
+      }
+      return newSet;
+    });
+  }, []);
 
   useEffect(() => {
     loadWorkflow();
@@ -525,18 +424,37 @@ const WorkflowExecutor: React.FC = () => {
   };
 
   /**
-   * 关闭所有侧栏
-   */
-  const handleCloseAllPanels = () => {
-    setLeftPanelCollapsed(true);
-    setRightPanelCollapsed(true);
-  };
-
-  /**
-   * 处理分镜选择变化
+   * 处理分镜选择变化 - 更新全局选中项
    */
   const handleStoryboardSelectionChange = (selectedIds: string[]) => {
     setSelectedStoryboardIds(selectedIds);
+
+    // 更新全局选中状态
+    if (!workflowState) return;
+
+    const storyboards = workflowState.data.storyboards || [];
+    const selectedStoryboards = storyboards.filter((sb: any) => selectedIds.includes(sb.id));
+
+    if (selectedStoryboards.length === 1) {
+      setSelectedItem({
+        id: selectedStoryboards[0].id,
+        name: selectedStoryboards[0].description,
+        type: selectedStoryboards[0].type === 'image' ? '图片分镜' : '视频分镜',
+        prompt: selectedStoryboards[0].prompt || '',
+      });
+      setSelectedCount(1);
+    } else if (selectedStoryboards.length > 1) {
+      setSelectedItem({
+        id: 'batch',
+        name: `已选中 ${selectedStoryboards.length} 个分镜`,
+        type: '批量编辑',
+        prompt: selectedStoryboards[0]?.prompt || '',
+      });
+      setSelectedCount(selectedStoryboards.length);
+    } else {
+      setSelectedItem(null);
+      setSelectedCount(0);
+    }
   };
 
   /**
@@ -579,69 +497,6 @@ const WorkflowExecutor: React.FC = () => {
     });
   };
 
-  /**
-   * 处理生成操作
-   */
-  const handleGenerate = (mode: 'current' | 'auto-complete' | 'full-flow') => {
-    if (mode === 'full-flow') {
-      setToast({
-        type: 'info',
-        message: '启动全流程生成...'
-      });
-    } else if (mode === 'auto-complete') {
-      setToast({
-        type: 'info',
-        message: '启动自动补全...'
-      });
-    } else if (selectedStoryboardIds.length > 0) {
-      setToast({
-        type: 'info',
-        message: `开始生成 ${selectedStoryboardIds.length} 个分镜...`
-      });
-    }
-
-    // TODO: 调用实际的生成API
-  };
-
-  /**
-   * 处理取消任务
-   */
-  const handleCancelTask = (taskId: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, status: 'failed' as const, error: '用户取消' } : task
-      )
-    );
-  };
-
-  /**
-   * 处理重试任务
-   */
-  const handleRetryTask = (taskId: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, status: 'pending' as const, error: undefined } : task
-      )
-    );
-  };
-
-  /**
-   * 处理暂停任务
-   */
-  const handlePauseTask = (taskId: string) => {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === taskId ? { ...task, status: 'paused' as const } : task))
-    );
-  };
-
-  /**
-   * 处理恢复任务
-   */
-  const handleResumeTask = (taskId: string) => {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === taskId ? { ...task, status: 'running' as const } : task))
-    );
-  };
 
   if (loading) {
     return <Loading size="lg" message="加载工作流..." fullscreen />;
@@ -661,33 +516,9 @@ const WorkflowExecutor: React.FC = () => {
   const currentStep = workflowState.steps[workflowState.currentStepIndex];
   const CurrentPanelComponent = currentStep.component;
 
-  // 获取当前选中的分镜数据（用于右侧面板）
-  const selectedStoryboards =
-    workflowState.data.storyboards?.filter((sb: any) =>
-      selectedStoryboardIds.includes(sb.id)
-    ) || [];
-
-  // 构建右侧面板显示的item数据
-  const selectedItem =
-    selectedStoryboards.length === 1
-      ? {
-          id: selectedStoryboards[0].id,
-          name: selectedStoryboards[0].description,
-          type: selectedStoryboards[0].type === 'image' ? '图片分镜' : '视频分镜',
-          prompt: selectedStoryboards[0].prompt || ''
-        }
-      : selectedStoryboards.length > 1
-      ? {
-          id: 'batch',
-          name: `已选中 ${selectedStoryboards.length} 个分镜`,
-          type: '批量编辑',
-          prompt: selectedStoryboards[0]?.prompt || ''
-        }
-      : null;
-
   return (
     <div className="workflow-executor">
-      {/* 左侧：项目资源树 */}
+      {/* 左侧：统一资源栏 */}
       <AnimatePresence>
         {!leftPanelCollapsed && (
           <motion.aside
@@ -697,20 +528,14 @@ const WorkflowExecutor: React.FC = () => {
             exit={{ width: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
-            <div className="left-panel-header">
-              <h3>项目资源</h3>
-            </div>
-            <div className="resource-tree">
-              {resourceTree.map((node) => (
-                <TreeNode
-                  key={node.id}
-                  node={node}
-                  level={0}
-                  selectedResource={selectedResource}
-                  onSelectResource={setSelectedResource}
-                />
-              ))}
-            </div>
+            <UnifiedAssetPanel
+              selectedScope={selectedScope}
+              selectedCategory={selectedCategory}
+              currentProjectId={currentProjectId}
+              showProjectSelector={false}
+              onScopeChange={setSelectedScope}
+              onCategoryChange={setSelectedCategory}
+            />
           </motion.aside>
         )}
       </AnimatePresence>
@@ -727,10 +552,10 @@ const WorkflowExecutor: React.FC = () => {
           onStepClick={handleStepClick}
           canClickStep={canClickStep}
           leftPanelCollapsed={leftPanelCollapsed}
-          rightPanelCollapsed={rightPanelCollapsed}
+          rightPanelCollapsed={false}
           onToggleLeftPanel={() => setLeftPanelCollapsed(!leftPanelCollapsed)}
-          onToggleRightPanel={() => setRightPanelCollapsed(!rightPanelCollapsed)}
-          onCloseAllPanels={handleCloseAllPanels}
+          onToggleRightPanel={() => {}}
+          onCloseAllPanels={() => setLeftPanelCollapsed(true)}
         />
 
         {/* 当前步骤面板 */}
@@ -769,43 +594,6 @@ const WorkflowExecutor: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* 右侧：属性面板 */}
-      <AnimatePresence>
-        {!rightPanelCollapsed && (
-          <motion.aside
-            className="workflow-right-panel"
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 320, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          >
-            <RightSettingsPanel
-              selectedItem={selectedItem}
-              selectedCount={selectedStoryboardIds.length}
-              onPromptChange={handlePromptChange}
-              onSettingsChange={handleSettingsChange}
-              onGenerate={handleGenerate}
-              linkedAssets={
-                selectedStoryboards.length > 0 && selectedStoryboards[0].linkedAssets
-                  ? selectedStoryboards[0].linkedAssets
-                  : []
-              }
-              onRemoveAsset={(assetId) => {
-                // TODO: 实现移除关联资产
-                // eslint-disable-next-line no-console
-                console.log('Remove asset:', assetId);
-              }}
-              isGenerating={false}
-              tasks={tasks}
-              onCancelTask={handleCancelTask}
-              onRetryTask={handleRetryTask}
-              onPauseTask={handlePauseTask}
-              onResumeTask={handleResumeTask}
-            />
-          </motion.aside>
-        )}
-      </AnimatePresence>
 
       {/* Toast通知 */}
       {toast && (

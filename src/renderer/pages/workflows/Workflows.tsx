@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Maximize2, Minimize2, Pin, Trash2 } from 'lucide-react';
+import { Pin, Trash2, Settings as SettingsIcon, RefreshCw, Workflow as WorkflowIcon } from 'lucide-react';
 import { Card, Button, Toast, Loading, ViewSwitcher, TaskQueueSheet, ConfirmDialog, type Task } from '../../components/common';
 import { WorkflowListItem } from '../../components/workflow/WorkflowListItem';
 import type { ToastType } from '../../components/common/Toast';
@@ -24,21 +24,9 @@ const Workflows: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'instances' | 'definitions'>('instances');
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isTaskQueueOpen, setIsTaskQueueOpen] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{ workflowId: string; workflowName: string } | null>(null);
-
-  // 全屏切换
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
 
   useEffect(() => {
     loadWorkflows();
@@ -90,7 +78,7 @@ const Workflows: React.FC = () => {
         type: ShortcutType.WORKFLOW,
         targetId: workflow.id,
         name: workflow.name,
-        icon: '⚙️'
+        icon: 'settings'
       });
       setToast({
         type: 'success',
@@ -181,15 +169,6 @@ const Workflows: React.FC = () => {
             (activeTab === 'definitions')) && (
             <ViewSwitcher viewMode={viewMode} onChange={setViewMode} />
           )}
-
-          {/* 全屏切换按钮 */}
-          <button
-            className="icon-btn"
-            onClick={toggleFullscreen}
-            title={isFullscreen ? '退出全屏' : '全屏显示'}
-          >
-            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-          </button>
         </div>
       </div>
 
@@ -221,7 +200,9 @@ const Workflows: React.FC = () => {
           // 我的工作流视图
           workflows.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">⚙️</div>
+              <div className="empty-icon">
+                <SettingsIcon className="h-16 w-16 text-muted-foreground" />
+              </div>
               <h2>暂无工作流</h2>
               <p>点击右上角"+ 自定义工作流"按钮创建您的第一个工作流</p>
             </div>
@@ -247,7 +228,15 @@ const Workflows: React.FC = () => {
                 <div key={workflow.id} className="workflow-card-wrapper">
                   <Card
                     tag={workflow.type}
-                    image={workflow.type === 'comfyui' ? '🔄' : workflow.type === 'n8n' ? '🔗' : '⚙️'}
+                    image={
+                      workflow.type === 'comfyui' ? (
+                        <RefreshCw className="h-12 w-12 text-muted-foreground" />
+                      ) : workflow.type === 'n8n' ? (
+                        <WorkflowIcon className="h-12 w-12 text-muted-foreground" />
+                      ) : (
+                        <SettingsIcon className="h-12 w-12 text-muted-foreground" />
+                      )
+                    }
                     title={workflow.name}
                     info={`Type: ${workflow.type} | ${workflow.lastModified}`}
                     hoverable

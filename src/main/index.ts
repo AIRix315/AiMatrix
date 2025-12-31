@@ -592,6 +592,14 @@ class MatrixApp {
       await taskScheduler.cancelTask(executionId);
       return { success: true };
     });
+    ipcMain.handle('task:retry', async (_, executionId) => {
+      // 重试任务可以通过重新执行实现
+      const taskStatus = await taskScheduler.getTaskStatus(executionId);
+      if (taskStatus && taskStatus.taskId) {
+        return await taskScheduler.executeTask(taskStatus.taskId, taskStatus.inputs || {});
+      }
+      return { success: false, message: 'Cannot retry: task not found' };
+    });
     ipcMain.handle('task:results', async (_, executionId) => {
       return await taskScheduler.getTaskResults(executionId);
     });

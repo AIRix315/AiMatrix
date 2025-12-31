@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from './components/theme-provider';
 import { SidebarProvider, useSidebar } from './contexts/SidebarContext';
+import { SelectionProvider, useSelection } from './contexts/SelectionContext';
+import { TaskProvider } from './contexts/TaskContext';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import Layout from './components/common/Layout';
 import { ProgressOrb } from './components/common';
+import type { Task } from './components/common/TaskQueueSheet';
 import Dashboard from './pages/dashboard/Dashboard';
 import Assets from './pages/assets/Assets';
 import Plugins from './pages/plugins/Plugins';
@@ -22,11 +25,53 @@ import UIDemo from './pages/demo/UIDemo';
 const AppContentWithRouter: React.FC = () => {
   const navigate = useNavigate();
   const { toggleLeftSidebar, toggleRightSidebar } = useSidebar();
+  const { selectedItem, selectedCount } = useSelection();
 
-  // ProgressOrb 模拟状态（实际应从 TaskScheduler 或工作流状态获取）
-  const [taskCount] = useState(3);
-  const [progress, setProgress] = useState(45);
-  const [isGenerating, setIsGenerating] = useState(true);
+  // 任务队列状态（通过IPC事件动态添加）
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  // 监听任务事件，动态更新队列
+  useEffect(() => {
+    const handleTaskCreated = (task: Task) => {
+      setTasks((prev) => [...prev, task]);
+    };
+
+    const handleTaskUpdated = (taskUpdate: Partial<Task> & { id: string }) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskUpdate.id ? { ...t, ...taskUpdate } : t))
+      );
+    };
+
+    const handleTaskCompleted = (taskId: string) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: 'completed' as const, progress: 100 } : t))
+      );
+    };
+
+    const handleTaskFailed = (taskId: string, error: string) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: 'failed' as const, error } : t))
+      );
+    };
+
+    // 注册事件监听器
+    if (window.electronAPI) {
+      window.electronAPI.onTaskCreated(handleTaskCreated);
+      window.electronAPI.onTaskUpdated(handleTaskUpdated);
+      window.electronAPI.onTaskCompleted(handleTaskCompleted);
+      window.electronAPI.onTaskFailed(handleTaskFailed);
+    }
+
+    // 清理监听器
+    return () => {
+      if (window.electronAPI?.removeAllListeners) {
+        window.electronAPI.removeAllListeners('task:created');
+        window.electronAPI.removeAllListeners('task:updated');
+        window.electronAPI.removeAllListeners('task:completed');
+        window.electronAPI.removeAllListeners('task:failed');
+      }
+    };
+  }, []);
 
   // 全屏切换函数（使用浏览器原生API）
   const toggleFullscreen = () => {
@@ -83,23 +128,50 @@ const AppContentWithRouter: React.FC = () => {
     enabled: true,
   });
 
-  // 模拟进度更新
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          setIsGenerating(false);
-          return 100;
-        }
-        return prev + 1;
-      });
-    }, 500);
+  // 计算运行中任务数量和平均进度
+  const runningTasks = tasks.filter((t) => t.status === 'running');
+  const taskCount = runningTasks.length;
+  const avgProgress =
+    runningTasks.length > 0
+      ? runningTasks.reduce((sum, t) => sum + t.progress, 0) / runningTasks.length
+      : 0;
 
-    return () => clearInterval(interval);
-  }, []);
+  // 任务操作处理（所有任务通过IPC）
+  const handleCancelTask = async (taskId: string) => {
+    try {
+      await window.electronAPI.cancelTask(taskId);
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    } catch (error) {
+      console.error('取消任务失败:', error);
+    }
+  };
+
+  const handleRetryTask = async (taskId: string) => {
+    try {
+      await window.electronAPI.retryTask(taskId);
+    } catch (error) {
+      console.error('重试任务失败:', error);
+    }
+  };
+
+  const handleClearCompleted = () => {
+    // 清除已完成任务
+    setTasks((prev) => prev.filter((t) => t.status !== 'completed'));
+  };
+
+  // 生成处理
+  const handleGenerate = (mode: 'current' | 'auto-complete' | 'full-flow') => {
+    // TODO: 实现真实的生成逻辑
+    console.log(`开始生成: ${mode}`);
+  };
 
   return (
-    <>
+    <TaskProvider
+      tasks={tasks}
+      onCancelTask={handleCancelTask}
+      onRetryTask={handleRetryTask}
+      onClearCompleted={handleClearCompleted}
+    >
       <Routes>
         <Route path="/" element={<Layout />}>
           {/* 首页路由 */}
@@ -122,18 +194,14 @@ const AppContentWithRouter: React.FC = () => {
         </Route>
       </Routes>
 
-      {/* 全局状态球 - 显示任务队列和进度 */}
-      {taskCount > 0 && (
-        <ProgressOrb
-          taskCount={taskCount}
-          progress={progress}
-          isGenerating={isGenerating}
-          onClickOrb={() => {
-            // 全局点击暂时无操作，真实逻辑在 WorkflowExecutor 中实现
-          }}
-        />
-      )}
-    </>
+      {/* 全局浮动球 - 显示任务队列和进度（始终显示）*/}
+      <ProgressOrb
+        taskCount={taskCount}
+        progress={avgProgress}
+        isGenerating={taskCount > 0}
+        onClickOrb={toggleRightSidebar}
+      />
+    </TaskProvider>
   );
 };
 
@@ -151,9 +219,11 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="matrix-ui-theme">
-      <SidebarProvider>
-        <AppContent />
-      </SidebarProvider>
+      <SelectionProvider>
+        <SidebarProvider>
+          <AppContent />
+        </SidebarProvider>
+      </SelectionProvider>
     </ThemeProvider>
   );
 };

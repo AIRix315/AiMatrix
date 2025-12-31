@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Pin, Trash2 } from 'lucide-react';
+import { Pin, Trash2, Puzzle } from 'lucide-react';
 import { Card, Button, Loading, Toast, ConfirmDialog, Modal, ViewSwitcher } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 // import MarketPluginCard from './components/MarketPluginCard';
@@ -193,7 +193,7 @@ const Plugins: React.FC = () => {
         type: ShortcutType.PLUGIN,
         targetId: plugin.id,
         name: plugin.name,
-        icon: plugin.icon || '🧩'
+        icon: plugin.icon || 'puzzle'
       });
       setToast({
         type: 'success',
@@ -288,7 +288,7 @@ const Plugins: React.FC = () => {
                     <div key={plugin.id} className="plugin-card-wrapper">
                       <Card
                         tag="Official"
-                        image={plugin.icon || '🧩'}
+                        image={plugin.icon || <Puzzle className="h-12 w-12 text-muted-foreground" />}
                         title={plugin.name}
                         info={`v${plugin.version} | ${plugin.author}`}
                         hoverable
@@ -336,7 +336,7 @@ const Plugins: React.FC = () => {
                     <div key={plugin.id} className="plugin-card-wrapper">
                       <Card
                         tag="Community"
-                        image={plugin.icon || '🧩'}
+                        image={plugin.icon || <Puzzle className="h-12 w-12 text-muted-foreground" />}
                         title={plugin.name}
                         info={plugin.description}
                         hoverable
@@ -377,7 +377,9 @@ const Plugins: React.FC = () => {
 
             {plugins.length === 0 && (
               <div className="empty-state">
-                <div className="empty-icon">🧩</div>
+                <div className="empty-icon">
+                  <Puzzle className="h-16 w-16 text-muted-foreground" />
+                </div>
                 <h2>暂无插件</h2>
                 <p>浏览插件市场以扩展功能</p>
               </div>
@@ -395,7 +397,7 @@ const Plugins: React.FC = () => {
                     <div key={plugin.id} className="plugin-card-wrapper">
                       <Card
                         tag="Official"
-                        image={plugin.icon || '🧩'}
+                        image={plugin.icon || <Puzzle className="h-12 w-12 text-muted-foreground" />}
                         title={plugin.name}
                         info={`v${plugin.version} | ${plugin.author}`}
                         hoverable
@@ -443,7 +445,7 @@ const Plugins: React.FC = () => {
                     <div key={plugin.id} className="plugin-card-wrapper">
                       <Card
                         tag="Community"
-                        image={plugin.icon || '🧩'}
+                        image={plugin.icon || <Puzzle className="h-12 w-12 text-muted-foreground" />}
                         title={plugin.name}
                         info={plugin.description}
                         hoverable
@@ -484,7 +486,9 @@ const Plugins: React.FC = () => {
 
             {plugins.length === 0 && (
               <div className="empty-state">
-                <div className="empty-icon">🧩</div>
+                <div className="empty-icon">
+                  <Puzzle className="h-16 w-16 text-muted-foreground" />
+                </div>
                 <h2>暂无插件</h2>
                 <p>浏览插件市场以扩展功能</p>
               </div>
@@ -502,7 +506,9 @@ const Plugins: React.FC = () => {
           width="600px"
         >
           <div className="plugin-details">
-            <div className="plugin-icon">{selectedPlugin.icon || '🧩'}</div>
+            <div className="plugin-icon">
+              {selectedPlugin.icon || <Puzzle className="h-16 w-16 text-muted-foreground" />}
+            </div>
             <div className="plugin-info-group">
               <label>版本:</label>
               <span>{selectedPlugin.version}</span>

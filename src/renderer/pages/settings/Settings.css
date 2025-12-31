@@ -81,6 +81,10 @@
     margin-right: 10px;
 }
 
+.provider-icon svg {
+    color: inherit; /* SVG 图标继承父元素颜色 */
+}
+
 .provider-item span {
     font-size: 14px;
     flex: 1;

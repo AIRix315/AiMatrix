@@ -4,13 +4,14 @@ AI视频生成工作流管理平台
 
 ## 项目简介
 
-MATRIX Studio 是一个基于 Electron 的 AI 视频生成工作流管理平台，定位为中间件，不直接参与视频渲染，而是提供统一的工作流管理和物料管理功能。
+MATRIX Studio 是一个基于 Electron 的 AI 视频生成管理平台，定位为中间件，不直接参与视频渲染，而是提供统一外部集成的汇聚管理和物料管理平台。
 
 ## 当前状态
 
-- **版本**: v0.0.1 (Project Initialized)
-- **阶段**: Phase 1 - 视觉与组件拆解
+- **版本**: v0.3.9 
+- **阶段**: fix UI
 - **架构依据**: `/docs/00-06` 文档集
+- **最新情况**：`/docs/audit` 文档集，报告及架构，名词解释，流程说明 
 
 ## 快速开始
 
@@ -58,23 +59,26 @@ matrix/
 ├── resources/              # 应用资源
 └── assets/                 # 静态资源
 ```
+- [最新架构]`docs\audit\02-system-structure.md`
 
 ## 开发计划
 
-详细的开发计划请参考 [TODO.md](TODO.md)
+已完成部分参考(docs\ref\TODO-Done.md)
+当前的开发计划请参考 [TODO.md](TODO.md)
 
 ## 文档
 
 - [全局要求](docs/00-global-requirements-v1.0.0.md)
 - [架构设计](docs/01-architecture-design-v1.0.0.md)
 - [技术蓝图](docs/02-technical-blueprint-v1.0.0.md)
-- [初始化指南](docs/04-initialization-guidelines-v1.0.0.md)
+
 - [项目结构](docs/05-project-structure-v1.0.1.md)
 - [核心服务设计](docs/06-core-services-design-v1.0.1.md)
 
-## UI设计参考
 
-UI设计参考文件位于 [docs/reference/V14.html](docs/reference/V14.html)
+## UI设计规范
+
+UI设计规范文件位于 [docs\08-ui-design-specification-v1.0.0.md]
 
 ## 许可证
 

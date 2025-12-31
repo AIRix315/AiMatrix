@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Pin, Trash2 } from 'lucide-react';
+import { Pin, Trash2, FolderOpen, Clapperboard, Folder } from 'lucide-react';
 import { Button, Modal, Toast, Loading, ConfirmDialog, ViewSwitcher } from '../../components/common';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
@@ -209,7 +209,7 @@ const Dashboard: React.FC = () => {
         type: ShortcutType.PROJECT,
         targetId: project.id,
         name: project.name,
-        icon: '📁'
+        icon: 'folder'
       });
       setToast({
         type: 'success',
@@ -252,7 +252,9 @@ const Dashboard: React.FC = () => {
           <Loading size="lg" message="加载项目列表..." fullscreen={false} />
         ) : projects.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">📂</div>
+            <div className="empty-icon">
+              <FolderOpen className="h-16 w-16 text-muted-foreground" />
+            </div>
             <h2>欢迎使用 MATRIX Studio</h2>
             <p>当前工作区为空，开始你的第一个创作吧。</p>
             <Button variant="primary" onClick={() => setShowNewProjectModal(true)}>
@@ -282,7 +284,7 @@ const Dashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent className="pb-2">
                     <div className="project-image">
-                      {project.image || '🎬'}
+                      {project.image || <Clapperboard className="h-16 w-16 text-muted-foreground" />}
                     </div>
                   </CardContent>
                   <CardFooter className="text-sm text-muted-foreground pt-2">
@@ -334,7 +336,7 @@ const Dashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent className="pb-2 flex-1">
                     <div className="project-image">
-                      {project.image || '🎬'}
+                      {project.image || <Clapperboard className="h-16 w-16 text-muted-foreground" />}
                     </div>
                   </CardContent>
                   <CardFooter className="text-sm text-muted-foreground pt-2">

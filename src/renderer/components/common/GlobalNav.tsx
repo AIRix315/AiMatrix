@@ -246,7 +246,11 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
         width: 0,
         opacity: 0,
       } : {
+        width: 'var(--left-menu-collapsed)',
         opacity: 1,
+      }}
+      whileHover={{
+        width: 'var(--left-menu-expanded)',
       }}
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
     >

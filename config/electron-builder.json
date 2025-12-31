@@ -1,6 +1,6 @@
 {
-  "appId": "com.matrix.ai-workflow",
-  "productName": "Matrix AI Workflow",
+  "appId": "com.matrix.studio",
+  "productName": "Matrix Studio",
   "copyright": "Copyright © 2025 Matrix Team",
   "directories": {
     "output": "dist",
@@ -68,7 +68,7 @@
     "icon": "resources/icons/icon.png",
     "category": "Office",
     "desktop": {
-      "Name": "Matrix AI Workflow",
+      "Name": "Matrix Studio",
       "Comment": "AI视频生成工作流管理平台",
       "Keywords": "ai;workflow;video;generation;"
     }
@@ -77,12 +77,12 @@
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
     "allowElevation": true,
-    "installerIcon": "resources/icons/installer.ico",
-    "uninstallerIcon": "resources/icons/uninstaller.ico",
-    "installerHeaderIcon": "resources/icons/header.ico",
+    "installerIcon": "resources/icons/icon.ico",
+    "uninstallerIcon": "resources/icons/icon.ico",
+    "installerHeaderIcon": "resources/icons/icon.ico",
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "shortcutName": "Matrix AI Workflow",
+    "shortcutName": "Matrix Studio",
     "include": "resources/installer.nsh"
   },
   "publish": [

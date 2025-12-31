@@ -4,6 +4,7 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.9.1 | 2025-12-31 | UI优化 | 全局右侧面板布局优化、任务队列真实事件集成、工作流编辑器布局调整 |
 | 0.3.9 | 2025-12-30 | 功能增强 | 快捷方式拖拽排序、资产文件组织完善（日期文件夹分隔） |
 | 0.3.8 fix4 | 2025-12-30 | 架构优化 | 统一时间格式为ISO 8601字符串，创建统一类型导出文件，修复7个失败测试 |
 | 0.3.8 fix3 | 2025-12-30 | 重构 | 解决类型定义冲突问题（AssetMetadata/AssetConfig/ProjectConfig重复定义），统一类型系统 |
@@ -12,6 +13,49 @@
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 1.0.0 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.9.1] - 2025-12-31
+
+### Changed
+- refactor(ui): 全局右侧面板布局优化
+  - 右侧面板宽度从 400px 缩减至 300px（减少 25%）
+  - 面板弹出更加紧凑，减少对内容区的挤压
+  - CSS变量 `--right-panel-width` 调整为 300px
+
+- refactor(workflow): 工作流编辑器布局调整
+  - 移除工作流列表页（Workflows.tsx）的全屏按钮
+  - 全屏按钮移至工作流编辑器（WorkflowEditor.tsx）标题栏
+  - 移除工作流编辑器的局部右侧边栏（避免与全局右侧边栏功能重复）
+  - 统一使用全局右侧边栏显示属性和工具
+
+- style(asset): 左侧资产栏TAB标题左对齐
+  - "全局"/"项目"TAB标题改为左对齐（原为居中）
+  - 添加 `text-align: left` 和 `justify-content: flex-start` 样式
+
+### Fixed
+- fix(task): 移除任务队列模拟数据
+  - 删除 App.tsx 中的3个模拟任务（task-1, task-2, task-3）
+  - 任务队列初始化为空数组
+  - 移除 isMockTask 判断逻辑，统一通过IPC处理
+
+- feat(task): 任务队列真实事件集成
+  - 添加4个任务事件监听：onTaskCreated, onTaskUpdated, onTaskCompleted, onTaskFailed
+  - 扩展 preload.ts 任务事件API
+  - 更新 Window 接口类型声明
+  - 任务状态通过IPC事件实时更新
+
+### Technical Details
+- **修改文件**:
+  - `src/renderer/styles/theme.css`: 右侧面板宽度变量
+  - `src/renderer/pages/workflows/Workflows.tsx`: 移除全屏功能
+  - `src/renderer/pages/workflows/WorkflowEditor.tsx`: 添加全屏按钮，移除局部右侧边栏
+  - `src/renderer/App.tsx`: 移除模拟数据，添加任务事件监听
+  - `src/preload/index.ts`: 添加4个任务事件监听函数和类型声明
+  - `src/renderer/components/UnifiedAssetPanel/UnifiedAssetPanel.css`: TAB标题左对齐
+
+- **编译状态**: 所有进程编译成功（0 errors）
 
 ---
 

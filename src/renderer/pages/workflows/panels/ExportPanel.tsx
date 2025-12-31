@@ -5,6 +5,7 @@
  */
 
 import React, { useState } from 'react';
+import { Clapperboard, Mic, FolderOpen } from 'lucide-react';
 import { Button, Toast } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
 import './ExportPanel.css';
@@ -111,14 +112,18 @@ export const ExportPanel: React.FC<PanelProps> = ({ onComplete, initialData }) =
           <h3>资源概览</h3>
           <div className="stats-grid">
             <div className="stat-card">
-              <div className="stat-icon">🎬</div>
+              <div className="stat-icon">
+                <Clapperboard className="h-6 w-6 text-primary" />
+              </div>
               <div className="stat-info">
                 <div className="stat-value">{storyboards.length}</div>
                 <div className="stat-label">分镜</div>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">🎙️</div>
+              <div className="stat-icon">
+                <Mic className="h-6 w-6 text-primary" />
+              </div>
               <div className="stat-info">
                 <div className="stat-value">{voiceovers.length}</div>
                 <div className="stat-label">配音</div>
@@ -220,7 +225,8 @@ export const ExportPanel: React.FC<PanelProps> = ({ onComplete, initialData }) =
               // TODO: 打开文件所在目录
               // window.electronAPI.showItemInFolder(exportPath)
             }}>
-              📁 打开文件位置
+              <FolderOpen className="h-4 w-4 mr-2 inline" />
+              打开文件位置
             </Button>
           </div>
         )}

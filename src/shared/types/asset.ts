@@ -89,6 +89,7 @@ export interface AssetFilter {
   type?: AssetType | AssetType[];
   tags?: string[];
   status?: ResourceStatus;
+  isUserUploaded?: boolean;          // 过滤用户上传的资产（输入分类）
   search?: string;                   // 搜索关键词 (匹配name/tags/description)
   sortBy?: 'name' | 'createdAt' | 'modifiedAt' | 'size';
   sortOrder?: 'asc' | 'desc';

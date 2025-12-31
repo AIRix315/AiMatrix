@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Maximize2, RefreshCw, Edit2, Check, X } from 'lucide-react';
+import { Maximize2, RefreshCw, Edit2, Check, X, Clapperboard, Image } from 'lucide-react';
 import { Button, Card, Loading, Toast, ViewSwitcher } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
 import './StoryboardPanel.css';
@@ -327,7 +327,12 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
             </div>
           </div>
           <Button onClick={handleGenerate} disabled={loading || scenes.length === 0}>
-            {loading ? '生成中...' : '🎬 生成分镜'}
+            {loading ? '生成中...' : (
+              <>
+                <Clapperboard className="h-4 w-4 mr-2 inline" />
+                生成分镜
+              </>
+            )}
           </Button>
         </div>
 
@@ -376,7 +381,13 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
                               ? '失败'
                               : '待生成'
                           }`}
-                          image={storyboard.type === 'image' ? '🖼️' : '🎬'}
+                          image={
+                            storyboard.type === 'image' ? (
+                              <Image className="h-12 w-12 text-muted-foreground" />
+                            ) : (
+                              <Clapperboard className="h-12 w-12 text-muted-foreground" />
+                            )
+                          }
                           hoverable
                         />
                         {editingPromptId === storyboard.id ? (
@@ -469,7 +480,11 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
                       onClick={(e) => handleStoryboardClick(storyboard.id, e)}
                     >
                       <div className="list-item-icon">
-                        {storyboard.type === 'image' ? '🖼️' : '🎬'}
+                        {storyboard.type === 'image' ? (
+                          <Image className="h-4 w-4 inline mr-1" />
+                        ) : (
+                          <Clapperboard className="h-4 w-4 inline mr-1" />
+                        )}
                       </div>
                       <div className="list-item-content">
                         <div className="list-item-header">

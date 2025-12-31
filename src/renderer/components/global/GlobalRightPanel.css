@@ -1,0 +1,551 @@
+/**
+ * GlobalRightPanel.css
+ * 全局右侧边栏样式
+ * 遵循V2设计规范：OKLCH色彩、8px圆角、4px间距
+ */
+
+/* ===== 全局右侧面板容器（PanelGroup内渲染版本）===== */
+.global-right-panel {
+  width: 100%;
+  height: 100%;
+  background: oklch(0.1 0 0);
+  border-left: 1px solid oklch(0.24 0 0);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== TAB切换器通用样式 ===== */
+.main-tabs,
+.lower-tabs {
+  display: flex;
+  border-bottom: 1px solid oklch(0.24 0 0);
+  padding: 8px 12px 0;
+  gap: 4px;
+  background: oklch(0.12 0 0);
+}
+
+.main-tabs .tab-button,
+.lower-tabs .tab-button {
+  flex: 1;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: oklch(0.58 0 0);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.main-tabs .tab-button:hover,
+.lower-tabs .tab-button:hover {
+  color: oklch(0.92 0 0);
+  background: oklch(0.14 0 0);
+}
+
+.main-tabs .tab-button.active,
+.lower-tabs .tab-button.active {
+  background: oklch(0.16 0 0);
+  color: oklch(0.92 0 0);
+  border-bottom: 2px solid oklch(0.85 0.22 160);
+}
+
+/* TAB徽章 */
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: oklch(0.85 0.22 160);
+  color: oklch(0.12 0 0);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 9px;
+}
+
+/* ===== 全高度内容区（队列TAB专用，占据所有剩余空间）===== */
+.full-height-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  background: oklch(0.12 0 0);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== 上部内容区（占据大部分空间）===== */
+.upper-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  background: oklch(0.12 0 0);
+}
+
+/* ===== 下部内容区（固定高度）===== */
+.lower-content {
+  height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  background: oklch(0.12 0 0);
+}
+
+/* ===== 底部固定按钮 ===== */
+.panel-footer {
+  padding: 16px;
+  border-top: 1px solid oklch(0.24 0 0);
+  background: oklch(0.1 0 0);
+}
+
+.generate-button {
+  width: 100%;
+  height: 48px;
+  background: oklch(0.85 0.22 160);
+  color: oklch(0.12 0 0);
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.generate-button:hover:not(:disabled) {
+  background: oklch(0.9 0.22 160);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px oklch(0.85 0.22 160 / 0.3);
+}
+
+.generate-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.generate-button:disabled {
+  background: oklch(0.24 0 0);
+  color: oklch(0.58 0 0);
+  cursor: not-allowed;
+}
+
+/* ===== 属性TAB样式 ===== */
+.properties-tab .property-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid oklch(0.16 0 0);
+}
+
+.properties-tab .property-label {
+  flex-shrink: 0;
+  width: 80px;
+  color: oklch(0.58 0 0);
+  font-size: 13px;
+}
+
+.properties-tab .property-value {
+  flex: 1;
+  color: oklch(0.92 0 0);
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.properties-tab .batch-indicator {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: oklch(0.85 0.22 160 / 0.1);
+  border-left: 3px solid oklch(0.85 0.22 160);
+  color: oklch(0.85 0.22 160);
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+/* ===== 工具TAB样式 ===== */
+.tools-tab .asset-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: oklch(0.16 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.tools-tab .asset-tag:hover {
+  border-color: oklch(0.85 0.22 160 / 0.5);
+  background: oklch(0.18 0 0);
+}
+
+.tools-tab .tag-name {
+  flex: 1;
+  font-size: 13px;
+  color: oklch(0.92 0 0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tools-tab .tag-type {
+  flex-shrink: 0;
+}
+
+.tools-tab .tag-remove {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(0.24 0 0);
+  border: none;
+  border-radius: 4px;
+  color: oklch(0.92 0 0);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tools-tab .tag-remove:hover {
+  background: oklch(0.577 0.245 27.325);
+  color: white;
+}
+
+/* ===== 队列TAB样式 ===== */
+.queue-tab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.queue-tab .task-summary {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.queue-tab .task-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.queue-tab .task-item {
+  background: oklch(0.16 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.queue-tab .task-item:hover {
+  border-color: oklch(0.85 0.22 160 / 0.5);
+  background: oklch(0.18 0 0);
+}
+
+.queue-tab .task-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.queue-tab .task-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: oklch(0.92 0 0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-tab .task-error {
+  font-size: 12px;
+  color: oklch(0.577 0.245 27.325);
+  margin-bottom: 8px;
+}
+
+.queue-tab .task-progress {
+  margin-bottom: 8px;
+}
+
+.queue-tab .progress-bar {
+  height: 6px;
+  background: oklch(0.24 0 0);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.queue-tab .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, oklch(0.85 0.22 160), oklch(0.75 0.22 160));
+  transition: width 0.3s ease;
+}
+
+.queue-tab .progress-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: oklch(0.58 0 0);
+}
+
+.queue-tab .task-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.queue-tab .task-action-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 4px;
+  color: oklch(0.92 0 0);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.queue-tab .task-action-btn:hover {
+  border-color: oklch(0.85 0.22 160);
+  background: oklch(0.85 0.22 160 / 0.1);
+}
+
+.queue-tab .task-action-cancel {
+  color: oklch(0.577 0.245 27.325);
+}
+
+.queue-tab .task-action-cancel:hover {
+  border-color: oklch(0.577 0.245 27.325);
+  background: oklch(0.577 0.245 27.325 / 0.1);
+}
+
+/* ===== 生成模式TAB样式 ===== */
+.generation-mode-tab {
+  padding: 8px 0;
+}
+
+.generation-mode-tab .mode-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.generation-mode-tab .mode-btn {
+  padding: 10px 16px;
+  background: oklch(0.16 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 6px;
+  color: oklch(0.92 0 0);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.generation-mode-tab .mode-btn:hover:not(:disabled) {
+  border-color: oklch(0.85 0.22 160);
+  background: oklch(0.18 0 0);
+}
+
+.generation-mode-tab .mode-btn.active {
+  background: oklch(0.85 0.22 160 / 0.15);
+  border-color: oklch(0.85 0.22 160);
+  color: oklch(0.85 0.22 160);
+}
+
+.generation-mode-tab .mode-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.generation-mode-tab .mode-hint {
+  font-size: 12px;
+  color: oklch(0.58 0 0);
+  text-align: center;
+  padding: 8px;
+  background: oklch(0.14 0 0);
+  border-radius: 4px;
+}
+
+/* ===== 参数TAB样式 ===== */
+.parameters-tab .prompt-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 12px;
+  background: oklch(0.14 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 6px;
+  color: oklch(0.92 0 0);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s;
+}
+
+.parameters-tab .prompt-textarea:focus {
+  outline: none;
+  border-color: oklch(0.85 0.22 160);
+  background: oklch(0.16 0 0);
+}
+
+.parameters-tab .prompt-textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.parameters-tab .textarea-hint {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.parameters-tab .char-count {
+  font-size: 11px;
+  color: oklch(0.58 0 0);
+}
+
+.parameters-tab .form-field {
+  margin-bottom: 12px;
+}
+
+.parameters-tab .form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: oklch(0.92 0 0);
+  font-weight: 500;
+}
+
+.parameters-tab .form-select,
+.parameters-tab .form-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: oklch(0.14 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 6px;
+  color: oklch(0.92 0 0);
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.parameters-tab .form-select:focus,
+.parameters-tab .form-input:focus {
+  outline: none;
+  border-color: oklch(0.85 0.22 160);
+  background: oklch(0.16 0 0);
+}
+
+.parameters-tab .form-select:disabled,
+.parameters-tab .form-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.parameters-tab .field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: oklch(0.58 0 0);
+}
+
+.parameters-tab .aspect-ratio-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.parameters-tab .aspect-btn {
+  padding: 8px;
+  background: oklch(0.14 0 0);
+  border: 1px solid oklch(0.24 0 0);
+  border-radius: 4px;
+  color: oklch(0.92 0 0);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.parameters-tab .aspect-btn:hover:not(:disabled) {
+  border-color: oklch(0.85 0.22 160);
+}
+
+.parameters-tab .aspect-btn.active {
+  background: oklch(0.85 0.22 160);
+  border-color: oklch(0.85 0.22 160);
+  color: oklch(0.12 0 0);
+}
+
+.parameters-tab .aspect-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 通用样式 ===== */
+.empty-text {
+  text-align: center;
+  color: oklch(0.58 0 0);
+  font-size: 13px;
+  padding: 24px 16px;
+}
+
+/* ===== 滚动条样式 ===== */
+.full-height-content::-webkit-scrollbar,
+.upper-content::-webkit-scrollbar,
+.lower-content::-webkit-scrollbar,
+.queue-tab .task-list::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.full-height-content::-webkit-scrollbar-track,
+.upper-content::-webkit-scrollbar-track,
+.lower-content::-webkit-scrollbar-track,
+.queue-tab .task-list::-webkit-scrollbar-track {
+  background: oklch(0.1 0 0);
+}
+
+.full-height-content::-webkit-scrollbar-thumb,
+.upper-content::-webkit-scrollbar-thumb,
+.lower-content::-webkit-scrollbar-thumb,
+.queue-tab .task-list::-webkit-scrollbar-thumb {
+  background: oklch(0.24 0 0);
+  border-radius: 3px;
+}
+
+.full-height-content::-webkit-scrollbar-thumb:hover,
+.upper-content::-webkit-scrollbar-thumb:hover,
+.lower-content::-webkit-scrollbar-thumb:hover,
+.queue-tab .task-list::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.3 0 0);
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 1024px) {
+  .global-right-panel {
+    display: none;
+  }
+}

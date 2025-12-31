@@ -8,82 +8,50 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { FileText, Image as ImageIcon, Music, Video, FileCode, Folder } from 'lucide-react';
-import { AssetMetadata, AssetFilter } from '@/shared/types';
+import { AssetMetadata, AssetFilter, AssetType } from '@/shared/types';
 import { AssetGrid } from '../../components/AssetGrid';
 import { AssetPreview } from '../../components/AssetPreview/AssetPreview';
 import { ViewSwitcher } from '../../components/common';
+import { UnifiedAssetPanel, AssetCategoryId } from '../../components/UnifiedAssetPanel';
 import './Assets.css';
-
-// UI 资产类型定义（包含 'all' 用于显示）
-type UIAssetType = 'all' | 'text' | 'image' | 'audio' | 'video' | 'other' | 'scenes' | 'characters';
-type UIAssetScope = 'all' | 'global' | 'project';
-
-// 资产分类配置
-const ASSET_CATEGORIES = [
-  { id: 'all' as UIAssetType, label: '全部资产', icon: Folder },
-  { id: 'text' as UIAssetType, label: '文本', icon: FileText },
-  { id: 'image' as UIAssetType, label: '图像', icon: ImageIcon },
-  { id: 'audio' as UIAssetType, label: '音频', icon: Music },
-  { id: 'video' as UIAssetType, label: '视频', icon: Video },
-  { id: 'other' as UIAssetType, label: '其他', icon: FileCode },
-  { id: 'scenes' as UIAssetType, label: '场景', icon: ImageIcon },
-  { id: 'characters' as UIAssetType, label: '角色', icon: ImageIcon },
-];
-
-interface ProjectConfig {
-  id: string;
-  name: string;
-  status?: 'in-progress' | 'completed' | 'archived';
-}
 
 export function Assets() {
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
   const [previewAsset, setPreviewAsset] = useState<AssetMetadata | null>(null);
   const [allAssets, setAllAssets] = useState<AssetMetadata[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const [selectedCategory, setSelectedCategory] = useState<UIAssetType>('all');
-  const [selectedScope, setSelectedScope] = useState<UIAssetScope>('all');
+  const [selectedCategory, setSelectedCategory] = useState<AssetCategoryId>('all');
+  const [selectedScope, setSelectedScope] = useState<'global' | 'project'>('global');
   const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
-  const [projects, setProjects] = useState<ProjectConfig[]>([]);
-
-  useEffect(() => {
-    loadProjects();
-  }, []);
-
-  const loadProjects = async () => {
-    try {
-      const projectList = await window.electronAPI.listProjects();
-      setProjects(projectList);
-    } catch (error) {
-      console.error('加载项目列表失败:', error);
-    }
-  };
 
   const handleProjectSelect = (projectId: string) => {
     setSelectedProjectId(projectId);
-    setSelectedScope('project');
   };
 
   // 构建过滤器
   const getFilter = useCallback((): AssetFilter => {
     const filter: AssetFilter = {
-      scope: selectedScope === 'all' ? undefined : selectedScope,
-      projectId: selectedProjectId,
+      scope: selectedScope,
+      projectId: selectedScope === 'project' ? selectedProjectId : undefined,
       sortBy: 'modifiedAt',
       sortOrder: 'desc'
     };
 
-    // 根据分类添加类型过滤（'all' 不过滤）
-    if (selectedCategory !== 'all') {
-      // 特殊处理场景和角色分类（使用category过滤）
-      if (selectedCategory === 'scenes') {
-        filter.category = 'scenes';
-      } else if (selectedCategory === 'characters') {
-        filter.category = 'characters';
-      } else {
-        // 其他使用type过滤
-        filter.type = selectedCategory as 'text' | 'image' | 'audio' | 'video' | 'other';
+    // 全局Tab分类过滤
+    if (selectedScope === 'global') {
+      if (selectedCategory === 'input') {
+        // 输入分类：过滤用户上传的资产
+        filter.isUserUploaded = true;
+      } else if (selectedCategory !== 'all') {
+        // 文件类型分类
+        filter.type = selectedCategory as AssetType;
+      }
+    }
+    // 项目Tab分类过滤
+    else if (selectedScope === 'project') {
+      if (selectedCategory !== 'all') {
+        // 工作流分类
+        filter.category = selectedCategory;
       }
     }
 
@@ -161,80 +129,21 @@ export function Assets() {
 
   return (
     <div className="assets-page">
-      {/* 左侧分类导航 */}
-      <aside className="assets-sidebar">
-        {/* 作用域切换 */}
-        <div className="sidebar-section">
-          <h3 className="sidebar-section-title">作用域</h3>
-          <div className="scope-switcher">
-            <button
-              className={`scope-btn ${selectedScope === 'all' ? 'active' : ''}`}
-              onClick={() => setSelectedScope('all')}
-            >
-              全部资源
-            </button>
-            <button
-              className={`scope-btn ${selectedScope === 'global' ? 'active' : ''}`}
-              onClick={() => setSelectedScope('global')}
-            >
-              全局库
-            </button>
-            <button
-              className={`scope-btn ${selectedScope === 'project' ? 'active' : ''}`}
-              onClick={() => setSelectedScope('project')}
-            >
-              项目资源
-            </button>
-          </div>
-        </div>
-
-        {/* 资产类型分类 */}
-        <div className="sidebar-section">
-          <h3 className="sidebar-section-title">资产类型</h3>
-          <div className="category-list">
-            {ASSET_CATEGORIES.map((category) => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  className={`category-item ${selectedCategory === category.id ? 'active' : ''}`}
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  <Icon className="category-icon" size={18} />
-                  <span className="category-label">{category.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 项目分类树 */}
-        {selectedScope === 'project' && (
-          <div className="sidebar-section">
-            <h3 className="sidebar-section-title">项目列表</h3>
-            <div className="category-list">
-              {projects.map((project) => (
-                <button
-                  key={project.id}
-                  className={`category-item ${selectedProjectId === project.id ? 'active' : ''}`}
-                  onClick={() => handleProjectSelect(project.id)}
-                >
-                  <Folder className="category-icon" size={18} />
-                  <span className="category-label">{project.name}</span>
-                </button>
-              ))}
-              {projects.length === 0 && (
-                <div className="empty-hint">暂无项目</div>
-              )}
-            </div>
-          </div>
-        )}
-      </aside>
+      {/* 左侧统一资源栏 */}
+      <UnifiedAssetPanel
+        selectedScope={selectedScope}
+        selectedCategory={selectedCategory}
+        selectedProjectId={selectedProjectId}
+        showProjectSelector={true}
+        onScopeChange={setSelectedScope}
+        onCategoryChange={setSelectedCategory}
+        onProjectChange={handleProjectSelect}
+      />
 
       {/* 右侧主内容区 */}
       <div className="assets-main">
         <div className="dashboard-header">
-          <div className="view-title">资产库 <small>| {selectedScope === 'all' ? '全部资源' : selectedScope === 'global' ? '全局库' : '项目资源'}</small></div>
+          <div className="view-title">资产库 <small>| {selectedScope === 'global' ? '全局库' : '项目资源'}</small></div>
           <ViewSwitcher viewMode={viewMode} onChange={setViewMode} />
         </div>
 

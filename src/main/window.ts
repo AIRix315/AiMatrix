@@ -19,7 +19,7 @@ export class WindowManager {
         preload: path.join(__dirname, '../preload/index.js'),
         devTools: true // 启用开发者工具
       },
-      icon: path.join(__dirname, '../../resources/images/MatrixStudio.ico'), // 窗口图标
+      icon: path.join(__dirname, '../../resources/icons/icon.ico'), // 窗口图标
       show: false
     });
 
