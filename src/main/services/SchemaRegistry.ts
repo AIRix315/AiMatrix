@@ -202,7 +202,7 @@ export class SchemaRegistry {
    * @param data 待验证的数据
    * @returns 验证结果
    */
-  validateData(schemaId: string, data: any): SchemaValidationResult {
+  validateData(schemaId: string, data: unknown): SchemaValidationResult {
     this.ensureInitialized();
 
     const schema = this.schemas.get(schemaId);
@@ -314,7 +314,7 @@ export class SchemaRegistry {
    * 简化版验证器，支持基本类型验证
    */
   private validateAgainstSchema(
-    data: any,
+    data: unknown,
     schema: JSONSchemaProperty,
     path: string
   ): SchemaValidationResult {
@@ -325,6 +325,7 @@ export class SchemaRegistry {
       const types = Array.isArray(schema.type) ? schema.type : [schema.type];
       const dataType = this.getDataType(data);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (!types.includes(dataType as any)) {
         errors.push({
           path,
@@ -339,7 +340,8 @@ export class SchemaRegistry {
     if (schema.type === 'object' && schema.properties && typeof data === 'object' && data !== null) {
       for (const [key, propSchema] of Object.entries(schema.properties)) {
         const propPath = `${path}.${key}`;
-        const propData = data[key];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const propData = (data as any)[key];
 
         // 检查必填字段
         if (schema.required?.includes(key) && propData === undefined) {
@@ -432,7 +434,7 @@ export class SchemaRegistry {
   /**
    * 获取数据的类型
    */
-  private getDataType(data: any): string {
+  private getDataType(data: unknown): string {
     if (data === null) return 'null';
     if (Array.isArray(data)) return 'array';
     if (typeof data === 'number') {

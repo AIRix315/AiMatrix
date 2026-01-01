@@ -5,7 +5,7 @@ interface CardProps {
   tag?: string;
   image?: React.ReactNode;
   title: string;
-  info?: string;
+  info?: string | React.ReactNode;
   hoverable?: boolean;
   onClick?: () => void;
 }

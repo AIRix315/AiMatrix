@@ -114,7 +114,7 @@ export interface AIAssetAttributes {
   sampler?: string;
   positivePrompt?: string;
   negativePrompt?: string;
-  generationParams?: any;
+  generationParams?: Record<string, unknown>; // AI生成参数的动态键值对
   duration?: number;
   dimensions?: { width: number; height: number };
   createdAt?: string; // ISO 8601
@@ -185,8 +185,8 @@ export interface PluginManifest {
   description: string;
   author: string;
   permissions: PluginPermission[];
-  // 其他属性
-  [key: string]: any;
+  // 其他扩展属性 - 插件可能有额外的自定义字段
+  [key: string]: unknown;
 }
 
 /**
@@ -207,7 +207,7 @@ export interface TaskConfig {
   id: string;
   name: string;
   type: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>; // 任务配置的动态键值对
   inputs?: TaskInput[];
   outputs?: TaskOutput[];
   createdAt: string; // ISO 8601
@@ -222,7 +222,7 @@ export interface TaskInput {
   name: string;
   type: string;
   required: boolean;
-  defaultValue?: any;
+  defaultValue?: unknown; // 默认值可以是任何类型
   description?: string;
 }
 
@@ -245,8 +245,8 @@ export interface TaskExecution {
   status: TaskStatus;
   startTime: string; // ISO 8601
   endTime?: string; // ISO 8601
-  inputs?: Record<string, any>;
-  outputs?: Record<string, any>;
+  inputs?: Record<string, unknown>; // 任务输入参数
+  outputs?: Record<string, unknown>; // 任务输出结果
   error?: string;
   progress?: number;
 }
@@ -284,7 +284,7 @@ export interface LogEntry {
   timestamp: string; // ISO 8601
   service?: string;
   operation?: string;
-  data?: any;
+  data?: Record<string, unknown>; // 日志附加数据
 }
 
 /**
@@ -294,7 +294,7 @@ export interface TaskScheduler {
   initialize(): Promise<void>;
   cleanup(): Promise<void>;
   createTask(config: TaskConfig): Promise<string>;
-  executeTask(taskId: string, inputs?: Record<string, any>): Promise<string>;
+  executeTask(taskId: string, inputs?: Record<string, unknown>): Promise<string>;
   pauseTask(executionId: string): Promise<void>;
   resumeTask(executionId: string): Promise<void>;
   cancelTask(executionId: string): Promise<void>;
@@ -347,7 +347,7 @@ export interface PluginManager {
   installPlugin(pluginPackage: PluginPackage): Promise<void>;
   listPlugins(type?: PluginType): Promise<PluginInfo[]>;
   verifySignature(pluginId: string): Promise<boolean>;
-  executePluginAction(pluginId: string, action: string, params: any): Promise<any>;
+  executePluginAction(pluginId: string, action: string, params: unknown): Promise<unknown>;
 }
 
 /**
@@ -357,7 +357,7 @@ export interface APIManager {
   initialize(): Promise<void>;
   cleanup(): Promise<void>;
   registerAPI(name: string, config: APIProviderConfig): void;
-  callAPI(name: string, params: any): Promise<any>;
+  callAPI(name: string, params: unknown): Promise<unknown>;
   setAPIKey(name: string, key: string): void;
   getAPIStatus(name: string): Promise<APIStatus>;
   getAPIUsage(name: string): Promise<APIUsage>;

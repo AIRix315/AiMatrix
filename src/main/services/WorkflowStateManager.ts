@@ -61,6 +61,7 @@ export class WorkflowStateManager {
         workflowId: instanceId,
         projectId: params.projectId,
         currentStep: 0,
+        currentSubStep: -1,
         steps: {},
         data: params.initialData || {},
         createdAt: currentTime,

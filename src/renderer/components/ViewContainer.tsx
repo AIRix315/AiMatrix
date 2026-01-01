@@ -5,7 +5,7 @@
  * 承载和管理插件的自定义React组件
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type {
   ViewContainerProps,
@@ -14,7 +14,7 @@ import type {
   ViewState,
   ViewActions
 } from '@/shared/types';
-import Modal from './common/Modal';
+// import Modal from './common/Modal'; // 暂时未使用
 import Toast from './common/Toast';
 import './ViewContainer.css';
 
@@ -65,11 +65,13 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
     pluginId,
     projectId: undefined, // TODO: 从路由或全局状态获取
     workflowId: undefined,
-    callAPI: async (channel: string, ...args: any[]) => {
+    callAPI: async <T = unknown,>(channel: string, ...args: unknown[]) => {
       // 调用IPC API
       if (window.electronAPI && typeof window.electronAPI[channel as keyof typeof window.electronAPI] === 'function') {
-        const api = window.electronAPI[channel as keyof typeof window.electronAPI] as (...args: any[]) => Promise<any>;
-        return api(...args);
+        // TODO: [中期改进] 定义准确的API调用类型
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const api = window.electronAPI[channel as keyof typeof window.electronAPI] as any;
+        return api(...args) as Promise<T>;
       }
       throw new Error(`API channel not found: ${channel}`);
     },
@@ -84,7 +86,9 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
     },
     refresh: () => {
       // 触发视图刷新
-      setViewState((prev: ViewState) => ({ ...prev, data: { ...prev.data } }));
+      // TODO: [中期改进] 定义准确的data类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setViewState((prev: ViewState) => ({ ...prev, data: { ...(prev.data as any) } }));
     },
     storage: {
       get: async (key: string) => {
@@ -92,7 +96,7 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
         const value = localStorage.getItem(storageKey);
         return value ? JSON.parse(value) : null;
       },
-      set: async (key: string, value: any) => {
+      set: async (key: string, value: unknown) => {
         const storageKey = `plugin.${pluginId}.${viewId}.${key}`;
         localStorage.setItem(storageKey, JSON.stringify(value));
       },
@@ -111,7 +115,7 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
     setError: (error: Error | null) => {
       setViewState((prev: ViewState) => ({ ...prev, error: error || undefined }));
     },
-    updateData: (newData: any) => {
+    updateData: (newData: unknown) => {
       setViewState((prev: ViewState) => ({ ...prev, data: newData }));
     },
     reset: () => {
@@ -124,7 +128,7 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
   };
 
   // 处理完成
-  const handleComplete = useCallback((result: any) => {
+  const handleComplete = useCallback((result: unknown) => {
     onComplete?.(result);
     onClose?.();
   }, [onComplete, onClose]);
@@ -188,7 +192,7 @@ export const ViewContainer: React.FC<ViewContainerProps> = ({
  * 为普通React组件注入ViewContext
  */
 export function withViewContext<P extends CustomViewProps>(
-  Component: React.ComponentType<P>
+  _Component: React.ComponentType<P>
 ): React.ComponentType<Omit<P, 'context'> & { pluginId: string; viewId: string }> {
   return (props) => {
     return (

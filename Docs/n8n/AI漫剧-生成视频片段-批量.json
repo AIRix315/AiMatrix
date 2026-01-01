@@ -1,0 +1,235 @@
+{
+  "name": "AI漫剧-生成视频片段-批量",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "video_storyboards",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        6880,
+        384
+      ],
+      "id": "5a211366-d329-4e54-b829-fa7aca05a109",
+      "name": "Split Out4"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": "={{ $json.video_storyboards && $json.video_storyboards.index === 0 }}"
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        7088,
+        384
+      ],
+      "id": "5a63d4c0-98bd-4522-bcd2-a3c6c519748a",
+      "name": "Loop Over Items5"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        7776,
+        368
+      ],
+      "id": "bde7acd4-fb5e-4a92-9596-b008790f8e67",
+      "name": "Aggregate4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8525f2fa-32e2-4b5d-ad34-1480700ffdaa",
+              "name": "data",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        7984,
+        368
+      ],
+      "id": "652386b3-9c37-41b4-8117-a64dd93ea80d",
+      "name": "Return"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "video_storyboards",
+              "type": "any"
+            },
+            {
+              "name": "child_workflow_id"
+            }
+          ]
+        }
+      },
+      "id": "4482e441-c777-4af1-94aa-5e4960986188",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        6672,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $('Start').first().json.child_workflow_id }}",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/=%7B%7B%20$('Start').first().json.child_workflow_id%20%7D%7D"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.video_prompt }}",
+            "image_url": "={{ $json.image_url }}",
+            "video_ratio": "1280x720"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "image_url",
+              "displayName": "image_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "video_ratio",
+              "displayName": "video_ratio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        7552,
+        400
+      ],
+      "id": "e8f2e9d5-d0fa-4790-b182-d12105dd3fa6",
+      "name": "Call 'AI漫剧-生成视频片段'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Split Out4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items5": {
+      "main": [
+        [
+          {
+            "node": "Aggregate4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'AI漫剧-生成视频片段'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Split Out4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate4": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'AI漫剧-生成视频片段'": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "29b97362-bd07-4c9c-a99e-cb608154f2f5",
+  "meta": {
+    "instanceId": "7cbe32103a6ff2d8c5a91f9da918c4e038e89cf9d0ca43bf8f0b67f262cbf12c"
+  },
+  "id": "aDQrBeO1mcTDd3Ku",
+  "tags": [
+    {
+      "updatedAt": "2025-12-26T08:37:31.987Z",
+      "createdAt": "2025-12-26T08:37:31.987Z",
+      "id": "gZ4Yf1CKJAPGykEi",
+      "name": "ai漫剧"
+    }
+  ]
+}

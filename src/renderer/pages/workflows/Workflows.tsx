@@ -208,16 +208,36 @@ const Workflows: React.FC = () => {
             </div>
           ) : viewMode === 'list' ? (
             <div className="workflow-list">
-              {workflows.map((workflow, index) => (
+              {workflows.map((workflow) => (
                 <WorkflowListItem
                   key={workflow.id}
                   id={workflow.id}
                   name={workflow.name}
-                  number={index + 1}
                   description={workflow.description}
                   duration="00:00:00"
-                  status={workflow.status === 'completed' ? 'completed' : workflow.status === 'running' ? 'running' : 'idle'}
                   type={workflow.type}
+                  lastModified={workflow.lastModified}
+                  onDelete={() => setDeleteConfirm({ workflowId: workflow.id, workflowName: workflow.name })}
+                  onPin={async () => {
+                    try {
+                      await window.electronAPI.addShortcut({
+                        type: ShortcutType.WORKFLOW,
+                        targetId: workflow.id,
+                        name: workflow.name,
+                        icon: 'settings'
+                      });
+                      setToast({
+                        type: 'success',
+                        message: `工作流 "${workflow.name}" 已添加到菜单栏`
+                      });
+                      await refreshGlobalNav();
+                    } catch (error) {
+                      setToast({
+                        type: 'error',
+                        message: `添加快捷方式失败: ${error instanceof Error ? error.message : String(error)}`
+                      });
+                    }
+                  }}
                   onClick={() => handleOpenWorkflow(workflow.id)}
                 />
               ))}

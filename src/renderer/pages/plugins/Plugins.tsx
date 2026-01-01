@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Pin, Trash2, Puzzle } from 'lucide-react';
 import { Card, Button, Loading, Toast, ConfirmDialog, Modal, ViewSwitcher } from '../../components/common';
+import { PluginListItem } from '../../components/plugin/PluginListItem';
 import type { ToastType } from '../../components/common/Toast';
 // import MarketPluginCard from './components/MarketPluginCard';
 // import { MarketPluginInfo, POPULAR_TAGS } from '../../../shared/types/plugin-market';
@@ -136,14 +137,16 @@ const Plugins: React.FC = () => {
 
       // 安装插件（默认为社区插件）
       if (window.electronAPI?.installPluginFromZip) {
+        // TODO: [中期改进] 定义准确的installPluginFromZip返回类型
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const pluginInfo = await window.electronAPI.installPluginFromZip(
           result.filePaths[0],
           'community'
-        );
+        ) as any;
 
         setToast({
           type: 'success',
-          message: `插件 "${pluginInfo.name}" 安装成功`
+          message: `插件 "${(pluginInfo as any).name}" 安装成功`
         });
 
         // 重新加载插件列表
@@ -285,43 +288,20 @@ const Plugins: React.FC = () => {
                 <h3 className="section-title">官方插件</h3>
                 <div className="plugin-list">
                   {officialPlugins.map((plugin) => (
-                    <div key={plugin.id} className="plugin-card-wrapper">
-                      <Card
-                        tag="Official"
-                        image={plugin.icon || <Puzzle className="h-12 w-12 text-muted-foreground" />}
-                        title={plugin.name}
-                        info={`v${plugin.version} | ${plugin.author}`}
-                        hoverable
-                        onClick={() => handleOpenPlugin(plugin)}
-                      />
-                      <div className="card-actions">
-                        <button
-                          className="pin-btn"
-                          onClick={(e) => handlePinPlugin(e, plugin)}
-                          title="添加到菜单栏"
-                        >
-                          <Pin size={16} />
-                        </button>
-                        <button
-                          className="info-btn"
-                          onClick={(e) => handleViewPluginDetails(e, plugin)}
-                          title="查看详情"
-                          style={{ padding: '4px 8px', fontSize: '12px' }}
-                        >
-                          ⓘ
-                        </button>
-                        <button
-                          className="delete-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name });
-                          }}
-                          title="卸载插件"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
+                    <PluginListItem
+                      key={plugin.id}
+                      id={plugin.id}
+                      name={plugin.name}
+                      description={plugin.description}
+                      version={plugin.version}
+                      author={plugin.author}
+                      type="official"
+                      icon={plugin.icon}
+                      onPin={() => handlePinPlugin(new MouseEvent('click') as any, plugin)}
+                      onUninstall={() => setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name })}
+                      onViewDetails={() => setSelectedPlugin(plugin)}
+                      onClick={() => handleOpenPlugin(plugin)}
+                    />
                   ))}
                 </div>
               </div>
@@ -333,43 +313,20 @@ const Plugins: React.FC = () => {
                 <h3 className="section-title">社区插件</h3>
                 <div className="plugin-list">
                   {communityPlugins.map((plugin) => (
-                    <div key={plugin.id} className="plugin-card-wrapper">
-                      <Card
-                        tag="Community"
-                        image={plugin.icon || <Puzzle className="h-12 w-12 text-muted-foreground" />}
-                        title={plugin.name}
-                        info={plugin.description}
-                        hoverable
-                        onClick={() => handleOpenPlugin(plugin)}
-                      />
-                      <div className="card-actions">
-                        <button
-                          className="pin-btn"
-                          onClick={(e) => handlePinPlugin(e, plugin)}
-                          title="添加到菜单栏"
-                        >
-                          <Pin size={16} />
-                        </button>
-                        <button
-                          className="info-btn"
-                          onClick={(e) => handleViewPluginDetails(e, plugin)}
-                          title="查看详情"
-                          style={{ padding: '4px 8px', fontSize: '12px' }}
-                        >
-                          ⓘ
-                        </button>
-                        <button
-                          className="delete-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name });
-                          }}
-                          title="卸载插件"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
+                    <PluginListItem
+                      key={plugin.id}
+                      id={plugin.id}
+                      name={plugin.name}
+                      description={plugin.description}
+                      version={plugin.version}
+                      author={plugin.author}
+                      type="community"
+                      icon={plugin.icon}
+                      onPin={() => handlePinPlugin(new MouseEvent('click') as any, plugin)}
+                      onUninstall={() => setUninstallConfirm({ pluginId: plugin.id, pluginName: plugin.name })}
+                      onViewDetails={() => setSelectedPlugin(plugin)}
+                      onClick={() => handleOpenPlugin(plugin)}
+                    />
                   ))}
                 </div>
               </div>

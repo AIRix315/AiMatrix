@@ -7,3 +7,4 @@ export { SceneCharacterPanel } from './SceneCharacterPanel';
 export { StoryboardPanel } from './StoryboardPanel';
 export { VoiceoverPanel } from './VoiceoverPanel';
 export { ExportPanel } from './ExportPanel';
+export { RemoteControlPanel } from './RemoteControlPanel';

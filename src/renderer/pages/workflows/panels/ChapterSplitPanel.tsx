@@ -7,7 +7,8 @@
 
 import React, { useState } from 'react';
 import { Edit2, Check, X, FileText } from 'lucide-react';
-import { Button, Card, Loading, Toast } from '../../../components/common';
+// import { ChapterListItem } from '../../../components/workflow/ChapterListItem'; // 暂时未使用
+import { Button, Loading, Toast } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
 import './ChapterSplitPanel.css';
 
@@ -21,20 +22,27 @@ interface Chapter {
 
 interface PanelProps {
   workflowId: string;
-  onComplete: (data: any) => void;
-  initialData?: any;
+  onComplete: (data: unknown) => void;
+  initialData?: unknown;
 }
 
 export const ChapterSplitPanel: React.FC<PanelProps> = ({ onComplete, initialData }) => {
-  const [novelPath, setNovelPath] = useState(initialData?.novelPath || '');
-  const [fileName, setFileName] = useState(initialData?.fileName || '');
-  const [chapters, setChapters] = useState<Chapter[]>(initialData?.chapters || []);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = initialData as any || {};
+  const [novelPath, setNovelPath] = useState(data.novelPath || '');
+  const [fileName, setFileName] = useState(data.fileName || '');
+  const [chapters, setChapters] = useState<Chapter[]>(data.chapters || []);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
   // 编辑状态
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
+
+  // AI 提取结果
+  const [scenes, setScenes] = useState<string[]>(data.scenes || []);
+  const [characters, setCharacters] = useState<string[]>(data.characters || []);
+  const [aiProcessing, setAiProcessing] = useState(false);
 
   /**
    * 处理文件上传
@@ -72,7 +80,7 @@ export const ChapterSplitPanel: React.FC<PanelProps> = ({ onComplete, initialDat
   };
 
   /**
-   * 处理章节拆分
+   * 处理章节拆分和场景角色提取
    */
   const handleSplit = async () => {
     if (!novelPath) {
@@ -84,33 +92,79 @@ export const ChapterSplitPanel: React.FC<PanelProps> = ({ onComplete, initialDat
     }
 
     setLoading(true);
+    setAiProcessing(true);
     try {
-      // TODO: 调用IPC API拆分章节（需要在预加载脚本中添加novelVideo.splitChapters API）
-      // const result = await window.electronAPI.novelVideo.splitChapters(workflowId, novelPath);
+      // 1. 读取小说文件内容
+      setToast({
+        type: 'info',
+        message: '正在读取小说文件...'
+      });
 
-      // 临时模拟数据
-      const mockChapters: Chapter[] = Array.from({ length: 5 }, (_, i) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fileContent = await window.electronAPI.readFile(novelPath) as any;
+      const novelText = typeof fileContent === 'string' ? fileContent : fileContent.toString();
+
+      if (!novelText || novelText.trim().length === 0) {
+        throw new Error('文件内容为空');
+      }
+
+      // 2. 使用 AI 提取场景和角色
+      setToast({
+        type: 'info',
+        message: 'AI 正在分析场景和角色...'
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const extractionResult = await window.electronAPI.extractScenesAndCharacters(novelText) as any;
+
+      if (!extractionResult || !extractionResult.scenes || !extractionResult.characters) {
+        throw new Error('AI 提取结果格式错误');
+      }
+
+      setScenes(extractionResult.scenes);
+      setCharacters(extractionResult.characters);
+
+      // 3. 简单的章节拆分（按场景分组）
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const chaptersFromScenes: Chapter[] = extractionResult.details.map((detail: any, i: number) => ({
         id: `chapter-${i + 1}`,
-        title: `第${i + 1}章`,
+        title: detail.scene || `场景${i + 1}`,
         index: i,
-        content: `这是第${i + 1}章的内容...`,
-        wordCount: 1000 + i * 100
+        content: `场景: ${detail.scene}\n角色: ${detail.characters.join(', ')}`,
+        wordCount: 0 // 实际项目中应该计算字数
       }));
 
-      setChapters(mockChapters);
+      setChapters(chaptersFromScenes);
+
       setToast({
         type: 'success',
-        message: `拆分成功！共${mockChapters.length}章`
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        message: `分析完成！共识别 ${(extractionResult as any).scenes.length} 个场景，${(extractionResult as any).characters.length} 个角色`
+      });
+
+      // 自动标记步骤完成，触发下一步骤
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onComplete({
+        novelPath,
+        fileName,
+        chapters: chaptersFromScenes,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        scenes: (extractionResult as any).scenes,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        characters: (extractionResult as any).characters,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sceneDetails: (extractionResult as any).details
       });
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('拆分章节失败:', error);
+      console.error('场景角色提取失败:', error);
       setToast({
         type: 'error',
-        message: `拆分章节失败: ${error instanceof Error ? error.message : String(error)}`
+        message: `处理失败: ${error instanceof Error ? error.message : String(error)}`
       });
     } finally {
       setLoading(false);
+      setAiProcessing(false);
     }
   };
 
@@ -164,24 +218,6 @@ export const ChapterSplitPanel: React.FC<PanelProps> = ({ onComplete, initialDat
     });
   };
 
-  /**
-   * 处理下一步
-   */
-  const handleNext = () => {
-    if (chapters.length === 0) {
-      setToast({
-        type: 'warning',
-        message: '请先拆分章节'
-      });
-      return;
-    }
-
-    onComplete({
-      novelPath,
-      fileName,
-      chapters
-    });
-  };
 
   return (
     <div className="chapter-split-panel">
@@ -215,7 +251,47 @@ export const ChapterSplitPanel: React.FC<PanelProps> = ({ onComplete, initialDat
         </div>
 
         {/* 加载指示器 */}
-        {loading && <Loading size="md" message="正在使用AI识别章节，请稍候..." />}
+        {loading && (
+          <Loading
+            size="md"
+            message={
+              aiProcessing
+                ? 'AI 正在分析场景和角色，请稍候...'
+                : '正在处理文件，请稍候...'
+            }
+          />
+        )}
+
+        {/* AI 提取结果 */}
+        {(scenes.length > 0 || characters.length > 0) && (
+          <div className="ai-extraction-results">
+            <div className="result-section">
+              <h3>
+                识别的场景 <span className="count">({scenes.length})</span>
+              </h3>
+              <div className="tag-list">
+                {scenes.map((scene, index) => (
+                  <span key={index} className="tag scene-tag">
+                    {scene}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="result-section">
+              <h3>
+                识别的角色 <span className="count">({characters.length})</span>
+              </h3>
+              <div className="tag-list">
+                {characters.map((character, index) => (
+                  <span key={index} className="tag character-tag">
+                    {character}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 章节列表 */}
         {chapters.length > 0 && (

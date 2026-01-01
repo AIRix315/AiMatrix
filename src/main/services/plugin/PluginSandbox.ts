@@ -15,7 +15,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const VM2 = require('vm2');
 const { VM } = VM2;
-import * as path from 'path';
+// import * as path from 'path'; // 暂时未使用
 import { PluginContext } from './PluginContext';
 import { logger } from '../Logger';
 
@@ -52,7 +52,7 @@ const DEFAULT_ALLOWED_MODULES = [
  * PluginSandbox 类 - 插件沙箱
  */
 export class PluginSandbox {
-  private vm: any; // VM2类型
+  private vm: unknown; // VM2类型
   private config: SandboxConfig;
   private context: PluginContext;
 
@@ -157,7 +157,9 @@ export class PluginSandbox {
         'PluginSandbox'
       );
 
-      const result = this.vm.run(code);
+      // TODO: [中期改进] 定义准确的VM2类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = (this.vm as any).run(code) as any;
 
       await logger.debug(
         `Code execution completed in sandbox for ${this.context.getPluginId()}`,
@@ -186,7 +188,9 @@ export class PluginSandbox {
       );
 
       // VM2的runFile会自动处理路径解析
-      const result = this.vm.runFile(filePath);
+      // TODO: [中期改进] 定义准确的VM2类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = (this.vm as any).runFile(filePath) as any;
 
       await logger.info(
         `File execution completed: ${filePath}`,
@@ -235,7 +239,9 @@ export class PluginSandbox {
    */
   public getVariable<T = unknown>(variableName: string): T | undefined {
     try {
-      return this.vm.run(`typeof ${variableName} !== 'undefined' ? ${variableName} : undefined`) as T;
+      // TODO: [中期改进] 定义准确的VM2类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (this.vm as any).run(`typeof ${variableName} !== 'undefined' ? ${variableName} : undefined`) as any as T;
     } catch {
       return undefined;
     }
@@ -245,7 +251,9 @@ export class PluginSandbox {
    * 设置沙箱中的变量
    */
   public setVariable(variableName: string, value: unknown): void {
-    this.vm.run(`${variableName} = ${JSON.stringify(value)}`);
+    // TODO: [中期改进] 定义准确的VM2类型
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.vm as any).run(`${variableName} = ${JSON.stringify(value as any)}`);
   }
 
   /**

@@ -28,7 +28,7 @@ interface Dialogue {
 interface VoiceoverGenerator {
   generateVoiceover(params: {
     story: string;
-    characters: any[];
+    characters: unknown[];
   }): Promise<{
     dialogues: Dialogue[];
   }>;
@@ -78,9 +78,11 @@ export class VoiceoverService {
 
       // 1. 获取场景资产
       const sceneAsset = await this.getSceneAsset(projectId, sceneAssetPath);
-      const scene = sceneAsset.customFields?.novelVideo;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const scene = sceneAsset.customFields?.novelVideo as any;
 
-      if (!scene || !scene.sceneStory) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!scene || !(scene as any).sceneStory) {
         throw new Error('场景数据不完整');
       }
 
@@ -88,13 +90,15 @@ export class VoiceoverService {
       const characters = await this.getRelatedCharacters(projectId);
 
       await this.logger.info('场景和角色数据获取完成', 'VoiceoverService', {
-        sceneId: scene.sceneId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sceneId: (scene as any).sceneId,
         charactersCount: characters.length
       });
 
       // 3. LLM提取台词
       const { dialogues } = await this.generator.generateVoiceover({
-        story: scene.sceneStory,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        story: (scene as any).sceneStory,
         characters
       });
 
@@ -144,7 +148,8 @@ export class VoiceoverService {
       // 5. 保存配音Asset
       const voiceoverAsset = await this.assetHelper.createVoiceoverAsset({
         projectId,
-        sceneId: scene.sceneId!,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sceneId: (scene as any).sceneId!,
         dialogueText: JSON.stringify(dialogues),
         characterId: dialogues.length > 0 ? dialogues[0].characterId : '',
         emotion: dialogues.length > 0 ? dialogues[0].emotion : [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
@@ -211,8 +216,8 @@ export class VoiceoverService {
    * 获取场景资产（辅助方法）
    */
   private async getSceneAsset(
-    projectId: string,
-    sceneAssetPath: string
+    _projectId: string,
+    _sceneAssetPath: string
   ): Promise<AssetMetadata> {
     // TODO: 通过AssetManager获取元数据
     // 暂时返回模拟数据，待集成时完善

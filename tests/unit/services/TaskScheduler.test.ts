@@ -601,4 +601,234 @@ describe('TaskScheduler - Mock模式测试', () => {
       expect(status.status).toBe(TaskStatus.COMPLETED);
     });
   });
+
+  describe('批量处理功能', () => {
+    describe('executeBatchSerial', () => {
+      it('应该串行执行所有任务并全部成功', async () => {
+        const items = [1, 2, 3, 4, 5];
+        const processor = vi.fn(async (item: number) => item * 2);
+        const onProgress = vi.fn();
+
+        const result = await taskScheduler.executeBatchSerial(items, processor, onProgress);
+
+        expect(result.success).toEqual([2, 4, 6, 8, 10]);
+        expect(result.failed).toEqual([]);
+        expect(result.total).toBe(5);
+        expect(result.successCount).toBe(5);
+        expect(result.failedCount).toBe(0);
+        expect(result.successRate).toBe(1);
+        expect(processor).toHaveBeenCalledTimes(5);
+        expect(onProgress).toHaveBeenCalledTimes(5);
+      });
+
+      it('应该处理部分失败的情况', async () => {
+        const items = [1, 2, 3, 4, 5];
+        const processor = vi.fn(async (item: number) => {
+          if (item === 3 || item === 5) {
+            throw new Error(`Failed for item ${item}`);
+          }
+          return item * 2;
+        });
+
+        const result = await taskScheduler.executeBatchSerial(items, processor);
+
+        expect(result.success).toEqual([2, 4, 8]);
+        expect(result.failed).toHaveLength(2);
+        expect(result.failed[0].item).toBe(3);
+        expect(result.failed[1].item).toBe(5);
+        expect(result.successCount).toBe(3);
+        expect(result.failedCount).toBe(2);
+        expect(result.successRate).toBe(0.6);
+      });
+
+      it('应该调用进度回调', async () => {
+        const items = [1, 2, 3];
+        const processor = vi.fn(async (item: number) => item * 2);
+        const onProgress = vi.fn();
+
+        await taskScheduler.executeBatchSerial(items, processor, onProgress);
+
+        expect(onProgress).toHaveBeenCalledTimes(3);
+        expect(onProgress).toHaveBeenNthCalledWith(1, 1, 3, 1);
+        expect(onProgress).toHaveBeenNthCalledWith(2, 2, 3, 2);
+        expect(onProgress).toHaveBeenNthCalledWith(3, 3, 3, 3);
+      });
+
+      it('应该处理空列表', async () => {
+        const items: number[] = [];
+        const processor = vi.fn();
+
+        const result = await taskScheduler.executeBatchSerial(items, processor);
+
+        expect(result.success).toEqual([]);
+        expect(result.failed).toEqual([]);
+        expect(result.total).toBe(0);
+        expect(result.successRate).toBe(0);
+        expect(processor).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('executeBatchParallel', () => {
+      it('应该并行执行所有任务并全部成功', async () => {
+        const items = [1, 2, 3, 4, 5];
+        const processor = vi.fn(async (item: number) => {
+          await new Promise(resolve => setTimeout(resolve, 10));
+          return item * 2;
+        });
+        const onProgress = vi.fn();
+
+        const result = await taskScheduler.executeBatchParallel(items, processor, 3, onProgress);
+
+        expect(result.success).toHaveLength(5);
+        expect([...result.success].sort((a, b) => a - b)).toEqual([2, 4, 6, 8, 10]);
+        expect(result.failed).toEqual([]);
+        expect(result.total).toBe(5);
+        expect(result.successCount).toBe(5);
+        expect(result.failedCount).toBe(0);
+        expect(result.successRate).toBe(1);
+        expect(processor).toHaveBeenCalledTimes(5);
+        expect(onProgress).toHaveBeenCalledTimes(5);
+      });
+
+      it('应该控制并发数', async () => {
+        const items = [1, 2, 3, 4, 5];
+        const activeCount = { value: 0 };
+        const maxActiveCount = { value: 0 };
+
+        const processor = vi.fn(async (item: number) => {
+          activeCount.value++;
+          maxActiveCount.value = Math.max(maxActiveCount.value, activeCount.value);
+          await new Promise(resolve => setTimeout(resolve, 20));
+          activeCount.value--;
+          return item * 2;
+        });
+
+        await taskScheduler.executeBatchParallel(items, processor, 2);
+
+        // 验证最大并发数不超过2
+        expect(maxActiveCount.value).toBeLessThanOrEqual(2);
+        expect(maxActiveCount.value).toBeGreaterThan(0);
+      });
+
+      it('应该处理部分失败的情况', async () => {
+        const items = [1, 2, 3, 4, 5];
+        const processor = vi.fn(async (item: number) => {
+          await new Promise(resolve => setTimeout(resolve, 10));
+          if (item === 2 || item === 4) {
+            throw new Error(`Failed for item ${item}`);
+          }
+          return item * 2;
+        });
+
+        const result = await taskScheduler.executeBatchParallel(items, processor, 3);
+
+        expect([...result.success].sort((a, b) => a - b)).toEqual([2, 6, 10]);
+        expect(result.failed).toHaveLength(2);
+        expect(result.successCount).toBe(3);
+        expect(result.failedCount).toBe(2);
+        expect(result.successRate).toBe(0.6);
+      });
+
+      it('应该比串行执行更快', async () => {
+        const items = [1, 2, 3, 4, 5];
+        const delayMs = 50;
+        const processor = async (item: number) => {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          return item * 2;
+        };
+
+        // 串行执行
+        const serialStart = Date.now();
+        await taskScheduler.executeBatchSerial(items, processor);
+        const serialTime = Date.now() - serialStart;
+
+        // 并行执行（最大并发5）
+        const parallelStart = Date.now();
+        await taskScheduler.executeBatchParallel(items, processor, 5);
+        const parallelTime = Date.now() - parallelStart;
+
+        // 并行应该明显快于串行
+        expect(parallelTime).toBeLessThan(serialTime * 0.6);
+      });
+
+      it('应该调用进度回调', async () => {
+        const items = [1, 2, 3];
+        const processor = vi.fn(async (item: number) => {
+          await new Promise(resolve => setTimeout(resolve, 10));
+          return item * 2;
+        });
+        const onProgress = vi.fn();
+
+        await taskScheduler.executeBatchParallel(items, processor, 2, onProgress);
+
+        expect(onProgress).toHaveBeenCalledTimes(3);
+        // 注意：并行执行时，回调顺序可能不固定
+      });
+
+      it('应该处理空列表', async () => {
+        const items: number[] = [];
+        const processor = vi.fn();
+
+        const result = await taskScheduler.executeBatchParallel(items, processor);
+
+        expect(result.success).toEqual([]);
+        expect(result.failed).toEqual([]);
+        expect(result.total).toBe(0);
+        expect(result.successRate).toBe(0);
+        expect(processor).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('retryFailedTasks', () => {
+      it('应该重试所有失败的任务', async () => {
+        const failedItems = [
+          { item: 3, error: new Error('Failed 3') },
+          { item: 5, error: new Error('Failed 5') }
+        ];
+        const processor = vi.fn(async (item: number) => item * 2);
+
+        const result = await taskScheduler.retryFailedTasks(failedItems, processor);
+
+        expect(result.success).toEqual([6, 10]);
+        expect(result.failed).toEqual([]);
+        expect(result.successCount).toBe(2);
+        expect(processor).toHaveBeenCalledTimes(2);
+        expect(processor).toHaveBeenCalledWith(3);
+        expect(processor).toHaveBeenCalledWith(5);
+      });
+
+      it('应该处理重试时仍然失败的任务', async () => {
+        const failedItems = [
+          { item: 3, error: new Error('Failed 3') },
+          { item: 5, error: new Error('Failed 5') }
+        ];
+        const processor = vi.fn(async (item: number) => {
+          if (item === 5) {
+            throw new Error('Still failing');
+          }
+          return item * 2;
+        });
+
+        const result = await taskScheduler.retryFailedTasks(failedItems, processor);
+
+        expect(result.success).toEqual([6]);
+        expect(result.failed).toHaveLength(1);
+        expect(result.failed[0].item).toBe(5);
+        expect(result.successCount).toBe(1);
+        expect(result.failedCount).toBe(1);
+      });
+
+      it('应该处理空失败列表', async () => {
+        const failedItems: Array<{ item: number; error: Error }> = [];
+        const processor = vi.fn();
+
+        const result = await taskScheduler.retryFailedTasks(failedItems, processor);
+
+        expect(result.success).toEqual([]);
+        expect(result.failed).toEqual([]);
+        expect(result.total).toBe(0);
+        expect(processor).not.toHaveBeenCalled();
+      });
+    });
+  });
 });

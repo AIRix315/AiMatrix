@@ -7,9 +7,9 @@
  */
 export interface GenerateStoryboardPromptsInput {
   story: string;
-  characters: any[];
-  scene: any;
-  chapter: any;
+  characters: unknown[];
+  scene: unknown;
+  chapter: unknown;
   artStyle?: string;
 }
 
@@ -18,9 +18,9 @@ export interface GenerateStoryboardPromptsInput {
  */
 export interface VideoPromptItem {
   prompt: string;
-  characters?: any[];
-  scene?: any;
-  [key: string]: any;
+  characters?: unknown[];
+  scene?: unknown;
+  [key: string]: unknown;
 }
 
 /**
@@ -28,9 +28,9 @@ export interface VideoPromptItem {
  */
 export interface ImagePromptItem {
   prompts: string[];
-  characters?: any[];
-  scene?: any;
-  [key: string]: any;
+  characters?: unknown[];
+  scene?: unknown;
+  [key: string]: unknown;
 }
 
 /**
@@ -45,13 +45,13 @@ export interface GenerateStoryboardPromptsOutput {
  * 分镜脚本生成器接口
  */
 export interface IStoryboardScriptGenerator {
-  generateScriptScenes(params: { story: string; characters: any[]; chapter: any }): Promise<any[]>;
+  generateScriptScenes(params: { story: string; characters: unknown[]; chapter: unknown }): Promise<any[]>;
   generateVideoPrompts(
-    scriptScenes: any[],
-    characters: any[],
-    scene: any,
+    scriptScenes: unknown[],
+    characters: unknown[],
+    scene: unknown,
     artStyle: string
   ): Promise<any[]>;
-  replaceCharacterNames(videoScenes: any[], characters: any[]): Promise<any[]>;
-  generateImageStoryboardPrompts(videoScenes: any[], characters: any[]): Promise<any[]>;
+  replaceCharacterNames(videoScenes: unknown[], characters: unknown[]): Promise<any[]>;
+  generateImageStoryboardPrompts(videoScenes: unknown[], characters: unknown[]): Promise<any[]>;
 }

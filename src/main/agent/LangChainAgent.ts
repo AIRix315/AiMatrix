@@ -30,7 +30,7 @@ export class LangChainAgent {
 
     try {
       attempts++
-      console.log('###', this.config)
+      // logger.debug('###', this.config)
 
       // 创建 ChatOpenAI 实例（兼容多种provider）
       const llm = new ChatOpenAI({
@@ -61,13 +61,14 @@ export class LangChainAgent {
           totalAttempts: attempts
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 判断错误类型
       let errorType: 'llm_error' | 'validation_error' | 'timeout_error' = 'llm_error'
+      const errorMessage = error instanceof Error ? error.message : String(error)
 
-      if (error.message?.includes('timeout')) {
+      if (errorMessage.includes('timeout')) {
         errorType = 'timeout_error'
-      } else if (error.message?.includes('validation') || error.message?.includes('schema')) {
+      } else if (errorMessage.includes('validation') || errorMessage.includes('schema')) {
         errorType = 'validation_error'
       }
 
@@ -75,7 +76,7 @@ export class LangChainAgent {
         success: false,
         error: {
           type: errorType,
-          message: error.message || 'Unknown error',
+          message: errorMessage || 'Unknown error',
           details: error
         },
         metadata: {

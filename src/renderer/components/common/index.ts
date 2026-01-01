@@ -15,3 +15,4 @@ export { Collapsible } from './Collapsible';
 export { ViewSwitcher } from './ViewSwitcher';
 export { ListViewItem } from './ListView';
 export { ShortcutNavItem } from './ShortcutNavItem';
+export { Tooltip } from './Tooltip';

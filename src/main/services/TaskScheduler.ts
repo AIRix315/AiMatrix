@@ -85,6 +85,29 @@ export interface TaskExecution {
 }
 
 /**
+ * 批量处理结果接口
+ */
+export interface BatchResult<R> {
+  /** 成功的结果列表 */
+  success: R[];
+
+  /** 失败的项列表 */
+  failed: Array<{ item: unknown; error: Error }>;
+
+  /** 总数 */
+  total: number;
+
+  /** 成功数量 */
+  successCount: number;
+
+  /** 失败数量 */
+  failedCount: number;
+
+  /** 成功率 (0-1) */
+  successRate: number;
+}
+
+/**
  * TaskScheduler 服务类
  */
 export class TaskScheduler {
@@ -454,6 +477,158 @@ export class TaskScheduler {
     }
 
     await logger.info('TaskScheduler cleaned up', 'TaskScheduler');
+  }
+
+  /**
+   * 批量串行执行任务
+   *
+   * @param items 要处理的项列表
+   * @param processor 处理函数
+   * @param onProgress 进度回调
+   * @returns 批量处理结果
+   */
+  public async executeBatchSerial<T, R>(
+    items: T[],
+    processor: (item: T) => Promise<R>,
+    onProgress?: (completed: number, total: number, current: T) => void
+  ): Promise<BatchResult<R>> {
+    await logger.info(`开始批量串行执行: ${items.length} 个项`, 'TaskScheduler');
+
+    const success: R[] = [];
+    const failed: Array<{ item: T; error: Error }> = [];
+    let completed = 0;
+
+    for (const item of items) {
+      try {
+        await logger.debug(`处理项 ${completed + 1}/${items.length}`, 'TaskScheduler');
+
+        const result = await processor(item);
+        success.push(result);
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        await logger.warn(`项处理失败: ${err.message}`, 'TaskScheduler');
+        failed.push({ item, error: err });
+      } finally {
+        completed++;
+        if (onProgress) {
+          onProgress(completed, items.length, item);
+        }
+      }
+    }
+
+    const result: BatchResult<R> = {
+      success,
+      failed,
+      total: items.length,
+      successCount: success.length,
+      failedCount: failed.length,
+      successRate: items.length > 0 ? success.length / items.length : 0
+    };
+
+    await logger.info(
+      `批量串行执行完成: 成功 ${result.successCount}/${result.total} (${(result.successRate * 100).toFixed(1)}%)`,
+      'TaskScheduler'
+    );
+
+    return result;
+  }
+
+  /**
+   * 批量并行执行任务
+   *
+   * @param items 要处理的项列表
+   * @param processor 处理函数
+   * @param maxConcurrency 最大并发数（默认 5）
+   * @param onProgress 进度回调
+   * @returns 批量处理结果
+   */
+  public async executeBatchParallel<T, R>(
+    items: T[],
+    processor: (item: T) => Promise<R>,
+    maxConcurrency: number = 5,
+    onProgress?: (completed: number, total: number, current: T) => void
+  ): Promise<BatchResult<R>> {
+    await logger.info(
+      `开始批量并行执行: ${items.length} 个项，最大并发数 ${maxConcurrency}`,
+      'TaskScheduler'
+    );
+
+    const success: R[] = [];
+    const failed: Array<{ item: T; error: Error }> = [];
+    const taskQueue = [...items];
+    const executing: Promise<void>[] = [];
+    let completed = 0;
+
+    while (taskQueue.length > 0 || executing.length > 0) {
+      // 启动新任务直到达到最大并发数
+      while (executing.length < maxConcurrency && taskQueue.length > 0) {
+        const item = taskQueue.shift()!;
+
+        const promise: Promise<void> = processor(item)
+          .then((result) => {
+            success.push(result);
+          })
+          .catch((error) => {
+            const err = error instanceof Error ? error : new Error(String(error));
+            logger.warn(`项处理失败: ${err.message}`, 'TaskScheduler');
+            failed.push({ item, error: err });
+          })
+          .finally(() => {
+            completed++;
+            if (onProgress) {
+              onProgress(completed, items.length, item);
+            }
+
+            // 从执行列表中移除
+            const index = executing.indexOf(promise);
+            if (index > -1) {
+              executing.splice(index, 1);
+            }
+          });
+
+        executing.push(promise);
+      }
+
+      // 等待至少一个任务完成
+      if (executing.length > 0) {
+        await Promise.race(executing);
+      }
+    }
+
+    const result: BatchResult<R> = {
+      success,
+      failed,
+      total: items.length,
+      successCount: success.length,
+      failedCount: failed.length,
+      successRate: items.length > 0 ? success.length / items.length : 0
+    };
+
+    await logger.info(
+      `批量并行执行完成: 成功 ${result.successCount}/${result.total} (${(result.successRate * 100).toFixed(1)}%)`,
+      'TaskScheduler'
+    );
+
+    return result;
+  }
+
+  /**
+   * 重试失败的任务
+   *
+   * @param failedItems 失败的项列表
+   * @param processor 处理函数
+   * @param onProgress 进度回调
+   * @returns 批量处理结果
+   */
+  public async retryFailedTasks<T, R>(
+    failedItems: Array<{ item: T; error: Error }>,
+    processor: (item: T) => Promise<R>,
+    onProgress?: (completed: number, total: number, current: T) => void
+  ): Promise<BatchResult<R>> {
+    await logger.info(`重试失败的任务: ${failedItems.length} 个项`, 'TaskScheduler');
+
+    const items = failedItems.map((f) => f.item);
+    return this.executeBatchSerial(items, processor, onProgress);
   }
 }
 

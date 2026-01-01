@@ -32,16 +32,16 @@ export interface ChainTaskNode {
   dependencies?: string[];
 
   /** 条件函数（返回true才执行） */
-  condition?: (results: Map<string, any>) => boolean | Promise<boolean>;
+  condition?: (results: Map<string, unknown>) => boolean | Promise<boolean>;
 
   /** 输入转换器（从依赖节点的结果生成本节点的输入） */
-  inputTransform?: (results: Map<string, any>) => any | Promise<any>;
+  inputTransform?: (results: Map<string, unknown>) => any | Promise<any>;
 
   /** 错误处理器 */
-  onError?: (error: Error, results: Map<string, any>) => void | Promise<void>;
+  onError?: (error: Error, results: Map<string, unknown>) => void | Promise<void>;
 
   /** 完成回调 */
-  onComplete?: (result: any, results: Map<string, any>) => void | Promise<void>;
+  onComplete?: (result: unknown, results: Map<string, unknown>) => void | Promise<void>;
 }
 
 /**
@@ -61,10 +61,10 @@ export interface ChainTaskDefinition {
   nodes: ChainTaskNode[];
 
   /** 全局错误处理器 */
-  onError?: (error: Error, nodeId: string, results: Map<string, any>) => void | Promise<void>;
+  onError?: (error: Error, nodeId: string, results: Map<string, unknown>) => void | Promise<void>;
 
   /** 全局完成回调 */
-  onComplete?: (results: Map<string, any>) => void | Promise<void>;
+  onComplete?: (results: Map<string, unknown>) => void | Promise<void>;
 }
 
 /**
@@ -91,12 +91,12 @@ export interface ChainTaskExecution {
     status: TaskStatus;
     taskId?: string;
     executionId?: string;
-    result?: any;
+    result?: unknown;
     error?: string;
   }>;
 
   /** 最终结果 */
-  results: Map<string, any>;
+  results: Map<string, unknown>;
 }
 
 /**
@@ -207,6 +207,10 @@ export class ChainTaskExecutor {
         }
       }
     } catch (error) {
+      // 记录错误并重新抛出
+      await logger.error('链式任务执行失败', 'ChainTaskExecutor', { error });
+      execution.status = 'failed';
+      execution.endedAt = new Date().toISOString();
       throw error;
     }
   }
@@ -218,7 +222,7 @@ export class ChainTaskExecutor {
     node: ChainTaskNode,
     definition: ChainTaskDefinition,
     execution: ChainTaskExecution,
-    dependencyGraph: Map<string, Set<string>>
+    _dependencyGraph: Map<string, Set<string>>
   ): Promise<void> {
     const nodeStatus = execution.nodeStatus.get(node.id)!;
 
@@ -246,7 +250,7 @@ export class ChainTaskExecutor {
       }
 
       // 转换输入
-      let taskInput: any;
+      let taskInput: unknown;
       if (node.inputTransform) {
         taskInput = await node.inputTransform(execution.results);
       }

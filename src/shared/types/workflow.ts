@@ -9,6 +9,24 @@
 export type WorkflowStepStatus = 'pending' | 'in_progress' | 'completed' | 'error'
 
 /**
+ * 工作流子步骤定义
+ */
+export interface WorkflowSubStep {
+  /** 子步骤ID (如 "3.1", "3.2") */
+  id: string
+  /** 子步骤名称 */
+  name: string
+  /** 子步骤描述 */
+  description?: string
+  /** 子步骤组件类型标识 */
+  componentType: string
+  /** 子步骤状态 */
+  status: WorkflowStepStatus
+  /** 子步骤配置 */
+  config?: Record<string, unknown>
+}
+
+/**
  * 工作流步骤定义
  */
 export interface WorkflowStep {
@@ -26,6 +44,10 @@ export interface WorkflowStep {
   onComplete?: (data: unknown) => Promise<void>
   /** 步骤可选配置 */
   config?: Record<string, unknown>
+  /** 子步骤列表（可选，用于多阶段步骤） */
+  subSteps?: WorkflowSubStep[]
+  /** 是否支持视图切换（grid/list） */
+  supportsViewSwitch?: boolean
 }
 
 /**
@@ -38,11 +60,19 @@ export interface WorkflowState {
   projectId: string
   /** 当前步骤索引 */
   currentStep: number
+  /** 当前子步骤索引（-1表示无子步骤或主步骤视图） */
+  currentSubStep: number
   /** 步骤状态映射 */
   steps: Record<string, {
     status: WorkflowStepStatus
     updatedAt: string // ISO 8601
     data?: unknown
+    /** 子步骤状态映射 */
+    subSteps?: Record<string, {
+      status: WorkflowStepStatus
+      updatedAt: string
+      data?: unknown
+    }>
   }>
   /** 工作流全局数据 */
   data?: Record<string, unknown>

@@ -16,450 +16,577 @@
 3.  **引用路径**: 本文档中提到的路径均基于项目根目录。
 
 
-## 📋 Phase 9: 核心功能补齐与架构优化 (v0.2.9.8-v0.3.5)
-**目标**: 修复核心架构问题、完善工作流交互、重构API Provider架构、补充节点编辑器、补齐业务逻辑
-**状态**: 🔄 进行中
-**参考**: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (详细背景、目的、方法)
-**总计**: 21个任务（新增4个UI修正任务）
-- 第零阶段（架构修复）: 6个任务（H0.1-H0.6）
-- 第一阶段（核心交互+UI修正）: 7个任务（H2.1-H2.7）
-- 第二阶段（API Provider重构）: 3个任务（H2.8-H2.10）
-- 第三阶段（业务功能补齐）: 3个任务（H2.11-H2.13）
-- 第四阶段（优化和安全）: 2个任务（H2.14-H2.15）
+## 前1-9阶段任务，已归入`docs\ref\TODO-Done.md`文档
 
 ---
 
-### 🔴 第零阶段：核心架构修复（v0.2.9.8）
-**优先级**: 最高 - 必须先完成架构修复，再进行UI优化和功能补齐
-
-#### [*] [H0.1] 项目-资源绑定架构实现
-*   **文件**: `src/main/services/ProjectManager.ts`, `src/shared/types/project.ts`, `src/common/types.ts`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A1.项目管理 - 核心架构缺失, UI-2)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-001 ProjectConfig扩展字段定义)
-*   **任务内容**:
-    1.  扩展 ProjectConfig 接口（7个新字段：workflowType, pluginId, status, inputAssets, outputAssets, immutable等）
-    2.  实现资源绑定方法（addInputAsset, addOutputAsset）
-    3.  实现安全删除方法（deleteProject with deleteOutputs flag）
-*   **验收**: 项目元数据包含资源引用关系和工作流类型识别，删除项目安全可靠
-
-#### [*] [H0.2] AssetManager 项目作用域支持
-*   **文件**: `src/main/services/AssetManager.ts`, `src/shared/types/asset.ts`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A2.资源库 - 核心架构缺失)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-002 AssetMetadata扩展字段 + 文件组织结构)
-*   **任务内容**:
-    1.  扩展 AssetMetadata 接口（projectId, isUserUploaded字段）
-    2.  修改资源保存路径逻辑（user_uploaded vs project_outputs/<projectId>/<YYYYMMDD>）
-    3.  扩展 `scanAssets(scope, projectId, filter)` 支持项目作用域
-    4.  实现 `getAssetReferences(assetId)` 引用追踪
-*   **验收**: 资源带项目标记，可按项目过滤，可追踪引用关系
-
-#### [*] [H0.3] 工作流实例绑定项目
-*   **文件**: `src/main/services/WorkflowStateManager.ts`, `src/shared/types/workflow.ts`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台 - 核心架构缺失)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-003 WorkflowState接口定义)
-*   **任务内容**:
-    1.  扩展 WorkflowState 接口（添加必填 projectId 字段）
-    2.  修改 `createInstance(type, projectId)` 方法签名
-    3.  工作流保存状态时记录 projectId，确保非空校验
-*   **验收**: 工作流实例必须绑定项目，生成资源自动归档
-
-#### [*] [H0.4] 前端项目选择流程
-*   **文件**: `src/renderer/pages/workflows/Workflows.tsx`, `src/renderer/components/workflow/ProjectSelectorDialog.tsx` (新建)
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台 - 核心架构缺失)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-004 项目选择对话框UI实现)
-*   **任务内容**:
-    1.  创建 ProjectSelectorDialog 组件（含已有项目列表 + 新建表单）
-    2.  集成到 Workflows.tsx（点击模板 → 弹出对话框 → 创建实例）
-    3.  实现项目筛选逻辑（按workflowType和pluginId）
-*   **验收**: 创建工作流前必须选择或创建项目
-
-#### [*] [H0.5] Assets页面项目导航
-*   **文件**: `src/renderer/pages/assets/Assets.tsx`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A2.资源库 - 核心架构缺失)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-002 AssetManager扩展方法)
-*   **任务内容**:
-    1.  左侧导航增加"项目"分类树（树形展示所有项目）
-    2.  点击项目节点调用 `scanAssets('project', projectId)` 过滤资源
-    3.  资产预览界面显示"被 X 个项目引用"（调用getAssetReferences）
-*   **验收**: 可按项目过滤资源，查看引用关系
-
-#### [*] [H0.6] IPC通道扩展
-*   **文件**: `src/main/ipc/`, `src/preload/index.ts`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A1/A2/A4 IPC通信扩展)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-001/002/003 服务方法签名)
-*   **任务内容**:
-    1.  新增4个IPC通道处理器（project:add-input-asset, project:add-output-asset, asset:get-references）
-    2.  修改 `workflow:create-instance` 处理器（增加 projectId 参数校验）
-    3.  更新 `src/preload/index.ts` 暴露新API到 window.electronAPI
-*   **验收**: 前端可调用项目-资源绑定相关API，TypeScript类型完整
+## 📋 Phase 10: 小说转视频插件核心实现 (v0.4.0)
+**目标**: 实现Provider抽象层 + 异步任务处理 + 批量处理 + AI封装，删除Mock数据
+**状态**: 🔴 待启动
+**参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md`
+**总计**: 13个任务（K01-K13），分4个阶段
 
 ---
 
-### 🔹 第一阶段：核心交互完善（v0.2.9.9）
+### 🔴 阶段1: Provider抽象层实现（架构基础）
 
-#### [x] [H2.1] WorkflowHeader 统一头部组件（UI-1）
-*   **文件**: `src/renderer/components/workflow/WorkflowHeader.tsx` (新建), `WorkflowHeader.css` (新建)
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-1)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-005 WorkflowHeader组件完整实现)
+### [ ] [K01] Provider类型定义 🔴 P0
+*   **文件**: `src/shared/types/provider.ts`（新建）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Section 1.4 + Phase 0)
+*   **目标**: 定义Operation接口和Provider抽象，确保平台定位为"编排+路由"，非执行层
 *   **任务内容**:
-    1.  创建完整的WorkflowHeader组件（含6个交互控件：左侧收缩、项目下拉、标题、步骤条、关闭全部、右侧收缩）
-    2.  实现步骤条点击逻辑（参考REF-006）
-    3.  集成到 WorkflowExecutor.tsx 替换现有头部
-*   **验收**: 头部布局统一，项目可切换，步骤条可点击，侧栏控制按钮生效
+    1.  定义 `OperationType` 枚举（TEXT_TO_IMAGE、IMAGE_TO_IMAGE、IMAGE_TO_VIDEO、TEXT_TO_AUDIO、TEXT_TO_TEXT）
+    2.  定义 `IProvider` 基础接口（id、name、type、supportedOperations、checkAvailability()）
+    3.  定义 `ITextToImageProvider`、`IImageToImageProvider`、`IImageToVideoProvider` 接口
+    4.  定义 `TextToImageResult`、`ImageToImageResult`、`ImageToVideoResult` 结果类型
+    5.  定义 `OperationResult` 统一结果格式（success、taskId、status、error）
+*   **代码示例**:
+    ```typescript
+    export enum OperationType {
+      TEXT_TO_IMAGE = 'text-to-image',
+      IMAGE_TO_IMAGE = 'image-to-image',
+      IMAGE_TO_VIDEO = 'image-to-video',
+      TEXT_TO_AUDIO = 'text-to-audio',
+      TEXT_TO_TEXT = 'text-to-text'
+    }
 
-#### [x] [H2.2] WorkflowExecutor 右侧属性面板联动与增强（UI-4）
-*   **文件**: `src/renderer/pages/workflows/WorkflowExecutor.tsx`, `src/renderer/components/workflow/RightSettingsPanel.tsx`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台 章节, UI-4)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-005 WorkflowHeader组件含联动逻辑示例)
-*   **任务内容**（8个子功能）:
-    1.  实现分镜卡片点击 → 右侧面板数据同步（handleStoryboardSelectionChange）
-    2.  实现Prompt编辑 → 分镜数据更新（双向绑定）
-    3.  实现批量选择和批量编辑
-    4.  新增"队列"Tab（显示任务列表、进度、支持取消/重试）
-    5.  新增中间模块（3个生成模式按钮：当前选择|自动补全|全流程）
-    6.  新增下分栏（Provider特定参数，如Sora2宽高比选择器）
-    7.  实现可折叠区域（Collapsible组件 + localStorage持久化）
-    8.  右侧面板显示选中项详细信息（检查器区域）
-*   **验收**: 点击分镜卡片，右侧面板立即显示详细信息；队列Tab完整；3个生成模式可切换；参数区域可折叠
+    export interface IProvider {
+      readonly id: string;
+      readonly name: string;
+      readonly type: 'online' | 'local';
+      readonly supportedOperations: OperationType[];
+      checkAvailability(): Promise<boolean>;
+    }
 
-#### [x] [H2.3] ProgressOrb 重设计（UI-3）
-*   **文件**: `src/renderer/components/common/ProgressOrb.tsx`, `src/renderer/components/common/ProgressOrb.css`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-3)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-007 ProgressOrb半圆形状和潮汐动画)
+    export interface ITextToImageProvider extends IProvider {
+      textToImage(params: {
+        prompt: string;
+        width: number;
+        height: number;
+        negativePrompt?: string;
+        seed?: number;
+      }): Promise<TextToImageResult>;
+    }
+    ```
+*   **验收**: TypeScript编译通过，类型定义完整无错误
+
+### [ ] [K02] ProviderRegistry实现 🔴 P0
+*   **文件**: `src/main/services/ProviderRegistry.ts`（新建）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 0)
+*   **目标**: Provider注册表，支持动态注册/卸载Provider
 *   **任务内容**:
-    1.  修改形状为半圆（border-radius: 50% 0 0 50%）+ 吸附右侧边缘 ✅
-    2.  实现潮汐注水动画（水位填充 + 波浪@keyframes）✅
-    3.  集成react-draggable（限制Y轴拖动）✅
-    4.  实现点击交互（打开右侧面板"队列"Tab）✅
-*   **验收**: 半圆形状，潮汐注水动画，可上下拖动，点击打开右侧面板队列Tab ✅
-*   **完成时间**: 2025-12-28
+    1.  实现 `register(provider: IProvider): void` 方法
+    2.  实现 `getProvider(providerId: string): IProvider | undefined` 方法
+    3.  实现 `listProvidersByOperation(operationType: OperationType): IProvider[]` 方法
+    4.  实现 `checkProviderAvailability(providerId: string): Promise<boolean>` 方法
+    5.  实现 `registerBatch(providers: IProvider[]): void` 批量注册
+    6.  实现 `unregister(providerId: string): void` 卸载方法
+    7.  使用 `Map<string, IProvider>` 存储Provider
+    8.  集成Logger记录注册/卸载操作
+*   **验收**: 可注册Provider并按Operation类型查询，可用性检查正常
 
-#### [x] [H2.4] 步骤导航交互修正（UI-5）
-*   **文件**: `src/renderer/pages/workflows/WorkflowExecutor.tsx`, `src/renderer/pages/workflows/panels/*.tsx`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-5)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-006 步骤条点击逻辑实现)
+### [ ] [K03] ProviderRouter实现 🔴 P0
+*   **文件**: `src/main/services/ProviderRouter.ts`（新建）、`src/main/ipc/provider-handlers.ts`（新建）、`src/preload/index.ts`（扩展）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 0)
+*   **目标**: 路由层，根据配置将操作路由到具体Provider
 *   **任务内容**:
-    1.  删除底部"下一步"按钮（所有工作流面板）✅
-    2.  步骤条改为可点击（实现handleStepClick和canClickStep）✅ (已在H2.1完成)
-    3.  实现步骤点击权限逻辑（已完成项目所有步骤可点击，进行中项目仅当前及之前可点击）✅ (已在H2.1完成)
-*   **验收**: 步骤条可点击切换，前进需满足条件，后退随时允许，已完成项目所有步骤可点击 ✅
-*   **完成时间**: 2025-12-28
+    1.  实现 `executeTextToImage(params): Promise<TextToImageResult>` 方法
+    2.  实现 `executeImageToImage(params): Promise<ImageToImageResult>` 方法
+    3.  实现 `executeImageToVideo(params): Promise<ImageToVideoResult>` 方法
+    4.  实现 `getDefaultProvider(operationType): Promise<string | null>` 从ConfigManager读取默认Provider
+    5.  集成ProviderRegistry查询Provider
+    6.  实现可用性检查逻辑
+    7.  创建IPC处理器（provider:text-to-image、provider:image-to-image、provider:image-to-video、provider:list、provider:check-availability）
+    8.  更新预加载脚本，暴露 `window.electronAPI.provider` API
+*   **代码示例**:
+    ```typescript
+    export class ProviderRouter {
+      async executeTextToImage(params: {
+        prompt: string;
+        width: number;
+        height: number;
+        providerId?: string;
+      }): Promise<TextToImageResult> {
+        const providerId = params.providerId ||
+                          await this.getDefaultProvider(OperationType.TEXT_TO_IMAGE);
 
-#### [x] [H2.5] 全局视图切换器组件（UI-6）
-*   **文件**: `src/renderer/components/common/ViewSwitcher.tsx`（新建）, `src/renderer/components/common/ListView.tsx`（新建）
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-6)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-008 ViewSwitcher全局组件)
-*   **任务内容**:
-    1.  创建ViewSwitcher组件（Grid3x3/List图标切换）✅
-    2.  创建ListView组件（统一列表视图样式，64x64+缩略图）✅
-    3.  响应式缩略图CSS（等比缩放，保持宽高比）✅
-    4.  应用到所有页面（Assets/Plugins/Workflows/Dashboard/StoryboardPanel）✅
-*   **验收**: 所有页面有网格/列表切换按钮，列表视图包含64x64+缩略图，缩略图等比缩放 ✅
-*   **完成时间**: 2025-12-28
+        if (!providerId) {
+          throw new Error('未配置文生图Provider，请在Settings中配置');
+        }
 
-#### [x] [H2.6] 资产网格虚拟滚动 ✅
-*   **文件**: `src/renderer/components/AssetGrid/AssetGridVirtualized.tsx`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A2.资源库 - 性能优化)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-009 react-window虚拟滚动集成)
-*   **任务内容**:
-    1.  集成react-window（FixedSizeGrid + useInfiniteLoader hook） ✅
-    2.  实现虚拟滚动列表（Cell渲染器 + AutoSizer） ✅
-    3.  支持千级资产流畅渲染（懒加载图片） ✅
-*   **验收**: 加载1000+资产时页面流畅，滚动帧率>60fps ✅
-*   **完成时间**: 2025-12-28
-*   **新增文件**: AssetGridVirtualized.tsx (250行)
-*   **依赖**: react-window@^1.8.10, react-window-infinite-loader@^1.0.9, react-virtualized-auto-sizer@^1.0.24
+        const provider = providerRegistry.getProvider(providerId) as ITextToImageProvider;
+        if (!provider) {
+          throw new Error(`Provider ${providerId} 未找到`);
+        }
 
-#### [x] [H2.7] 菜单栏快捷方式系统（UI-7）⭐ 重要功能 ✅ 2025-12-28
-*   **文件**:
-    - `src/main/services/ShortcutManager.ts`（新建，175行）
-    - `src/renderer/components/common/GlobalNav.tsx`（重构）
-    - `src/renderer/components/common/ShortcutNavItem.tsx`（新建，108行）
-    - `src/renderer/components/common/ShortcutNavItem.css`（新建，95行）
-    - `src/common/types.ts`（扩展）
-    - `src/main/ipc/channels.ts`（扩展）
-    - `src/main/index.ts`（集成）
-    - `src/preload/index.ts`（扩展）
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (UI-7)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-010 ShortcutManager服务, REF-011 GlobalNav三区域重构, REF-012 ShortcutNavItem长按编辑)
-*   **完成内容** (9/9个核心任务) - 全部完成:
-    1.  ✅ 扩展数据模型（ShortcutType枚举、ShortcutItem接口、IAppSettings扩展）
-    2.  ✅ 创建ShortcutManager服务（addShortcut/removeShortcut/reorderShortcuts/listShortcuts/initializeDefaultShortcuts）
-    3.  ✅ 重构GlobalNav组件（三区域结构：固定上方5项+可编辑中间+固定下方1项，中间支持滚动）
-    4.  ✅ 创建ShortcutNavItem组件（图标显示、点击跳转、长按编辑500ms、删除按钮、编辑模式状态管理）
-    5.  ✅ 添加Pin按钮到卡片（Dashboard/Workflows/Plugins三个页面全部实现）
-    6.  ✅ 首次启动初始化（自动添加"小说转视频"插件到菜单栏）
-    7.  ✅ IPC通道扩展（shortcut:add/remove/reorder/list + 主进程处理器 + preload API + TypeScript类型）
-    8.  ✅ CSS闪动动画（编辑模式shake动画，@keyframes实现）
-    9.  ✅ 服务初始化集成（app.on('ready')调用shortcutManager.initialize()）
-*   **验收状态**: ✅ 所有功能完整
-    - ✅ 菜单栏三区域结构完成（上方固定5个导航项、中间可滚动快捷方式、下方固定About）
-    - ✅ 快捷方式CRUD功能完整（addShortcut/removeShortcut/reorderShortcuts/listShortcuts）
-    - ✅ 长按500ms进入编辑模式，闪动动画正常
-    - ✅ 编辑模式支持删除快捷方式
-    - ✅ 中间区域支持鼠标滚轮滚动（max-height: calc(100vh - 400px), overflow-y: auto）
-    - ✅ "小说转视频"首次启动自动添加到菜单栏
-    - ✅ Pin按钮功能完整（Dashboard/Workflows/Plugins三个页面，悬停显示，点击添加快捷方式）
-    - ✅ 构建成功（0错误）
-*   **新增文件**:
-    - ShortcutManager.ts (175行)
-    - ShortcutNavItem.tsx (108行)
-    - ShortcutNavItem.css (95行)
-    - Dashboard.tsx/Workflows.tsx/Plugins.tsx (Pin按钮功能)
-    - Dashboard.css/Workflows.css/Plugins.css (Pin按钮样式)
-*   **代码量**: 约550行核心代码
+        const available = await provider.checkAvailability();
+        if (!available) {
+          throw new Error(`Provider ${provider.name} 不可用，请检查配置`);
+        }
+
+        logger.info(`执行文生图: Provider=${provider.name}`, 'ProviderRouter');
+        return await provider.textToImage({
+          prompt: params.prompt,
+          width: params.width,
+          height: params.height
+        });
+      }
+    }
+    ```
+*   **验收**: Panel组件可通过 `window.electronAPI.provider.executeTextToImage()` 调用，参数正确路由到Provider
 
 ---
 
-### 🔹 第二阶段：API Provider 架构重构（v0.3.0）
+### 🟠 阶段2: 异步任务处理实现（P0级）
 
-#### [x] [H2.8] 统一 Provider 配置模型 ✅ 2025-12-29
-*   **文件**: `src/main/services/APIManager.ts`, `src/shared/types/api.ts`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置 - 核心架构问题)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-013 API Provider统一配置模型)
-*   **完成内容**:
-    1.  ✅ 创建 `src/shared/types/api.ts` - 统一API类型定义（9个枚举和接口）
-    2.  ✅ 重构 `APIManager.ts` - 升级到v2.0架构（保持向后兼容）
-    3.  ✅ 实现按功能分类（APICategory枚举：9种分类）
-    4.  ✅ 支持同类型多Provider（基于id唯一标识）
-    5.  ✅ 注册7个默认Providers（ComfyUI、Stability AI、T8Star、Ollama、OpenAI等）
-    6.  ✅ 实现旧配置自动迁移（migrateOldConfig方法）
-    7.  ✅ 新增Provider管理API（addProvider/removeProvider/getProvider/listProviders）
-    8.  ✅ 新增状态检查和连接测试（getProviderStatus/testProviderConnection）
-    9.  ✅ 修复TaskScheduler导入错误
-    10. ✅ 完整构建测试通过（0错误）
-*   **验收**: ✅ 所有功能实现完成，可同时配置多个同类型Provider
-*   **新增文件**: `src/shared/types/api.ts` (120行)
-*   **修改文件**: `src/main/services/APIManager.ts` (+430行), `src/main/services/TaskScheduler.ts` (+1行)
-*   **代码量**: 约550行核心代码
-*   **下一步**: Settings页面UI重构（H2.10）将使用新的Provider配置模型
-
-#### [x] [H2.9] 模型注册表系统 ✅ 2025-12-29
-*   **文件**: `src/main/services/ModelRegistry.ts`（新建）, `config/models/default-models.json`（新建）
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置 - 模型注册表系统)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-014 ModelRegistry数据结构)
-*   **完成内容**:
-    1.  ✅ 扩展 `src/shared/types/api.ts` - 添加5个模型相关类型（ModelParameters、ModelDefinition、UserModelConfig等）
-    2.  ✅ 创建 `config/models/default-models.json` - 11个默认模型（SD XL、GPT-4、Sora 2等）
-    3.  ✅ 实现 `ModelRegistry.ts` - 完整的模型注册表服务（470行）
-    4.  ✅ 核心功能：listModels/getModel/addCustomModel/removeCustomModel
-    5.  ✅ 用户配置：toggleModelVisibility/toggleModelFavorite/setModelAlias/getUserConfig
-    6.  ✅ 智能过滤：按分类、按Provider、隐藏模型、仅收藏
-    7.  ✅ 辅助方法：getModelsByProvider/searchModelsByTag
-    8.  ✅ 集成到主进程（初始化和清理）
-    9.  ✅ 完整构建测试通过（0错误）
-*   **验收**: ✅ 所有功能实现完成
-    - ✅ 支持11种默认模型（图像生成4个、LLM 4个、视频生成2个、TTS 1个）
-    - ✅ 智能过滤：仅显示已配置Provider的模型
-    - ✅ 用户可添加/删除自定义模型
-    - ✅ 用户可隐藏/收藏/设置别名
-    - ✅ 支持按标签搜索、按Provider过滤
-*   **新增文件**:
-    - `src/main/services/ModelRegistry.ts` (470行)
-    - `config/models/default-models.json` (150行JSON)
-*   **修改文件**:
-    - `src/shared/types/api.ts` (+60行)
-    - `src/main/index.ts` (+2行)
-*   **代码量**: 约530行核心代码 + 150行配置数据
-*   **下一步**: Settings页面UI重构（H2.10）将使用ModelRegistry展示和管理模型
-
-#### [x] [H2.10] Settings 页面重构 ✅ 2025-12-29
-*   **文件**: `src/renderer/pages/settings/Settings.tsx`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-013 API Provider统一配置模型UI设计, REF-014 ModelRegistry数据结构)
+### [ ] [K04] AsyncTaskManager服务实现 🟠 P0
+*   **文件**: `src/main/services/AsyncTaskManager.ts`（新建）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 1)
+*   **目标**: 异步任务管理器，支持10分钟级长时间轮询（文生图、图生视频）
 *   **任务内容**:
-    1.  ✅ 按功能分类Provider列表（左侧分类导航：图像生成、视频生成、LLM、工作流等）
-    2.  ✅ 实现ProviderConfigCard组件（右侧Provider配置列表）
-    3.  ✅ 实现模型选择器组件（支持勾选/隐藏模型）
-*   **验收**: Settings页面按功能分类显示Provider，模型选择器完整可用
-*   **审核报告参考**: A5.设置
-*   **完成内容** (13个核心变更):
-    1. ✅ 在 `src/main/index.ts` 添加13个新的 IPC 处理器（6个Provider API + 7个Model API）
-    2. ✅ 在 `src/preload/index.ts` 暴露13个新的IPC API到渲染进程
-    3. ✅ 创建 `src/renderer/pages/settings/components/ProviderConfigCard.tsx` (310行) - Provider配置卡片组件
-    4. ✅ 创建 `src/renderer/pages/settings/components/ProviderConfigCard.css` (196行) - 配置卡片样式
-    5. ✅ 创建 `src/renderer/pages/settings/components/ModelSelector.tsx` (390行) - 模型选择器组件
-    6. ✅ 创建 `src/renderer/pages/settings/components/ModelSelector.css` (262行) - 模型选择器样式
-    7. ✅ 重构 `src/renderer/pages/settings/Settings.tsx` (428行) - 左侧9个功能分类导航 + 右侧Provider卡片列表
-*   **新增功能**:
-    - 左侧导航: 全局配置、模型管理、9个API分类（图像生成、视频生成、音频生成、LLM、工作流、TTS、STT、向量嵌入、翻译）
-    - ProviderConfigCard: 启用/禁用切换、API Key配置、Base URL配置、连接测试、状态指示器、编辑/删除功能
-    - ModelSelector: 搜索过滤、仅显示收藏、显示隐藏模型、标签过滤、收藏功能、设置别名、隐藏/显示切换
-*   **代码量**: 约1586行代码（4个新组件 + 主页面重构 + IPC集成）
-*   **构建状态**: ✅ 全部通过（preload, main, renderer）
+    1.  实现 `executeWithPolling<T>(apiCall, pollInterval, timeout): Promise<T>` 方法
+    2.  实现 `executeWithRetry<T>(operation, maxRetries, retryDelay): Promise<T>` 方法
+    3.  实现 `private checkTaskStatus(taskId): Promise<TaskStatus>` 方法（由调用方传入）
+    4.  实现 `private sleep(ms): Promise<void>` 工具方法
+    5.  定义 `TaskStatus` 接口（status: QUEUED/PROCESSING/SUCCEED/FAILED、result、error）
+    6.  定义 `TimeoutError` 错误类
+    7.  轮询逻辑：默认10秒间隔，10分钟超时
+    8.  重试逻辑：指数退避（1s → 2s → 4s）
+    9.  集成Logger记录轮询状态
+*   **代码示例**:
+    ```typescript
+    export class AsyncTaskManager {
+      async executeWithPolling<T>(
+        apiCall: () => Promise<{ task_id?: string; result?: T }>,
+        pollInterval: number = 10000,
+        timeout: number = 600000
+      ): Promise<T> {
+        const response = await apiCall();
+
+        if (response.result && !response.task_id) {
+          return response.result;
+        }
+
+        if (!response.task_id) {
+          throw new Error('API返回格式错误：既无task_id也无result');
+        }
+
+        const startTime = Date.now();
+        while (Date.now() - startTime < timeout) {
+          await this.sleep(pollInterval);
+
+          const status = await this.checkTaskStatus(response.task_id);
+
+          if (status.status === 'TASK_STATUS_SUCCEED') {
+            return status.result;
+          }
+
+          if (status.status === 'TASK_STATUS_FAILED') {
+            throw new Error(`任务失败: ${status.error}`);
+          }
+        }
+
+        throw new TimeoutError(`任务超时（${timeout}ms），task_id: ${response.task_id}`);
+      }
+    }
+    ```
+*   **验收**: 可处理10分钟以上异步任务，超时自动抛错，支持重试
+
+### [ ] [K05] AsyncTaskManager单元测试 🟠 P0
+*   **文件**: `tests/unit/services/AsyncTaskManager.test.ts`（新建）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 1)
+*   **目标**: 完整的单元测试覆盖
+*   **任务内容**:
+    1.  测试同步返回结果场景
+    2.  测试异步轮询成功场景
+    3.  测试超时场景
+    4.  测试重试成功场景
+    5.  测试重试失败场景
+    6.  测试指数退避逻辑
+    7.  Mock checkTaskStatus方法
+    8.  使用Vitest框架
+*   **验收**: 测试覆盖率>95%，所有测试通过
+
+### [ ] [K06] JiekouProvider实现（第一个Provider） 🟠 P0
+*   **文件**: `src/main/providers/JiekouProvider.ts`（新建）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 0)
+*   **目标**: 接口AI Provider实现，封装外部API调用
+*   **任务内容**:
+    1.  实现 `ITextToImageProvider`、`IImageToImageProvider`、`IImageToVideoProvider` 接口
+    2.  实现 `checkAvailability(): Promise<boolean>` 方法（检查API Key、测试连接）
+    3.  实现 `textToImage(params)` 方法（调用 `/v3/async/z-image-turbo`）
+    4.  实现 `imageToImage(params)` 方法（调用 `/v3/nano-banana-pro-light-i2i`）
+    5.  实现 `imageToVideo(params)` 方法（调用 `/v3/async/sora-2-video-reverse`）
+    6.  集成AsyncTaskManager处理异步任务
+    7.  实现 `private downloadImage(url): Promise<string>` 下载图片到本地
+    8.  实现 `private downloadVideo(url): Promise<string>` 下载视频到本地
+    9.  从ConfigManager读取API Key
+    10. 集成Logger记录API调用
+*   **代码示例**:
+    ```typescript
+    export class JiekouProvider implements ITextToImageProvider, IImageToImageProvider, IImageToVideoProvider {
+      readonly id = 'jiekou-ai';
+      readonly name = '接口AI';
+      readonly type = 'online';
+      readonly supportedOperations = [
+        OperationType.TEXT_TO_IMAGE,
+        OperationType.IMAGE_TO_IMAGE,
+        OperationType.IMAGE_TO_VIDEO
+      ];
+
+      private apiKey: string;
+      private baseUrl = 'https://api.jiekou.ai/v3';
+
+      constructor(apiKey?: string) {
+        this.apiKey = apiKey || configManager.get('providers.jiekou.apiKey') || '';
+      }
+
+      async textToImage(params: {
+        prompt: string;
+        width: number;
+        height: number;
+      }): Promise<TextToImageResult> {
+        const response = await fetch(`${this.baseUrl}/async/z-image-turbo`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            size: `${params.width}*${params.height}`,
+            prompt: params.prompt
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.task_id) {
+          return await asyncTaskManager.executeWithPolling(
+            async () => ({ task_id: data.task_id }),
+            10000,
+            600000
+          );
+        }
+
+        return {
+          success: true,
+          imageUrl: data.image_url,
+          imageFilePath: await this.downloadImage(data.image_url)
+        };
+      }
+    }
+    ```
+*   **验收**: Provider可正常调用接口AI API，结果下载到本地，集成到ProviderRegistry
+
+### [ ] [K07] StoryboardPanel集成Provider 🟠 P0
+*   **文件**: `src/renderer/pages/workflows/panels/StoryboardPanel.tsx`（修改）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 1 Week 4)
+*   **目标**: 删除Mock数据，使用真实Provider API生成分镜
+*   **任务内容**:
+    1.  删除 Mock 数据生成代码
+    2.  调用 `window.electronAPI.provider.executeTextToImage(params)` 生成分镜图片
+    3.  集成ProgressOrb显示生成进度
+    4.  实现错误处理和Toast提示
+    5.  支持重新生成单个分镜
+    6.  显示真实的图片URL
+*   **代码示例**:
+    ```typescript
+    const handleGenerateStoryboard = async (storyboard: Storyboard) => {
+      setGenerating(true);
+      try {
+        const result = await window.electronAPI.provider.executeTextToImage({
+          prompt: storyboard.prompt,
+          width: 1280,
+          height: 720
+        });
+
+        setStoryboards(prev => prev.map(s =>
+          s.id === storyboard.id
+            ? { ...s, imageUrl: result.imageUrl, status: 'completed' }
+            : s
+        ));
+
+        setToast({
+          type: 'success',
+          message: `分镜 ${storyboard.id} 生成成功`
+        });
+      } catch (error) {
+        setToast({
+          type: 'error',
+          message: `生成失败: ${error.message}`
+        });
+      } finally {
+        setGenerating(false);
+      }
+    };
+    ```
+*   **验收**: 可真实生成分镜图片，无Mock数据，UI显示实际进度
 
 ---
 
-### 🔹 第三阶段：业务功能补齐（v0.3.2）
+### 🟡 阶段3: 批量处理实现（P1级）
 
-#### [x] [H2.11] 节点编辑器功能补充（通用工作台完善）✅ 2025-12-29
-*   **文件**: `src/renderer/components/workflow/nodes/*.tsx`（已创建）
-*   **依赖**: H0.3（工作流实例绑定项目）✅ 已完成
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台 - 节点编辑器功能待补充)
+### [ ] [K08] TaskScheduler批量处理扩展 🟡 P1
+*   **文件**: `src/main/services/TaskScheduler.ts`（扩展）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 2)
+*   **目标**: 扩展TaskScheduler，支持批量并行处理（优于n8n串行）
 *   **任务内容**:
-    1.  ✅ 集成ReactFlow库（安装@xyflow/react，配置工作流画布）
-    2.  ✅ 创建Input节点组件（无左端口有右端口，资源类型选择，拖拽资产，搜索框）
-    3.  ✅ 创建Execute节点组件（左右端口，Provider选择下拉框，参数配置，右侧面板联动）
-    4.  ✅ 创建Output节点组件（有左端口无右端口，输出格式选择，保存位置配置）
-    5.  ✅ 实现节点连线和数据流（Input → Execute → Output）
-    6.  ✅ 工作流保存/加载（JSON配置，支持恢复）- WorkflowEditor已实现
-*   **验收**: ✅ 可创建3节点工作流，拖拽连线，保存恢复（构建成功，0错误）
-*   **代码量**: 约915行代码（7个新文件）
+    1.  定义 `BatchResult<R>` 接口（success、failed、total、successCount、failedCount、successRate）
+    2.  实现 `executeBatchSerial<T, R>(items, processor, onProgress): Promise<BatchResult<R>>` 串行方法
+    3.  实现 `executeBatchParallel<T, R>(items, processor, maxConcurrency, onProgress): Promise<BatchResult<R>>` 并行方法
+    4.  实现 `retryFailedTasks<T, R>(failedItems, processor): Promise<BatchResult<R>>` 重试方法
+    5.  并发控制：使用任务队列 + Promise.race控制并发数
+    6.  进度回调：每完成一个任务调用 `onProgress(completed, total, current)`
+    7.  错误处理：单个任务失败不影响其他任务
+    8.  集成Logger记录批量执行状态
+*   **代码示例**:
+    ```typescript
+    interface BatchResult<R> {
+      success: R[];
+      failed: Array<{ item: any; error: Error }>;
+      total: number;
+      successCount: number;
+      failedCount: number;
+      successRate: number;
+    }
 
-#### [x] [H2.12] 场景/角色素材专用管理 ✅ 2025-12-29
-*   **文件**: `src/main/services/AssetManager.ts`, `src/renderer/pages/assets/Assets.tsx`, `src/shared/types/asset.ts`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A2.资源库 - 场景/角色素材专用管理)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-015 场景/角色customFields Schema)
-*   **任务内容**:
-    1.  ✅ 扩展资产类型（添加"场景"和"角色"分类到Assets页面）
-    2.  ✅ 利用customFields存储专用数据（SceneCustomFields/CharacterCustomFields接口）
-    3.  ✅ 实现智能过滤器（searchScenes/searchCharacters方法，按场景特征、角色特征筛选）
-    4.  ✅ 在Assets页面添加"场景"和"角色"Tab
-*   **验收**: ✅ 可创建场景/角色资产，可按专用字段筛选（构建成功，0错误）
-*   **代码量**: 约160行代码（2个接口 + 4个方法 + UI集成）
+    async executeBatchParallel<T, R>(
+      items: T[],
+      processor: (item: T) => Promise<R>,
+      maxConcurrency: number = 5,
+      onProgress?: (completed: number, total: number, current: T) => void
+    ): Promise<BatchResult<R>> {
+      const success: R[] = [];
+      const failed: Array<{ item: T; error: Error }> = [];
+      const taskQueue = [...items];
+      const executing: Promise<void>[] = [];
+      let completed = 0;
 
-#### [x] [H2.13] 工作流面板业务逻辑完善（小说转视频插件）✅ 2025-12-29
-*   **文件**: `src/renderer/pages/workflows/panels/*.tsx`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A4.工作台)
+      while (taskQueue.length > 0 || executing.length > 0) {
+        while (executing.length < maxConcurrency && taskQueue.length > 0) {
+          const item = taskQueue.shift()!;
+
+          const promise = processor(item)
+            .then(result => {
+              success.push(result);
+            })
+            .catch(error => {
+              failed.push({ item, error });
+            })
+            .finally(() => {
+              completed++;
+              onProgress?.(completed, items.length, item);
+
+              const index = executing.indexOf(promise);
+              executing.splice(index, 1);
+            });
+
+          executing.push(promise);
+        }
+
+        if (executing.length > 0) {
+          await Promise.race(executing);
+        }
+      }
+
+      return {
+        success,
+        failed,
+        total: items.length,
+        successCount: success.length,
+        failedCount: failed.length,
+        successRate: success.length / items.length
+      };
+    }
+    ```
+*   **验收**: 可并行处理多个任务，并发数可控，进度回调正常，失败任务不影响其他任务
+
+### [ ] [K09] TaskScheduler批量处理单元测试 🟡 P1
+*   **文件**: `tests/unit/services/TaskScheduler.test.ts`（扩展）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 2)
+*   **目标**: 批量处理功能的完整测试覆盖
 *   **任务内容**:
-    1.  ✅ **ChapterSplitPanel**: 实现小说文件上传（txt/docx）、AI章节识别、章节列表编辑
-    2.  ✅ **SceneCharacterPanel**: 实现场景卡片展示、角色管理（添加/编辑/删除）、场景角色提取调用
-    3.  ✅ **StoryboardPanel**: 实现分镜生成、"重生成"按钮、Prompt编辑（网格/列表视图）
-    4.  ✅ **VoiceoverPanel**: 实现配音生成、音色选择下拉框、音频播放器
-*   **验收**: ✅ 4个工作流面板的业务逻辑全部可用（构建成功，0错误）
-*   **完成内容**:
-    - ChapterSplitPanel (312行): 文件上传、章节拆分、章节编辑/删除
-    - SceneCharacterPanel (464行): 场景展示、角色CRUD、提取功能
-    - StoryboardPanel (470行 + 135行CSS): 分镜生成、重生成、Prompt编辑（双视图支持）
-    - VoiceoverPanel (346行): 配音生成、音色选择、播放/暂停
-*   **Prompt编辑功能** (新增):
-    - 网格视图: 卡片下方显示Prompt，点击"编辑"按钮进入编辑模式
-    - 列表视图: 列表项中显示Prompt，点击"编辑"按钮进入编辑模式
-    - 快捷键: Ctrl+Enter保存，Esc取消
-    - 实时保存: 编辑后立即更新storyboard数据
-*   **代码量**: 约170行新增代码 (Prompt编辑功能) + 135行CSS样式
-*   **审核报告参考**: A4.工作台
+    1.  测试串行执行场景
+    2.  测试并行执行场景（验证并发数控制）
+    3.  测试失败任务处理场景
+    4.  测试进度回调场景
+    5.  测试重试失败任务场景
+    6.  验证并行执行比串行快
+    7.  使用Vitest框架 + Mock
+*   **验收**: 测试覆盖率>95%，所有测试通过，并行性能验证通过
+
+### [ ] [K10] StoryboardPanel批量生成集成 🟡 P1
+*   **文件**: `src/renderer/pages/workflows/panels/StoryboardPanel.tsx`（扩展）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 2 Week 7)
+*   **目标**: 支持批量生成10个分镜图片
+*   **任务内容**:
+    1.  添加"批量生成"按钮
+    2.  调用 TaskScheduler 批量处理（通过IPC）
+    3.  实时显示批量进度（已完成/总数）
+    4.  使用ProgressOrb显示整体进度
+    5.  支持失败项单独重试
+    6.  显示批量结果汇总（成功/失败/成功率）
+*   **代码示例**:
+    ```typescript
+    const [batchGenerating, setBatchGenerating] = useState(false);
+    const [batchProgress, setBatchProgress] = useState({ completed: 0, total: 0, current: null });
+
+    const handleBatchGenerate = async () => {
+      setBatchGenerating(true);
+      try {
+        const result = await window.electronAPI.batchGenerateStoryboards({
+          storyboards: storyboards.filter(s => !s.imageUrl),
+          maxConcurrency: 5,
+          onProgress: (completed, total, current) => {
+            setBatchProgress({ completed, total, current });
+          }
+        });
+
+        setToast({
+          type: 'success',
+          message: `批量生成完成：${result.successCount}/${result.total} 成功`
+        });
+      } catch (error) {
+        setToast({
+          type: 'error',
+          message: `批量生成失败: ${error.message}`
+        });
+      } finally {
+        setBatchGenerating(false);
+      }
+    };
+    ```
+*   **验收**: 可批量生成分镜，进度实时显示，失败项可重试，UI友好
+
+### [ ] [K11] VoiceoverPanel批量生成集成 🟡 P1
+*   **文件**: `src/renderer/pages/workflows/panels/VoiceoverPanel.tsx`（扩展）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 2)
+*   **目标**: 支持批量生成视频片段
+*   **任务内容**:
+    1.  添加"批量生成"按钮
+    2.  调用 TaskScheduler 批量处理视频生成
+    3.  实时显示批量进度
+    4.  使用ProgressOrb显示整体进度
+    5.  支持失败项单独重试
+    6.  控制并发数（避免API限流，默认5）
+*   **验收**: 可批量生成视频，进度实时显示，并发控制有效
 
 ---
 
-### 🔹 第四阶段：优化和安全（v0.3.5）
+### 🟢 阶段4: AI调用封装实现（P2级）
 
-#### [x] [H2.14] API密钥加密存储 ✅ 2025-12-29
-*   **文件**: `src/main/services/ConfigManager.ts`, `src/main/services/APIManager.ts`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置 - 安全性改进)
-    - 实现方法: `docs\ref\code-references-phase9.md` (REF-016 API密钥加密实现)
+### [ ] [K12] AIService实现 🟢 P2
+*   **文件**: `src/main/services/AIService.ts`（新建）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 3)
+*   **目标**: AI调用封装服务，替换Mock数据，支持场景角色提取和Prompt生成
 *   **任务内容**:
-    1.  ✅ 实现AES-256-GCM加密算法（APIKeyEncryption类，使用machine-id作为密钥种子）
-    2.  ✅ 修改配置读写逻辑（saveProvider自动加密，getProvider自动解密）
-    3.  ✅ 向后兼容：自动迁移明文配置到加密配置（migrateToEncryptedKeys方法）
-*   **验收**: ✅ API Key加密存储在配置文件中，无法直接读取明文
-*   **完成内容**:
-    1.  ✅ 安装 node-machine-id 依赖（v1.1.2）
-    2.  ✅ 创建 APIKeyEncryption 类（ConfigManager.ts 中，130行）
-        - AES-256-GCM 加密算法实现
-        - 使用机器ID作为密钥种子（machineIdSync + scryptSync）
-        - 加密格式：iv:authTag:encrypted（3部分，hex编码）
-        - isEncrypted 方法：检测字符串是否已加密
-        - 完整的错误处理和日志记录
-    3.  ✅ 修改 ConfigManager 类（+60行）
-        - 集成 APIKeyEncryption 实例
-        - encryptConfig 方法：使用 AES-256-GCM 替代 safeStorage
-        - decryptConfig 方法：兼容新旧加密方式（aes-256-gcm 和 safeStorage）
-        - migrateToEncryptedKeys 方法：自动检测并迁移明文/旧加密配置
-        - 在 initialize 方法中自动调用迁移逻辑
-    4.  ✅ 修改 APIManager 类（+50行）
-        - 导入 APIKeyEncryption 并创建实例
-        - saveProviders 方法：保存前自动加密 API Key
-        - loadProviders 方法：加载后自动解密 API Key
-        - 向后兼容：支持未加密配置的读取
-    5.  ✅ 主进程启动集成
-        - ConfigManager.initialize 已在 src/main/index.ts:137 调用
-        - 首次启动自动迁移明文密钥到加密存储
-        - 后续启动自动加载和解密配置
-    6.  ✅ 完整构建测试通过（0错误）
-*   **代码量**: 约240行核心代码（加密类130行 + ConfigManager 60行 + APIManager 50行）
-*   **安全特性**:
-    - 强加密：AES-256-GCM 认证加密算法
-    - 机器绑定：密钥基于机器ID生成，无法跨机器解密
-    - 向后兼容：自动迁移旧配置，无需用户手动操作
-    - 双重保护：同时支持 ConfigManager 和 APIManager 的加密存储
+    1.  实现 `extractScenesAndCharacters(novelText): Promise<{scenes, characters, details}>` 方法
+    2.  实现 `generateCharacterPrompt(characterName, context): Promise<string>` 方法
+    3.  实现 `generateScenePrompt(sceneName, context): Promise<string>` 方法
+    4.  实现 `generateStoryboardPrompt(sceneDescription, characters, characterImages, sceneImage): Promise<string>` 方法
+    5.  实现 `private callLLM(prompt, options): Promise<string>` 方法（调用DeepSeek API）
+    6.  Prompt工程：明确角色定位、详细任务说明、核心理解解释、具体规则、示例输出
+    7.  支持Structured Output（JSON Schema验证）
+    8.  集成APIManager获取API Key
+    9.  集成Logger记录AI调用
+*   **代码示例**:
+    ```typescript
+    export class AIService {
+      async extractScenesAndCharacters(novelText: string): Promise<{
+        scenes: string[];
+        characters: string[];
+        details: Array<{ scene: string; characters: string[] }>;
+      }> {
+        const prompt = `
+你是一位经验丰富的影视制片人和资源管理专家，擅长分析剧本并识别制作所需的关键物料。
+现在你需要将可视化的影视文本进行场景分解，并识别出需要固定形象的物料。
 
-#### [x] [H2.15] 日志管理（底部状态栏）✅ 2025-12-29
-*   **文件**: `src/renderer/components/layout/StatusBar.tsx`, `src/renderer/components/layout/LogViewer.tsx`, `src/main/services/Logger.ts`
-*   **参考**:
-    - 背景和要求: `docs\ref\Done-implementation-audit-report-2025-12-28.md` (A5.设置 - 日志管理)
+你的任务目标：
+将可视化文本按"场景+时间段"的维度进行结构化分解，识别出需要跨章节保持视觉一致性的关键物料（主要角色、场景）。
+
+输入文本：
+${novelText}
+
+输出格式（JSON）：
+{
+  "data": [
+    {
+      "scene": "场景名称（如'办公室-白天'）",
+      "characters": ["角色1", "角色2"]
+    }
+  ]
+}
+`;
+
+        const response = await this.callLLM(prompt, {
+          model: 'deepseek-chat',
+          responseFormat: 'json_object'
+        });
+
+        const data = JSON.parse(response);
+        const scenes = [...new Set(data.data.map((item: any) => item.scene))];
+        const characters = [...new Set(data.data.flatMap((item: any) => item.characters))];
+
+        return {
+          scenes,
+          characters,
+          details: data.data
+        };
+      }
+
+      private async callLLM(prompt: string, options: {
+        model: string;
+        responseFormat?: 'json_object' | 'text';
+        temperature?: number;
+      }): Promise<string> {
+        const apiKey = apiManager.getApiKey('deepseek');
+
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: options.model,
+            messages: [
+              { role: 'user', content: prompt }
+            ],
+            temperature: options.temperature || 0.7,
+            response_format: options.responseFormat === 'json_object'
+              ? { type: 'json_object' }
+              : undefined
+          })
+        });
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+      }
+    }
+    ```
+*   **验收**: 可真实调用DeepSeek API，场景角色提取准确，Prompt生成符合要求
+
+### [ ] [K13] ChapterSplitPanel集成AIService 🟢 P2
+*   **文件**: `src/renderer/pages/workflows/panels/ChapterSplitPanel.tsx`（修改）
+*   **参考**: `docs/plan/novel-to-video-plugin-implementation-plan.md` (Phase 3 Week 11)
+*   **目标**: 删除Mock数据，使用真实AIService提取场景和角色
 *   **任务内容**:
-    1.  ✅ 在底部状态栏添加铃铛图标（🔔）
-    2.  ✅ 重要错误时在铃铛上显示红点提示
-    3.  ✅ 点击铃铛弹出日志查看器（底部Sheet组件）
-    4.  ✅ 支持按日志级别过滤（Error、Warning、Info、Debug）
-    5.  ✅ 日志读取功能（已实现Logger.getRecentLogs方法）
-*   **验收**: ✅ 底部状态栏显示铃铛图标，点击查看日志，重要错误显示红点
-*   **完成内容**:
-    1.  ✅ Logger服务扩展（+70行）
-        - getRecentLogs 方法：读取最近的日志条目
-        - parseLogLine 方法：解析日志行为LogEntry对象
-        - 支持按级别过滤（error/warn/info/debug）
-        - 支持限制返回数量（默认100条）
-    2.  ✅ IPC通道和preload集成
-        - 添加 logs:get-recent IPC处理器
-        - preload暴露 getRecentLogs API
-        - TypeScript类型声明完整
-    3.  ✅ StatusBar组件（78行）
-        - 底部状态栏布局（左侧：工作区路径，右侧：系统状态+铃铛图标）
-        - 铃铛图标（Bell组件from lucide-react）
-        - 错误红点徽章（显示错误数量，最多9+）
-        - 定时检查错误日志（每30秒）
-        - 铃铛摇动动画（有错误时）
-    4.  ✅ LogViewer组件（187行）
-        - Sheet弹出式日志查看器（从底部滑出，60vh高度）
-        - 级别过滤器（全部/错误/警告/信息/调试，5个按钮）
-        - 日志列表（时间戳、级别图标、服务名、消息、数据）
-        - 刷新按钮（带旋转动画）
-        - 关闭按钮
-        - 级别颜色区分（红/橙/蓝/绿）
-    5.  ✅ CSS样式（350行+）
-        - StatusBar.css（90行）：状态栏样式、铃铛按钮、错误徽章、摇动动画
-        - LogViewer.css（260行）：Sheet容器、级别过滤器、日志条目、滚动条、动画
-    6.  ✅ Layout组件集成
-        - 替换原有简单footer为StatusBar组件
-        - 导入StatusBar组件到Layout.tsx
-    7.  ✅ 完整构建测试通过（0错误）
-*   **代码量**: 约685行代码（Logger +70行 + StatusBar 78行 + LogViewer 187行 + CSS 350行）
-*   **功能特性**:
-    - 实时错误监控：每30秒自动检查错误日志
-    - 视觉提醒：错误徽章显示数量，铃铛摇动动画
-    - 多级过滤：支持5种日志级别过滤
-    - 友好交互：Sheet弹出式查看器，滑动动画流畅
-    - 详细展示：时间戳、服务名、消息、数据（JSON格式）
+    1.  删除Mock章节生成代码（line 93-99）
+    2.  调用 `window.electronAPI.ai.extractScenesAndCharacters(novelPath)` 提取场景角色
+    3.  显示真实的场景和角色列表
+    4.  集成ProgressOrb显示AI处理进度
+    5.  实现错误处理和Toast提示
+    6.  添加IPC处理器 `ai:extract-scenes-and-characters`
+    7.  更新预加载脚本，暴露 `window.electronAPI.ai` API
+*   **验收**: 可真实提取场景角色，无Mock数据，UI显示实际结果
 
 ---
 
-## 📋 Phase 10: 测试覆盖与交付验证 (v0.4.0规划)
+## 📋 Phase 11: 测试覆盖与交付验证 (v0.5.0)
 **目标**: 提升测试覆盖率至80%+，完成交付前验证
-**状态**: ⏳ 待Phase 9完成后启动
+**状态**: ⏳ 待Phase 10完成后启动
 
-### [x] [K01] 服务层单元测试 ✅ 已完成
+### [x] [K14] 服务层单元测试 ✅ 已完成
 *   **任务**:
     1.  ProjectManager单元测试 (CRUD、元数据管理、TimeService集成) ✅ 650行，49个测试用例，100%通过
     2.  AssetManager单元测试 (索引、查询、监听、customFields、项目绑定) ✅ 840行，31个测试用例，100%通过
@@ -486,14 +613,14 @@
 *   **完成时间**: 2025-12-29
 *   **验证命令**: `npx vitest run tests/unit/services/APIManager.test.ts tests/unit/services/ProjectManager.test.ts tests/unit/services/PluginManager.test.ts tests/unit/services/AssetManager.test.ts tests/unit/services/TaskScheduler.test.ts`
 
-### [*] [K02] IPC通信集成测试
+### [ ] [K15] IPC通信集成测试
 *   **任务**:
     1.  扩展IPC通信集成测试覆盖 (所有80个处理器)。
     2.  测试错误处理和边界条件。
     3.  测试并发调用和性能。
 *   **验收**: IPC测试覆盖率>95%
 
-### [x] [K03] 端到端测试 ✅ 2025-12-29
+### [x] [K16] 端到端测试 ✅ 2025-12-29
 *   **任务**:
     1.  ✅ 创建E2E测试框架 (Playwright for Electron)
     2.  ✅ 完整用户流程测试 (项目创建→资产导入→工作流执行→导出)
@@ -518,21 +645,45 @@
 *   **CI集成**: GitHub Actions 跨平台测试工作流
 *   **文档**: README.md (400行) + K03_COMPLETION_REPORT.md
 
+### [ ] [K17] 交付前验证
+*   **任务**:
+    1.  **规范自查**: 检查是否满足 docs/00-global-requirements-v1.0.0.md 的所有强制要求。
+    2.  **构建打包**: 生成 Windows 安装包 (.exe)。
+    3.  **性能优化**: 启动时间<3s、内存占用<500MB、响应速度<100ms。
+    4.  **安全审计**: 检查文件系统路径遍历、XSS、注入等漏洞。
+*   **验收**: 可发布生产就绪版本
+
+### [ ] [K18] 文档完善
+*   **任务**:
+    1.  完善用户文档 (安装、配置、使用教程)。
+    2.  完善开发者文档 (架构、API、插件开发)。
+    3.  编写发布说明 (Release Notes)。
+    4.  录制演示视频。
+*   **验收**: 文档完整，新用户可快速上手
+
+### [ ] [K19] 工作流生态建设
+*   **任务**:
+    1.  基于工作流引擎实现第二个工作流插件 (如图片批量生成)。
+    2.  编写插件开发规范文档。
+    3.  建立插件模板项目。
+    4.  实现工作流步骤复用机制。
+*   **验收**: 第三方开发者可独立开发工作流插件
+
 ---
 
-## 📋 Phase 11: 代码质量修复与规范化 (v0.3.9)
+## 📋 Phase 12: 代码质量修复与规范化 (v0.6.0)
 **目标**: 解决审计报告发现的严重问题，统一代码规范
 **状态**: 🔴 待启动
 **参考**: `docs/audit/04-audit-report.md` (2025-12-30审计报告)
-**总计**: 6个任务（K04-K09）
-- 高优先级（必须立即解决）: 3个任务（K04-K06）
-- 中优先级（2周内完成）: 3个任务（K07-K09）
+**总计**: 6个任务（K20-K25）
+- 高优先级（必须立即解决）: 3个任务（K20-K22）
+- 中优先级: 3个任务（K23-K25）
 
 ---
 
-### 🔴 高优先级：严重问题修复（v0.3.9.1）
+### 🔴 高优先级：严重问题修复
 
-### [*] [K04] 类型定义冲突解决 🔴 严重
+### [ ] [K20] 类型定义冲突解决 🔴 严重
 *   **文件**: `src/common/types.ts`, `src/shared/types/asset.ts`, `src/main/models/project.ts`
 *   **参考**:
     - 问题描述: `docs/audit/01-terminology-dictionary.md` (2.1-2.3节 命名冲突)
@@ -547,7 +698,7 @@
 *   **验收**: TypeScript编译无错误，无类型冲突，所有测试通过
 *   **影响文件数**: 约10-15个
 
-### [*] [K05] 时间格式统一 🔴 严重
+### [ ] [K21] 时间格式统一 🔴 严重
 *   **文件**: `src/shared/types/*.ts`, `src/main/services/*.ts`, `src/renderer/pages/*.tsx`
 *   **参考**:
     - 问题描述: `docs/audit/01-terminology-dictionary.md` (三.1节 时间处理术语)
@@ -561,7 +712,7 @@
 *   **验收**: 所有时间字段使用统一格式，数据持久化一致
 *   **影响范围**: 约20-30个文件
 
-### [*] [K06] 统一类型导出文件 🟠 重要
+### [ ] [K22] 统一类型导出文件 🟠 重要
 *   **文件**: `src/shared/types/index.ts`（新建）
 *   **参考**:
     - 建议: `docs/audit/04-audit-report.md` (七.1节 高优先级任务3)
@@ -586,9 +737,9 @@
 
 ---
 
-### 🔹 中优先级：功能完善（v0.3.9.2）
+### 🔹 中优先级：功能完善
 
-### [*] [K07] 快捷方式拖拽排序 🟠 中等
+### [ ] [K23] 快捷方式拖拽排序 🟠 中等
 *   **文件**: `src/renderer/components/common/ShortcutNavItem.tsx`, `src/renderer/components/common/GlobalNav.tsx`
 *   **参考**:
     - 原始需求: `docs/ref/Done-implementation-audit-report-2025-12-28.md` (UI-7)
@@ -600,7 +751,7 @@
     4.  添加拖拽视觉反馈（拖动时高亮、放置位置指示器）
 *   **验收**: 可在编辑模式下拖拽快捷方式调整顺序
 
-### [ ] [K08] UI交互修正 🟠 中等
+### [ ] [K24] UI交互修正 🟠 中等
 *   **文件**: `src/renderer/components/workflow/WorkflowHeader.tsx`, `src/renderer/components/workflow/RightSettingsPanel.tsx`
 *   **参考**:
     - 问题清单: `docs/audit/04-audit-report.md` (五.1节 设计稿偏差)
@@ -612,7 +763,7 @@
     4.  **下分栏参数**: 根据选中Provider动态显示参数（如Sora2宽高比选择）
 *   **验收**: 项目选择器可过滤，右侧面板有3个生成模式，下分栏动态显示
 
-### [ ] [K09] 资产文件组织完善 🟡 轻微
+### [ ] [K25] 资产文件组织完善 🟡 轻微
 *   **文件**: `src/main/services/AssetManager.ts`
 *   **参考**:
     - 设计要求: `docs/audit/03-data-flow.md` (三.1节 导入资产流程 - 步骤3)
@@ -625,32 +776,6 @@
 *   **验收**: 项目输出资产正确按日期文件夹分隔
 
 ---
-
-### [ ] [K10] 交付前验证
-*   **任务**:
-    1.  **规范自查**: 检查是否满足 docs/00-global-requirements-v1.0.0.md 的所有强制要求。
-    2.  **构建打包**: 生成 Windows 安装包 (.exe)。
-    3.  **性能优化**: 启动时间<3s、内存占用<500MB、响应速度<100ms。
-    4.  **安全审计**: 检查文件系统路径遍历、XSS、注入等漏洞。
-*   **验收**: 可发布生产就绪版本
-
-### [ ] [K11] 文档完善
-*   **任务**:
-    1.  完善用户文档 (安装、配置、使用教程)。
-    2.  完善开发者文档 (架构、API、插件开发)。
-    3.  编写发布说明 (Release Notes)。
-    4.  录制演示视频。
-*   **验收**: 文档完整，新用户可快速上手
-
----
-
-### [ ] [K12] 工作流生态建设
-*   **任务**:
-    1.  基于工作流引擎实现第二个工作流插件 (如图片批量生成)。
-    2.  编写插件开发规范文档。
-    3.  建立插件模板项目。
-    4.  实现工作流步骤复用机制。
-*   **验收**: 第三方开发者可独立开发工作流插件
 
 ## 🎯 里程碑与版本规划
 
@@ -704,13 +829,30 @@
 - [ ] API密钥加密存储（H2.14）
 - [ ] 日志管理（底部状态栏）（H2.15）
 
-### v0.4.0 📋 (Phase 10 - 测试覆盖与交付验证)
+### v0.4.0 📋 (Phase 10 - 小说转视频插件核心实现)
+**重点**: Provider抽象层 + 异步任务处理 + 批量处理 + AI封装
+- [ ] Provider抽象层（K01-K03）- 架构基础
+- [ ] 异步任务处理（K04-K07）- 支持10分钟级轮询
+- [ ] 批量处理（K08-K11）- 并行生成优于n8n
+- [ ] AI调用封装（K12-K13）- DeepSeek场景角色提取
+
+### v0.5.0 📋 (Phase 11 - 测试覆盖与交付验证)
 **重点**: 测试和文档完善
-- [ ] 服务层单元测试（覆盖率>80%）
-- [ ] IPC通信集成测试（覆盖率>90%）
-- [ ] 端到端测试（E2E）
-- [ ] 交付前验证（性能、安全审计）
-- [ ] 用户和开发者文档完善
+- [x] 服务层单元测试（K14）✅ 覆盖率96.6%
+- [ ] IPC通信集成测试（K15）
+- [x] 端到端测试（K16）✅ 34个E2E测试
+- [ ] 交付前验证（K17）
+- [ ] 文档完善（K18）
+- [ ] 工作流生态建设（K19）
+
+### v0.6.0 📋 (Phase 12 - 代码质量修复与规范化)
+**重点**: 审计问题修复
+- [ ] 类型定义冲突解决（K20）
+- [ ] 时间格式统一（K21）
+- [ ] 统一类型导出（K22）
+- [ ] 快捷方式拖拽排序（K23）
+- [ ] UI交互修正（K24）
+- [ ] 资产文件组织完善（K25）
 
 ### v1.0.0 🎯 (正式发布)
 **重点**: 生产就绪

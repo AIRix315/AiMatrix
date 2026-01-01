@@ -14,6 +14,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { AssetMetadata, AssetFilter, AssetScanResult } from '@/shared/types';
 import { AssetCard } from '../AssetCard';
+import { AssetListItem } from '../AssetListItem/AssetListItem';
 import './AssetGrid.css';
 
 interface AssetGridProps {
@@ -25,6 +26,7 @@ interface AssetGridProps {
   onAssetDelete?: (asset: AssetMetadata) => void;
   onAssetsLoaded?: (assets: AssetMetadata[]) => void; // 资产加载完成回调
   columnsCount?: number; // 可选：强制指定列数
+  viewMode?: 'grid' | 'list'; // 视图模式
 }
 
 export function AssetGrid({
@@ -35,7 +37,8 @@ export function AssetGrid({
   onAssetPreview,
   onAssetDelete,
   onAssetsLoaded,
-  columnsCount
+  columnsCount,
+  viewMode = 'grid'
 }: AssetGridProps) {
   const [assets, setAssets] = useState<AssetMetadata[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,7 +64,9 @@ export function AssetGrid({
         pageSize: filter.pageSize || 100
       };
 
-      const result: AssetScanResult = await window.electronAPI.scanAssets(scanFilter);
+      // TODO: [中期改进] 定义准确的scanAssets返回类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await window.electronAPI.scanAssets(scanFilter) as AssetScanResult;
 
       setTotalCount(result.total);
       setHasMore(result.hasMore);
@@ -196,22 +201,37 @@ export function AssetGrid({
         </div>
       </div>
 
-      {/* 资产网格 */}
-      <div
-        className={`asset-grid ${columnsCount ? '' : 'auto-columns'}`}
-        style={getGridStyle()}
-      >
-        {assets.map(asset => (
-          <AssetCard
-            key={asset.id}
-            asset={asset}
-            selected={selectedAssets.has(asset.id)}
-            onSelect={(a) => handleAssetSelect(a, undefined)}
-            onPreview={handleAssetPreview}
-            onDelete={handleAssetDelete}
-          />
-        ))}
-      </div>
+      {/* 资产网格/列表 */}
+      {viewMode === 'grid' ? (
+        <div
+          className={`asset-grid ${columnsCount ? '' : 'auto-columns'}`}
+          style={getGridStyle()}
+        >
+          {assets.map(asset => (
+            <AssetCard
+              key={asset.id}
+              asset={asset}
+              selected={selectedAssets.has(asset.id)}
+              onSelect={(a) => handleAssetSelect(a, undefined)}
+              onPreview={handleAssetPreview}
+              onDelete={handleAssetDelete}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="asset-list">
+          {assets.map(asset => (
+            <AssetListItem
+              key={asset.id}
+              asset={asset}
+              selected={selectedAssets.has(asset.id)}
+              onSelect={(a) => handleAssetSelect(a, undefined)}
+              onPreview={handleAssetPreview}
+              onDelete={handleAssetDelete}
+            />
+          ))}
+        </div>
+      )}
 
       {/* 加载更多指示器 */}
       {hasMore && (

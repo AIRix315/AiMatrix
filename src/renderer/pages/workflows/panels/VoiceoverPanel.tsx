@@ -6,9 +6,11 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { Play, Pause, Volume2, RefreshCw, Mic } from 'lucide-react';
+import { Play, RefreshCw, Mic } from 'lucide-react';
+// import { Pause, Volume2 } from 'lucide-react'; // 暂时未使用
 import { Button, Loading, Toast } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
+import { VoiceoverListItem } from '../../../components/workflow/VoiceoverListItem';
 import './VoiceoverPanel.css';
 
 interface Voiceover {
@@ -16,27 +18,41 @@ interface Voiceover {
   storyboardId: string;
   text: string;
   audioPath?: string;
+  videoPath?: string; // 图生视频结果
   voiceType: string;
   status: 'pending' | 'generating' | 'completed' | 'failed';
 }
 
 interface PanelProps {
   workflowId: string;
-  onComplete: (data: any) => void;
+  onComplete: (data: unknown) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialData?: any;
 }
 
-export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId, onComplete, initialData }) => {
+export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId: _workflowId, onComplete, initialData }) => {
   const [storyboards] = useState(initialData?.storyboards || []);
   const [voiceovers, setVoiceovers] = useState<Voiceover[]>(initialData?.voiceovers || []);
   const [loading, setLoading] = useState(false);
-  const [voiceType, setVoiceType] = useState('female-1');
+  const [_voiceType, _setVoiceType] = useState('female-1');
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
   // 音频播放状态
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [generatingIds, setGeneratingIds] = useState<string[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // 批量生成状态
+  const [_batchGenerating, setBatchGenerating] = useState(false);
+  const [_batchProgress, setBatchProgress] = useState({ completed: 0, total: 0 });
+  const [_batchResult, setBatchResult] = useState<{
+    successCount: number;
+    failedCount: number;
+    failedIds: string[];
+  } | null>(null);
+
+  // 选中状态（支持多选）
+  const [_selectedVoiceoverIds, _setSelectedVoiceoverIds] = useState<string[]>([]);
 
   /**
    * 处理生成配音
@@ -56,12 +72,13 @@ export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId, onComplete, i
       // const result = await window.electronAPI.novelVideo.generateVoiceovers(workflowId, storyboards.map(s => s.id), voiceType);
 
       // 临时模拟数据
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mockVoiceovers: Voiceover[] = storyboards.slice(0, 3).map((storyboard: any, i: number) => ({
         id: `voiceover-${storyboard.id}-${i + 1}`,
         storyboardId: storyboard.id,
         text: `这是分镜${i + 1}的旁白文本`,
         audioPath: `/mock/audio-${i + 1}.mp3`,
-        voiceType,
+        voiceType: _voiceType,
         status: 'completed'
       }));
 
@@ -142,7 +159,8 @@ export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId, onComplete, i
     const voiceover = voiceovers.find((v) => v.id === voiceoverId);
     if (!voiceover) return;
 
-    setGeneratingIds((prev) => [...prev, voiceoverId]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setGeneratingIds((prev: any) => [...prev, voiceoverId]);
 
     try {
       // TODO: 调用IPC API重新生成配音
@@ -185,14 +203,208 @@ export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId, onComplete, i
         prev.map((v) => (v.id === voiceoverId ? { ...v, status: 'failed' } : v))
       );
     } finally {
-      setGeneratingIds((prev) => prev.filter((id) => id !== voiceoverId));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setGeneratingIds((prev: any) => prev.filter((id: any) => id !== voiceoverId));
+    }
+  };
+
+  /**
+   * 批量生成视频片段（从分镜图片）
+   */
+  const handleBatchGenerateVideos = async () => {
+    // 筛选有图片的分镜
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const storyboardsWithImages = storyboards.filter(
+      (sb: any) => sb.imagePath && sb.status === 'completed'
+    );
+
+    if (storyboardsWithImages.length === 0) {
+      setToast({
+        type: 'warning',
+        message: '没有可用的分镜图片。请先在分镜生成步骤中生成图片。'
+      });
+      return;
+    }
+
+    setBatchGenerating(true);
+    setBatchProgress({ completed: 0, total: storyboardsWithImages.length });
+    setBatchResult(null);
+
+    try {
+      // 准备批量请求参数
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const batchParams = {
+        items: storyboardsWithImages.map((sb: any) => ({
+          id: sb.id,
+          imageInput: sb.imagePath,
+          prompt: sb.prompt || sb.description || '生成视频'
+        })),
+        maxConcurrency: 2 // 视频生成并发数较低
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result: any = await window.electronAPI.batchImageToVideo(batchParams);
+
+      let successCount = 0;
+      let failedCount = 0;
+      const failedIds: string[] = [];
+
+      // 处理成功的结果
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      result.success.forEach((item: any) => {
+        if (item.result.success) {
+          // 创建或更新 voiceover 记录（实际是视频）
+          const voiceoverId = `video-${item.id}`;
+          setVoiceovers((prev) => {
+            const existingIndex = prev.findIndex((v) => v.storyboardId === item.id);
+            const newVoiceover: Voiceover = {
+              id: voiceoverId,
+              storyboardId: item.id,
+              text: item.result.prompt || '',
+              videoPath: item.result.videoFilePath || item.result.videoUrl,
+              voiceType: '',
+              status: 'completed'
+            };
+
+            if (existingIndex >= 0) {
+              return prev.map((v, i) => (i === existingIndex ? newVoiceover : v));
+            } else {
+              return [...prev, newVoiceover];
+            }
+          });
+          successCount++;
+        } else {
+          failedIds.push(item.id);
+          failedCount++;
+        }
+        setBatchProgress((prev) => ({ ...prev, completed: prev.completed + 1 }));
+      });
+
+      // 处理失败的结果
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      result.failed.forEach((failure: any) => {
+        failedIds.push(failure.item.id);
+        failedCount++;
+        setBatchProgress((prev) => ({ ...prev, completed: prev.completed + 1 }));
+      });
+
+      setBatchResult({
+        successCount,
+        failedCount,
+        failedIds
+      });
+
+      setToast({
+        type: successCount > 0 ? 'success' : 'error',
+        message: `批量生成完成！成功: ${successCount}, 失败: ${failedCount}`
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('批量生成视频失败:', error);
+      setToast({
+        type: 'error',
+        message: `批量生成失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    } finally {
+      setBatchGenerating(false);
+    }
+  };
+
+  /**
+   * 重试失败的批量任务
+   */
+  const handleRetryFailed = async () => {
+    if (!_batchResult || _batchResult.failedIds.length === 0) return;
+
+    // 筛选失败的分镜
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const failedStoryboards = storyboards.filter((sb: any) =>
+      _batchResult.failedIds.includes(sb.id)
+    );
+
+    setBatchGenerating(true);
+    setBatchProgress({ completed: 0, total: failedStoryboards.length });
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const batchParams = {
+        items: failedStoryboards.map((sb: any) => ({
+          id: sb.id,
+          imageInput: sb.imagePath,
+          prompt: sb.prompt || sb.description || '生成视频'
+        })),
+        maxConcurrency: 2
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result: any = await window.electronAPI.batchImageToVideo(batchParams);
+
+      let successCount = 0;
+      let failedCount = 0;
+      const newFailedIds: string[] = [];
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      result.success.forEach((item: any) => {
+        if (item.result.success) {
+          const voiceoverId = `video-${item.id}`;
+          setVoiceovers((prev) => {
+            const existingIndex = prev.findIndex((v) => v.storyboardId === item.id);
+            const newVoiceover: Voiceover = {
+              id: voiceoverId,
+              storyboardId: item.id,
+              text: item.result.prompt || '',
+              videoPath: item.result.videoFilePath || item.result.videoUrl,
+              voiceType: '',
+              status: 'completed'
+            };
+
+            if (existingIndex >= 0) {
+              return prev.map((v, i) => (i === existingIndex ? newVoiceover : v));
+            } else {
+              return [...prev, newVoiceover];
+            }
+          });
+          successCount++;
+        } else {
+          newFailedIds.push(item.id);
+          failedCount++;
+        }
+        setBatchProgress((prev) => ({ ...prev, completed: prev.completed + 1 }));
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      result.failed.forEach((failure: any) => {
+        newFailedIds.push(failure.item.id);
+        failedCount++;
+        setBatchProgress((prev) => ({ ...prev, completed: prev.completed + 1 }));
+      });
+
+      setBatchResult({
+        successCount: _batchResult.successCount + successCount,
+        failedCount: failedCount,
+        failedIds: newFailedIds
+      });
+
+      setToast({
+        type: successCount > 0 ? 'success' : 'error',
+        message: `重试完成！成功: ${successCount}, 失败: ${failedCount}`
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('重试失败:', error);
+      setToast({
+        type: 'error',
+        message: `重试失败: ${error instanceof Error ? error.message : String(error)}`
+      });
+    } finally {
+      setBatchGenerating(false);
     }
   };
 
   /**
    * 处理下一步
    */
-  const handleNext = () => {
+  const _handleNext = () => {
     if (voiceovers.length === 0) {
       setToast({
         type: 'warning',
@@ -214,29 +426,43 @@ export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId, onComplete, i
       </div>
 
       <div className="panel-content">
-        {/* 配音选项 */}
+        {/* 视频生成选项 */}
         <div className="voice-options">
           <div className="option-group">
-            <label>音色选择:</label>
-            <select
-              value={voiceType}
-              onChange={(e) => setVoiceType(e.target.value)}
-              disabled={loading}
-            >
-              <option value="female-1">女声1 - 温柔</option>
-              <option value="female-2">女声2 - 活泼</option>
-              <option value="male-1">男声1 - 沉稳</option>
-              <option value="male-2">男声2 - 磁性</option>
-            </select>
+            <label>可用分镜:</label>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <span className="stat-value">{storyboards.filter((sb: any) => sb.imagePath).length} 个</span>
           </div>
-          <Button onClick={handleGenerate} disabled={loading || storyboards.length === 0}>
-            {loading ? '生成中...' : (
-              <>
-                <Mic className="h-4 w-4 mr-2 inline" />
-                生成配音
-              </>
-            )}
-          </Button>
+          <div className="generation-actions">
+            <Button
+              onClick={handleBatchGenerateVideos}
+              disabled={
+                _batchGenerating ||
+                storyboards.filter((sb: any) => sb.imagePath && sb.status === 'completed')
+                  .length === 0
+              }
+            >
+              {_batchGenerating ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 inline spinning" />
+                  批量生成视频中...
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 mr-2 inline" />
+                  批量生成视频片段
+                </>
+              )}
+            </Button>
+            <Button onClick={handleGenerate} disabled={loading || storyboards.length === 0} variant="secondary">
+              {loading ? '生成中...' : (
+                <>
+                  <Mic className="h-4 w-4 mr-2 inline" />
+                  生成配音（Mock）
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* 统计信息 */}
@@ -246,10 +472,50 @@ export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId, onComplete, i
             <span className="stat-value">{storyboards.length}</span>
           </div>
           <div className="stat-item">
+            <span className="stat-label">已生成视频:</span>
+            <span className="stat-value">{voiceovers.filter((v) => v.videoPath).length}</span>
+          </div>
+          <div className="stat-item">
             <span className="stat-label">已生成配音:</span>
-            <span className="stat-value">{voiceovers.length}</span>
+            <span className="stat-value">{voiceovers.filter((v) => v.audioPath).length}</span>
           </div>
         </div>
+
+        {/* 批量进度显示 */}
+        {_batchGenerating && (
+          <div className="batch-progress-section">
+            <div className="progress-bar-container">
+              <div
+                className="progress-bar"
+                style={{
+                  width: `${(_batchProgress.completed / _batchProgress.total) * 100}%`
+                }}
+              />
+            </div>
+            <p className="progress-text">
+              批量生成进度: {_batchProgress.completed} / {_batchProgress.total}
+            </p>
+          </div>
+        )}
+
+        {/* 批量结果显示 */}
+        {_batchResult && _batchResult.failedCount > 0 && (
+          <div className="batch-result-section">
+            <div className="result-info">
+              <span className="result-success">成功: {_batchResult.successCount}</span>
+              <span className="result-failed">失败: {_batchResult.failedCount}</span>
+            </div>
+            <Button
+              onClick={handleRetryFailed}
+              size="sm"
+              variant="secondary"
+              disabled={_batchGenerating}
+            >
+              <RefreshCw className="h-3 w-3 mr-1 inline" />
+              重试失败项 ({_batchResult.failedCount})
+            </Button>
+          </div>
+        )}
 
         {/* 加载指示器 */}
         {loading && <Loading size="md" message="正在生成配音，请稍候..." />}
@@ -259,77 +525,20 @@ export const VoiceoverPanel: React.FC<PanelProps> = ({ workflowId, onComplete, i
           <div className="voiceover-list-section">
             <h3>配音列表</h3>
             <div className="voiceover-list">
-              {voiceovers.map((voiceover, index) => {
+              {voiceovers.map((voiceover) => {
                 const isGenerating = generatingIds.includes(voiceover.id);
-                const isPlaying = playingId === voiceover.id;
-
+                const actualStatus = isGenerating ? 'generating' : voiceover.status;
                 return (
-                  <div
+                  <VoiceoverListItem
                     key={voiceover.id}
-                    className={`voiceover-item ${isGenerating ? 'generating' : ''}`}
-                  >
-                    {/* 左侧图标 */}
-                    <div className="voiceover-icon">
-                      <Volume2 size={24} />
-                    </div>
-
-                    {/* 中间内容 */}
-                    <div className="voiceover-content">
-                      <div className="voiceover-header">
-                        <h4 className="voiceover-title">配音 {index + 1}</h4>
-                        <span className="voiceover-badge">{voiceover.voiceType}</span>
-                      </div>
-                      <p className="voiceover-text">{voiceover.text}</p>
-                      <div className="voiceover-meta">
-                        <span
-                          className={`status-badge ${
-                            isGenerating ? 'generating' : voiceover.status
-                          }`}
-                        >
-                          {isGenerating
-                            ? '⏳ 生成中...'
-                            : voiceover.status === 'completed'
-                            ? '✓ 已完成'
-                            : voiceover.status === 'failed'
-                            ? '✗ 失败'
-                            : '⏸ 待生成'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 右侧操作按钮 */}
-                    <div className="voiceover-actions">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handlePlay(voiceover)}
-                        disabled={!voiceover.audioPath || isGenerating}
-                        title={isPlaying ? '暂停' : '播放'}
-                      >
-                        {isPlaying ? (
-                          <>
-                            <Pause size={14} />
-                            暂停
-                          </>
-                        ) : (
-                          <>
-                            <Play size={14} />
-                            播放
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRegenerate(voiceover.id)}
-                        disabled={isGenerating}
-                        title="重新生成"
-                      >
-                        <RefreshCw size={14} className={isGenerating ? 'spinning' : ''} />
-                        {isGenerating ? '生成中' : '重生成'}
-                      </Button>
-                    </div>
-                  </div>
+                    id={voiceover.id}
+                    text={voiceover.text}
+                    voiceType={voiceover.voiceType}
+                    status={actualStatus as any}
+                    audioPath={voiceover.audioPath}
+                    onPlay={() => handlePlay(voiceover)}
+                    onRegenerate={() => handleRegenerate(voiceover.id)}
+                  />
                 );
               })}
             </div>

@@ -15,25 +15,25 @@ import type { NovelVideoFields } from '@/shared/types';
 interface StoryboardScriptGenerator {
   generateScriptScenes(params: {
     story: string;
-    characters: any[];
-    chapter: any;
+    characters: unknown[];
+    chapter: unknown;
   }): Promise<any[]>;
 
   generateVideoPrompts(
-    scriptScenes: any[],
-    characters: any[],
-    scene: any,
+    scriptScenes: unknown[],
+    characters: unknown[],
+    scene: unknown,
     artStyle: string
   ): Promise<any[]>;
 
   replaceCharacterNames(
-    videoScenes: any[],
-    characters: any[]
+    videoScenes: unknown[],
+    characters: unknown[]
   ): Promise<any[]>;
 
   generateImageStoryboardPrompts(
-    videoScenes: any[],
-    characters: any[]
+    videoScenes: unknown[],
+    characters: unknown[]
   ): Promise<any[]>;
 }
 
@@ -79,24 +79,29 @@ export class StoryboardService {
 
       // 1. 获取场景资产
       const sceneAsset = await this.getSceneAsset(projectId, sceneAssetPath);
-      const scene = sceneAsset.customFields?.novelVideo;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const scene = sceneAsset.customFields?.novelVideo as any;
 
-      if (!scene || !scene.sceneStory) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!scene || !(scene as any).sceneStory) {
         throw new Error('场景数据不完整');
       }
 
       // 2. 获取相关角色和章节信息
       const characters = await this.getRelatedCharacters(projectId);
-      const chapter = await this.getRelatedChapter(projectId, scene.sceneChapterId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const chapter = await this.getRelatedChapter(projectId, (scene as any).sceneChapterId);
 
       await this.logger.info('场景和角色数据获取完成', 'StoryboardService', {
-        sceneId: scene.sceneId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sceneId: (scene as any).sceneId,
         charactersCount: characters.length
       });
 
       // 3. Step 1: 生成剧本分镜描述
       const scriptScenes = await this.generator.generateScriptScenes({
-        story: scene.sceneStory,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        story: (scene as any).sceneStory,
         characters,
         chapter
       });
@@ -131,10 +136,13 @@ export class StoryboardService {
       // 6. 保存分镜脚本Asset
       const storyboardAsset = await this.assetHelper.createStoryboardAsset({
         projectId,
-        sceneId: scene.sceneId!,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sceneId: (scene as any).sceneId!,
         type: 'video',
         videoPrompt: JSON.stringify(replacedScenes),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         imagePrompts: imageScenes.map((s: any) => s.prompt || JSON.stringify(s)),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         characterIds: characters.map((c: any) => c.characterId)
       });
 
@@ -188,8 +196,8 @@ export class StoryboardService {
    * 获取场景资产（辅助方法）
    */
   private async getSceneAsset(
-    projectId: string,
-    sceneAssetPath: string
+    _projectId: string,
+    _sceneAssetPath: string
   ): Promise<AssetMetadata> {
     // TODO: 通过AssetManager获取元数据
     // 暂时返回模拟数据，待集成时完善

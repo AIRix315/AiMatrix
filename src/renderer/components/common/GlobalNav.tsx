@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useSidebar } from '../../contexts/SidebarContext';
 import { ShortcutItem } from '../../../common/types';
 import { ShortcutNavItem } from './ShortcutNavItem';
@@ -73,7 +74,7 @@ interface GlobalNavProps {
 const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { leftSidebarCollapsed } = useSidebar();
+  const { leftSidebarCollapsed, assetPanelCollapsed, toggleAssetPanel } = useSidebar();
   const [shortcuts, setShortcuts] = useState<ShortcutItem[]>([]);
   const [editingShortcutId, setEditingShortcutId] = useState<string | null>(null);
   // 拖拽状态
@@ -95,6 +96,8 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
   const loadShortcuts = async () => {
     try {
       if (!window.electronAPI?.listShortcuts) {
+        // TODO: 移除调试代码
+        // eslint-disable-next-line no-console
         console.warn('listShortcuts API 尚未就绪');
         return;
       }
@@ -110,6 +113,7 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
 
       setShortcuts(items || []);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('加载快捷方式失败:', err);
       setShortcuts([]);
     }
@@ -145,6 +149,7 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
       setEditingShortcutId(null);
       await loadShortcuts();
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('删除快捷方式失败:', err);
       alert('删除失败: ' + (err instanceof Error ? err.message : '未知错误'));
     }
@@ -188,6 +193,7 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
           await window.electronAPI.reorderShortcuts(newOrder);
         }
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('重新排序快捷方式失败:', err);
         // 失败时重新加载
         await loadShortcuts();
@@ -206,23 +212,43 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
     return location.pathname.startsWith(path);
   };
 
-  const renderNavItem = (item: NavItem) => (
-    <div
-      key={item.id}
-      className={`menu-item ${isActive(item.path) ? 'active' : ''}`}
-      onClick={() => handleItemClick(item)}
-      title={item.title || item.label}
-    >
-      <div className="menu-icon-box">
-        <img
-          src={`./icons/${item.icon}`}
-          alt={item.label}
-          style={{ width: '36px', height: '36px' }}
-        />
+  const renderNavItem = (item: NavItem) => {
+    const isAssets = item.id === 'assets'; // 判断是否为资产库按钮
+
+    return (
+      <div
+        key={item.id}
+        className={`menu-item ${isActive(item.path) ? 'active' : ''}`}
+        onClick={() => handleItemClick(item)}
+        title={item.title || item.label}
+        style={{ position: 'relative' }} // 相对定位以便角标定位
+      >
+        <div className="menu-icon-box">
+          <img
+            src={`./icons/${item.icon}`}
+            alt={item.label}
+            style={{ width: '36px', height: '36px' }}
+          />
+        </div>
+        <span className="menu-label">{item.label}</span>
+
+        {/* 资产库角标按钮 */}
+        {isAssets && (
+          <button
+            className="nav-badge-button"
+            onClick={(e) => {
+              e.stopPropagation(); // 阻止导航触发
+              toggleAssetPanel();
+            }}
+            title={assetPanelCollapsed ? '展开资产面板' : '收起资产面板'}
+            aria-label={assetPanelCollapsed ? '展开资产面板' : '收起资产面板'}
+          >
+            {assetPanelCollapsed ? <PanelLeftOpen size={12} /> : <PanelLeftClose size={12} />}
+          </button>
+        )}
       </div>
-      <span className="menu-label">{item.label}</span>
-    </div>
-  );
+    );
+  };
 
   const renderShortcut = (shortcut: ShortcutItem) => (
     <ShortcutNavItem

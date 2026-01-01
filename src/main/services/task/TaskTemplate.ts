@@ -73,7 +73,7 @@ export interface TaskTemplateOptions {
   timeout?: number;
 
   /** 自定义元数据 */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -122,7 +122,7 @@ export interface ImageGenerationOutput {
   duration: number;
 
   /** 元数据 */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -205,7 +205,7 @@ export interface VideoGenerationOutput {
   fileSize: number;
 
   /** 元数据 */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -283,7 +283,7 @@ export class ImageGenerationTemplate implements TaskTemplate<ImageGenerationInpu
     };
   }
 
-  async postProcess(result: ImageGenerationOutput, input: ImageGenerationInput): Promise<ImageGenerationOutput> {
+  async postProcess(result: ImageGenerationOutput, _input: ImageGenerationInput): Promise<ImageGenerationOutput> {
     // 可以在这里添加后处理逻辑，如图片压缩、格式转换等
     return result;
   }

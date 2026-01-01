@@ -25,7 +25,7 @@
 }
 
 .execute-node .settings-btn:hover {
-  background: oklch(from var(--primary-bg) calc(l + 0.1) c h);
+  background: var(--secondary);
   color: var(--accent-color);
 }
 
@@ -51,8 +51,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: oklch(from var(--primary-bg) calc(l + 0.03) c h);
-  border: 1px solid oklch(from var(--primary-bg) calc(l + 0.1) c h);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--primary-text);
   font-size: 13px;
@@ -62,7 +62,7 @@
 
 .execute-node .dropdown-btn:hover {
   border-color: var(--accent-color);
-  background: oklch(from var(--primary-bg) calc(l + 0.05) c h);
+  background: var(--popover);
 }
 
 .execute-node .dropdown-text {
@@ -88,8 +88,8 @@
   left: 0;
   right: 0;
   margin-top: 4px;
-  background: oklch(from var(--primary-bg) calc(l + 0.05) c h);
-  border: 1px solid oklch(from var(--primary-bg) calc(l + 0.15) c h);
+  background: var(--popover);
+  border: 1px solid var(--border);
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   max-height: 200px;
@@ -109,7 +109,7 @@
 }
 
 .execute-node .dropdown-item:hover {
-  background: oklch(from var(--primary-bg) calc(l + 0.08) c h);
+  background: var(--secondary);
 }
 
 .execute-node .dropdown-item.active {
@@ -129,7 +129,7 @@
 .execute-node .provider-category {
   font-size: 11px;
   padding: 2px 6px;
-  background: oklch(from var(--primary-bg) calc(l + 0.1) c h);
+  background: var(--secondary);
   border-radius: 4px;
   color: var(--secondary-text);
   margin-left: 8px;
@@ -142,9 +142,9 @@
 
 .execute-node .parameters-preview {
   padding: 8px 10px;
-  background: oklch(from var(--primary-bg) calc(l + 0.03) c h);
+  background: var(--card);
   border-radius: 6px;
-  border: 1px solid oklch(from var(--primary-bg) calc(l + 0.1) c h);
+  border: 1px solid var(--border);
 }
 
 .execute-node .parameters-count {
@@ -159,15 +159,15 @@
 }
 
 .execute-node .dropdown-menu::-webkit-scrollbar-track {
-  background: oklch(from var(--primary-bg) calc(l + 0.03) c h);
+  background: var(--card);
   border-radius: 3px;
 }
 
 .execute-node .dropdown-menu::-webkit-scrollbar-thumb {
-  background: oklch(from var(--primary-bg) calc(l + 0.15) c h);
+  background: var(--muted);
   border-radius: 3px;
 }
 
 .execute-node .dropdown-menu::-webkit-scrollbar-thumb:hover {
-  background: oklch(from var(--primary-bg) calc(l + 0.2) c h);
+  background: oklch(0.32 0 0);
 }

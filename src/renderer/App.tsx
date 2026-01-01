@@ -25,7 +25,7 @@ import UIDemo from './pages/demo/UIDemo';
 const AppContentWithRouter: React.FC = () => {
   const navigate = useNavigate();
   const { toggleLeftSidebar, toggleRightSidebar } = useSidebar();
-  const { selectedItem, selectedCount } = useSelection();
+  const { selectedItem: _selectedItem, selectedCount: _selectedCount } = useSelection();
 
   // 任务队列状态（通过IPC事件动态添加）
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -56,8 +56,12 @@ const AppContentWithRouter: React.FC = () => {
 
     // 注册事件监听器
     if (window.electronAPI) {
-      window.electronAPI.onTaskCreated(handleTaskCreated);
-      window.electronAPI.onTaskUpdated(handleTaskUpdated);
+      // TODO: [中期改进] 定义准确的事件监听器类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      window.electronAPI.onTaskCreated(handleTaskCreated as any);
+      // TODO: [中期改进] 定义准确的事件监听器类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      window.electronAPI.onTaskUpdated(handleTaskUpdated as any);
       window.electronAPI.onTaskCompleted(handleTaskCompleted);
       window.electronAPI.onTaskFailed(handleTaskFailed);
     }
@@ -77,6 +81,7 @@ const AppContentWithRouter: React.FC = () => {
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch((err) => {
+        // eslint-disable-next-line no-console
         console.error('无法进入全屏模式:', err);
       });
     } else {
@@ -142,6 +147,7 @@ const AppContentWithRouter: React.FC = () => {
       await window.electronAPI.cancelTask(taskId);
       setTasks((prev) => prev.filter((t) => t.id !== taskId));
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('取消任务失败:', error);
     }
   };
@@ -150,6 +156,7 @@ const AppContentWithRouter: React.FC = () => {
     try {
       await window.electronAPI.retryTask(taskId);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('重试任务失败:', error);
     }
   };
@@ -160,8 +167,10 @@ const AppContentWithRouter: React.FC = () => {
   };
 
   // 生成处理
-  const handleGenerate = (mode: 'current' | 'auto-complete' | 'full-flow') => {
+  const _handleGenerate = (mode: 'current' | 'auto-complete' | 'full-flow') => {
     // TODO: 实现真实的生成逻辑
+    // TODO: 移除调试代码
+    // eslint-disable-next-line no-console
     console.log(`开始生成: ${mode}`);
   };
 

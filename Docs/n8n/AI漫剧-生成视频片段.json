@@ -1,0 +1,600 @@
+{
+  "name": "AI漫剧-生成视频片段",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "db5a9fc8-2fc8-4ce5-bef7-e7690130aed9",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "be1960d5-28bf-4fb6-9b53-96b345bab753",
+              "name": "prompt",
+              "value": "={{ $json.prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "b86833f0-a683-471c-9ee9-91a4905063d6",
+              "name": "image_url",
+              "value": "={{ $json.image_url }}",
+              "type": "string"
+            },
+            {
+              "id": "5ec3650e-2b22-4238-8637-4be6adc6bd46",
+              "name": "video_ratio",
+              "value": "={{ $json.video_ratio }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        240
+      ],
+      "id": "c090ff03-77bc-4f01-939b-6aadb033bea0",
+      "name": "配置字段"
+    },
+    {
+      "parameters": {
+        "jsCode": "const start_time = Date.now()\nreturn {\n    \"data\": {\n      \"prompt\": $('配置字段').first().json.prompt,\n      \"image\": $('配置字段').first().json.image_url,\n      \"size\": $('配置字段').first().json.video_ratio,\n      \"duration\": 10\n    },\n    \"start_time\": start_time\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        240
+      ],
+      "id": "20981194-0b45-4186-b243-279e3283d490",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "prompt"
+            },
+            {
+              "name": "image_url"
+            },
+            {
+              "name": "video_ratio"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        240
+      ],
+      "id": "f8921d69-5dcb-4c81-8c5d-470f9db71a2f",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "999349cc-077d-465d-9c08-e762716e11fd",
+              "leftValue": "={{ $json.task_id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        240
+      ],
+      "id": "5c19d075-6237-456a-a679-a5809bc1012b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        240
+      ],
+      "id": "e36c5c3c-f10e-4290-b6dd-efbc96ec9768",
+      "name": "Wait",
+      "webhookId": "b426dffa-8bf6-4337-a892-408371e662be"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f4e9ba2-123c-4231-8d59-d297375cf47b",
+              "leftValue": "={{ $json.task.status }}",
+              "rightValue": "TASK_STATUS_SUCCEED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1632,
+        240
+      ],
+      "id": "33ffd2b3-0bc8-46ab-a415-e9b17ca10bd6",
+      "name": "If1",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "95663f30-5e57-4d3d-88bd-e11abce866ae",
+              "leftValue": "={{ $('查询状态').item.json.task.status }}",
+              "rightValue": "TASK_STATUS_QUEUED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "ec921e23-3195-48c5-8857-70934e55f362",
+              "leftValue": "={{ $('查询状态').item.json.task.status }}",
+              "rightValue": "TASK_STATUS_PROCESSING",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1872,
+        256
+      ],
+      "id": "bf30e6fd-a203-48a8-831f-854871b78aa8",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "url": "https://api.jiekou.ai/v3/async/task-result",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "task_id",
+              "value": "={{ $('发起任务').item.json.task_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1408,
+        240
+      ],
+      "id": "e7de696d-7ab4-4cd7-b9a7-d65de1714070",
+      "name": "查询状态",
+      "retryOnFail": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "nvVFpuzvpm2UaCSN",
+          "name": "test"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/data/video_{{ $now.format('yyyy-MM-dd_hh-mm-ss') }}_{{ Math.floor(Math.random() * 10000) }}.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        464,
+        560
+      ],
+      "id": "5473f554-e3f6-4877-bf8e-15032c3f52dd",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b56d373b-ce89-4280-bb76-745968f4d482",
+              "name": "video_filepath",
+              "value": "={{ $('Read/Write Files from Disk').first().json.fileName }}",
+              "type": "string"
+            },
+            {
+              "id": "e468b950-485d-4ebc-a758-00b4c6c8008e",
+              "name": "video_url",
+              "value": "={{ $json.videos[0].video_url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        560
+      ],
+      "id": "7c10e9c4-9f45-4720-a4c8-2ffbcc790b0f",
+      "name": "执行结束返回字段"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.videos[0].video_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        560
+      ],
+      "id": "a4c603bb-8cc5-4a21-92de-32cf3eb33d06",
+      "name": "下载视频",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.jiekou.ai/v3/async/sora-2-video-reverse",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        752,
+        240
+      ],
+      "id": "e682c3c1-3098-4d9e-a29c-28a256b2117c",
+      "name": "发起任务",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "nvVFpuzvpm2UaCSN",
+          "name": "test"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0e3ad73-9956-42c8-8cee-5937ac7f79a6",
+              "leftValue": "={{ Date.now() - $('Code in JavaScript').first().json.start_time }}",
+              "rightValue": "={{ 60 * 10 * 1000 }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2112,
+        240
+      ],
+      "id": "9c78c510-5056-4922-b46a-6b19006a4305",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "12696cd7-1d79-4b5e-a0ba-712dc3d021a3",
+              "name": "prompt",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "81bf0980-3100-4653-913e-73f3a03c522f",
+              "name": "image_url",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "365e26d6-0c6f-450f-9632-a10c9604fae9",
+              "name": "video_ratio",
+              "value": "1280x720",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        0
+      ],
+      "id": "f0a57360-5d0f-43e7-bbb4-8238a04afd85",
+      "name": "测试节点",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "测试节点",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "配置字段": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "发起任务",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "配置字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "发起任务",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "查询状态",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "下载视频",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查询状态": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "执行结束返回字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下载视频": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "发起任务": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "测试节点": {
+      "main": [
+        [
+          {
+            "node": "配置字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c2f71a4c-7790-4f63-af92-e6f3c25a681c",
+  "meta": {
+    "instanceId": "7cbe32103a6ff2d8c5a91f9da918c4e038e89cf9d0ca43bf8f0b67f262cbf12c"
+  },
+  "id": "SRpomn5eBj40M306",
+  "tags": [
+    {
+      "updatedAt": "2025-12-26T08:37:31.987Z",
+      "createdAt": "2025-12-26T08:37:31.987Z",
+      "id": "gZ4Yf1CKJAPGykEi",
+      "name": "ai漫剧"
+    }
+  ]
+}

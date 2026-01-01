@@ -1,1 +1,120 @@
-/* WorkflowListItem 样式 - 占位文件 */
+/* WorkflowListItem 样式 */
+
+/* 列表项容器 */
+.workflow-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.workflow-list-item:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent-color);
+}
+
+/* 1. 预览图 */
+.workflow-list-item .preview-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dim);
+  border-radius: 0.375rem;
+  color: var(--accent-color);
+}
+
+/* 2. 时长 */
+.workflow-list-item .duration {
+  flex-shrink: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  min-width: 80px;
+}
+
+/* 3. 内容区 */
+.workflow-list-item .content {
+  flex: 1;
+  min-width: 0; /* 允许文本截断 */
+}
+
+.workflow-list-item .title {
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workflow-list-item .description {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 4. 右对齐区域 */
+.workflow-list-item .right-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto; /* 右对齐 */
+  flex-shrink: 0;
+}
+
+/* 信息栏 */
+.workflow-list-item .info {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* 按钮组 */
+.workflow-list-item .action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.workflow-list-item:hover .action-buttons {
+  opacity: 1;
+}
+
+/* 按钮样式 */
+.workflow-list-item .pin-btn,
+.workflow-list-item .delete-btn {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.workflow-list-item .pin-btn:hover {
+  background: var(--accent-color);
+  color: var(--primary-foreground);
+  border-color: var(--accent-color);
+}
+
+.workflow-list-item .delete-btn:hover {
+  background: var(--destructive);
+  color: var(--primary-foreground);
+  border-color: var(--destructive);
+}

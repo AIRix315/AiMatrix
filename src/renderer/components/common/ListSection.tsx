@@ -26,7 +26,7 @@ export interface ListItem {
   thumbnail?: string;
 
   /** 自定义数据 */
-  data?: any;
+  data?: unknown;
 }
 
 export interface ListTab {

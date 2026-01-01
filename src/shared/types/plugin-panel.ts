@@ -49,7 +49,7 @@ export interface PanelField {
   type: FieldType;
 
   /** 默认值 */
-  defaultValue?: any;
+  defaultValue?: unknown;
 
   /** 占位符文本 */
   placeholder?: string;
@@ -93,7 +93,7 @@ export interface PanelField {
   visibleWhen?: {
     field: string;           // 依赖字段ID
     operator: '=' | '!=' | '>' | '<' | '>=' | '<=';
-    value: any;
+    value: unknown;
   };
 }
 
@@ -120,7 +120,7 @@ export interface PanelAction {
   disabledWhen?: {
     field: string;
     operator: '=' | '!=' | '>' | '<' | '>=' | '<=' | 'empty' | 'notEmpty';
-    value?: any;
+    value?: unknown;
   }[];
 
   /** 操作类型 */
@@ -249,7 +249,7 @@ export interface PluginPanelConfig {
  */
 export interface PanelState {
   /** 字段值映射 */
-  values: Record<string, any>;
+  values: Record<string, unknown>;
 
   /** 字段错误映射 */
   errors: Record<string, string>;
@@ -258,7 +258,7 @@ export interface PanelState {
   loading: boolean;
 
   /** 自定义数据（插件可扩展） */
-  customData?: Record<string, any>;
+  customData?: Record<string, unknown>;
 }
 
 /**
@@ -272,7 +272,7 @@ export interface PanelEvent {
   sourceId: string;
 
   /** 事件数据 */
-  data?: any;
+  data?: unknown;
 
   /** 当前Panel状态 */
   state: PanelState;
@@ -289,5 +289,5 @@ export interface PanelHandler {
   validate(state: PanelState): Promise<Record<string, string>>;
 
   /** 提交表单 */
-  submit(state: PanelState): Promise<any>;
+  submit(state: PanelState): Promise<unknown>;
 }

@@ -25,11 +25,11 @@ export interface JSONSchemaProperty {
   type: JSONSchemaType | JSONSchemaType[];
   description?: string;
   format?: string; // 如 'date-time', 'uri', 'email' 等
-  enum?: any[]; // 枚举值
+  enum?: unknown[]; // 枚举值
   items?: JSONSchemaProperty; // 数组项定义
   properties?: Record<string, JSONSchemaProperty>; // 对象属性
   required?: string[]; // 必填字段
-  default?: any; // 默认值
+  default?: unknown; // 默认值
   minimum?: number; // 最小值
   maximum?: number; // 最大值
   minLength?: number; // 最小长度
@@ -70,7 +70,7 @@ export interface AssetSchemaDefinition {
   tags?: string[];
 
   /** 示例数据 */
-  examples?: any[];
+  examples?: unknown[];
 }
 
 /**

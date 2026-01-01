@@ -12,13 +12,13 @@ export class AgentConfigHelper {
    * @param providerConfig Provider 配置对象（从 AppConfig.aiProviders 中获取）
    * @returns LangChainAgent 实例
    */
-  static createAgentFromConfig(providerConfig: any): LangChainAgent {
+  static createAgentFromConfig(providerConfig: Record<string, unknown>): LangChainAgent {
     // 从配置中提取必要信息
     const config: AgentConfig = {
-      apiKey: providerConfig.apiKey || providerConfig.api_key || '',
-      model: providerConfig.model || providerConfig.defaultModel || 'deepseek-chat',
-      temperature: providerConfig.temperature,
-      maxTokens: providerConfig.maxTokens || providerConfig.max_tokens
+      apiKey: String(providerConfig.apiKey || providerConfig.api_key || ''),
+      model: String(providerConfig.model || providerConfig.defaultModel || 'deepseek-chat'),
+      temperature: typeof providerConfig.temperature === 'number' ? providerConfig.temperature : undefined,
+      maxTokens: (providerConfig.maxTokens || providerConfig.max_tokens) as number | undefined
     }
 
     return new LangChainAgent(config)
@@ -27,7 +27,7 @@ export class AgentConfigHelper {
   /**
    * 验证配置是否有效
    */
-  static validateConfig(providerConfig: any): { valid: boolean; errors: string[] } {
+  static validateConfig(providerConfig: Record<string, unknown> | null | undefined): { valid: boolean; errors: string[] } {
     const errors: string[] = []
 
     if (!providerConfig) {

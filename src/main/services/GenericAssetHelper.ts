@@ -38,7 +38,7 @@ export interface GenericAssetCreateParams {
   tags?: string[];
 
   /** 自定义字段数据（将被验证是否符合Schema） */
-  customFields: Record<string, any>;
+  customFields: Record<string, unknown>;
 
   /** 其他元数据 */
   extraMetadata?: Partial<AssetMetadata>;
@@ -64,7 +64,7 @@ export interface GenericAssetQueryParams {
   tags?: string[];
 
   /** customFields过滤条件（键值对，支持嵌套路径） */
-  customFieldsFilter?: Record<string, any>;
+  customFieldsFilter?: Record<string, unknown>;
 
   /** 排序字段 */
   sortBy?: string;
@@ -235,7 +235,7 @@ export class GenericAssetHelper {
   async updateAssetCustomFields(
     filePath: string,
     schemaId: string,
-    customFields: Record<string, any>
+    customFields: Record<string, unknown>
   ): Promise<void> {
     try {
       // 验证Schema
@@ -308,7 +308,7 @@ export class GenericAssetHelper {
   private filterByCustomFields(
     assets: AssetMetadata[],
     pluginId: string,
-    filter: Record<string, any>
+    filter: Record<string, unknown>
   ): AssetMetadata[] {
     return assets.filter(asset => {
       const customFields = asset.customFields?.[pluginId];
@@ -362,7 +362,7 @@ export class GenericAssetHelper {
    * 获取嵌套对象的值
    * 支持路径如 'a.b.c'
    */
-  private getNestedValue(obj: any, path: string): any {
+  private getNestedValue(obj: unknown, path: string): any {
     if (!obj) return undefined;
 
     const keys = path.split('.');
@@ -372,7 +372,8 @@ export class GenericAssetHelper {
       if (current === undefined || current === null) {
         return undefined;
       }
-      current = current[key];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      current = (current as any)[key];
     }
 
     return current;

@@ -1,0 +1,14 @@
+{
+  "template": "novel-to-video",
+  "pluginId": "novel-to-video",
+  "folders": [
+    "chapters",
+    "scenes",
+    "characters",
+    "storyboards",
+    "voiceovers",
+    "video_clips",
+    "output"
+  ],
+  "createdAt": "2025-12-31T11:20:04.015Z"
+}

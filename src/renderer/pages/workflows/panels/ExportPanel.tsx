@@ -19,13 +19,15 @@ interface ExportOptions {
 
 interface PanelProps {
   workflowId: string;
-  onComplete: (data: any) => void;
-  initialData?: any;
+  onComplete: (data: unknown) => void;
+  initialData?: unknown;
 }
 
 export const ExportPanel: React.FC<PanelProps> = ({ onComplete, initialData }) => {
-  const [storyboards] = useState(initialData?.storyboards || []);
-  const [voiceovers] = useState(initialData?.voiceovers || []);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [storyboards] = useState((initialData as any)?.storyboards || []);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [voiceovers] = useState((initialData as any)?.voiceovers || []);
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'mp4',
     quality: 'high',
@@ -84,7 +86,7 @@ export const ExportPanel: React.FC<PanelProps> = ({ onComplete, initialData }) =
   /**
    * 处理完成
    */
-  const handleComplete = () => {
+  const _handleComplete = () => {
     if (!exportPath) {
       setToast({
         type: 'warning',

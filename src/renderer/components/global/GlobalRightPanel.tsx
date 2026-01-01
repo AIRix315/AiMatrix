@@ -5,7 +5,7 @@
  * 队列TAB占据全部高度
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Button } from '../common';
 import { useSelection } from '../../contexts/SelectionContext';
@@ -33,7 +33,7 @@ interface GenerationSettings {
 interface ProviderParams {
   aspectRatio?: string;
   workflow?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface LinkedAsset {
@@ -110,6 +110,7 @@ export const GlobalRightPanel: React.FC<GlobalRightPanelProps> = () => {
         selectedItem,
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('生成失败:', error);
     }
   };
@@ -166,7 +167,9 @@ export const GlobalRightPanel: React.FC<GlobalRightPanelProps> = () => {
                   {mainTab === 'tools' && (
                     <ToolsTab
                       linkedAssets={linkedAssets}
+                      // eslint-disable-next-line no-console
                       onRemoveAsset={(assetId) => console.log('移除资产', assetId)}
+                      // eslint-disable-next-line no-console
                       onAddAsset={() => console.log('添加资产')}
                     />
                   )}

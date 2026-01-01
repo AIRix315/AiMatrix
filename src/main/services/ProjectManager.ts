@@ -722,7 +722,7 @@ export class ProjectManager implements IProjectManager {
    * 记录日志
    * @private
    */
-  private log(level: LogEntry['level'], message: string, data?: any): void {
+  private log(level: LogEntry['level'], message: string, data?: unknown): void {
     // eslint-disable-next-line no-console
     console.log(`[ProjectManager] ${level.toUpperCase()}: ${message}`, data || '');
   }

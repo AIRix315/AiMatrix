@@ -1,62 +1,100 @@
 /**
- * Assets 页面 - V2
+ * Assets 页面 - V3（对齐统一布局）
  *
  * 功能：
- * - 左侧分类导航（作用域切换 + 资产类型分类）
- * - 右侧资产网格
- * - 资产预览和管理
+ * - 3个TAB页：全部资产、项目资产、在线资产共享
+ * - 全局资产：按文件类型分类（全部、图片、视频、音频、文本、其他）
+ * - 项目资产：项目选择器 + 按工作流用途分类（全部、章节、场景、角色、分镜脚本、配音）
+ * - 在线资产：暂未实现，显示空状态
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { Cloud } from 'lucide-react';
 import { AssetMetadata, AssetFilter, AssetType } from '@/shared/types';
+import { ProjectConfig } from '@/common/types';
 import { AssetGrid } from '../../components/AssetGrid';
 import { AssetPreview } from '../../components/AssetPreview/AssetPreview';
 import { ViewSwitcher } from '../../components/common';
-import { UnifiedAssetPanel, AssetCategoryId } from '../../components/UnifiedAssetPanel';
+import { AssetCategoryFilter } from '../../components/AssetCategoryFilter';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select';
 import './Assets.css';
+
+type ActiveTab = 'global' | 'project' | 'online';
+type GlobalCategoryId = 'all' | 'image' | 'video' | 'audio' | 'text' | 'other';
+type ProjectCategoryId = 'all' | 'chapters' | 'scenes' | 'characters' | 'storyboards' | 'voiceovers';
 
 export function Assets() {
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
   const [previewAsset, setPreviewAsset] = useState<AssetMetadata | null>(null);
   const [allAssets, setAllAssets] = useState<AssetMetadata[]>([]);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const [selectedCategory, setSelectedCategory] = useState<AssetCategoryId>('all');
-  const [selectedScope, setSelectedScope] = useState<'global' | 'project'>('global');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+
+  // TAB 和分类状态
+  const [activeTab, setActiveTab] = useState<ActiveTab>('global');
+  const [globalCategory, setGlobalCategory] = useState<GlobalCategoryId>('all');
+  const [projectCategory, setProjectCategory] = useState<ProjectCategoryId>('all');
   const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
+  const [projects, setProjects] = useState<ProjectConfig[]>([]);
 
-  const handleProjectSelect = (projectId: string) => {
-    setSelectedProjectId(projectId);
-  };
+  // 加载项目列表
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const projectList = await window.electronAPI.listProjects();
+        setProjects(projectList);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('加载项目列表失败:', error);
+      }
+    };
 
-  // 构建过滤器
-  const getFilter = useCallback((): AssetFilter => {
+    loadProjects();
+  }, []);
+
+  // 构建全局资产过滤器
+  const getGlobalFilter = useCallback((): AssetFilter => {
     const filter: AssetFilter = {
-      scope: selectedScope,
-      projectId: selectedScope === 'project' ? selectedProjectId : undefined,
+      scope: 'global',
       sortBy: 'modifiedAt',
       sortOrder: 'desc'
     };
 
-    // 全局Tab分类过滤
-    if (selectedScope === 'global') {
-      if (selectedCategory === 'input') {
-        // 输入分类：过滤用户上传的资产
-        filter.isUserUploaded = true;
-      } else if (selectedCategory !== 'all') {
-        // 文件类型分类
-        filter.type = selectedCategory as AssetType;
-      }
-    }
-    // 项目Tab分类过滤
-    else if (selectedScope === 'project') {
-      if (selectedCategory !== 'all') {
-        // 工作流分类
-        filter.category = selectedCategory;
-      }
+    if (globalCategory !== 'all') {
+      filter.type = globalCategory as AssetType;
     }
 
     return filter;
-  }, [selectedScope, selectedCategory, selectedProjectId]);
+  }, [globalCategory]);
+
+  // 构建项目资产过滤器
+  const getProjectFilter = useCallback((): AssetFilter => {
+    const filter: AssetFilter = {
+      scope: 'project',
+      projectId: selectedProjectId,
+      sortBy: 'modifiedAt',
+      sortOrder: 'desc'
+    };
+
+    if (projectCategory !== 'all') {
+      filter.category = projectCategory;
+    }
+
+    return filter;
+  }, [projectCategory, selectedProjectId]);
+
+  // 处理 TAB 切换
+  const handleTabChange = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    // 切换 TAB 时重置分类
+    setGlobalCategory('all');
+    setProjectCategory('all');
+  };
 
   // 处理资产选择
   const handleAssetSelect = (asset: AssetMetadata, multiSelect: boolean) => {
@@ -112,8 +150,6 @@ export function Assets() {
       // 更新本地状态
       setPreviewAsset({ ...previewAsset, ...updates });
     } catch (err) {
-      // eslint-disable-next-line no-console
-      // console.error('更新元数据失败:', err);
       alert('更新失败: ' + (err instanceof Error ? err.message : '未知错误'));
     }
   };
@@ -128,35 +164,119 @@ export function Assets() {
   };
 
   return (
-    <div className="assets-page">
-      {/* 左侧统一资源栏 */}
-      <UnifiedAssetPanel
-        selectedScope={selectedScope}
-        selectedCategory={selectedCategory}
-        selectedProjectId={selectedProjectId}
-        showProjectSelector={true}
-        onScopeChange={setSelectedScope}
-        onCategoryChange={setSelectedCategory}
-        onProjectChange={handleProjectSelect}
-      />
-
-      {/* 右侧主内容区 */}
-      <div className="assets-main">
-        <div className="dashboard-header">
-          <div className="view-title">资产库 <small>| {selectedScope === 'global' ? '全局库' : '项目资源'}</small></div>
+    <div className="dashboard">
+      {/* 页面头部 */}
+      <div className="dashboard-header">
+        <div className="view-title">
+          资产库 <small>| 素材管理 (Asset Library)</small>
+        </div>
+        <div className="header-actions">
           <ViewSwitcher viewMode={viewMode} onChange={setViewMode} />
         </div>
+      </div>
 
-        <div className="dashboard-content">
-          <AssetGrid
-            filter={getFilter()}
-            selectedAssets={selectedAssets}
-            onAssetSelect={handleAssetSelect}
-            onAssetPreview={handleAssetPreview}
-            onAssetDelete={handleAssetDelete}
-            onAssetsLoaded={setAllAssets}
-          />
+      {/* 主内容区 */}
+      <div className="dashboard-content">
+        {/* TAB 切换器 */}
+        <div className="content-tab-switcher">
+          <div className="tab-buttons">
+            <button
+              className={`content-tab-btn ${activeTab === 'global' ? 'active' : ''}`}
+              onClick={() => handleTabChange('global')}
+            >
+              全部资产
+            </button>
+            <button
+              className={`content-tab-btn ${activeTab === 'project' ? 'active' : ''}`}
+              onClick={() => handleTabChange('project')}
+            >
+              项目资产
+            </button>
+            <button
+              className={`content-tab-btn ${activeTab === 'online' ? 'active' : ''}`}
+              onClick={() => handleTabChange('online')}
+            >
+              在线资产共享
+            </button>
+          </div>
         </div>
+
+        {/* TAB 内容区 - 全部资产 */}
+        {activeTab === 'global' && (
+          <>
+            <AssetCategoryFilter
+              type="global"
+              selectedCategory={globalCategory}
+              onCategoryChange={(categoryId) => setGlobalCategory(categoryId as GlobalCategoryId)}
+            />
+            <AssetGrid
+              filter={getGlobalFilter()}
+              selectedAssets={selectedAssets}
+              onAssetSelect={handleAssetSelect}
+              onAssetPreview={handleAssetPreview}
+              onAssetDelete={handleAssetDelete}
+              onAssetsLoaded={setAllAssets}
+              viewMode={viewMode}
+            />
+          </>
+        )}
+
+        {/* TAB 内容区 - 项目资产 */}
+        {activeTab === 'project' && (
+          <>
+            {/* 项目选择器 */}
+            <div className="project-selector-container">
+              <label>选择项目：</label>
+              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                <SelectTrigger className="w-64">
+                  <SelectValue placeholder="选择项目..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map(p => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 项目资产分类筛选器 */}
+            <AssetCategoryFilter
+              type="project"
+              selectedCategory={projectCategory}
+              onCategoryChange={(categoryId) => setProjectCategory(categoryId as ProjectCategoryId)}
+            />
+
+            {/* 资产网格 */}
+            {selectedProjectId ? (
+              <AssetGrid
+                filter={getProjectFilter()}
+                selectedAssets={selectedAssets}
+                onAssetSelect={handleAssetSelect}
+                onAssetPreview={handleAssetPreview}
+                onAssetDelete={handleAssetDelete}
+                onAssetsLoaded={setAllAssets}
+                viewMode={viewMode}
+              />
+            ) : (
+              <div className="empty-hint">
+                请先选择一个项目以查看其资产
+              </div>
+            )}
+          </>
+        )}
+
+        {/* TAB 内容区 - 在线资产共享 */}
+        {activeTab === 'online' && (
+          <div className="empty-state">
+            <div className="empty-icon">
+              <Cloud className="h-16 w-16 text-muted-foreground" />
+            </div>
+            <h2>在线资产共享</h2>
+            <p>该功能正在开发中，敬请期待...</p>
+          </div>
+        )}
       </div>
 
       {/* 资产预览 Modal */}

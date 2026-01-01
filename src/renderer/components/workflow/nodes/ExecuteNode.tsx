@@ -40,6 +40,7 @@ const ExecuteNode: React.FC<NodeProps<ExecuteNodeData>> = ({ id, data, selected 
         setProviders(filteredProviders);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('加载Provider列表失败:', error);
     }
   };

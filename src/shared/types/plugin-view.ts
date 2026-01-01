@@ -5,7 +5,7 @@
  * 规范插件如何注册和使用自定义React组件
  */
 
-import type { ReactNode, ComponentType } from 'react';
+import type { ComponentType } from 'react';
 
 /**
  * 视图上下文
@@ -28,7 +28,7 @@ export interface ViewContext {
   };
 
   /** IPC API调用 */
-  callAPI: <T = any>(channel: string, ...args: any[]) => Promise<T>;
+  callAPI: <T = unknown>(channel: string, ...args: unknown[]) => Promise<T>;
 
   /** 显示Toast通知 */
   showToast: (type: 'success' | 'error' | 'warning' | 'info', message: string) => void;
@@ -44,8 +44,8 @@ export interface ViewContext {
 
   /** 自定义数据存储（插件可用） */
   storage: {
-    get: (key: string) => Promise<any>;
-    set: (key: string, value: any) => Promise<void>;
+    get: (key: string) => Promise<unknown>;
+    set: (key: string, value: unknown) => Promise<void>;
     remove: (key: string) => Promise<void>;
   };
 }
@@ -61,7 +61,7 @@ export interface CustomViewProps<TData = any> {
   data?: TData;
 
   /** 完成回调 */
-  onComplete?: (result: any) => void;
+  onComplete?: (result: unknown) => void;
 
   /** 取消回调 */
   onCancel?: () => void;
@@ -142,7 +142,7 @@ export interface ViewRegistry {
   getPluginViews(pluginId: string): ViewRegistration[];
 
   /** 打开视图 */
-  openView(pluginId: string, viewId: string, data?: any): Promise<any>;
+  openView(pluginId: string, viewId: string, data?: unknown): Promise<unknown>;
 
   /** 关闭视图 */
   closeView(pluginId: string, viewId: string): void;
@@ -159,10 +159,10 @@ export interface ViewContainerProps {
   viewId: string;
 
   /** 传入数据 */
-  data?: any;
+  data?: unknown;
 
   /** 完成回调 */
-  onComplete?: (result: any) => void;
+  onComplete?: (result: unknown) => void;
 
   /** 取消回调 */
   onCancel?: () => void;
@@ -188,7 +188,7 @@ export interface ViewHooks {
   onUnmounted?: (context: ViewContext) => void | Promise<void>;
 
   /** 数据变化 */
-  onDataChange?: (newData: any, oldData: any, context: ViewContext) => void;
+  onDataChange?: (newData: unknown, oldData: unknown, context: ViewContext) => void;
 
   /** 错误处理 */
   onError?: (error: Error, context: ViewContext) => void;
@@ -205,7 +205,7 @@ export interface ViewState {
   error?: Error;
 
   /** 自定义数据 */
-  data?: any;
+  data?: unknown;
 }
 
 /**
@@ -219,7 +219,7 @@ export interface ViewActions {
   setError: (error: Error | null) => void;
 
   /** 更新数据 */
-  updateData: (data: any) => void;
+  updateData: (data: unknown) => void;
 
   /** 重置状态 */
   reset: () => void;

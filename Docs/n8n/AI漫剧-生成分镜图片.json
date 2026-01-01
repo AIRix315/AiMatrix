@@ -1,0 +1,320 @@
+{
+  "name": "AI漫剧-生成分镜图片",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8bd28ee6-7449-4a9d-9ec1-9a3a2ed09841",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/data/img_{{ $now.format('yyyy-MM-dd_hh-mm-ss') }}_{{ Math.floor(Math.random() * 10000) }}.jpeg",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        224
+      ],
+      "id": "eb015608-d663-47a8-944c-b6717979d37f",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7385442d-9638-466f-b313-e864d092d4d0",
+              "name": "prompt",
+              "value": "={{ $json.prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "94ded449-5a6e-4efa-a378-b1a5affa0e44",
+              "name": "image_urls",
+              "value": "={{ $json.image_urls }}",
+              "type": "array"
+            },
+            {
+              "id": "cd70d722-9d1d-45c4-a1d3-31b741e5334d",
+              "name": "image_size",
+              "value": "={{ $json.image_size }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        288,
+        224
+      ],
+      "id": "a46c9366-21ba-47b8-977c-014627bfd002",
+      "name": "配置字段"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "prompt"
+            },
+            {
+              "name": "image_urls",
+              "type": "array"
+            },
+            {
+              "name": "image_size"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        224
+      ],
+      "id": "dabe1d10-f845-4cc0-9250-872de5f2a021",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a21b4c5c-0422-489f-a713-27844e021084",
+              "name": "prompt",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "0af03c17-cfd0-45b1-93c8-c900b17ce774",
+              "name": "image_urls",
+              "value": "[\"\"]",
+              "type": "array"
+            },
+            {
+              "id": "205ddc2d-9f9b-4a20-8f2a-77d3c939a1d0",
+              "name": "image_size",
+              "value": "9x16",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "07ea6d0e-7f65-48fa-853c-73e4b0ee172c",
+      "name": "Edit Fields1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = {\n  \"size\": $input.first().json.image_size,\n  \"prompt\": $input.first().json.prompt,\n  \"images\": $input.first().json.image_urls,\n  \"quality\": \"2k\",\n  \"response_format\": \"url\"\n}\n\nreturn {\n  data: data\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        224
+      ],
+      "id": "3c41a6f9-bbc9-4457-b56a-a97d2878b58d",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.jiekou.ai/v3/nano-banana-pro-light-i2i",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        224
+      ],
+      "id": "843353c7-aa67-4170-95cd-48e7be0787fb",
+      "name": "发起任务",
+      "retryOnFail": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "nvVFpuzvpm2UaCSN",
+          "name": "test"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data[0].url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        944,
+        224
+      ],
+      "id": "ae13751f-afb7-4abf-af6c-b2dd12bb3c30",
+      "name": "下载图片"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4a6e69a0-206d-42c7-abb5-1534a505aab2",
+              "name": "image_filepath",
+              "value": "={{ $json.fileName }}",
+              "type": "string"
+            },
+            {
+              "id": "fa292a79-76c4-4fef-8816-b3e0264d8613",
+              "name": "image_url",
+              "value": "={{ $json.data[0].url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        224
+      ],
+      "id": "27434ab0-c415-482b-9c04-032636adf91e",
+      "name": "执行结束返回字段"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "配置字段": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "配置字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "执行结束返回字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "配置字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "发起任务",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "发起任务": {
+      "main": [
+        [
+          {
+            "node": "下载图片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下载图片": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e051555f-386a-4dfc-be10-a97cbba356ec",
+  "meta": {
+    "instanceId": "7cbe32103a6ff2d8c5a91f9da918c4e038e89cf9d0ca43bf8f0b67f262cbf12c"
+  },
+  "id": "m6rqnV3ifewk9YED",
+  "tags": [
+    {
+      "updatedAt": "2025-12-26T08:37:31.987Z",
+      "createdAt": "2025-12-26T08:37:31.987Z",
+      "id": "gZ4Yf1CKJAPGykEi",
+      "name": "ai漫剧"
+    }
+  ]
+}

@@ -14,7 +14,7 @@ import {
   Home, Search, Settings, User, Mail, Bell, Calendar,
   Download, Upload, Trash2, Edit, Save, X, Check,
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  Plus, Minus, Heart, Star
+  Heart, Star
 } from 'lucide-react';
 
 /**

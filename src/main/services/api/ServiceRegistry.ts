@@ -22,7 +22,7 @@ export interface ServiceDefinition {
   name: string;
   description: string;
   version: string;
-  methods: Record<string, (...args: any[]) => Promise<any>>;
+  methods: Record<string, (...args: unknown[]) => Promise<unknown>>;
   permissions?: string[];
 }
 
@@ -87,7 +87,7 @@ export class ServiceRegistry {
     namespace: string,
     name: string,
     method: string,
-    args: any[],
+    args: unknown[],
     caller?: string
   ): Promise<any> {
     const key = `${namespace}:${name}`;

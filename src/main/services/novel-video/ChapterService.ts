@@ -25,8 +25,8 @@ interface ChapterSplitter {
  */
 interface SceneCharacterExtractor {
   splitChapterIntoScenes(chapterContent: string): Promise<any[]>;
-  refineScenes(segments: any[], chapterContent: string, artStyle: string): Promise<any[]>;
-  refineCharacters(segments: any[], chapterContent: string, artStyle: string): Promise<any[]>;
+  refineScenes(segments: unknown[], chapterContent: string, artStyle: string): Promise<any[]>;
+  refineCharacters(segments: unknown[], chapterContent: string, artStyle: string): Promise<any[]>;
 }
 
 /**
@@ -271,7 +271,8 @@ export class ChapterService {
     const unique: AssetMetadata[] = [];
 
     for (const character of characters) {
-      const name = character.customFields?.novelVideo?.characterName;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const name = (character.customFields?.novelVideo as any)?.characterName;
       if (name && !seen.has(name)) {
         seen.add(name);
         unique.push(character);

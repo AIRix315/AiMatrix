@@ -286,3 +286,73 @@
   justify-content: flex-end;
   gap: 12px;
 }
+
+/* ========== AI 提取结果 ========== */
+.ai-extraction-results {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.result-section {
+  margin-bottom: 20px;
+}
+
+.result-section:last-child {
+  margin-bottom: 0;
+}
+
+.result-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.result-section h3 .count {
+  font-size: 14px;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: "Inter", system-ui, sans-serif;
+  transition: all 0.2s ease;
+}
+
+.scene-tag {
+  background: oklch(0.7 0.18 200 / 0.15);
+  color: oklch(0.7 0.18 200);
+  border: 1px solid oklch(0.7 0.18 200 / 0.3);
+}
+
+.scene-tag:hover {
+  background: oklch(0.7 0.18 200 / 0.25);
+  border-color: oklch(0.7 0.18 200 / 0.5);
+}
+
+.character-tag {
+  background: oklch(0.75 0.15 280 / 0.15);
+  color: oklch(0.75 0.15 280);
+  border: 1px solid oklch(0.75 0.15 280 / 0.3);
+}
+
+.character-tag:hover {
+  background: oklch(0.75 0.15 280 / 0.25);
+  border-color: oklch(0.75 0.15 280 / 0.5);
+}

@@ -20,6 +20,7 @@ const StatusBar: React.FC<StatusBarProps> = ({ workspacePath }) => {
         setHasError(logs.length > 0);
         setErrorCount(logs.length);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to fetch error logs:', error);
       }
     };

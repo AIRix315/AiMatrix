@@ -163,3 +163,56 @@
     align-items: center;
     justify-content: center;
 }
+/* ============ 资产库角标按钮样式 ============ */
+
+.nav-badge-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;               /* ✅ 固定位置（菜单展开时不变） */
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-color);
+  border: none;
+  border-radius: 50%;
+  color: #000;              /* 深色图标，确保在绿色背景上可见 */
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);  /* ✅ 保留原有过渡 */
+  opacity: 0.7;             /* ✅ 默认半透明可见（改自 opacity: 0） */
+  transform: scale(0.8);    /* ✅ 保留初始缩放动画 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 鼠标悬停菜单项时显示角标 */
+.menu-item:hover .nav-badge-button {
+  opacity: 1;
+  transform: scale(1);      /* ✅ 保留缩放动画 */
+}
+
+/* 角标按钮悬停效果 */
+.nav-badge-button:hover {
+  background: var(--accent-color);
+  filter: brightness(1.2);
+  transform: scale(1.1);    /* ✅ 保留悬停缩放动画 */
+  box-shadow: 0 3px 6px rgba(0, 230, 118, 0.4);
+}
+
+/* 角标按钮按下效果 */
+.nav-badge-button:active {
+  transform: scale(0.95);   /* ✅ 保留按下缩放动画 */
+}
+
+/* ✅ 删除导航菜单展开时的位置调整规则（这是导致位置变化的根源）*/
+/* .global-menu:hover .nav-badge-button { right: 8px; } - 已删除 */
+
+/* 激活状态的菜单项，角标始终可见 */
+.menu-item.active .nav-badge-button {
+  opacity: 0.8;
+}
+
+.menu-item.active:hover .nav-badge-button {
+  opacity: 1;
+}

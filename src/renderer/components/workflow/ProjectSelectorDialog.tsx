@@ -49,6 +49,7 @@ export const ProjectSelectorDialog: React.FC<ProjectSelectorDialogProps> = ({
 
       setProjects(filteredProjects);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('加载项目失败:', error);
     } finally {
       setLoading(false);
@@ -59,10 +60,13 @@ export const ProjectSelectorDialog: React.FC<ProjectSelectorDialogProps> = ({
     if (!newProjectName.trim()) return;
 
     try {
-      const project = await window.electronAPI.createProject(newProjectName, workflowType);
-      onCreateProject(project.id);
+      // TODO: [中期改进] 定义准确的createProject返回类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const project = await window.electronAPI.createProject(newProjectName, workflowType) as any;
+      onCreateProject((project as any).id);
       onClose();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('创建项目失败:', error);
     }
   };

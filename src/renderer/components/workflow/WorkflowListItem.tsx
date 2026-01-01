@@ -4,84 +4,84 @@
  */
 
 import React from 'react';
-import { Play } from 'lucide-react';
+import { Workflow, Pin, Trash2 } from 'lucide-react';
+import { formatRelativeTime } from '../../utils/formatters';
 import './WorkflowListItem.css';
 
 interface WorkflowListItemProps {
   id: string;
   name: string;
-  number: number;
   description?: string;
-  duration?: string; // 格式：00:00:00
-  status?: 'idle' | 'running' | 'completed' | 'skipped';
-  type?: string;
+  duration?: string; // 预留字段：用于未来显示辅助信息（如工作流来源分类标签）
+  type: string; // 工作流来源类型（custom/official/third-party）- 当前未在UI显示
+  lastModified: string; // ISO 8601 时间字符串
+  onDelete?: () => void;
+  onPin?: () => void;
   onClick?: () => void;
 }
 
 export const WorkflowListItem: React.FC<WorkflowListItemProps> = ({
-  id,
+  id: _id,
   name,
-  number,
   description,
-  duration = '00:00:00',
-  status = 'idle',
-  type = 'custom',
+  duration: _duration = '00:00:00',
+  type: _type,
+  lastModified,
+  onDelete,
+  onPin,
   onClick
 }) => {
-  const getStatusLabel = () => {
-    switch (status) {
-      case 'running':
-        return '运行中';
-      case 'completed':
-        return '已完成';
-      case 'skipped':
-        return '跳过';
-      default:
-        return null;
-    }
-  };
-
-  const getStatusClass = () => {
-    switch (status) {
-      case 'running':
-        return 'status-running';
-      case 'completed':
-        return 'status-completed';
-      case 'skipped':
-        return 'status-skipped';
-      default:
-        return '';
-    }
-  };
-
   return (
     <div className="workflow-list-item" onClick={onClick}>
-      {/* 左侧播放按钮 */}
-      <button className="play-button" onClick={(e) => { e.stopPropagation(); }}>
-        <Play size={16} fill="currentColor" />
-      </button>
-
-      {/* 时间码 */}
-      <div className="duration">{duration}</div>
-
-      {/* 主内容区 */}
-      <div className="content">
-        <div className="title">
-          <span className="number">#{number}</span>
-          <span className="name">{name}</span>
-        </div>
-        {description && (
-          <div className="description">{description}</div>
-        )}
+      {/* 1. 预览图区域 */}
+      <div className="preview-icon">
+        <Workflow className="icon" size={24} />
       </div>
 
-      {/* 右侧状态指示器 */}
-      {getStatusLabel() && (
-        <div className={`status-badge ${getStatusClass()}`}>
-          <span className="status-indicator"></span>
-          {getStatusLabel()}
+      {/* 2. 辅助信息 - 工作流来源分类（暂时隐藏，未来用于显示：自定义/官方/第三方） */}
+      {/* {duration && <div className="duration">{duration}</div>} */}
+
+      {/* 3. 名称和描述 */}
+      <div className="content">
+        <div className="title">{name}</div>
+        {description && <div className="description">{description}</div>}
+      </div>
+
+      {/* 4. 右对齐区域 */}
+      <div className="right-section">
+        {/* 信息栏 - 简化显示，仅显示相对时间 */}
+        <div className="info">
+          {formatRelativeTime(lastModified)}
         </div>
-      )}
+
+        {/* 按钮组 */}
+        <div className="action-buttons">
+          {onPin && (
+            <button
+              className="pin-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPin();
+              }}
+              title="添加到菜单栏"
+            >
+              <Pin size={16} />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              className="delete-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              title="删除工作流"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

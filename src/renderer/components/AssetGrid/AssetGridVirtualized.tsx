@@ -82,7 +82,9 @@ export function AssetGridVirtualized({
         pageSize: filter.pageSize || 100
       };
 
-      const result: AssetScanResult = await window.electronAPI.scanAssets(scanFilter);
+      // TODO: [中期改进] 定义准确的scanAssets返回类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await window.electronAPI.scanAssets(scanFilter) as AssetScanResult;
 
       setTotalCount(result.total);
       setHasMore(result.hasMore);
@@ -137,7 +139,7 @@ export function AssetGridVirtualized({
   }, [hasMore, rowCount]);
 
   // 加载更多行
-  const loadMoreRows = useCallback(async (startIndex: number, stopIndex: number) => {
+  const loadMoreRows = useCallback(async (_startIndex: number, _stopIndex: number) => {
     if (hasMore && !loading) {
       await loadAssets(currentPage + 1, true);
     }

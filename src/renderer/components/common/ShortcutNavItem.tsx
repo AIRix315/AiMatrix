@@ -52,7 +52,7 @@ export const ShortcutNavItem: React.FC<ShortcutNavItemProps> = ({
     };
   }, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = (_e: React.MouseEvent) => {
     // 如果已经在编辑模式，不处理长按
     if (isEditing) return;
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, RefreshCw, Filter, AlertCircle, AlertTriangle, Info, Bug } from 'lucide-react';
+import { X, RefreshCw, AlertCircle, AlertTriangle, Info, Bug } from 'lucide-react';
 import './LogViewer.css';
 
 interface LogEntry {
@@ -7,7 +7,7 @@ interface LogEntry {
   level: 'error' | 'warn' | 'info' | 'debug';
   service?: string;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 interface LogViewerProps {
@@ -26,6 +26,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ isOpen, onClose }) => {
       const fetchedLogs = await window.electronAPI.getRecentLogs(100, levelFilter || undefined);
       setLogs(fetchedLogs);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch logs:', error);
     } finally {
       setIsLoading(false);
@@ -155,9 +156,10 @@ const LogViewer: React.FC<LogViewerProps> = ({ isOpen, onClose }) => {
                     {log.service && <span className="log-service">[{log.service}]</span>}
                   </div>
                   <div className="log-message">{log.message}</div>
-                  {log.data && (
-                    <pre className="log-data">{JSON.stringify(log.data, null, 2)}</pre>
-                  )}
+                  {/* TODO: [中期改进] 定义准确的log.data类型 */}
+                  {log.data ? (
+                    <pre className="log-data">{JSON.stringify(log.data as Record<string, unknown>, null, 2)}</pre>
+                  ) : null}
                 </div>
               ))}
             </div>

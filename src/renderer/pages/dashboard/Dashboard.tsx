@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Pin, Trash2, FolderOpen, Clapperboard, Folder } from 'lucide-react';
-import { Button, Modal, Toast, Loading, ConfirmDialog, ViewSwitcher } from '../../components/common';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
+import { Pin, Trash2, FolderOpen, Folder } from 'lucide-react';
+import { Button, Modal, Toast, Loading, ConfirmDialog, ViewSwitcher, Tooltip, Card } from '../../components/common';
+import { ProjectListItem } from '../../components/project/ProjectListItem';
 import type { ToastType } from '../../components/common/Toast';
 import { ShortcutType } from '../../../common/types';
 import { refreshGlobalNav } from '../../utils/globalNavHelper';
@@ -32,13 +30,13 @@ const Dashboard: React.FC = () => {
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('workflow');
-  const [workspacePath, setWorkspacePath] = useState('');
+  // const [workspacePath, setWorkspacePath] = useState(''); // 暂时未使用
   const [availableTemplates, setAvailableTemplates] = useState<TemplateOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ projectId: string; projectName: string } | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
 
   // 加载项目列表
   useEffect(() => {
@@ -81,11 +79,13 @@ const Dashboard: React.FC = () => {
         const plugins = await window.electronAPI.listPlugins();
 
         // 筛选提供模板的插件（通过 category='workflow' 判断）
+        // TODO: [中期改进] 定义准确的Plugin类型
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         plugins.forEach((plugin: any) => {
-          if (plugin.category === 'workflow' && plugin.isEnabled) {
+          if ((plugin as any).category === 'workflow' && (plugin as any).isEnabled) {
             templates.push({
-              id: plugin.id,
-              name: plugin.name
+              id: (plugin as any).id,
+              name: (plugin as any).name
             });
           }
         });
@@ -101,8 +101,9 @@ const Dashboard: React.FC = () => {
   const loadWorkspacePath = async () => {
     try {
       if (window.electronAPI?.getAllSettings) {
-        const settings = await window.electronAPI.getAllSettings();
-        setWorkspacePath(settings.general.workspacePath);
+        // const settings = await window.electronAPI.getAllSettings();
+        // setWorkspacePath(settings.general.workspacePath); // 暂时未使用
+        await window.electronAPI.getAllSettings(); // 暂时未使用
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -264,85 +265,56 @@ const Dashboard: React.FC = () => {
         ) : viewMode === 'list' ? (
           <div className="project-list">
             {projects.map((project) => (
-              <motion.div
+              <ProjectListItem
                 key={project.id}
-                className="project-item-wrapper"
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              >
-                <Card
-                  className="cursor-pointer rounded-lg"
-                  onClick={() => handleOpenProject(project.id)}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
-                      <Badge variant="secondary">
-                        {project.workflowType === 'novel-to-video' ? '小说转视频' : '工作流'}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <div className="project-image">
-                      {project.image || <Clapperboard className="h-16 w-16 text-muted-foreground" />}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="text-sm text-muted-foreground pt-2">
-                    {project.path}
-                  </CardFooter>
-                </Card>
-                <div className="card-actions">
-                  <button
-                    className="pin-btn"
-                    onClick={(e) => handlePinProject(e, project)}
-                    title="添加到菜单栏"
-                  >
-                    <Pin size={16} />
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteConfirm({ projectId: project.id, projectName: project.name });
-                    }}
-                    title="删除项目"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </motion.div>
+                id={project.id}
+                name={project.name}
+                path={project.path}
+                workflowType={project.workflowType}
+                lastModified={project.lastModified}
+                onDelete={() => setDeleteConfirm({ projectId: project.id, projectName: project.name })}
+                onPin={async () => {
+                  try {
+                    await window.electronAPI.addShortcut({
+                      type: ShortcutType.PROJECT,
+                      targetId: project.id,
+                      name: project.name,
+                      icon: 'folder'
+                    });
+                    setToast({
+                      type: 'success',
+                      message: `项目 "${project.name}" 已添加到菜单栏`
+                    });
+                    await refreshGlobalNav();
+                  } catch (error) {
+                    setToast({
+                      type: 'error',
+                      message: `添加快捷方式失败: ${error instanceof Error ? error.message : String(error)}`
+                    });
+                  }
+                }}
+                onClick={() => handleOpenProject(project.id)}
+              />
             ))}
           </div>
         ) : (
           <div className="project-grid">
             {projects.map((project) => (
-              <motion.div
-                key={project.id}
-                className="project-card-wrapper"
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              >
+              <div key={project.id} className="project-card-wrapper">
                 <Card
-                  className="cursor-pointer rounded-lg h-full flex flex-col"
+                  tag={project.workflowType === 'novel-to-video' ? '小说转视频' : '工作流'}
+                  image={project.image || <Folder className="h-12 w-12 text-muted-foreground" />}
+                  title={project.name}
+                  info={
+                    <Tooltip content={project.path} placement="top">
+                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {project.path}
+                      </span>
+                    </Tooltip>
+                  }
+                  hoverable
                   onClick={() => handleOpenProject(project.id)}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
-                      <Badge variant="secondary">
-                        {project.workflowType === 'novel-to-video' ? '小说转视频' : '工作流'}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-2 flex-1">
-                    <div className="project-image">
-                      {project.image || <Clapperboard className="h-16 w-16 text-muted-foreground" />}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="text-sm text-muted-foreground pt-2">
-                    {project.path}
-                  </CardFooter>
-                </Card>
+                />
                 <div className="card-actions">
                   <button
                     className="pin-btn"
@@ -362,7 +334,7 @@ const Dashboard: React.FC = () => {
                     <Trash2 size={16} />
                   </button>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

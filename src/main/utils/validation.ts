@@ -99,6 +99,7 @@ export class ValidationUtils {
     }
 
     // 验证输入
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config.inputs.forEach((input: any, index: number) => {
       if (!input.name || input.name.trim().length === 0) {
         errors.push(`输入 ${index + 1} 名称不能为空`);
@@ -111,6 +112,7 @@ export class ValidationUtils {
     });
 
     // 验证输出
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config.outputs.forEach((output: any, index: number) => {
       if (!output.name || output.name.trim().length === 0) {
         errors.push(`输出 ${index + 1} 名称不能为空`);

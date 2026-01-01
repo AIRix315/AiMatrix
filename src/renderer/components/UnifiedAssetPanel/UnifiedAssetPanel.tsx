@@ -8,6 +8,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useSidebar } from '../../contexts/SidebarContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { AssetCategoryList } from './AssetCategoryList';
 import { ProjectSelector } from './ProjectSelector';
@@ -41,6 +43,7 @@ export function UnifiedAssetPanel({
   onProjectChange
 }: UnifiedAssetPanelProps) {
   const [projects, setProjects] = useState<ProjectConfig[]>([]);
+  const { assetPanelCollapsed } = useSidebar(); // 获取资产面板收放状态
 
   // 加载项目列表
   useEffect(() => {
@@ -49,6 +52,7 @@ export function UnifiedAssetPanel({
         const projectList = await window.electronAPI.listProjects();
         setProjects(projectList);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('加载项目列表失败:', error);
       }
     };
@@ -67,43 +71,63 @@ export function UnifiedAssetPanel({
   };
 
   return (
-    <aside className="unified-asset-panel">
-      <Tabs value={selectedScope} onValueChange={handleTabChange}>
-        <div className="panel-tabs">
-          <TabsList className="panel-tabs-list">
-            <TabsTrigger value="global" className="panel-tab-trigger">
-              全局
-            </TabsTrigger>
-            <TabsTrigger value="project" className="panel-tab-trigger">
-              项目
-            </TabsTrigger>
-          </TabsList>
-        </div>
+    <motion.aside
+      className="unified-asset-panel"
+      animate={assetPanelCollapsed ? {
+        width: 0,
+        opacity: 0,
+        marginRight: 0,
+      } : {
+        width: 256,
+        opacity: 1,
+        marginRight: 0,
+      }}
+      transition={{
+        type: 'spring',
+        damping: 25,
+        stiffness: 300,
+        duration: 0.3
+      }}
+      style={{ overflow: 'hidden' }} // 收起时隐藏溢出内容
+    >
+      {!assetPanelCollapsed && ( // 收起时不渲染子组件
+        <Tabs value={selectedScope} onValueChange={handleTabChange}>
+          <div className="panel-tabs">
+            <TabsList className="panel-tabs-list">
+              <TabsTrigger value="global" className="panel-tab-trigger">
+                全局
+              </TabsTrigger>
+              <TabsTrigger value="project" className="panel-tab-trigger">
+                项目
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        <TabsContent value="global" className="panel-tab-content">
-          <AssetCategoryList
-            categories={GLOBAL_ASSET_CATEGORIES}
-            selectedCategory={selectedCategory}
-            onCategorySelect={onCategoryChange}
-          />
-        </TabsContent>
-
-        <TabsContent value="project" className="panel-tab-content">
-          {showProjectSelector && onProjectChange && (
-            <ProjectSelector
-              projects={projects}
-              selectedProjectId={selectedProjectId}
-              onProjectSelect={onProjectChange}
+          <TabsContent value="global" className="panel-tab-content">
+            <AssetCategoryList
+              categories={GLOBAL_ASSET_CATEGORIES}
+              selectedCategory={selectedCategory}
+              onCategorySelect={onCategoryChange}
             />
-          )}
-          <AssetCategoryList
-            categories={PROJECT_WORKFLOW_CATEGORIES}
-            selectedCategory={selectedCategory}
-            onCategorySelect={onCategoryChange}
-            projectId={currentProjectId || selectedProjectId}
-          />
-        </TabsContent>
-      </Tabs>
-    </aside>
+          </TabsContent>
+
+          <TabsContent value="project" className="panel-tab-content">
+            {showProjectSelector && onProjectChange && (
+              <ProjectSelector
+                projects={projects}
+                selectedProjectId={selectedProjectId}
+                onProjectSelect={onProjectChange}
+              />
+            )}
+            <AssetCategoryList
+              categories={PROJECT_WORKFLOW_CATEGORIES}
+              selectedCategory={selectedCategory}
+              onCategorySelect={onCategoryChange}
+              projectId={currentProjectId || selectedProjectId}
+            />
+          </TabsContent>
+        </Tabs>
+      )}
+    </motion.aside>
   );
 }

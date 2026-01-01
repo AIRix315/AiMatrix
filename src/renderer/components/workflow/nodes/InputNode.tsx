@@ -21,7 +21,7 @@ export interface InputNodeData {
 const InputNode: React.FC<NodeProps<InputNodeData>> = ({ data, selected }) => {
   const [assetType, setAssetType] = useState<AssetType>(data.assetType || 'image');
   const [searchQuery, setSearchQuery] = useState(data.searchQuery || '');
-  const [selectedAssets, setSelectedAssets] = useState<AssetMetadata[]>(data.selectedAssets || []);
+  const [selectedAssets] = useState<AssetMetadata[]>(data.selectedAssets || []);
 
   const assetTypeIcons: Record<AssetType, React.ReactNode> = {
     image: <FileImage size={16} />,
@@ -56,6 +56,8 @@ const InputNode: React.FC<NodeProps<InputNodeData>> = ({ data, selected }) => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     // TODO: 从资产管理器拖拽资产到此处
+    // TODO: 移除调试代码
+    // eslint-disable-next-line no-console
     console.log('资产拖拽功能待实现');
   };
 

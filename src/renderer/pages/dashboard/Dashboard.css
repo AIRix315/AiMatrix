@@ -86,7 +86,7 @@
 }
 
 /* 卡片操作按钮组 - 右下角 */
-.card-actions {
+.project-card-wrapper .card-actions {
     position: absolute;
     bottom: 0.5rem;
     right: 0.5rem;
@@ -97,13 +97,12 @@
     z-index: 10;
 }
 
-.project-card-wrapper:hover .card-actions,
-.project-item-wrapper:hover .card-actions {
+.project-card-wrapper:hover .card-actions {
     opacity: 1;
 }
 
-.pin-btn,
-.delete-btn {
+.project-card-wrapper .pin-btn,
+.project-card-wrapper .delete-btn {
     width: 2rem;
     height: 2rem;
     background: var(--bg-canvas);
@@ -118,13 +117,13 @@
     padding: 0;
 }
 
-.pin-btn:hover {
+.project-card-wrapper .pin-btn:hover {
     background: var(--accent-color);
     color: var(--primary-foreground);
     border-color: var(--accent-color);
 }
 
-.delete-btn:hover {
+.project-card-wrapper .delete-btn:hover {
     background: var(--destructive);
     color: var(--primary-foreground);
     border-color: var(--destructive);

@@ -617,9 +617,9 @@ export class AgentSceneCharacterExtractor implements ISceneCharacterExtractor {
       ...scene
     }))
 
-    console.log(
-      `[AgentSceneCharacterExtractor] 场景拆分成功，共 ${scenes.length} 个场景，耗时 ${result.metadata.duration}ms`
-    )
+    // logger.debug(
+    //   `[AgentSceneCharacterExtractor] 场景拆分成功，共 ${scenes.length} 个场景，耗时 ${result.metadata.duration}ms`
+    // )
 
     return scenes
   }
@@ -665,9 +665,9 @@ ${chapterContent}`
       throw new Error(`章节摘要生成失败: ${error.message} (类型: ${error.type})`)
     }
 
-    console.log(
-      `[AgentSceneCharacterExtractor] 章节摘要生成成功，耗时 ${result.metadata.duration}ms`
-    )
+    // logger.debug(
+    //   `[AgentSceneCharacterExtractor] 章节摘要生成成功，耗时 ${result.metadata.duration}ms`
+    // )
 
     return result.data!.summary
   }
@@ -716,16 +716,16 @@ ${sceneStory}`
    * 批量场景摘要生成：为所有场景并行生成摘要
    */
   async generateSceneSummaries(sceneSegments: SceneSegment[]): Promise<string[]> {
-    console.log(
-      `[AgentSceneCharacterExtractor] 开始生成 ${sceneSegments.length} 个场景摘要（并行）`
-    )
+    // logger.debug(
+    //   `[AgentSceneCharacterExtractor] 开始生成 ${sceneSegments.length} 个场景摘要（并行）`
+    // )
 
     // 并行生成所有场景摘要
     const summaries = await Promise.all(
       sceneSegments.map((segment) => this.generateSceneSummary(segment.story))
     )
 
-    console.log(`[AgentSceneCharacterExtractor] 所有场景摘要生成完成`)
+    // logger.debug(`[AgentSceneCharacterExtractor] 所有场景摘要生成完成`)
 
     return summaries
   }
@@ -784,9 +784,9 @@ ${sceneStory}`
 
     const refinedScenes = result.data!.scenes
 
-    console.log(
-      `[AgentSceneCharacterExtractor] 场景细化成功，共 ${refinedScenes.length} 个场景，耗时 ${result.metadata.duration}ms`
-    )
+    // logger.debug(
+    //   `[AgentSceneCharacterExtractor] 场景细化成功，共 ${refinedScenes.length} 个场景，耗时 ${result.metadata.duration}ms`
+    // )
 
     return refinedScenes
   }
@@ -864,9 +864,9 @@ ${sceneStory}`
 
     const refinedCharacters = result.data!.characters
 
-    console.log(
-      `[AgentSceneCharacterExtractor] 角色细化成功，共 ${refinedCharacters.length} 个角色，耗时 ${result.metadata.duration}ms`
-    )
+    // logger.debug(
+    //   `[AgentSceneCharacterExtractor] 角色细化成功，共 ${refinedCharacters.length} 个角色，耗时 ${result.metadata.duration}ms`
+    // )
 
     return refinedCharacters
   }
@@ -1031,9 +1031,9 @@ ${sceneStory}`
     // 过滤出相似度 >= 80 的匹配
     const filteredMatches = result.data!.matches.filter((match) => match.similarity >= 80)
 
-    console.log(
-      `[AgentSceneCharacterExtractor] 场景匹配完成，找到 ${filteredMatches.length} 个匹配，耗时 ${result.metadata.duration}ms`
-    )
+    // logger.debug(
+    //   `[AgentSceneCharacterExtractor] 场景匹配完成，找到 ${filteredMatches.length} 个匹配，耗时 ${result.metadata.duration}ms`
+    // )
 
     return filteredMatches
   }
@@ -1092,9 +1092,9 @@ ${sceneStory}`
     // 过滤出相似度 >= 80 的匹配
     const filteredMatches = result.data!.matches.filter((match) => match.similarity >= 80)
 
-    console.log(
-      `[AgentSceneCharacterExtractor] 角色匹配完成，找到 ${filteredMatches.length} 个匹配，耗时 ${result.metadata.duration}ms`
-    )
+    // logger.debug(
+    //   `[AgentSceneCharacterExtractor] 角色匹配完成，找到 ${filteredMatches.length} 个匹配，耗时 ${result.metadata.duration}ms`
+    // )
 
     return filteredMatches
   }
@@ -1106,14 +1106,14 @@ ${sceneStory}`
     chapter: Chapter,
     artStyle?: string
   ): Promise<SceneCharacterExtractResult> {
-    console.log(`[AgentSceneCharacterExtractor] 开始提取章节场景和角色: ${chapter.title}`)
+    // logger.debug(`[AgentSceneCharacterExtractor] 开始提取章节场景和角色: ${chapter.title}`)
 
     // 使用传入的艺术风格或默认值
     const finalArtStyle = artStyle || '现代动漫风格'
 
     // 第一步：拆分场景并提取角色
     const sceneSegments = await this.splitChapterIntoScenes(chapter.content)
-    console.log('@@@@场景拆分', sceneSegments)
+    // logger.debug('@@@@场景拆分', sceneSegments)
 
     // 第二步：场景细化、角色细化、章节摘要、场景摘要并行执行
     const [refinedScenes, refinedCharacters, chapterSummary, sceneSummaries] = await Promise.all([
@@ -1122,10 +1122,10 @@ ${sceneStory}`
       this.generateChapterSummary(chapter.content),
       this.generateSceneSummaries(sceneSegments)
     ])
-    console.log('@@@@场景细化', refinedScenes)
-    console.log('@@@@角色细化', refinedCharacters)
-    console.log('@@@@章节摘要', chapterSummary)
-    console.log('@@@@场景摘要', sceneSummaries)
+    // logger.debug('@@@@场景细化', refinedScenes)
+    // logger.debug('@@@@角色细化', refinedCharacters)
+    // logger.debug('@@@@章节摘要', chapterSummary)
+    // logger.debug('@@@@场景摘要', sceneSummaries)
 
     // 第三步：处理场景数据，将细化结果和原始分段数据映射到最终的场景数据结构
     const scenes: SceneExtractResult[] = refinedScenes.map((refinedScene, index) => {
@@ -1159,9 +1159,9 @@ ${sceneStory}`
       }
     })
 
-    console.log(
-      `[AgentSceneCharacterExtractor] 提取完成: ${scenes.length} 个场景, ${characters.length} 个角色`
-    )
+    // logger.debug(
+    //   `[AgentSceneCharacterExtractor] 提取完成: ${scenes.length} 个场景, ${characters.length} 个角色`
+    // )
 
     return { scenes, characters, chapterSummary }
   }

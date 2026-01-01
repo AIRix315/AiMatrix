@@ -24,8 +24,7 @@ interface AssetCategoryListProps {
 export function AssetCategoryList({
   categories,
   selectedCategory,
-  onCategorySelect,
-  projectId
+  onCategorySelect
 }: AssetCategoryListProps) {
   return (
     <div className="panel-category-section">

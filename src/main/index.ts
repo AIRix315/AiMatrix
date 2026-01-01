@@ -20,9 +20,15 @@ import { configManager } from './services/ConfigManager';
 import { timeService } from './services/TimeService';
 import { ShortcutManager } from './services/ShortcutManager';
 import { registerWorkflowHandlers } from './ipc/workflow-handlers';
+import { registerProviderHandlers } from './ipc/provider-handlers';
+import { registerAIHandlers } from './ipc/ai-handlers';
 import { workflowRegistry } from './services/WorkflowRegistry';
 import { testWorkflowDefinition } from './workflows/test-workflow';
 import { novelToVideoWorkflow } from './workflows/novel-to-video-definition';
+import { ProviderRegistry } from './services/ProviderRegistry';
+import { ProviderRouter } from './services/ProviderRouter';
+import { JiekouProvider } from './providers/JiekouProvider';
+import { AIService } from './services/AIService';
 
 // 注册自定义协议为特权协议（必须在 app.ready 之前）
 protocol.registerSchemesAsPrivileged([
@@ -44,6 +50,9 @@ class MatrixApp {
   private fileSystemService: FileSystemService;
   private assetManager: AssetManager;
   private shortcutManager: ShortcutManager;
+  private providerRegistry: ProviderRegistry;
+  private providerRouter: ProviderRouter;
+  private aiService: AIService;
   private fileWatchers: Map<string, fsSync.FSWatcher> = new Map();
 
   constructor() {
@@ -53,6 +62,9 @@ class MatrixApp {
     this.fileSystemService = fileSystemService;
     this.assetManager = getAssetManager(this.fileSystemService);
     this.shortcutManager = ShortcutManager.getInstance(timeService, logger, configManager);
+    this.providerRegistry = new ProviderRegistry(logger);
+    this.providerRouter = new ProviderRouter(this.providerRegistry, configManager, logger);
+    this.aiService = new AIService(logger, apiManager);
 
     this.initializeEventListeners();
   }
@@ -206,7 +218,27 @@ class MatrixApp {
     await modelRegistry.initialize();
     await this.shortcutManager.initialize();
 
+    // 注册 Providers
+    await this.registerProviders();
+
     await logger.info('All Matrix services initialized successfully', 'MatrixApp');
+  }
+
+  /**
+   * 注册 Providers
+   */
+  private async registerProviders(): Promise<void> {
+    await logger.info('Registering AI Providers', 'MatrixApp');
+
+    // 注册接口AI Provider
+    const jiekouProvider = new JiekouProvider(
+      configManager,
+      this.fileSystemService,
+      logger
+    );
+    this.providerRegistry.register(jiekouProvider);
+
+    await logger.info('Providers registered successfully', 'MatrixApp');
   }
 
   /**
@@ -348,7 +380,8 @@ class MatrixApp {
 
     // API Provider相关IPC处理
     ipcMain.handle('api:list-providers', async (_, options?: { category?: string; enabledOnly?: boolean }) => {
-      return await apiManager.listProviders(options as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return await apiManager.listProviders(options as any); // IPC层category是string，内部是APICategory枚举
     });
     ipcMain.handle('api:get-provider', async (_, providerId: string) => {
       return await apiManager.getProvider(providerId);
@@ -373,7 +406,8 @@ class MatrixApp {
       includeHidden?: boolean;
       favoriteOnly?: boolean;
     }) => {
-      return await modelRegistry.listModels(options as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return await modelRegistry.listModels(options as any); // IPC层category是string，内部是APICategory枚举
     });
     ipcMain.handle('model:get', async (_, modelId: string) => {
       return await modelRegistry.getModel(modelId);
@@ -396,7 +430,8 @@ class MatrixApp {
 
     // 日志相关IPC处理
     ipcMain.handle('logs:get-recent', async (_, limit?: number, levelFilter?: string) => {
-      return await logger.getRecentLogs(limit, levelFilter as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return await logger.getRecentLogs(limit, levelFilter as any); // IPC层是string，内部是LogLevel枚举
     });
 
     // 项目相关IPC处理
@@ -827,6 +862,12 @@ class MatrixApp {
 
     // 注册工作流相关IPC处理器
     registerWorkflowHandlers();
+
+    // 注册 Provider 相关 IPC 处理器
+    registerProviderHandlers(this.providerRouter);
+
+    // 注册 AI 相关 IPC 处理器
+    registerAIHandlers(this.aiService);
 
     logger.debug('IPC处理器设置完成', 'MatrixApp');
   }

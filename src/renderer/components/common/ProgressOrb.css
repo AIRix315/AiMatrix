@@ -20,8 +20,8 @@
   /* 左上、右上、右下、左下 */
   border-radius: var(--radius) 0 0 var(--radius);
 
-  background: oklch(0.16 0 0);
-  border: 2px solid oklch(0.85 0.22 160);  /* 浅绿色（电子绿）*/
+  background: var(--card);
+  border: 2px solid var(--primary);  /* 浅绿色（电子绿）*/
   border-right: none;
   cursor: pointer;
   overflow: hidden;
@@ -38,8 +38,8 @@
 }
 
 .progress-orb:hover {
-  background: oklch(0.18 0 0);
-  border-color: oklch(0.85 0.22 160);  /* 完全不透明的浅绿色 */
+  background: var(--card);
+  border-color: var(--primary);  /* 完全不透明的浅绿色 */
 }
 
 /* 水位容器 */
@@ -61,8 +61,8 @@
   width: 100%;
   background: linear-gradient(
     180deg,
-    oklch(0.85 0.22 160) 0%,
-    oklch(0.75 0.22 160) 100%
+    var(--primary) 0%,
+    color-mix(in oklch, var(--primary) 85%, black) 100%
   );
   transition: height 0.3s ease;
 }
@@ -77,7 +77,7 @@
   background: radial-gradient(
     ellipse at center,
     transparent 0%,
-    oklch(0.9 0.22 160 / 0.5) 50%,
+    color-mix(in oklch, var(--primary) 50%, transparent) 50%,
     transparent 100%
   );
   animation: wave 2s linear infinite;
@@ -100,7 +100,7 @@
   font-weight: 600;
   color: white;
   font-family: "JetBrains Mono", monospace;
-  text-shadow: 0 0 4px oklch(0 0 0 / 0.3);
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
 /* 生成中脉动动画 */
@@ -110,10 +110,10 @@
 
 @keyframes pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 oklch(0.85 0.22 160 / 0.7);
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 70%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 8px oklch(0.85 0.22 160 / 0);
+    box-shadow: 0 0 0 8px color-mix(in oklch, var(--primary) 0%, transparent);
   }
 }
 

@@ -59,7 +59,19 @@
       "Bash(if not exist \"E:\\\\Projects\\\\Matrix\\\\docs\\\\audit\" mkdir \"E:\\\\Projects\\\\Matrix\\\\docs\\\\audit\")",
       "Bash(del \"E:\\\\Projects\\\\Matrix\\\\src\\\\main\\\\models\\\\project.ts\")",
       "Bash(timeout 30 git push:*)",
-      "Bash(del audio.ico brightness.ico close.ico gallery.ico maximize.ico minimize.ico pause.ico play.ico restore.ico shot.ico video.ico)"
+      "Bash(del audio.ico brightness.ico close.ico gallery.ico maximize.ico minimize.ico pause.ico play.ico restore.ico shot.ico video.ico)",
+      "Bash(if exist node_modules.cache rmdir /s /q node_modules.cache)",
+      "Bash(npx eslint:*)",
+      "Bash(if not exist \"docs\\\\plan\" mkdir docsplan)",
+      "Bash(node fix-any-types.js:*)",
+      "Bash(node fix-preload-any.js:*)",
+      "Bash(node fix-shared-types.js:*)",
+      "Bash(node fix-renderer-any.js:*)",
+      "Bash(node fix-remaining-any.js:*)",
+      "Bash(node fix-map-and-functions.js:*)",
+      "Bash(cut:*)",
+      "Bash(1)",
+      "Bash(del E:ProjectsMatrixfix-remaining-errors.js)"
     ]
   },
   "enabledPlugins": {

@@ -496,9 +496,11 @@ export class APIManager {
           let models: string[] = [];
           if (type === 'ollama') {
             // Ollama 返回格式: { models: [{ name: "..." }, ...] }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             models = data.models?.map((m: any) => m.name || m.model) || [];
           } else {
             // OpenAI/SiliconFlow 返回格式: { data: [{ id: "..." }, ...] }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             models = data.data?.map((m: any) => m.id) || [];
           }
 
@@ -642,6 +644,7 @@ export class APIManager {
           'Authorization': `Bearer ${apiKey}`
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const body: any = {
           prompt: options.prompt,
           model: options.model || 'sora-2'
@@ -979,7 +982,7 @@ export class APIManager {
   private async migrateOldConfig(): Promise<void> {
     await logger.info('Migrating old API config to new provider config', 'APIManager');
 
-    for (const [name, oldConfig] of this.apis.entries()) {
+    for (const [_name, oldConfig] of this.apis.entries()) {
       // 映射旧的provider到新的category
       let category: APICategory = APICategory.LLM;
       switch (oldConfig.provider) {
@@ -1239,9 +1242,11 @@ export class APIManager {
           let models: string[] = [];
           if (config && config.id.includes('ollama')) {
             // Ollama 返回格式: { models: [{ name: "..." }, ...] }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             models = data.models?.map((m: any) => m.name || m.model) || [];
           } else if (config && config.category === APICategory.LLM) {
             // OpenAI/SiliconFlow 返回格式: { data: [{ id: "..." }, ...] }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             models = data.data?.map((m: any) => m.id) || [];
           }
 

@@ -76,7 +76,7 @@ export interface AssetMetadata {
   thumbnailPath?: string;            // 缩略图路径
 
   // === 插件扩展字段 ===
-  customFields?: Record<string, any>; // 插件自定义字段 (JSON)
+  customFields?: Record<string, unknown>; // 插件自定义字段 (JSON)
 }
 
 /**
@@ -167,7 +167,7 @@ export interface AssetFileChangeEvent {
  * 场景专用字段
  * 用于小说转视频工作流的场景管理
  */
-export interface SceneCustomFields {
+export interface SceneCustomFields extends Record<string, unknown> {
   assetSubType: 'scene';                              // 资产子类型标识
   environment: 'indoor' | 'outdoor';                  // 环境
   timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night'; // 时间
@@ -181,7 +181,7 @@ export interface SceneCustomFields {
  * 角色专用字段
  * 用于小说转视频工作流的角色管理
  */
-export interface CharacterCustomFields {
+export interface CharacterCustomFields extends Record<string, unknown> {
   assetSubType: 'character';                          // 资产子类型标识
   gender: 'male' | 'female' | 'other';                // 性别
   age: number;                                         // 年龄

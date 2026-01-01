@@ -233,3 +233,20 @@
 .asset-grid.loading-transition {
   opacity: 0.6;
 }
+
+/* 资产列表视图 */
+.asset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+/* 列表视图过渡效果 */
+.asset-list {
+  transition: opacity 0.2s ease;
+}
+
+.asset-list.loading-transition {
+  opacity: 0.6;
+}

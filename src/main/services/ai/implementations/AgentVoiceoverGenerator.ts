@@ -94,7 +94,7 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
     story: string,
     characters: Character[]
   ): Promise<Array<{ text: string; characterId: string }>> {
-    console.log('\n========== Step 1: 识别台词并绑定角色ID 开始 ==========')
+    // logger.debug('\n========== Step 1: 识别台词并绑定角色ID 开始 ==========')
 
     // 构建角色列表文本（只包含 characterId 和 name）
     const charactersText = JSON.stringify(
@@ -111,8 +111,8 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
       .replace('{{story}}', story)
       .replace('{{characters}}', charactersText)
 
-    console.log('[Step 1] 输入角色数量:', characters.length)
-    console.log('[Step 1] 故事长度:', story.length, '字符')
+    // logger.debug('[Step 1] 输入角色数量:', characters.length)
+    // logger.debug('[Step 1] 故事长度:', story.length, '字符')
 
     // 定义输出 Schema（使用 Zod）
     const DialogueIdentificationSchema = z.object({
@@ -126,7 +126,7 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
 
     type DialogueIdentificationOutput = z.infer<typeof DialogueIdentificationSchema>
 
-    console.log('[Step 1] 开始调用 Agent...')
+    // logger.debug('[Step 1] 开始调用 Agent...')
 
     // 获取 agent 实例（实时读取配置）
     const agent = await this.ensureAgent()
@@ -144,14 +144,15 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
     // 处理结果
     if (!result.success) {
       const error = result.error!
+      // eslint-disable-next-line no-console
       console.error('[Step 1] 失败:', error.message, '(类型:', error.type, ')')
       throw new Error(`台词识别失败: ${error.message} (类型: ${error.type})`)
     }
 
     const dialogues = result.data!.dialogues
 
-    console.log('[Step 1] 成功！共识别', dialogues.length, '句台词，耗时', result.metadata.duration, 'ms')
-    console.log('========== Step 1: 识别台词并绑定角色ID 完成 ==========\n')
+    // logger.debug('[Step 1] 成功！共识别', dialogues.length, '句台词，耗时', result.metadata.duration, 'ms')
+    // logger.debug('========== Step 1: 识别台词并绑定角色ID 完成 ==========\n')
 
     return dialogues
   }
@@ -163,7 +164,7 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
     dialogues: Array<{ text: string; characterId: string }>,
     story: string
   ): Promise<Array<{ text: string; characterId: string; emotion: number[] }>> {
-    console.log('\n========== Step 2: 分析台词情绪 开始 ==========')
+    // logger.debug('\n========== Step 2: 分析台词情绪 开始 ==========')
 
     // 构建台词列表文本
     const dialoguesText = JSON.stringify(
@@ -177,7 +178,7 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
       .replace('{{story}}', story)
       .replace('{{dialogues}}', dialoguesText)
 
-    console.log('[Step 2] 待分析台词数量:', dialogues.length)
+    // logger.debug('[Step 2] 待分析台词数量:', dialogues.length)
 
     // 定义输出 Schema（使用 Zod）
     const EmotionAnalysisSchema = z.object({
@@ -191,7 +192,7 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
 
     type EmotionAnalysisOutput = z.infer<typeof EmotionAnalysisSchema>
 
-    console.log('[Step 2] 开始调用 Agent...')
+    // logger.debug('[Step 2] 开始调用 Agent...')
 
     // 获取 agent 实例（实时读取配置）
     const agent = await this.ensureAgent()
@@ -209,6 +210,7 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
     // 处理结果
     if (!result.success) {
       const error = result.error!
+      // eslint-disable-next-line no-console
       console.error('[Step 2] 失败:', error.message, '(类型:', error.type, ')')
       throw new Error(`情绪分析失败: ${error.message} (类型: ${error.type})`)
     }
@@ -226,8 +228,8 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
       }
     })
 
-    console.log('[Step 2] 成功！共分析', dialoguesWithEmotion.length, '句台词，耗时', result.metadata.duration, 'ms')
-    console.log('========== Step 2: 分析台词情绪 完成 ==========\n')
+    // logger.debug('[Step 2] 成功！共分析', dialoguesWithEmotion.length, '句台词，耗时', result.metadata.duration, 'ms')
+    // logger.debug('========== Step 2: 分析台词情绪 完成 ==========\n')
     return dialoguesWithEmotion
   }
 
@@ -238,7 +240,7 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
     dialoguesWithEmotion: Array<{ text: string; characterId: string; emotion: number[] }>,
     characters: Character[]
   ): VoiceoverDialogue[] {
-    console.log('\n========== 格式化输出 开始 ==========')
+    // logger.debug('\n========== 格式化输出 开始 ==========')
 
     const voiceoverDialogues = dialoguesWithEmotion.map((dialogue) => {
       const character = characters.find((char) => char.characterId === dialogue.characterId)
@@ -255,8 +257,8 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
       }
     })
 
-    console.log(`[格式化] 成功格式化 ${voiceoverDialogues.length} 句台词`)
-    console.log('========== 格式化输出 完成 ==========\n')
+    // logger.debug(`[格式化] 成功格式化 ${voiceoverDialogues.length} 句台词`)
+    // logger.debug('========== 格式化输出 完成 ==========\n')
 
     return voiceoverDialogues
   }
@@ -267,14 +269,14 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
   async generateVoiceover(params: GenerateVoiceoverInput): Promise<GenerateVoiceoverOutput> {
     const { story, characters } = params
 
-    console.log('\n')
-    console.log('='.repeat(80))
-    console.log('开始生成配音'.padStart(45))
-    console.log('='.repeat(80))
-    console.log('输入参数:')
-    console.log('  - 角色数量: ', characters.length)
-    console.log('  - 故事长度: ', story.length, '字符')
-    console.log('='.repeat(80))
+    // logger.debug('\n')
+    // logger.debug('='.repeat(80))
+    // logger.debug('开始生成配音'.padStart(45))
+    // logger.debug('='.repeat(80))
+    // logger.debug('输入参数:')
+    // logger.debug('  - 角色数量: ', characters.length)
+    // logger.debug('  - 故事长度: ', story.length, '字符')
+    // logger.debug('='.repeat(80))
 
     // Step 1: 识别台词并绑定角色ID
     const dialogues = await this.identifyDialogues(story, characters)
@@ -285,15 +287,15 @@ export class AgentVoiceoverGenerator implements IVoiceoverGenerator {
     // Step 3: 格式化输出
     const voiceoverDialogues = this.formatDialogues(dialoguesWithEmotion, characters)
 
-    console.log('\n========== 组装最终输出 ==========')
-    console.log('[组装] 配音台词数量:', voiceoverDialogues.length)
+    // logger.debug('\n========== 组装最终输出 ==========')
+    // logger.debug('[组装] 配音台词数量:', voiceoverDialogues.length)
 
-    console.log('\n')
-    console.log('='.repeat(80))
-    console.log('配音生成完成！'.padStart(45))
-    console.log(`总结: 共 ${voiceoverDialogues.length} 句台词`.padStart(48))
-    console.log('='.repeat(80))
-    console.log('\n')
+    // logger.debug('\n')
+    // logger.debug('='.repeat(80))
+    // logger.debug('配音生成完成！'.padStart(45))
+    // logger.debug(`总结: 共 ${voiceoverDialogues.length} 句台词`.padStart(48))
+    // logger.debug('='.repeat(80))
+    // logger.debug('\n')
 
     return {
       dialogues: voiceoverDialogues

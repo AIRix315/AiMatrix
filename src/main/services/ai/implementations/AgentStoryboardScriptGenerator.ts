@@ -262,7 +262,7 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       character_ids: string[]
     }>
   > {
-    console.log('\n========== Step 4: 生成图片分镜描述 开始 ==========')
+    // logger.debug('\n========== Step 4: 生成图片分镜描述 开始 ==========')
 
     // 构建分镜描述文本
     const dataText = videoScenesData
@@ -273,7 +273,8 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
 
     // 构建角色名称字典（只包含 name 和 id）
     const characterListText = JSON.stringify(
-      characters.map((char) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      characters.map((char: any) => ({
         name: char.name,
         id: char.id
       })),
@@ -287,12 +288,12 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       characterListText
     )
 
-    console.log('[Step 4] 使用模型: deepseek-chat')
-    console.log('[Step 4] 输入场景数量:', videoScenesData.length)
-    console.log('[Step 4] 填充后的提示词:')
-    console.log('-------------------------------------------')
-    console.log(prompt)
-    console.log('-------------------------------------------')
+    // logger.debug('[Step 4] 使用模型: deepseek-chat')
+    // logger.debug('[Step 4] 输入场景数量:', videoScenesData.length)
+    // logger.debug('[Step 4] 填充后的提示词:')
+    // logger.debug('-------------------------------------------')
+    // logger.debug(prompt)
+    // logger.debug('-------------------------------------------')
 
     // 定义输出 Schema（使用 Zod）
     const PanelSchema = z.object({
@@ -312,7 +313,7 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
 
     type ImageSceneOutput = z.infer<typeof ImageSceneSchema>
 
-    console.log('[Step 4] 开始调用 Agent...')
+    // logger.debug('[Step 4] 开始调用 Agent...')
 
     // 获取 agent 实例（实时读取配置）
     const agent = await this.ensureAgent()
@@ -327,16 +328,17 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
     // 处理结果
     if (!result.success) {
       const error = result.error!
+      // eslint-disable-next-line no-console
       console.error('[Step 4] 失败:', error.message, '(类型:', error.type, ')')
       throw new Error(`图片分镜生成失败: ${error.message} (类型: ${error.type})`)
     }
 
     const rawScenes = result.data!.scenes
 
-    console.log('[Step 4] Agent 返回结果:')
-    console.log('-------------------------------------------')
-    console.log(JSON.stringify(rawScenes, null, 2))
-    console.log('-------------------------------------------')
+    // logger.debug('[Step 4] Agent 返回结果:')
+    // logger.debug('-------------------------------------------')
+    // logger.debug(JSON.stringify(rawScenes, null, 2))
+    // logger.debug('-------------------------------------------')
 
     // 转换为旧格式: 将 panels 数组转换为 prompts 字符串数组
     const imageScenes = rawScenes.map((scene) => ({
@@ -344,14 +346,14 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       character_ids: scene.character_ids
     }))
 
-    console.log('[Step 4] 转换后的结果:')
-    console.log('-------------------------------------------')
-    console.log(JSON.stringify(imageScenes, null, 2))
-    console.log('-------------------------------------------')
-    console.log(
-      `[Step 4] 成功！共 ${imageScenes.length} 个场景，耗时 ${result.metadata.duration}ms`
-    )
-    console.log('========== Step 4: 生成图片分镜描述 完成 ==========\n')
+    // logger.debug('[Step 4] 转换后的结果:')
+    // logger.debug('-------------------------------------------')
+    // logger.debug(JSON.stringify(imageScenes, null, 2))
+    // logger.debug('-------------------------------------------')
+    // logger.debug(
+    //   `[Step 4] 成功！共 ${imageScenes.length} 个场景，耗时 ${result.metadata.duration}ms`
+    // )
+    // logger.debug('========== Step 4: 生成图片分镜描述 完成 ==========\n')
 
     return imageScenes
   }
@@ -376,7 +378,7 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       cinematography: string
     }>
   > {
-    console.log('\n========== Step 3: 替换角色名称 开始 ==========')
+    // logger.debug('\n========== Step 3: 替换角色名称 开始 ==========')
 
     // 构建视频分镜脚本文本（只包含 scene, sfx, cinematography）
     const scriptsText = JSON.stringify(
@@ -391,7 +393,8 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
 
     // 构建角色字典文本（只包含 name, soraName, appearance）
     const characterListText = JSON.stringify(
-      characters.map((char) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      characters.map((char: any) => ({
         name: char.name,
         alias: char.soraName,
         appearance: char.appearance
@@ -406,12 +409,12 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       characterListText
     )
 
-    console.log('[Step 3] 使用模型: deepseek-chat')
-    console.log('[Step 3] 输入场景数量:', videoScenesData.length)
-    console.log('[Step 3] 填充后的提示词:')
-    console.log('-------------------------------------------')
-    console.log(prompt)
-    console.log('-------------------------------------------')
+    // logger.debug('[Step 3] 使用模型: deepseek-chat')
+    // logger.debug('[Step 3] 输入场景数量:', videoScenesData.length)
+    // logger.debug('[Step 3] 填充后的提示词:')
+    // logger.debug('-------------------------------------------')
+    // logger.debug(prompt)
+    // logger.debug('-------------------------------------------')
 
     // 定义输出 Schema（使用 Zod）
     const ReplacedSceneSchema = z.object({
@@ -426,7 +429,7 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
 
     type ReplacedSceneOutput = z.infer<typeof ReplacedSceneSchema>
 
-    console.log('[Step 3] 开始调用 Agent...')
+    // logger.debug('[Step 3] 开始调用 Agent...')
 
     // 获取 agent 实例（实时读取配置）
     const agent = await this.ensureAgent()
@@ -441,20 +444,21 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
     // 处理结果
     if (!result.success) {
       const error = result.error!
+      // eslint-disable-next-line no-console
       console.error('[Step 3] 失败:', error.message, '(类型:', error.type, ')')
       throw new Error(`角色名称替换失败: ${error.message} (类型: ${error.type})`)
     }
 
     const replacedScenes = result.data!.scenes
 
-    console.log('[Step 3] Agent 返回结果:')
-    console.log('-------------------------------------------')
-    console.log(JSON.stringify(replacedScenes, null, 2))
-    console.log('-------------------------------------------')
-    console.log(
-      `[Step 3] 成功！共 ${replacedScenes.length} 个场景，耗时 ${result.metadata.duration}ms`
-    )
-    console.log('========== Step 3: 替换角色名称 完成 ==========\n')
+    // logger.debug('[Step 3] Agent 返回结果:')
+    // logger.debug('-------------------------------------------')
+    // logger.debug(JSON.stringify(replacedScenes, null, 2))
+    // logger.debug('-------------------------------------------')
+    // logger.debug(
+    //   `[Step 3] 成功！共 ${replacedScenes.length} 个场景，耗时 ${result.metadata.duration}ms`
+    // )
+    // logger.debug('========== Step 3: 替换角色名称 完成 ==========\n')
 
     return replacedScenes
   }
@@ -476,7 +480,7 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       cinematography: string
     }>
   > {
-    console.log('\n========== Step 2: 生成Sora2视频提示词 开始 ==========')
+    // logger.debug('\n========== Step 2: 生成Sora2视频提示词 开始 ==========')
 
     // 构建场景分镜剧本文本
     const scriptScenesText = scriptScenes
@@ -484,6 +488,7 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       .join('\n\n')
 
     // 构建角色设定文本
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const charactersText = characters.map((char: any) => `${char.name}：${char.description}`).join('\n')
 
     // 构建提示词
@@ -491,12 +496,12 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       .replace('{{scriptScenes}}', scriptScenesText)
       .replace('{{characters}}', charactersText)
 
-    console.log('[Step 2] 使用模型: deepseek-chat')
-    console.log('[Step 2] 输入场景数量:', scriptScenes.length)
-    console.log('[Step 2] 填充后的提示词:')
-    console.log('-------------------------------------------')
-    console.log(prompt)
-    console.log('-------------------------------------------')
+    // logger.debug('[Step 2] 使用模型: deepseek-chat')
+    // logger.debug('[Step 2] 输入场景数量:', scriptScenes.length)
+    // logger.debug('[Step 2] 填充后的提示词:')
+    // logger.debug('-------------------------------------------')
+    // logger.debug(prompt)
+    // logger.debug('-------------------------------------------')
 
     // 定义输出 Schema（使用 Zod）
     const VideoSceneSchema = z.object({
@@ -513,7 +518,7 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
 
     type VideoSceneOutput = z.infer<typeof VideoSceneSchema>
 
-    console.log('[Step 2] 开始调用 Agent...')
+    // logger.debug('[Step 2] 开始调用 Agent...')
 
     // 获取 agent 实例（实时读取配置）
     const agent = await this.ensureAgent()
@@ -528,20 +533,21 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
     // 处理结果
     if (!result.success) {
       const error = result.error!
+      // eslint-disable-next-line no-console
       console.error('[Step 2] 失败:', error.message, '(类型:', error.type, ')')
       throw new Error(`视频提示词生成失败: ${error.message} (类型: ${error.type})`)
     }
 
     const videoScenes = result.data!.scenes
 
-    console.log('[Step 2] Agent 返回结果:')
-    console.log('-------------------------------------------')
-    console.log(JSON.stringify(videoScenes, null, 2))
-    console.log('-------------------------------------------')
-    console.log(
-      `[Step 2] 成功！共 ${videoScenes.length} 个场景，耗时 ${result.metadata.duration}ms`
-    )
-    console.log('========== Step 2: 生成Sora2视频提示词 完成 ==========\n')
+    // logger.debug('[Step 2] Agent 返回结果:')
+    // logger.debug('-------------------------------------------')
+    // logger.debug(JSON.stringify(videoScenes, null, 2))
+    // logger.debug('-------------------------------------------')
+    // logger.debug(
+    //   `[Step 2] 成功！共 ${videoScenes.length} 个场景，耗时 ${result.metadata.duration}ms`
+    // )
+    // logger.debug('========== Step 2: 生成Sora2视频提示词 完成 ==========\n')
 
     return videoScenes
   }
@@ -550,14 +556,18 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
    * 第一步：生成剧本分镜描述
    * 将故事拆分为多个10秒的短场景描述
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async generateScriptScenes(params: { story: string; characters: any[]; chapter: any }): Promise<any[]> {
-    console.log('\n========== Step 1: 生成剧本分镜描述 开始 ==========')
+    // logger.debug('\n========== Step 1: 生成剧本分镜描述 开始 ==========')
 
     const { characters, story, chapter } = params;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const prevScene: any = undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const nextScene: any = undefined;
 
     // 构建角色设定文本（仅列出name和description）
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const charactersText = characters.map((char: any) => `${char.name}：${char.description}`).join('\n')
 
     // 获取上下文信息
@@ -567,10 +577,10 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       : '（当前是第一个场景，无前情提要）'
     const nextSummary = nextScene?.summary || '（暂无后续情节预告）'
 
-    console.log('[Step 1] 上下文信息:')
-    console.log('  - 全局摘要:', globalSummary)
-    console.log('  - 前情提要:', previousSummary)
-    console.log('  - 后续预告:', nextSummary)
+    // logger.debug('[Step 1] 上下文信息:')
+    // logger.debug('  - 全局摘要:', globalSummary)
+    // logger.debug('  - 前情提要:', previousSummary)
+    // logger.debug('  - 后续预告:', nextSummary)
 
     // 构建提示词
     const prompt = this.SCRIPT_GENERATION_PROMPT_TEMPLATE.replace(
@@ -582,11 +592,11 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       .replace('{{nextSummary}}', nextSummary)
       .replace('{{characters}}', charactersText)
 
-    console.log('[Step 1] 使用模型: deepseek-chat')
-    console.log('[Step 1] 填充后的提示词:')
-    console.log('-------------------------------------------')
-    console.log(prompt)
-    console.log('-------------------------------------------')
+    // logger.debug('[Step 1] 使用模型: deepseek-chat')
+    // logger.debug('[Step 1] 填充后的提示词:')
+    // logger.debug('-------------------------------------------')
+    // logger.debug(prompt)
+    // logger.debug('-------------------------------------------')
 
     // 定义输出 Schema（使用 Zod）
     const VideoSegmentSchema = z.object({
@@ -602,7 +612,7 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
 
     type ScriptSceneOutput = z.infer<typeof ScriptSceneSchema>
 
-    console.log('[Step 1] 开始调用 Agent...')
+    // logger.debug('[Step 1] 开始调用 Agent...')
 
     // 获取 agent 实例（实时读取配置）
     const agent = await this.ensureAgent()
@@ -617,18 +627,19 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
     // 处理结果
     if (!result.success) {
       const error = result.error!
+      // eslint-disable-next-line no-console
       console.error('[Step 1] 失败:', error.message, '(类型:', error.type, ')')
       throw new Error(`剧本生成失败: ${error.message} (类型: ${error.type})`)
     }
 
     const segments = result.data!.segments
 
-    console.log('[Step 1] Agent 返回结果:')
-    console.log('-------------------------------------------')
-    console.log(JSON.stringify(segments, null, 2))
-    console.log('-------------------------------------------')
-    console.log(`[Step 1] 成功！共 ${segments.length} 个片段，耗时 ${result.metadata.duration}ms`)
-    console.log('========== Step 1: 生成剧本分镜描述 完成 ==========\n')
+    // logger.debug('[Step 1] Agent 返回结果:')
+    // logger.debug('-------------------------------------------')
+    // logger.debug(JSON.stringify(segments, null, 2))
+    // logger.debug('-------------------------------------------')
+    // logger.debug(`[Step 1] 成功！共 ${segments.length} 个片段，耗时 ${result.metadata.duration}ms`)
+    // logger.debug('========== Step 1: 生成剧本分镜描述 完成 ==========\n')
 
     // 将新格式转换为旧格式（string[]）以保持兼容性
     // 每个segment转换为一个描述性字符串
@@ -648,17 +659,17 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
   ): Promise<GenerateStoryboardPromptsOutput> {
     const { scene, characters, artStyle = '现代动漫风格' } = input
 
-    console.log('\n')
-    console.log('='.repeat(80))
-    console.log('开始生成分镜 Prompts'.padStart(45))
-    console.log('='.repeat(80))
-    console.log('输入参数:')
-    console.log('  - 场景ID: ', scene.id)
-    console.log('  - 场景位置: ', scene.location)
-    console.log('  - 角色数量: ', characters.length)
-    console.log('  - 故事长度: ', input.story.length, '字符')
-    console.log('  - 艺术风格: ', artStyle)
-    console.log('='.repeat(80))
+    // logger.debug('\n')
+    // logger.debug('='.repeat(80))
+    // logger.debug('开始生成分镜 Prompts'.padStart(45))
+    // logger.debug('='.repeat(80))
+    // logger.debug('输入参数:')
+    // logger.debug('  - 场景ID: ', scene.id)
+    // logger.debug('  - 场景位置: ', scene.location)
+    // logger.debug('  - 角色数量: ', characters.length)
+    // logger.debug('  - 故事长度: ', input.story.length, '字符')
+    // logger.debug('  - 艺术风格: ', artStyle)
+    // logger.debug('='.repeat(80))
 
     // 使用传入的艺术风格（已有默认值）
     const finalArtStyle = artStyle
@@ -679,7 +690,7 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       this.generateImageStoryboardPrompts(videoScenesData, characters)
     ])
 
-    console.log('\n========== 组装最终输出 ==========')
+    // logger.debug('\n========== 组装最终输出 ==========')
 
     // 将处理后的数据转换为最终格式
     const videoPrompts: VideoPromptItem[] = replacedScenes.map((replacedScene, index) => {
@@ -696,18 +707,19 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       }
     })
 
-    console.log('[组装] 视频 Prompts 数量:', videoPrompts.length)
+    // logger.debug('[组装] 视频 Prompts 数量:', videoPrompts.length)
 
     // 生成图片 Prompts（使用 Step 4 的结果）
-    const imagePrompts: ImagePromptItem[] = imageScenes.map((imageScene, index) => {
+    const imagePrompts: ImagePromptItem[] = imageScenes.map((imageScene, _index) => {
       // 根据 character_ids 筛选出该场景中实际出场的角色
-      const sceneCharacters = characters.filter((char) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sceneCharacters = characters.filter((char: any) =>
         imageScene.character_ids.includes(char.id)
       )
 
-      console.log(
-        `[组装] 场景 ${index + 1}: ${imageScene.prompts.length} 个图片 prompt, ${sceneCharacters.length} 个出场角色 (IDs: ${imageScene.character_ids.join(', ')})`
-      )
+      // logger.debug(
+      //   `[组装] 场景 ${index + 1}: ${imageScene.prompts.length} 个图片 prompt, ${sceneCharacters.length} 个出场角色 (IDs: ${imageScene.character_ids.join(', ')})`
+      // )
 
       return {
         prompts: imageScene.prompts,
@@ -716,14 +728,14 @@ export class AgentStoryboardScriptGenerator implements IStoryboardScriptGenerato
       }
     })
 
-    console.log('[组装] 图片 Prompts 数量:', imagePrompts.length)
+    // logger.debug('[组装] 图片 Prompts 数量:', imagePrompts.length)
 
-    console.log('\n')
-    console.log('='.repeat(80))
-    console.log('分镜 Prompts 生成完成！'.padStart(45))
-    console.log(`总结: 视频 ${videoPrompts.length} 个，图片 ${imagePrompts.length} 个`.padStart(50))
-    console.log('='.repeat(80))
-    console.log('\n')
+    // logger.debug('\n')
+    // logger.debug('='.repeat(80))
+    // logger.debug('分镜 Prompts 生成完成！'.padStart(45))
+    // logger.debug(`总结: 视频 ${videoPrompts.length} 个，图片 ${imagePrompts.length} 个`.padStart(50))
+    // logger.debug('='.repeat(80))
+    // logger.debug('\n')
 
     return {
       videoPrompts,

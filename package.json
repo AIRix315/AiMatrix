@@ -1,7 +1,7 @@
 {
-  "name": "matrix-ai-workflow",
-  "version": "0.3.9.1",
-  "description": "AI视频生成工作流管理平台",
+  "name": "MATRIX Studio",
+  "version": "0.3.9.2",
+  "description": "AI影视生成管理平台",
   "main": "build/main/index.js",
   "homepage": "./",
   "author": "Matrix Team",

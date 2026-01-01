@@ -7,7 +7,7 @@
 import { NovelVideoAPIService } from './NovelVideoAPIService';
 import { TaskScheduler, TaskType } from '../TaskScheduler';
 import { Logger } from '../Logger';
-import type { AssetMetadata } from '@/shared/types';
+// import type { AssetMetadata } from '@/shared/types'; // 暂时未使用
 
 /**
  * ResourceService服务类
@@ -284,7 +284,7 @@ export class ResourceService {
    * @returns 任务结果列表
    */
   async waitForTasks(taskIds: string[], timeout: number = 300000): Promise<any[]> {
-    const results: any[] = [];
+    const results: unknown[] = [];
 
     for (const taskId of taskIds) {
       const result = await this.waitForTask(taskId, timeout);

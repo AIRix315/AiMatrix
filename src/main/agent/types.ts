@@ -46,7 +46,7 @@ export interface StructuredOutputResult<T> {
   error?: {
     type: 'llm_error' | 'validation_error' | 'timeout_error'
     message: string
-    details?: any
+    details?: unknown // 错误详情可以是任何类型
   }
   /** 元数据 */
   metadata: {

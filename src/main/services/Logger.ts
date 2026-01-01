@@ -223,7 +223,8 @@ export class Logger {
       level: level as LogLevelType,
       service,
       message,
-      data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: data as any
     };
 
     const formattedLog = this.formatLogEntry(entry);
@@ -384,7 +385,8 @@ export class Logger {
       level: level.toLowerCase() as LogLevelType,
       service,
       message,
-      data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: data as any
     };
   }
 }

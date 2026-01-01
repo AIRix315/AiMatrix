@@ -6,8 +6,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Check, X, MapPin, Users } from 'lucide-react';
-import { Button, Card, Loading, Toast, Modal } from '../../../components/common';
+import { Plus, Edit2, Trash2, MapPin, Users } from 'lucide-react';
+// import { Check, X } from 'lucide-react'; // 暂时未使用
+import { Button, Loading, Toast, Modal } from '../../../components/common';
+// import { Card } from '../../../components/common'; // 暂时未使用
 import type { ToastType } from '../../../components/common/Toast';
 import './SceneCharacterPanel.css';
 
@@ -31,15 +33,18 @@ interface Character {
 
 interface PanelProps {
   workflowId: string;
-  onComplete: (data: any) => void;
-  initialData?: any;
+  onComplete: (data: unknown) => void;
+  initialData?: unknown;
 }
 
-export const SceneCharacterPanel: React.FC<PanelProps> = ({ workflowId, onComplete, initialData }) => {
-  const [chapters] = useState(initialData?.chapters || []);
+export const SceneCharacterPanel: React.FC<PanelProps> = ({ onComplete, initialData }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [chapters] = useState((initialData as any)?.chapters || []);
   const [selectedChapterId, setSelectedChapterId] = useState('');
-  const [scenes, setScenes] = useState<Scene[]>(initialData?.scenes || []);
-  const [characters, setCharacters] = useState<Character[]>(initialData?.characters || []);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [scenes, setScenes] = useState<Scene[]>((initialData as any)?.scenes || []);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [characters, setCharacters] = useState<Character[]>((initialData as any)?.characters || []);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'scenes' | 'characters'>('scenes');
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
@@ -205,7 +210,7 @@ export const SceneCharacterPanel: React.FC<PanelProps> = ({ workflowId, onComple
   /**
    * 处理下一步
    */
-  const handleNext = () => {
+  const _handleNext = () => {
     if (scenes.length === 0 && characters.length === 0) {
       setToast({
         type: 'warning',
@@ -236,6 +241,7 @@ export const SceneCharacterPanel: React.FC<PanelProps> = ({ workflowId, onComple
             onChange={(e) => setSelectedChapterId(e.target.value)}
             disabled={loading}
           >
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {chapters.map((chapter: any) => (
               <option key={chapter.id} value={chapter.id}>
                 {chapter.title}

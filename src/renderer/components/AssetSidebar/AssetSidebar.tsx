@@ -38,7 +38,9 @@ export function AssetSidebar({
     setLoading(true);
     setError(null);
     try {
-      const data = await window.electronAPI.getAssetIndex(projectId);
+      // TODO: [中期改进] 定义准确的getAssetIndex返回类型
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = await window.electronAPI.getAssetIndex(projectId) as any;
       setIndex(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '加载索引失败';

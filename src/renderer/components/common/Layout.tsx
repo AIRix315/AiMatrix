@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import WindowBar from './WindowBar';
 import GlobalNav from './GlobalNav';
 import StatusBar from '../layout/StatusBar';
 import { GlobalRightPanel } from '../global/GlobalRightPanel';
+import { UnifiedAssetPanel, AssetCategoryId } from '../UnifiedAssetPanel';
 import { useSidebar } from '../../contexts/SidebarContext';
 import './Layout.css';
 
@@ -13,7 +14,12 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { rightSidebarCollapsed } = useSidebar();
+  const { rightSidebarCollapsed, assetPanelCollapsed } = useSidebar();
+
+  // 全局资产面板状态
+  const [selectedScope, setSelectedScope] = useState<'global' | 'project'>('global');
+  const [selectedCategory, setSelectedCategory] = useState<AssetCategoryId>('all' as AssetCategoryId);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
 
   return (
     <div className="app-layout">
@@ -24,6 +30,30 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="app-body">
         {/* Left Menu - 全局导航 */}
         <GlobalNav />
+
+        {/* 全局左侧资产面板 - 抽屉式 */}
+        <AnimatePresence mode="wait">
+          {!assetPanelCollapsed && (
+            <motion.aside
+              key="asset-panel"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 256, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{ flexShrink: 0, overflow: 'hidden' }}
+            >
+              <UnifiedAssetPanel
+                selectedScope={selectedScope}
+                selectedCategory={selectedCategory}
+                selectedProjectId={selectedProjectId}
+                showProjectSelector={true}
+                onScopeChange={setSelectedScope}
+                onCategoryChange={setSelectedCategory}
+                onProjectChange={setSelectedProjectId}
+              />
+            </motion.aside>
+          )}
+        </AnimatePresence>
 
         {/* 中间内容区（flex: 1自动填充剩余空间） */}
         <div className="content-wrapper">

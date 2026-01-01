@@ -265,7 +265,8 @@ export class PluginManager {
           version: manifest.version,
           description: manifest.description,
           author: manifest.author,
-          icon: manifest.icon,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          icon: manifest.icon as any,
           type: pluginType,
           category: manifest.category,
           isEnabled,

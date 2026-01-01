@@ -95,9 +95,10 @@ export function registerWorkflowHandlers(): void {
   /**
    * 保存工作流状态
    */
-  ipcMain.handle('workflow:saveState', async (_event, workflowId: string, state: any) => {
+  ipcMain.handle('workflow:saveState', async (_event, workflowId: string, state: Record<string, unknown>) => {
     try {
-      await workflowStateManager.saveState(workflowId, state)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await workflowStateManager.saveState(workflowId, state as any) // IPC层接收动态对象，需要运行时验证
     } catch (error) {
       logger.error('保存工作流状态失败', 'workflow-handlers', { error, workflowId })
       throw error
@@ -132,9 +133,10 @@ export function registerWorkflowHandlers(): void {
   /**
    * 更新步骤状态
    */
-  ipcMain.handle('workflow:updateStepStatus', async (_event, workflowId: string, stepId: string, status: string, data?: any) => {
+  ipcMain.handle('workflow:updateStepStatus', async (_event, workflowId: string, stepId: string, status: string, data?: Record<string, unknown>) => {
     try {
-      await workflowStateManager.updateStepStatus(workflowId, stepId, status as any, data)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await workflowStateManager.updateStepStatus(workflowId, stepId, status as any, data) // IPC层status是string，需要运行时验证
     } catch (error) {
       logger.error('更新步骤状态失败', 'workflow-handlers', { error, workflowId, stepId, status })
       throw error

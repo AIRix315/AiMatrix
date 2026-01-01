@@ -31,38 +31,65 @@ export const novelToVideoWorkflow: WorkflowDefinition = {
   steps: [
     {
       id: 'split-chapters',
-      name: '章节拆分',
+      name: '剧本分析',
       description: '上传小说文件，自动拆分为章节',
       status: 'pending',
-      componentType: 'ChapterSplitPanel'
+      componentType: 'ChapterSplitPanel',
+      supportsViewSwitch: false
     },
     {
       id: 'extract-scenes',
-      name: '场景角色提取',
+      name: '场景角色',
       description: '使用AI从章节中提取场景和角色信息',
       status: 'pending',
-      componentType: 'SceneCharacterPanel'
+      componentType: 'SceneCharacterPanel',
+      supportsViewSwitch: false
     },
     {
       id: 'generate-storyboard',
-      name: '分镜脚本生成',
+      name: '分镜生成',
       description: '为场景生成分镜脚本和图片/视频资源',
       status: 'pending',
-      componentType: 'StoryboardPanel'
+      componentType: 'StoryboardPanel',
+      supportsViewSwitch: true,
+      subSteps: [
+        {
+          id: 'generate-storyboard.local',
+          name: '分镜生成',
+          description: '本地生成分镜脚本和资源',
+          componentType: 'StoryboardPanel',
+          status: 'pending',
+          config: {
+            mode: 'local'
+          }
+        },
+        {
+          id: 'generate-storyboard.remote',
+          name: '远端控制',
+          description: '通过远端API控制分镜生成',
+          componentType: 'RemoteControlPanel',
+          status: 'pending',
+          config: {
+            mode: 'remote'
+          }
+        }
+      ]
     },
     {
       id: 'generate-voiceover',
-      name: '配音生成',
+      name: '配音合成',
       description: '为分镜生成AI配音音频',
       status: 'pending',
-      componentType: 'VoiceoverPanel'
+      componentType: 'VoiceoverPanel',
+      supportsViewSwitch: false
     },
     {
       id: 'export',
-      name: '导出成品',
+      name: '导出',
       description: '合成并导出最终视频文件',
       status: 'pending',
-      componentType: 'ExportPanel'
+      componentType: 'ExportPanel',
+      supportsViewSwitch: false
     }
   ],
 

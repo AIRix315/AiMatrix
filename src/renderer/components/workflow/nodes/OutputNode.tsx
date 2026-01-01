@@ -71,6 +71,7 @@ const OutputNode: React.FC<NodeProps<OutputNodeData>> = ({ data, selected }) => 
         }
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('选择保存路径失败:', error);
     }
   };

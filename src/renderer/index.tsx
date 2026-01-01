@@ -1,4 +1,6 @@
 // Polyfill for global (required for some dependencies)
+// TODO: [中期改进] 定义准确的window全局类型
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).global = window;
 
 // 检查预加载脚本是否成功加载

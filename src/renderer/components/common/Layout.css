@@ -53,8 +53,8 @@
 /* 右侧面板容器（通过motion.aside渲染） */
 .global-right-panel {
     width: var(--right-panel-width);
-    background: oklch(0.1 0 0);
-    border-left: 1px solid oklch(0.24 0 0);
+    background: var(--background);
+    border-left: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;

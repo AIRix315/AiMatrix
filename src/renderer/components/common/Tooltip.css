@@ -1,0 +1,69 @@
+/**
+ * Tooltip 样式
+ */
+
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.tooltip-content {
+  position: absolute;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.tooltip-content.visible {
+  opacity: 1;
+}
+
+/* 上方显示 */
+.tooltip-content.top {
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 下方显示 */
+.tooltip-content.bottom {
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 左侧显示 */
+.tooltip-content.left {
+  right: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* 右侧显示 */
+.tooltip-content.right {
+  left: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* 响应式：窄屏时允许换行 */
+@media (max-width: 768px) {
+  .tooltip-content {
+    white-space: normal;
+    max-width: 250px;
+  }
+}

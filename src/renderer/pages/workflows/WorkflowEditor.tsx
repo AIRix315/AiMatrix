@@ -69,10 +69,12 @@ const WorkflowEditor: React.FC = () => {
     try {
       setIsLoading(true);
       if (window.electronAPI?.loadWorkflow) {
-        const workflow = await window.electronAPI.loadWorkflow(id);
-        setWorkflowName(workflow.name);
-        setNodes(workflow.nodes || []);
-        setEdges(workflow.edges || []);
+        // TODO: [中期改进] 定义准确的loadWorkflow返回类型
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const workflow = await window.electronAPI.loadWorkflow(id) as any;
+        setWorkflowName((workflow as any).name);
+        setNodes((workflow as any).nodes || []);
+        setEdges((workflow as any).edges || []);
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -149,24 +151,26 @@ const WorkflowEditor: React.FC = () => {
     const interval = setInterval(async () => {
       try {
         if (window.electronAPI?.getWorkflowStatus) {
-          const status = await window.electronAPI.getWorkflowStatus(jobId);
-          setExecutionStatus(status.status || 'running');
-          setExecutionProgress(status.progress || 0);
+          // TODO: [中期改进] 定义准确的getWorkflowStatus返回类型
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const status = await window.electronAPI.getWorkflowStatus(jobId) as any;
+          setExecutionStatus((status as any).status || 'running');
+          setExecutionProgress((status as any).progress || 0);
 
           // 如果执行完成或失败，停止轮询
-          if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
+          if ((status as any).status === 'completed' || (status as any).status === 'failed' || (status as any).status === 'cancelled') {
             clearInterval(interval);
             setIsExecuting(false);
 
-            if (status.status === 'completed') {
+            if ((status as any).status === 'completed') {
               setToast({
                 type: 'success',
                 message: '工作流执行完成'
               });
-            } else if (status.status === 'failed') {
+            } else if ((status as any).status === 'failed') {
               setToast({
                 type: 'error',
-                message: `工作流执行失败: ${status.error || '未知错误'}`
+                message: `工作流执行失败: ${(status as any).error || '未知错误'}`
               });
             } else {
               setToast({
