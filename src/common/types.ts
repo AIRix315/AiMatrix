@@ -12,7 +12,7 @@
  *
  * 导入标准资产元数据类型
  */
-import type { AssetMetadata } from '@/shared/types';
+import type { AssetMetadata } from '../shared/types';
 
 /**
  * 资产类型枚举

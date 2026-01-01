@@ -1,0 +1,11 @@
+{
+  "id": "test-plugin",
+  "name": "Test Plugin",
+  "version": "1.0.0",
+  "description": "A simple test plugin for validating PluginManagerV2",
+  "author": "Matrix Team",
+  "main": "index.js",
+  "type": "community",
+  "permissions": ["file-system:read"],
+  "requireSandbox": true
+}

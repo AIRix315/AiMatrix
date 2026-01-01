@@ -9,6 +9,31 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
+import type { ShortcutItem, ProjectConfig, PluginInfo, TaskExecution } from '../common/types';
+import type { AssetMetadata, AssetFilter, AssetScanResult, AssetImportParams } from '../shared/types/asset';
+import type {
+  TextToImageParams,
+  TextToImageResult,
+  ImageToImageParams,
+  ImageToImageResult,
+  ImageToVideoParams,
+  ImageToVideoResult,
+  ProviderConfig
+} from '../shared/types/provider';
+import type { WorkflowDefinition, WorkflowInstance } from '../shared/types/workflow';
+import type {
+  BatchTextToImageParams,
+  BatchImageToVideoParams,
+  BatchResult,
+  ProviderTestParams,
+  ProviderTestResult,
+  APITestResult,
+  MCPConfig,
+  StoryboardPromptParams,
+  SceneCharacterExtractionResult,
+  ModelInfo,
+  AppSettings
+} from '../shared/types/electron-api';
 
 /**
  * 暴露给渲染进程的API接口
@@ -34,7 +59,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 发送日志到主进程
    */
-  log: (level: string, message: string, context?: string, data?: any): Promise<void> =>
+  log: (level: string, message: string, context?: string, data?: unknown): Promise<void> =>
     ipcRenderer.invoke('app:log', level, message, context, data),
 
   // ==================== 时间服务相关 ====================
@@ -89,7 +114,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 获取快捷方式列表
    */
-  listShortcuts: (): Promise<any[]> => ipcRenderer.invoke('shortcut:list'),
+  listShortcuts: (): Promise<ShortcutItem[]> => ipcRenderer.invoke('shortcut:list'),
 
   // ==================== 项目相关 ====================
   
@@ -108,7 +133,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 保存项目
    */
-  saveProject: (projectId: string, config: any): Promise<void> => 
+  saveProject: (projectId: string, config: ProjectConfig): Promise<void> =>
     ipcRenderer.invoke('project:save', projectId, config),
   
   /**
@@ -120,7 +145,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出项目
    */
-  listProjects: (): Promise<any[]> =>
+  listProjects: (): Promise<ProjectConfig[]> =>
     ipcRenderer.invoke('project:list'),
 
   /**
@@ -176,7 +201,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 更新资产元数据
    */
-  updateAssetMetadata: (filePath: string, updates: any): Promise<unknown> =>
+  updateAssetMetadata: (filePath: string, updates: Partial<AssetMetadata>): Promise<unknown> =>
     ipcRenderer.invoke('asset:update-metadata', filePath, updates),
 
   /**
@@ -237,13 +262,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出工作流
    */
-  listWorkflows: (): Promise<any[]> => 
+  listWorkflows: (): Promise<WorkflowDefinition[]> =>
     ipcRenderer.invoke('workflow:list'),
-  
+
   /**
    * 保存工作流
    */
-  saveWorkflow: (workflowId: string, config: any): Promise<void> =>
+  saveWorkflow: (workflowId: string, config: WorkflowDefinition): Promise<void> =>
     ipcRenderer.invoke('workflow:save', workflowId, config),
 
   /**
@@ -281,13 +306,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 执行插件动作
    */
-  executePluginAction: (pluginId: string, action: string, params: any): Promise<unknown> => 
+  executePluginAction: (pluginId: string, action: string, params: unknown): Promise<unknown> =>
     ipcRenderer.invoke('plugin:execute', pluginId, action, params),
-  
+
   /**
    * 列出插件
    */
-  listPlugins: (): Promise<any[]> =>
+  listPlugins: (): Promise<PluginInfo[]> =>
     ipcRenderer.invoke('plugin:list'),
 
   /**
@@ -299,13 +324,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 获取插件市场列表
    */
-  getMarketPlugins: (filter?: any): Promise<any[]> =>
+  getMarketPlugins: (filter?: unknown): Promise<PluginInfo[]> =>
     ipcRenderer.invoke('plugin:market:list', filter),
 
   /**
    * 搜索插件市场
    */
-  searchMarketPlugins: (keyword: string): Promise<any[]> =>
+  searchMarketPlugins: (keyword: string): Promise<PluginInfo[]> =>
     ipcRenderer.invoke('plugin:market:search', keyword),
 
   /**
@@ -325,7 +350,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 执行任务
    */
-  executeTask: (taskId: string, inputs: any): Promise<string> => 
+  executeTask: (taskId: string, inputs: unknown): Promise<string> =>
     ipcRenderer.invoke('task:execute', taskId, inputs),
   
   /**
@@ -357,7 +382,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 调用API
    */
-  callAPI: (name: string, params: any): Promise<unknown> => 
+  callAPI: (name: string, params: unknown): Promise<unknown> =>
     ipcRenderer.invoke('api:call', name, params),
   
   /**
@@ -389,7 +414,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出所有Provider
    */
-  listProviders: (options?: { category?: string; enabledOnly?: boolean }): Promise<any[]> =>
+  listProviders: (options?: { category?: string; enabledOnly?: boolean }): Promise<ProviderConfig[]> =>
     ipcRenderer.invoke('api:list-providers', options),
 
   /**
@@ -496,7 +521,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出所有模型
    */
-  listModels: (options?: { category?: string; enabledProvidersOnly?: boolean; includeHidden?: boolean; favoriteOnly?: boolean }): Promise<any[]> =>
+  listModels: (options?: { category?: string; enabledProvidersOnly?: boolean; includeHidden?: boolean; favoriteOnly?: boolean }): Promise<ModelInfo[]> =>
     ipcRenderer.invoke('model:list', options),
 
   /**
@@ -542,7 +567,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
    * @param limit 返回的最大日志条数
    * @param levelFilter 过滤的日志级别（error/warn/info/debug）
    */
-  getRecentLogs: (limit?: number, levelFilter?: string): Promise<any[]> =>
+  getRecentLogs: (limit?: number, levelFilter?: string): Promise<unknown[]> =>
     ipcRenderer.invoke('logs:get-recent', limit, levelFilter),
 
   // ==================== Settings相关 ====================
@@ -576,7 +601,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 写入文件
    */
-  writeFile: (filePath: string, content: any): Promise<void> => 
+  writeFile: (filePath: string, content: string | Buffer): Promise<void> =>
     ipcRenderer.invoke('file:write', filePath, content),
   
   /**
@@ -594,7 +619,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出文件
    */
-  listFiles: (dirPath: string): Promise<any[]> => 
+  listFiles: (dirPath: string): Promise<string[]> =>
     ipcRenderer.invoke('file:list', dirPath),
   
   /**
@@ -632,7 +657,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 调用MCP服务
    */
-  callMCP: (serviceId: string, method: string, params: any): Promise<unknown> => 
+  callMCP: (serviceId: string, method: string, params: unknown): Promise<unknown> =>
     ipcRenderer.invoke('mcp:call', serviceId, method, params),
   
   /**
@@ -644,7 +669,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出MCP服务
    */
-  listMCP: (): Promise<any[]> => 
+  listMCP: (): Promise<MCPConfig[]> =>
     ipcRenderer.invoke('mcp:list'),
 
   // ==================== 本地服务相关 ====================
@@ -652,7 +677,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 启动本地服务
    */
-  startLocal: (serviceId: string, config: any): Promise<void> => 
+  startLocal: (serviceId: string, config: unknown): Promise<void> =>
     ipcRenderer.invoke('local:start', serviceId, config),
   
   /**
@@ -678,7 +703,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出所有已注册的工作流定义
    */
-  listWorkflowDefinitions: (): Promise<any[]> =>
+  listWorkflowDefinitions: (): Promise<WorkflowDefinition[]> =>
     ipcRenderer.invoke('workflow:listDefinitions'),
 
   /**
@@ -690,7 +715,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 创建工作流实例
    */
-  createWorkflowInstance: (params: { type: string; projectId?: string; name?: string; initialData?: any }): Promise<unknown> =>
+  createWorkflowInstance: (params: { type: string; projectId?: string; name?: string; initialData?: unknown }): Promise<unknown> =>
     ipcRenderer.invoke('workflow:createInstance', params),
 
   /**
@@ -702,7 +727,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 保存工作流状态
    */
-  saveWorkflowState: (workflowId: string, state: any): Promise<void> =>
+  saveWorkflowState: (workflowId: string, state: WorkflowState): Promise<void> =>
     ipcRenderer.invoke('workflow:saveState', workflowId, state),
 
   /**
@@ -720,7 +745,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 更新步骤状态
    */
-  updateWorkflowStepStatus: (workflowId: string, stepId: string, status: string, data?: any): Promise<void> =>
+  updateWorkflowStepStatus: (workflowId: string, stepId: string, status: string, data?: unknown): Promise<void> =>
     ipcRenderer.invoke('workflow:updateStepStatus', workflowId, stepId, status, data),
 
   /**
@@ -732,7 +757,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 列出工作流实例
    */
-  listWorkflowInstances: (projectId?: string): Promise<any[]> =>
+  listWorkflowInstances: (projectId?: string): Promise<WorkflowInstance[]> =>
     ipcRenderer.invoke('workflow:listInstances', projectId),
 
   // ==================== 事件监听 ====================
@@ -807,146 +832,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.removeAllListeners(channel);
   }
 });
-
-// ==================== 类型声明 ====================
-
-/**
- * 扩展Window接口，添加electronAPI属性
- */
-declare global {
-  interface Window {
-    electronAPI: {
-      getAppVersion: () => Promise<string>;
-      quitApp: () => Promise<void>;
-      restartApp: () => Promise<void>;
-      log: (level: string, message: string, context?: string, data?: any) => Promise<void>;
-      getCurrentTime: () => Promise<number>;
-      minimizeWindow: () => Promise<void>;
-      maximizeWindow: () => Promise<void>;
-      closeWindow: () => Promise<void>;
-      isWindowMaximized: () => Promise<boolean>;
-      addShortcut: (item: unknown) => Promise<unknown>;
-      removeShortcut: (id: string) => Promise<void>;
-      reorderShortcuts: (ids: string[]) => Promise<void>;
-      listShortcuts: () => Promise<any[]>;
-      createProject: (name: string, template?: string) => Promise<unknown>;
-      loadProject: (projectId: string) => Promise<unknown>;
-      saveProject: (projectId: string, config: any) => Promise<void>;
-      deleteProject: (projectId: string) => Promise<void>;
-      listProjects: () => Promise<any[]>;
-      addInputAsset: (projectId: string, assetId: string) => Promise<void>;
-      addOutputAsset: (projectId: string, assetId: string) => Promise<void>;
-      getAssetIndex: (projectId?: string) => Promise<unknown>;
-      rebuildAssetIndex: (projectId?: string) => Promise<unknown>;
-      scanAssets: (filter: unknown) => Promise<unknown>;
-      importAsset: (params: unknown) => Promise<unknown>;
-      deleteAsset: (filePath: string) => Promise<{ success: boolean }>;
-      getAssetMetadata: (filePath: string) => Promise<unknown>;
-      updateAssetMetadata: (filePath: string, updates: any) => Promise<unknown>;
-      startAssetWatching: (projectId?: string) => Promise<{ success: boolean }>;
-      stopAssetWatching: (projectId?: string) => Promise<{ success: boolean }>;
-      showImportDialog: () => Promise<string[]>;
-      onAssetFileChanged: (callback: (event: { eventType: 'add' | 'change' | 'unlink'; filePath: string; projectId?: string }) => void) => void;
-      getAssetReferences: (assetId: string) => Promise<string[]>;
-      executeWorkflow: (config: unknown) => Promise<string>;
-      getWorkflowStatus: (jobId: string) => Promise<unknown>;
-      cancelWorkflow: (jobId: string) => Promise<void>;
-      listWorkflows: () => Promise<any[]>;
-      saveWorkflow: (workflowId: string, config: any) => Promise<void>;
-      deleteWorkflow: (workflowId: string) => Promise<void>;
-      loadWorkflow: (workflowId: string) => Promise<unknown>;
-      installPlugin: (pluginPackage: unknown) => Promise<void>;
-      uninstallPlugin: (pluginId: string) => Promise<void>;
-      loadPlugin: (pluginId: string) => Promise<unknown>;
-      executePluginAction: (pluginId: string, action: string, params: any) => Promise<unknown>;
-      listPlugins: () => Promise<any[]>;
-      installPluginFromZip: (zipPath: string, type?: 'official' | 'community') => Promise<unknown>;
-      getMarketPlugins: (filter?: any) => Promise<any[]>;
-      searchMarketPlugins: (keyword: string) => Promise<any[]>;
-      togglePlugin: (pluginId: string, enabled: boolean) => Promise<{ success: boolean }>;
-      createTask: (config: unknown) => Promise<string>;
-      executeTask: (taskId: string, inputs: any) => Promise<string>;
-      getTaskStatus: (executionId: string) => Promise<unknown>;
-      cancelTask: (executionId: string) => Promise<void>;
-      retryTask: (executionId: string) => Promise<void>;
-      getTaskResults: (executionId: string) => Promise<unknown>;
-      callAPI: (name: string, params: any) => Promise<unknown>;
-      setAPIKey: (name: string, key: string) => Promise<void>;
-      getAPIStatus: (name: string) => Promise<unknown>;
-      getAPIUsage: (name: string) => Promise<unknown>;
-      testAPIConnection: (params: { type: string; baseUrl: string; apiKey?: string }) => Promise<{ success: boolean; models?: string[]; error?: string }>;
-      listProviders: (options?: { category?: string; enabledOnly?: boolean }) => Promise<any[]>;
-      getProvider: (providerId: string) => Promise<unknown>;
-      addProvider: (config: unknown) => Promise<void>;
-      removeProvider: (providerId: string) => Promise<void>;
-      testProviderConnection: (params: unknown) => Promise<unknown>;
-      getProviderStatus: (providerId: string) => Promise<unknown>;
-      executeTextToImage: (params: unknown) => Promise<unknown>;
-      executeImageToImage: (params: unknown) => Promise<unknown>;
-      executeImageToVideo: (params: unknown) => Promise<unknown>;
-      checkProviderAvailability: (providerId: string) => Promise<boolean>;
-      batchTextToImage: (params: unknown) => Promise<unknown>;
-      batchImageToVideo: (params: unknown) => Promise<unknown>;
-      extractScenesAndCharacters: (novelText: string) => Promise<unknown>;
-      generateCharacterPrompt: (characterName: string, context?: string) => Promise<string>;
-      generateScenePrompt: (sceneName: string, context?: string) => Promise<string>;
-      generateStoryboardPrompt: (params: {
-        sceneDescription: string;
-        characters: string[];
-        characterImages?: Record<string, string>;
-        sceneImage?: string;
-      }) => Promise<string>;
-      listModels: (options?: { category?: string; enabledProvidersOnly?: boolean; includeHidden?: boolean; favoriteOnly?: boolean }) => Promise<any[]>;
-      getModel: (modelId: string) => Promise<unknown>;
-      addCustomModel: (model: unknown) => Promise<void>;
-      removeCustomModel: (modelId: string) => Promise<void>;
-      toggleModelVisibility: (modelId: string, hidden: boolean) => Promise<void>;
-      toggleModelFavorite: (modelId: string, favorite: boolean) => Promise<void>;
-      setModelAlias: (modelId: string, alias: string) => Promise<void>;
-      getRecentLogs: (limit?: number, levelFilter?: string) => Promise<any[]>;
-      getAllSettings: () => Promise<unknown>;
-      saveSettings: (config: unknown) => Promise<{ success: boolean }>;
-      openDirectoryDialog: () => Promise<string | null>;
-      readFile: (filePath: string) => Promise<unknown>;
-      writeFile: (filePath: string, content: any) => Promise<void>;
-      deleteFile: (filePath: string) => Promise<void>;
-      fileExists: (filePath: string) => Promise<boolean>;
-      listFiles: (dirPath: string) => Promise<any[]>;
-      watchFile: (filePath: string) => Promise<void>;
-      unwatchFile: (filePath: string) => Promise<void>;
-      selectFiles: (options?: { filters?: Array<{ name: string; extensions: string[] }> }) => Promise<{ canceled: boolean; filePaths: string[] }>;
-      connectMCP: (config: unknown) => Promise<void>;
-      disconnectMCP: (serviceId: string) => Promise<void>;
-      callMCP: (serviceId: string, method: string, params: any) => Promise<unknown>;
-      getMCPStatus: (serviceId: string) => Promise<unknown>;
-      listMCP: () => Promise<any[]>;
-      startLocal: (serviceId: string, config: any) => Promise<void>;
-      stopLocal: (serviceId: string) => Promise<void>;
-      getLocalStatus: (serviceId: string) => Promise<unknown>;
-      restartLocal: (serviceId: string) => Promise<void>;
-      listWorkflowDefinitions: () => Promise<any[]>;
-      getWorkflowDefinition: (type: string) => Promise<unknown>;
-      createWorkflowInstance: (params: { type: string; projectId?: string; name?: string; initialData?: any }) => Promise<unknown>;
-      loadWorkflowInstance: (workflowId: string) => Promise<unknown>;
-      saveWorkflowState: (workflowId: string, state: any) => Promise<void>;
-      loadWorkflowState: (workflowId: string) => Promise<unknown>;
-      updateWorkflowCurrentStep: (workflowId: string, stepIndex: number) => Promise<void>;
-      updateWorkflowStepStatus: (workflowId: string, stepId: string, status: string, data?: any) => Promise<void>;
-      deleteWorkflowInstance: (workflowId: string) => Promise<void>;
-      listWorkflowInstances: (projectId?: string) => Promise<any[]>;
-      onWorkflowProgress: (callback: (data: unknown) => void) => void;
-      onWorkflowCompleted: (callback: (data: unknown) => void) => void;
-      onWorkflowError: (callback: (data: unknown) => void) => void;
-      onFileChanged: (callback: (data: unknown) => void) => void;
-      onServiceStatus: (callback: (data: unknown) => void) => void;
-      onTaskCreated: (callback: (task: unknown) => void) => void;
-      onTaskUpdated: (callback: (taskUpdate: unknown) => void) => void;
-      onTaskCompleted: (callback: (taskId: string) => void) => void;
-      onTaskFailed: (callback: (taskId: string, error: string) => void) => void;
-      removeAllListeners: (channel: string) => void;
-    };
-  }
-}
 
 // 初始化日志
 // eslint-disable-next-line no-console
