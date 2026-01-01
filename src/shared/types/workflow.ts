@@ -87,7 +87,7 @@ export interface WorkflowState {
  */
 export interface WorkflowDefinition {
   /** 工作流定义ID */
-  id: string
+  id?: string
   /** 工作流名称 */
   name: string
   /** 工作流类型 (用于注册和查询) */
@@ -99,11 +99,22 @@ export interface WorkflowDefinition {
   /** 工作流图标 */
   icon?: string
   /** 工作流步骤列表 */
-  steps: WorkflowStep[]
+  steps?: WorkflowStep[]
   /** 工作流默认状态 */
   defaultState?: Record<string, unknown>
   /** 工作流元数据 */
   metadata?: Record<string, unknown>
+  /** 前端特定字段 */
+  nodes?: unknown[]
+  edges?: unknown[]
+  config?: Record<string, unknown>
+  mode?: string
+  prompt?: string
+  status?: string
+  lastModified?: string
+  createdAt?: string
+  updatedAt?: string
+  [key: string]: unknown  // 索引签名，允许额外字段
 }
 
 /**

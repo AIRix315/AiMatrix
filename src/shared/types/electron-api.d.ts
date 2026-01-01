@@ -50,7 +50,7 @@ type APIUsage = CommonAPIUsage;
 
 // 重新导出以供渲染进程使用
 export type { ProviderConfig } from './provider';
-export type APIProviderConfig = ProviderConfig;
+export type { APIProviderConfig } from './api';
 export type ModelDefinition = ModelInfo;
 export type AppConfig = AppSettings;
 export type Project = ProjectConfig;

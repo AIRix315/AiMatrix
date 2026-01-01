@@ -20,7 +20,7 @@ import type {
   ImageToVideoResult,
   ProviderConfig
 } from '../shared/types/provider';
-import type { WorkflowDefinition, WorkflowInstance } from '../shared/types/workflow';
+import type { WorkflowDefinition, WorkflowInstance, WorkflowState } from '../shared/types/workflow';
 import type {
   BatchTextToImageParams,
   BatchImageToVideoParams,

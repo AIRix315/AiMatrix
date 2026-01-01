@@ -71,7 +71,8 @@
       "Bash(node fix-map-and-functions.js:*)",
       "Bash(cut:*)",
       "Bash(1)",
-      "Bash(del E:ProjectsMatrixfix-remaining-errors.js)"
+      "Bash(del E:ProjectsMatrixfix-remaining-errors.js)",
+      "Bash(git reset:*)"
     ]
   },
   "enabledPlugins": {

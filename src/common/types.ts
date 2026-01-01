@@ -193,6 +193,8 @@ export interface PluginManifest {
  * 插件信息接口
  */
 export interface PluginInfo {
+  id?: string;                   // 插件ID（从manifest.id快捷访问）
+  name?: string;                 // 插件名称（从manifest.name快捷访问）
   manifest: PluginManifest;
   isEnabled: boolean;
   isLoaded: boolean;
@@ -502,13 +504,13 @@ export interface IPluginConfig {
  * 快捷方式项接口
  */
 export interface ShortcutItem {
-  id: string;                    // 快捷方式唯一ID
+  id?: string;                   // 快捷方式唯一ID（可选，由后端生成）
   type: ShortcutType;            // 类型（项目/工作流/插件）
   targetId: string;              // 关联的项目/工作流/插件ID
   name: string;                  // 显示名称
   icon: string;                  // 图标（emoji或图片路径）
-  order: number;                 // 排序顺序（数字越小越靠上）
-  createdAt: string;             // 创建时间（ISO 8601）
+  order?: number;                // 排序顺序（数字越小越靠上，可选）
+  createdAt?: string;            // 创建时间（ISO 8601，可选）
 }
 
 /**
