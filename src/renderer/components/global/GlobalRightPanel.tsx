@@ -108,7 +108,7 @@ export const GlobalRightPanel: React.FC<GlobalRightPanelProps> = () => {
         settings,
         providerParams,
         selectedItem,
-      });
+      } as any);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('生成失败:', error);

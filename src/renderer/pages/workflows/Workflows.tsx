@@ -39,17 +39,18 @@ const Workflows: React.FC = () => {
         const workflowList = await window.electronAPI.listWorkflows();
         // 转换后端数据格式为前端格式
         const formattedWorkflows: Workflow[] = workflowList
+          .filter((w) => w.id !== undefined)
           .map((w) => ({
-            id: w.id,
+            id: w.id!,
             name: w.name,
             description: w.description || '暂无描述',
-            type: w.type || 'custom',
+            type: (w.type || 'custom') as 'comfyui' | 'n8n' | 'custom',
             lastModified: w.lastModified || '未知',
-            status: w.status || 'draft'
+            status: (w.status || 'draft') as 'running' | 'completed' | 'draft'
           }))
           // 过滤掉插件工作流（如 novel-to-video），防止在工作流列表中显示和被误删
           // 插件工作流应该从插件页面访问，而非工作流页面
-          .filter((w) => w.id !== 'novel-to-video' && w.type !== 'novel-to-video');
+          .filter((w) => w.id !== 'novel-to-video');
         setWorkflows(formattedWorkflows);
       }
     } catch (error) {

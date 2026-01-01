@@ -161,7 +161,8 @@ const Settings: React.FC = () => {
   const handleSaveConfig = async () => {
     try {
       setIsSaving(true);
-      await window.electronAPI.saveSettings(config);
+      if (!config) return;
+      await window.electronAPI.saveSettings(config as any);
       setToast({
         type: 'success',
         message: '配置保存成功'
@@ -178,7 +179,7 @@ const Settings: React.FC = () => {
 
   const handleProviderUpdate = async (providerConfig: unknown) => {
     try {
-      await window.electronAPI.addProvider(providerConfig);
+      await window.electronAPI.addProvider(providerConfig as any);
       await loadProvidersForCategory(currentCategory!);
       setToast({
         type: 'success',
@@ -218,11 +219,12 @@ const Settings: React.FC = () => {
       }
 
       const result = await window.electronAPI.testProviderConnection({
-        providerId,
-        baseUrl: provider.baseUrl,
+        type: provider.category || '',
+        baseUrl: provider.baseUrl || '',
         apiKey: provider.apiKey,
+        providerId,
         authType: provider.authType
-      });
+      } as any);
 
       // TODO: [中期改进] 定义准确的testProviderConnection返回类型
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -100,9 +100,9 @@ export const ShortcutNavItem: React.FC<ShortcutNavItemProps> = ({
     }
     setIsDragging(true);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', shortcut.id);
+    e.dataTransfer.setData('text/plain', shortcut.id || '');
     if (onDragStart) {
-      onDragStart(shortcut.id);
+      onDragStart(shortcut.id || '');
     }
   };
 
@@ -116,7 +116,7 @@ export const ShortcutNavItem: React.FC<ShortcutNavItemProps> = ({
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    if (onDragOver && !isDragging) {
+    if (onDragOver && !isDragging && shortcut.id) {
       onDragOver(shortcut.id);
     }
   };

@@ -189,7 +189,7 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
           setShortcuts(newShortcuts);
 
           // 调用 API 持久化新的顺序
-          const newOrder = newShortcuts.map(s => s.id);
+          const newOrder = newShortcuts.map(s => s.id).filter((id): id is string => id !== undefined);
           await window.electronAPI.reorderShortcuts(newOrder);
         }
       } catch (err) {
@@ -256,8 +256,8 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
       shortcut={shortcut}
       isEditing={editingShortcutId === shortcut.id}
       onClick={() => handleShortcutClick(shortcut)}
-      onDelete={() => handleDeleteShortcut(shortcut.id)}
-      onEditModeChange={(isEditing) => handleEditModeChange(shortcut.id, isEditing)}
+      onDelete={() => handleDeleteShortcut(shortcut.id || '')}
+      onEditModeChange={(isEditing) => handleEditModeChange(shortcut.id || '', isEditing)}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}

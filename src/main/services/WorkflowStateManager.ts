@@ -69,7 +69,7 @@ export class WorkflowStateManager {
       }
 
       // 初始化步骤状态
-      definition.steps.forEach(step => {
+      definition.steps?.forEach(step => {
         initialState.steps[step.id] = {
           status: 'pending',
           updatedAt: currentTime

@@ -41,7 +41,7 @@ export class WorkflowRegistry {
       logger.info(
         `工作流已注册: ${definition.name} (类型: ${definition.type})`,
         'WorkflowRegistry',
-        { definitionId: definition.id, stepsCount: definition.steps.length }
+        { definitionId: definition.id, stepsCount: definition.steps?.length || 0 }
       )
     } catch (error) {
       logger.error(

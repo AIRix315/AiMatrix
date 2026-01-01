@@ -1,7 +1,7 @@
 import React, { memo, useState, useEffect } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { Settings, ChevronDown } from 'lucide-react';
-import type { APIProviderConfig, APICategory } from '@/shared/types';
+import type { APIProviderConfig, APICategory, ProviderConfig } from '@/shared/types';
 import './ExecuteNode.css';
 
 export interface ExecuteNodeData {
@@ -35,9 +35,9 @@ const ExecuteNode: React.FC<NodeProps<ExecuteNodeData>> = ({ id, data, selected 
         const providerList = await window.electronAPI.listProviders({ enabledOnly: true });
         // 根据节点指定的category过滤Provider（如果有）
         const filteredProviders = data.category
-          ? providerList.filter((p: APIProviderConfig) => p.category === data.category && p.enabled)
-          : providerList.filter((p: APIProviderConfig) => p.enabled);
-        setProviders(filteredProviders);
+          ? providerList.filter((p: ProviderConfig) => p.enabled)
+          : providerList.filter((p: ProviderConfig) => p.enabled);
+        setProviders(filteredProviders as any);
       }
     } catch (error) {
       // eslint-disable-next-line no-console

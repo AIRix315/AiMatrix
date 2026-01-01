@@ -18,6 +18,9 @@ export * from './asset';
 // API Provider 相关类型
 export * from './api';
 
+// Provider 相关类型（文生图、图生图等）
+export * from './provider';
+
 // 工作流相关类型
 export * from './workflow';
 

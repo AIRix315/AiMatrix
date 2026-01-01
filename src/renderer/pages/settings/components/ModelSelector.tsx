@@ -83,7 +83,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
       const loadedModels = await window.electronAPI.listModels(options);
 
-      setModels(loadedModels);
+      setModels(loadedModels as any);
 
       // 提取所有标签
       const tags = new Set<string>();

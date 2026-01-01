@@ -50,14 +50,14 @@ const Plugins: React.FC = () => {
       setIsLoading(true);
       if (window.electronAPI?.listPlugins) {
         const pluginList = await window.electronAPI.listPlugins();
-        setPlugins(pluginList || []);
+        setPlugins(pluginList as any || []);
 
         // 检查是否从快捷方式跳转过来，自动选中对应插件
         const state = location.state as { selectedPluginId?: string } | null;
         if (state?.selectedPluginId) {
-          const targetPlugin = pluginList.find(p => p.id === state.selectedPluginId);
+          const targetPlugin = pluginList.find(p => p.manifest?.id === state.selectedPluginId);
           if (targetPlugin) {
-            setSelectedPlugin(targetPlugin);
+            setSelectedPlugin(targetPlugin as any);
             setToast({
               type: 'info',
               message: `已选中插件: ${targetPlugin.name}`
