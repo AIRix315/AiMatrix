@@ -1,11 +1,60 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "lastUpdated": "2026-01-02T00:00:00Z",
   "templates": [
     {
+      "id": "deepseek",
+      "name": "DeepSeek (LLM)",
+      "category": ["llm"],
+      "type": "online",
+      "documentationUrl": "https://platform.deepseek.com/docs",
+      "baseUrl": "https://api.deepseek.com",
+      "authType": "bearer",
+      "endpoints": {
+        "chat": "/v1/chat/completions",
+        "models": "/v1/models"
+      },
+      "features": {
+        "streaming": true,
+        "async": false,
+        "polling": false
+      },
+      "configFields": [
+        {
+          "name": "apiKey",
+          "label": "API Key",
+          "required": true,
+          "type": "password",
+          "placeholder": "sk-..."
+        }
+      ],
+      "costPerUnit": 0.0001,
+      "currency": "CNY"
+    },
+    {
+      "id": "ollama",
+      "name": "Ollama (LLM本地)",
+      "category": ["llm"],
+      "type": "local",
+      "documentationUrl": "https://ollama.ai/docs",
+      "baseUrl": "http://localhost:11434",
+      "authType": "none",
+      "endpoints": {
+        "generate": "/api/generate",
+        "chat": "/api/chat",
+        "models": "/api/tags"
+      },
+      "features": {
+        "streaming": true,
+        "async": false,
+        "polling": false
+      },
+      "configFields": []
+    },
+    {
       "id": "comfyui",
-      "name": "ComfyUI (本地)",
-      "category": ["image-generation"],
+      "name": "ComfyUI (视图生成本地)",
+      "category": ["image-generation", "video-generation"],
       "type": "local",
       "documentationUrl": "https://github.com/comfyanonymous/ComfyUI",
       "baseUrl": "http://localhost:8188",
@@ -23,36 +72,6 @@
         "polling": true
       },
       "configFields": []
-    },
-    {
-      "id": "stability-ai",
-      "name": "Stability AI",
-      "category": ["image-generation"],
-      "type": "online",
-      "documentationUrl": "https://platform.stability.ai/docs",
-      "baseUrl": "https://api.stability.ai",
-      "authType": "bearer",
-      "endpoints": {
-        "textToImage": "/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
-        "imageToImage": "/v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image",
-        "upscale": "/v1/generation/esrgan-v1-x2plus/image-to-image/upscale"
-      },
-      "features": {
-        "streaming": false,
-        "async": false,
-        "polling": false
-      },
-      "configFields": [
-        {
-          "name": "apiKey",
-          "label": "API Key",
-          "required": true,
-          "type": "password",
-          "placeholder": "sk-..."
-        }
-      ],
-      "costPerUnit": 0.002,
-      "currency": "USD"
     },
     {
       "id": "t8star",
@@ -87,7 +106,7 @@
     {
       "id": "running-hub",
       "name": "Running Hub (TTS)",
-      "category": ["tts"],
+      "category": ["tts", "audio-generation"],
       "type": "online",
       "documentationUrl": "https://www.runninghub.cn/runninghub-api-doc-cn/",
       "baseUrl": "https://api.runninghub.cn",
@@ -115,28 +134,8 @@
       "currency": "CNY"
     },
     {
-      "id": "ollama",
-      "name": "Ollama (本地LLM)",
-      "category": ["llm"],
-      "type": "local",
-      "documentationUrl": "https://ollama.ai/docs",
-      "baseUrl": "http://localhost:11434",
-      "authType": "none",
-      "endpoints": {
-        "generate": "/api/generate",
-        "chat": "/api/chat",
-        "models": "/api/tags"
-      },
-      "features": {
-        "streaming": true,
-        "async": false,
-        "polling": false
-      },
-      "configFields": []
-    },
-    {
       "id": "openai",
-      "name": "OpenAI",
+      "name": "OpenAI (多模态)",
       "category": ["llm", "image-generation"],
       "type": "online",
       "documentationUrl": "https://platform.openai.com/docs",
@@ -162,6 +161,35 @@
         }
       ],
       "costPerUnit": 0.002,
+      "currency": "USD"
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini (多模态)",
+      "category": ["llm", "image-generation"],
+      "type": "online",
+      "documentationUrl": "https://ai.google.dev/docs",
+      "baseUrl": "https://generativelanguage.googleapis.com",
+      "authType": "apikey",
+      "endpoints": {
+        "generateContent": "/v1/models/gemini-pro:generateContent",
+        "generateContentStream": "/v1/models/gemini-pro:streamGenerateContent"
+      },
+      "features": {
+        "streaming": true,
+        "async": false,
+        "polling": false
+      },
+      "configFields": [
+        {
+          "name": "apiKey",
+          "label": "API Key",
+          "required": true,
+          "type": "password",
+          "placeholder": "请输入Gemini API Key"
+        }
+      ],
+      "costPerUnit": 0.0005,
       "currency": "USD"
     },
     {
