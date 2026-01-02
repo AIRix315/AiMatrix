@@ -1,0 +1,184 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-02T00:00:00Z",
+  "templates": [
+    {
+      "id": "comfyui",
+      "name": "ComfyUI (本地)",
+      "category": ["image-generation"],
+      "type": "local",
+      "documentationUrl": "https://github.com/comfyanonymous/ComfyUI",
+      "baseUrl": "http://localhost:8188",
+      "authType": "none",
+      "endpoints": {
+        "prompt": "/prompt",
+        "history": "/history",
+        "queue": "/queue",
+        "view": "/view",
+        "upload": "/upload/image"
+      },
+      "features": {
+        "streaming": false,
+        "async": true,
+        "polling": true
+      },
+      "configFields": []
+    },
+    {
+      "id": "stability-ai",
+      "name": "Stability AI",
+      "category": ["image-generation"],
+      "type": "online",
+      "documentationUrl": "https://platform.stability.ai/docs",
+      "baseUrl": "https://api.stability.ai",
+      "authType": "bearer",
+      "endpoints": {
+        "textToImage": "/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+        "imageToImage": "/v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image",
+        "upscale": "/v1/generation/esrgan-v1-x2plus/image-to-image/upscale"
+      },
+      "features": {
+        "streaming": false,
+        "async": false,
+        "polling": false
+      },
+      "configFields": [
+        {
+          "name": "apiKey",
+          "label": "API Key",
+          "required": true,
+          "type": "password",
+          "placeholder": "sk-..."
+        }
+      ],
+      "costPerUnit": 0.002,
+      "currency": "USD"
+    },
+    {
+      "id": "t8star",
+      "name": "T8Star (视频生成)",
+      "category": ["video-generation"],
+      "type": "online",
+      "documentationUrl": "https://t8star.com/docs",
+      "baseUrl": "https://api.t8star.com",
+      "authType": "bearer",
+      "endpoints": {
+        "create": "/v1/video/generate",
+        "status": "/v1/video/status/{task_id}",
+        "download": "/v1/video/download/{task_id}"
+      },
+      "features": {
+        "streaming": false,
+        "async": true,
+        "polling": true
+      },
+      "configFields": [
+        {
+          "name": "apiKey",
+          "label": "API Key",
+          "required": true,
+          "type": "password",
+          "placeholder": "请输入T8Star API Key"
+        }
+      ],
+      "costPerUnit": 0.05,
+      "currency": "CNY"
+    },
+    {
+      "id": "running-hub",
+      "name": "Running Hub (TTS)",
+      "category": ["tts"],
+      "type": "online",
+      "documentationUrl": "https://www.runninghub.cn/runninghub-api-doc-cn/",
+      "baseUrl": "https://api.runninghub.cn",
+      "authType": "bearer",
+      "endpoints": {
+        "createTask": "/api/tts/create",
+        "getStatus": "/api/tts/status/{task_id}",
+        "download": "/api/tts/download/{task_id}"
+      },
+      "features": {
+        "streaming": false,
+        "async": true,
+        "polling": true
+      },
+      "configFields": [
+        {
+          "name": "apiKey",
+          "label": "API Key",
+          "required": true,
+          "type": "password",
+          "placeholder": "请输入Running Hub API Key"
+        }
+      ],
+      "costPerUnit": 0.0001,
+      "currency": "CNY"
+    },
+    {
+      "id": "ollama",
+      "name": "Ollama (本地LLM)",
+      "category": ["llm"],
+      "type": "local",
+      "documentationUrl": "https://ollama.ai/docs",
+      "baseUrl": "http://localhost:11434",
+      "authType": "none",
+      "endpoints": {
+        "generate": "/api/generate",
+        "chat": "/api/chat",
+        "models": "/api/tags"
+      },
+      "features": {
+        "streaming": true,
+        "async": false,
+        "polling": false
+      },
+      "configFields": []
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "category": ["llm", "image-generation"],
+      "type": "online",
+      "documentationUrl": "https://platform.openai.com/docs",
+      "baseUrl": "https://api.openai.com",
+      "authType": "bearer",
+      "endpoints": {
+        "chat": "/v1/chat/completions",
+        "images": "/v1/images/generations",
+        "models": "/v1/models"
+      },
+      "features": {
+        "streaming": true,
+        "async": false,
+        "polling": false
+      },
+      "configFields": [
+        {
+          "name": "apiKey",
+          "label": "API Key",
+          "required": true,
+          "type": "password",
+          "placeholder": "sk-..."
+        }
+      ],
+      "costPerUnit": 0.002,
+      "currency": "USD"
+    },
+    {
+      "id": "custom",
+      "name": "自定义Provider",
+      "category": ["image-generation", "video-generation", "audio-generation", "llm", "tts", "stt", "embedding", "translation"],
+      "type": "online",
+      "documentationUrl": "",
+      "baseUrl": "",
+      "authType": "bearer",
+      "endpoints": {},
+      "features": {
+        "streaming": false,
+        "async": false,
+        "polling": false
+      },
+      "configFields": []
+    }
+  ]
+}
