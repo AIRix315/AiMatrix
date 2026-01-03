@@ -29,6 +29,7 @@ import { ProviderRegistry } from './services/ProviderRegistry';
 import { ProviderRouter } from './services/ProviderRouter';
 import { JiekouProvider } from './providers/JiekouProvider';
 import { AIService } from './services/AIService';
+import { templateManager } from './services/TemplateManager';
 
 // 注册自定义协议为特权协议（必须在 app.ready 之前）
 protocol.registerSchemesAsPrivileged([
@@ -216,6 +217,7 @@ class MatrixApp {
     await taskScheduler.initialize();
     await apiManager.initialize();
     await modelRegistry.initialize();
+    await templateManager.initialize();
     await this.shortcutManager.initialize();
 
     // 注册 Providers
@@ -397,6 +399,17 @@ class MatrixApp {
     });
     ipcMain.handle('api:get-provider-status', async (_, providerId: string) => {
       return await apiManager.getProviderStatus(providerId);
+    });
+
+    // Template相关IPC处理
+    ipcMain.handle('template:get', async (_, typeId: string) => {
+      return await templateManager.getTemplate(typeId);
+    });
+    ipcMain.handle('template:list-by-category', async (_, category: string) => {
+      return await templateManager.listTemplatesByCategory(category);
+    });
+    ipcMain.handle('template:refresh', async () => {
+      return await templateManager.refreshTemplates();
     });
 
     // Model相关IPC处理

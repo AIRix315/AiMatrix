@@ -1,0 +1,246 @@
+/**
+ * ProviderDetailPanel 样式
+ *
+ * 参考cherry-studio的紧凑布局
+ * 使用theme.css中已定义的CSS变量
+ */
+
+.provider-detail-panel {
+  flex: 1;
+  padding: 15px 20px;
+  overflow-y: auto;
+  background: var(--bg-canvas);
+}
+
+/* 加载状态 */
+.provider-detail-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+}
+
+/* Provider 头部 */
+.provider-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--border-color);
+}
+
+.provider-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.provider-detail-title h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  transition: color 0.2s;
+}
+
+.provider-detail-title h2:hover {
+  color: var(--primary-color);
+}
+
+/* Provider 名称编辑输入框 */
+.provider-name-input {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  padding: 4px 8px;
+  outline: none;
+  min-width: 200px;
+}
+
+.provider-name-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(88, 134, 255, 0.1);
+}
+
+.provider-category-label {
+  padding: 2px 8px;
+  font-size: 11px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 12px;
+}
+
+/* 启用开关 */
+.provider-enable-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.provider-enable-toggle input[type='checkbox'] {
+  position: absolute;
+  opacity: 0;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--text-muted);
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.provider-enable-toggle input:checked + .toggle-slider {
+  background: var(--accent-color);
+}
+
+.provider-enable-toggle input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.toggle-label {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* API 配置区 */
+.api-config-section {
+  margin-bottom: 15px;
+}
+
+.api-config-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 10px 0;
+}
+
+/* 表单字段 */
+.form-field {
+  margin-bottom: 12px;
+}
+
+.form-field:last-child {
+  margin-bottom: 0;
+}
+
+.form-field label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-field .input-field {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-field .input-field:focus {
+  border-color: var(--accent-color);
+}
+
+/* API 密钥输入组 */
+.api-key-input-group {
+  display: flex;
+  gap: 6px;
+}
+
+.api-key-input-group .input-field {
+  flex: 1;
+}
+
+.icon-button {
+  padding: 8px 12px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+}
+
+.icon-button:hover {
+  background: var(--bg-hover);
+}
+
+/* API URL 预览 */
+.api-url-preview {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+/* 模型列表区 */
+.models-section {
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+.models-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.models-section-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.model-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.models-placeholder {
+  padding: 30px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* 底部操作区 */
+.provider-detail-footer {
+  padding-top: 15px;
+  border-top: 0.5px solid var(--border-color);
+  margin-top: 20px;
+}

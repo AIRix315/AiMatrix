@@ -1,10 +1,10 @@
 /**
  * 项目管理器实现
- * 
+ *
  * 遵循全局时间处理要求：
  * 任何涉及时间的文字写入、记录，必须先查询系统时间，
  * 使用函数查询或者MCP服务查询确认后，方可写入
- * 
+ *
  * 参考：docs/06-core-services-design-v1.0.1.md
  */
 
@@ -19,7 +19,7 @@ import {
   ProjectSettings,
   AssetConfig,
   ServiceError,
-  LogEntry
+  LogEntry,
 } from '../../common/types';
 
 /**
@@ -42,10 +42,10 @@ export class ProjectManager implements IProjectManager {
     try {
       // 确保项目目录存在
       await fs.mkdir(this.projectsPath, { recursive: true });
-      
+
       // 加载现有项目
       await this.loadAllProjects();
-      
+
       this.isInitialized = true;
       this.log('info', '项目管理器初始化完成');
     } catch (error) {
@@ -54,7 +54,7 @@ export class ProjectManager implements IProjectManager {
         message: `项目管理器初始化失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'initialize'
+        operation: 'initialize',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -68,7 +68,7 @@ export class ProjectManager implements IProjectManager {
     try {
       // 保存所有项目
       await this.saveAllProjects();
-      
+
       this.projects.clear();
       this.isInitialized = false;
       this.log('info', '项目管理器清理完成');
@@ -78,7 +78,7 @@ export class ProjectManager implements IProjectManager {
         message: `项目管理器清理失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'cleanup'
+        operation: 'cleanup',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -88,7 +88,10 @@ export class ProjectManager implements IProjectManager {
   /**
    * 创建新项目
    */
-  public async createProject(name: string, template?: string): Promise<ProjectConfig> {
+  public async createProject(
+    name: string,
+    template?: string
+  ): Promise<ProjectConfig> {
     // 验证时间有效性
     const isTimeValid = await timeService.validateTimeIntegrity();
     if (!isTimeValid) {
@@ -118,7 +121,7 @@ export class ProjectManager implements IProjectManager {
       const defaultSettings: ProjectSettings = {
         defaultWorkflow: template || 'default',
         outputFormat: 'mp4',
-        quality: 80
+        quality: 80,
       };
 
       const projectConfig: ProjectConfig = {
@@ -133,7 +136,7 @@ export class ProjectManager implements IProjectManager {
         workflowType: template,
         inputAssets: [],
         outputAssets: [],
-        immutable: false
+        immutable: false,
       };
 
       // 如果有模板，复制模板文件
@@ -143,10 +146,10 @@ export class ProjectManager implements IProjectManager {
 
       // 保存项目配置
       await this.saveProjectConfig(projectConfig);
-      
+
       // 添加到内存
       this.projects.set(projectId, projectConfig);
-      
+
       this.log('info', `项目创建成功: ${name} (${projectId})`);
       return projectConfig;
     } catch (error) {
@@ -155,7 +158,7 @@ export class ProjectManager implements IProjectManager {
         message: `创建项目失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'createProject'
+        operation: 'createProject',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -186,7 +189,11 @@ export class ProjectManager implements IProjectManager {
       }
 
       // 从文件加载
-      const configPath = path.join(this.projectsPath, projectId, 'project.json');
+      const configPath = path.join(
+        this.projectsPath,
+        projectId,
+        'project.json'
+      );
       const configData = await fs.readFile(configPath, 'utf-8');
       const projectConfig: ProjectConfig = JSON.parse(configData);
 
@@ -194,7 +201,7 @@ export class ProjectManager implements IProjectManager {
 
       // 添加到内存
       this.projects.set(projectId, projectConfig);
-      
+
       this.log('info', `项目加载成功: ${projectId}`);
       return projectConfig;
     } catch (error) {
@@ -203,7 +210,7 @@ export class ProjectManager implements IProjectManager {
         message: `加载项目失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'loadProject'
+        operation: 'loadProject',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -213,7 +220,10 @@ export class ProjectManager implements IProjectManager {
   /**
    * 保存项目
    */
-  public async saveProject(projectId: string, config: ProjectConfig): Promise<void> {
+  public async saveProject(
+    projectId: string,
+    config: ProjectConfig
+  ): Promise<void> {
     // 验证时间有效性
     const isTimeValid = await timeService.validateTimeIntegrity();
     if (!isTimeValid) {
@@ -230,13 +240,13 @@ export class ProjectManager implements IProjectManager {
     try {
       // 更新时间戳
       config.updatedAt = (await timeService.getCurrentTime()).toISOString();
-      
+
       // 保存到文件
       await this.saveProjectConfig(config);
-      
+
       // 更新内存
       this.projects.set(projectId, config);
-      
+
       this.log('info', `项目保存成功: ${projectId}`);
     } catch (error) {
       const serviceError: ServiceError = {
@@ -244,7 +254,7 @@ export class ProjectManager implements IProjectManager {
         message: `保存项目失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'saveProject'
+        operation: 'saveProject',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -256,7 +266,10 @@ export class ProjectManager implements IProjectManager {
    * @param projectId 项目ID
    * @param assetId 资源ID
    */
-  public async addInputAsset(projectId: string, assetId: string): Promise<void> {
+  public async addInputAsset(
+    projectId: string,
+    assetId: string
+  ): Promise<void> {
     // 验证时间有效性
     const isTimeValid = await timeService.validateTimeIntegrity();
     if (!isTimeValid) {
@@ -290,7 +303,7 @@ export class ProjectManager implements IProjectManager {
         message: `添加输入资源失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'addInputAsset'
+        operation: 'addInputAsset',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -302,7 +315,10 @@ export class ProjectManager implements IProjectManager {
    * @param projectId 项目ID
    * @param assetId 资源ID（项目生成的资源）
    */
-  public async addOutputAsset(projectId: string, assetId: string): Promise<void> {
+  public async addOutputAsset(
+    projectId: string,
+    assetId: string
+  ): Promise<void> {
     // 验证时间有效性
     const isTimeValid = await timeService.validateTimeIntegrity();
     if (!isTimeValid) {
@@ -336,7 +352,7 @@ export class ProjectManager implements IProjectManager {
         message: `添加输出资源失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'addOutputAsset'
+        operation: 'addOutputAsset',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -348,7 +364,10 @@ export class ProjectManager implements IProjectManager {
    * @param projectId 项目ID
    * @param deleteOutputs 是否删除输出资源（默认false）
    */
-  public async deleteProject(projectId: string, deleteOutputs: boolean = false): Promise<void> {
+  public async deleteProject(
+    projectId: string,
+    deleteOutputs: boolean = false
+  ): Promise<void> {
     // 验证时间有效性
     const isTimeValid = await timeService.validateTimeIntegrity();
     if (!isTimeValid) {
@@ -369,7 +388,10 @@ export class ProjectManager implements IProjectManager {
       }
 
       if (deleteOutputs && project.outputAssets.length > 0) {
-        this.log('info', `准备删除项目输出资源，共 ${project.outputAssets.length} 个`);
+        this.log(
+          'info',
+          `准备删除项目输出资源，共 ${project.outputAssets.length} 个`
+        );
         for (const assetId of project.outputAssets) {
           this.log('info', `需要删除输出资源: ${assetId}`);
         }
@@ -381,14 +403,17 @@ export class ProjectManager implements IProjectManager {
       // 从内存中移除
       this.projects.delete(projectId);
 
-      this.log('info', `项目删除成功: ${projectId}, 删除输出资源: ${deleteOutputs}`);
+      this.log(
+        'info',
+        `项目删除成功: ${projectId}, 删除输出资源: ${deleteOutputs}`
+      );
     } catch (error) {
       const serviceError: ServiceError = {
         code: 'PROJECT_DELETE_FAILED',
         message: `删除项目失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'deleteProject'
+        operation: 'deleteProject',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -422,7 +447,7 @@ export class ProjectManager implements IProjectManager {
         message: `列出项目失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'listProjects'
+        operation: 'listProjects',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -432,7 +457,10 @@ export class ProjectManager implements IProjectManager {
   /**
    * 链接全局资产到项目
    */
-  public async linkGlobalAsset(projectId: string, globalAssetId: string): Promise<void> {
+  public async linkGlobalAsset(
+    projectId: string,
+    globalAssetId: string
+  ): Promise<void> {
     // 验证时间有效性
     const isTimeValid = await timeService.validateTimeIntegrity();
     if (!isTimeValid) {
@@ -454,12 +482,20 @@ export class ProjectManager implements IProjectManager {
 
       // 这里应该调用AssetManager获取全局资产信息
       // 暂时创建一个简单的引用记录
-      const linkPath = path.join(project.path, 'links', `${globalAssetId}.json`);
+      const linkPath = path.join(
+        project.path,
+        'links',
+        `${globalAssetId}.json`
+      );
       await fs.mkdir(path.dirname(linkPath), { recursive: true });
-      await fs.writeFile(linkPath, JSON.stringify({
-        globalAssetId,
-        linkedAt: (await timeService.getCurrentTime()).toISOString()
-      }), 'utf-8');
+      await fs.writeFile(
+        linkPath,
+        JSON.stringify({
+          globalAssetId,
+          linkedAt: (await timeService.getCurrentTime()).toISOString(),
+        }),
+        'utf-8'
+      );
 
       this.log('info', `全局资产链接成功: ${globalAssetId} -> ${projectId}`);
     } catch (error) {
@@ -468,7 +504,7 @@ export class ProjectManager implements IProjectManager {
         message: `链接全局资产失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'linkGlobalAsset'
+        operation: 'linkGlobalAsset',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -504,7 +540,7 @@ export class ProjectManager implements IProjectManager {
 
       try {
         const linkFiles = await fs.readdir(linksPath);
-        
+
         for (const file of linkFiles) {
           if (file.endsWith('.json')) {
             // 读取链接文件
@@ -519,7 +555,10 @@ export class ProjectManager implements IProjectManager {
         // 链接目录不存在，返回空数组
       }
 
-      this.log('info', `获取链接资产: ${projectId}, 数量: ${linkedAssets.length}`);
+      this.log(
+        'info',
+        `获取链接资产: ${projectId}, 数量: ${linkedAssets.length}`
+      );
       return linkedAssets;
     } catch (error) {
       const serviceError: ServiceError = {
@@ -527,7 +566,7 @@ export class ProjectManager implements IProjectManager {
         message: `获取链接资产失败: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: (await timeService.getCurrentTime()).toISOString(),
         service: 'ProjectManager',
-        operation: 'getLinkedAssets'
+        operation: 'getLinkedAssets',
       };
       this.log('error', serviceError.message, serviceError);
       throw serviceError;
@@ -540,24 +579,70 @@ export class ProjectManager implements IProjectManager {
    */
   private async loadAllProjects(): Promise<void> {
     try {
-      const projectDirs = await fs.readdir(this.projectsPath, { withFileTypes: true });
+      const projectDirs = await fs.readdir(this.projectsPath, {
+        withFileTypes: true,
+      });
 
       for (const dir of projectDirs) {
         if (dir.isDirectory()) {
           try {
-            const configPath = path.join(this.projectsPath, dir.name, 'project.json');
+            const configPath = path.join(
+              this.projectsPath,
+              dir.name,
+              'project.json'
+            );
+
+            // 检查文件是否存在
+            try {
+              await fs.access(configPath);
+            } catch {
+              this.log(
+                'warn',
+                `跳过无效项目目录: ${dir.name} (缺少 project.json)`
+              );
+              continue;
+            }
+
+            // 读取文件内容
             const configData = await fs.readFile(configPath, 'utf-8');
+
+            // 检查文件是否为空
+            if (!configData || configData.trim().length === 0) {
+              this.log(
+                'warn',
+                `跳过无效项目目录: ${dir.name} (project.json 为空，可能是测试残留)`
+              );
+              // 可选：自动清理空项目目录
+              // await fs.rm(path.join(this.projectsPath, dir.name), { recursive: true, force: true });
+              continue;
+            }
+
+            // 解析 JSON
             const projectConfig: ProjectConfig = JSON.parse(configData);
 
-            // 保持 ISO 8601 字符串格式，无需转换
+            // 验证必要字段
+            if (!projectConfig.id || !projectConfig.name) {
+              this.log('warn', `跳过无效项目目录: ${dir.name} (缺少必要字段)`);
+              continue;
+            }
 
+            // 保持 ISO 8601 字符串格式，无需转换
             this.projects.set(projectConfig.id, projectConfig);
             this.log('info', `项目加载成功: ${projectConfig.id}`);
           } catch (error) {
-            this.log('warn', `跳过无效项目目录: ${dir.name}, 错误: ${error}`);
+            if (error instanceof SyntaxError) {
+              this.log(
+                'warn',
+                `跳过无效项目目录: ${dir.name} (JSON 格式错误，可能是测试残留)`
+              );
+            } else {
+              this.log('warn', `跳过无效项目目录: ${dir.name}, 错误: ${error}`);
+            }
           }
         }
       }
+
+      this.log('info', `项目加载完成，共 ${this.projects.size} 个有效项目`);
     } catch (error) {
       this.log('warn', `加载项目目录失败: ${error}`);
     }
@@ -569,8 +654,8 @@ export class ProjectManager implements IProjectManager {
    */
   private async saveAllProjects(): Promise<void> {
     try {
-      const savePromises = Array.from(this.projects.values()).map(
-        config => this.saveProjectConfig(config)
+      const savePromises = Array.from(this.projects.values()).map(config =>
+        this.saveProjectConfig(config)
       );
       await Promise.all(savePromises);
     } catch (error) {
@@ -607,17 +692,18 @@ export class ProjectManager implements IProjectManager {
 
     const timestamp = await timeService.getCurrentTime();
 
-    const workflowType = template === 'novel-to-video' ? 'novel-to-video' : 'custom';
+    const workflowType =
+      template === 'novel-to-video' ? 'novel-to-video' : 'custom';
 
     const workflow = {
       id: workflowId,
-      name: projectName,  // 直接使用项目名称
+      name: projectName, // 直接使用项目名称
       type: workflowType,
       nodes: [],
       edges: [],
       config: {},
       createdAt: timestamp.toISOString(),
-      updatedAt: timestamp.toISOString()
+      updatedAt: timestamp.toISOString(),
     };
 
     const filePath = path.join(workflowsDir, `${workflowId}.json`);
@@ -630,7 +716,10 @@ export class ProjectManager implements IProjectManager {
    * 应用项目模板
    * @private
    */
-  private async applyTemplate(projectPath: string, template: string): Promise<void> {
+  private async applyTemplate(
+    projectPath: string,
+    template: string
+  ): Promise<void> {
     this.log('info', `应用项目模板: ${template} -> ${projectPath}`);
 
     switch (template) {
@@ -672,13 +761,13 @@ export class ProjectManager implements IProjectManager {
   private async createNovelToVideoTemplate(projectPath: string): Promise<void> {
     // 创建小说转视频插件所需的目录结构
     const dirs = [
-      'chapters',        // 章节文本
-      'scenes',          // 场景分析
-      'characters',      // 角色设定
-      'storyboards',     // 分镜脚本
-      'voiceovers',      // 配音文件
-      'video_clips',     // 视频片段
-      'output'           // 最终输出
+      'chapters', // 章节文本
+      'scenes', // 场景分析
+      'characters', // 角色设定
+      'storyboards', // 分镜脚本
+      'voiceovers', // 配音文件
+      'video_clips', // 视频片段
+      'output', // 最终输出
     ];
 
     for (const dir of dirs) {
@@ -693,7 +782,7 @@ export class ProjectManager implements IProjectManager {
       template: 'novel-to-video',
       pluginId: 'novel-to-video',
       folders: dirs,
-      createdAt: timestamp.toISOString()
+      createdAt: timestamp.toISOString(),
     };
 
     await fs.writeFile(
@@ -709,7 +798,10 @@ export class ProjectManager implements IProjectManager {
    * 应用插件模板
    * @private
    */
-  private async applyPluginTemplate(projectPath: string, pluginId: string): Promise<void> {
+  private async applyPluginTemplate(
+    projectPath: string,
+    pluginId: string
+  ): Promise<void> {
     // 未来扩展：调用插件 API 获取模板
     // 目前创建一个基础的插件目录结构
     const baseDir = path.join(projectPath, 'plugin_data');
@@ -724,7 +816,10 @@ export class ProjectManager implements IProjectManager {
    */
   private log(level: LogEntry['level'], message: string, data?: unknown): void {
     // eslint-disable-next-line no-console
-    console.log(`[ProjectManager] ${level.toUpperCase()}: ${message}`, data || '');
+    console.log(
+      `[ProjectManager] ${level.toUpperCase()}: ${message}`,
+      data || ''
+    );
   }
 }
 

@@ -447,6 +447,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getProviderStatus: (providerId: string): Promise<unknown> =>
     ipcRenderer.invoke('api:get-provider-status', providerId),
 
+  // Template 管理 API
+
+  /**
+   * 获取Provider模板
+   */
+  getProviderTemplate: (typeId: string): Promise<unknown> =>
+    ipcRenderer.invoke('template:get', typeId),
+
+  /**
+   * 按分类列出Provider模板
+   */
+  listProviderTemplates: (category: string): Promise<unknown[]> =>
+    ipcRenderer.invoke('template:list-by-category', category),
+
+  /**
+   * 刷新Provider模板库
+   */
+  refreshProviderTemplates: (): Promise<void> =>
+    ipcRenderer.invoke('template:refresh'),
+
   // Provider 执行 API（新增 - K03）
 
   /**

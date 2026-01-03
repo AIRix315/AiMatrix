@@ -35,7 +35,8 @@ export class NovelVideoAPIService {
       // 1. 获取场景资产元数据
       const sceneAsset = await this.getSceneAsset(sceneAssetPath);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const prompt = (sceneAsset.customFields?.novelVideo as any)?.sceneImagePrompt;
+      const prompt = (sceneAsset.customFields?.novelVideo as any)
+        ?.sceneImagePrompt;
 
       if (!prompt) {
         throw new Error('场景Prompt为空');
@@ -45,13 +46,13 @@ export class NovelVideoAPIService {
         projectId,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sceneId: (sceneAsset.customFields?.novelVideo as any)?.sceneId,
-        prompt
+        prompt,
       });
 
       // 2. 调用T8Star API生成图片
       const imageUrl = await this.apiManager.callT8StarImage(prompt, {
         model: 'nano-banana',
-        aspectRatio: '16:9'
+        aspectRatio: '16:9',
       });
 
       // 3. 下载图片到项目目录
@@ -69,7 +70,7 @@ export class NovelVideoAPIService {
       await this.logger.info('场景图片生成成功', 'NovelVideoAPIService', {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sceneId: (sceneAsset.customFields?.novelVideo as any)?.sceneId,
-        imagePath
+        imagePath,
       });
 
       return imagePath;
@@ -77,7 +78,7 @@ export class NovelVideoAPIService {
       await this.logger.error('场景图片生成失败', 'NovelVideoAPIService', {
         projectId,
         sceneAssetPath,
-        error
+        error,
       });
       throw error;
     }
@@ -97,7 +98,8 @@ export class NovelVideoAPIService {
       // 1. 获取角色资产元数据
       const characterAsset = await this.getCharacterAsset(characterAssetPath);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const prompt = (characterAsset.customFields?.novelVideo as any)?.characterImagePrompt;
+      const prompt = (characterAsset.customFields?.novelVideo as any)
+        ?.characterImagePrompt;
 
       if (!prompt) {
         throw new Error('角色Prompt为空');
@@ -106,14 +108,15 @@ export class NovelVideoAPIService {
       await this.logger.info('开始生成角色图片', 'NovelVideoAPIService', {
         projectId,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        characterId: (characterAsset.customFields?.novelVideo as any)?.characterId,
-        prompt
+        characterId: (characterAsset.customFields?.novelVideo as any)
+          ?.characterId,
+        prompt,
       });
 
       // 2. 调用T8Star API生成图片
       const imageUrl = await this.apiManager.callT8StarImage(prompt, {
         model: 'nano-banana',
-        aspectRatio: '1:1'
+        aspectRatio: '1:1',
       });
 
       // 3. 下载图片到项目目录
@@ -126,12 +129,16 @@ export class NovelVideoAPIService {
       const imagePath = await this.downloadImage(imageUrl, savePath);
 
       // 4. 更新角色资产元数据
-      await this.assetHelper.updateCharacterImage(characterAssetPath, imagePath);
+      await this.assetHelper.updateCharacterImage(
+        characterAssetPath,
+        imagePath
+      );
 
       await this.logger.info('角色图片生成成功', 'NovelVideoAPIService', {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        characterId: (characterAsset.customFields?.novelVideo as any)?.characterId,
-        imagePath
+        characterId: (characterAsset.customFields?.novelVideo as any)
+          ?.characterId,
+        imagePath,
       });
 
       return imagePath;
@@ -139,7 +146,7 @@ export class NovelVideoAPIService {
       await this.logger.error('角色图片生成失败', 'NovelVideoAPIService', {
         projectId,
         characterAssetPath,
-        error
+        error,
       });
       throw error;
     }
@@ -163,7 +170,8 @@ export class NovelVideoAPIService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const prompt = (storyboard.customFields?.novelVideo as any)?.videoPrompt;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const sceneImagePath = (storyboard.customFields?.novelVideo as any)?.sceneImagePath;
+      const sceneImagePath = (storyboard.customFields?.novelVideo as any)
+        ?.sceneImagePath;
 
       if (!prompt) {
         throw new Error('分镜Prompt为空');
@@ -172,7 +180,7 @@ export class NovelVideoAPIService {
       await this.logger.info('开始生成分镜视频', 'NovelVideoAPIService', {
         projectId,
         storyboardId: storyboard.id,
-        prompt
+        prompt,
       });
 
       // 2. 调用T8Star视频生成API（带进度回调）
@@ -180,7 +188,7 @@ export class NovelVideoAPIService {
         prompt,
         imagePath: sceneImagePath,
         model: 'sora-2',
-        onProgress
+        onProgress,
       });
 
       // 3. 下载视频到项目目录
@@ -196,7 +204,7 @@ export class NovelVideoAPIService {
 
       await this.logger.info('分镜视频生成成功', 'NovelVideoAPIService', {
         storyboardId: storyboard.id,
-        videoPath
+        videoPath,
       });
 
       return videoPath;
@@ -204,7 +212,7 @@ export class NovelVideoAPIService {
       await this.logger.error('分镜视频生成失败', 'NovelVideoAPIService', {
         projectId,
         storyboardAssetPath,
-        error
+        error,
       });
       throw error;
     }
@@ -226,9 +234,12 @@ export class NovelVideoAPIService {
       // 1. 获取配音资产元数据
       const voiceover = await this.getVoiceoverAsset(voiceoverAssetPath);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dialogueText = (voiceover.customFields?.novelVideo as any)?.dialogueText;
+      const dialogueText = (voiceover.customFields?.novelVideo as any)
+        ?.dialogueText;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const emotion = (voiceover.customFields?.novelVideo as any)?.emotion || [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
+      const emotion = (voiceover.customFields?.novelVideo as any)?.emotion || [
+        0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+      ];
 
       if (!dialogueText) {
         throw new Error('对白文本为空');
@@ -237,22 +248,30 @@ export class NovelVideoAPIService {
       await this.logger.info('开始生成对白音频', 'NovelVideoAPIService', {
         projectId,
         voiceoverId: voiceover.id,
-        dialogueText
+        dialogueText,
       });
 
-      // 2. 调用RunningHub TTS API
-      const audioPath = await this.apiManager.callRunningHubTTS({
-        text: dialogueText,
-        voiceFilePath,
-        emotion
-      });
+      // 2. 调用RunningHub TTS API (已废弃 - RunningHub现在是工作流服务)
+      // TODO: 需要使用专门的TTS服务或通过RunningHub工作流实现TTS
+      const audioPath = ''; // 临时占位
+      throw new Error(
+        'RunningHub TTS API已更改为工作流模式，请使用其他TTS服务'
+      );
+
+      // 如需使用RunningHub，请参考工作流调用方式：
+      // await this.apiManager.callRunningHubWorkflow({
+      //   workflowId: 'your-tts-workflow-id',
+      //   nodeInfoList: [
+      //     { nodeId: 'text-node', fieldName: 'text', fieldValue: dialogueText }
+      //   ]
+      // });
 
       // 3. 更新配音资产元数据
       // TODO: 添加updateVoiceoverAudio方法到AssetHelper
 
       await this.logger.info('对白音频生成成功', 'NovelVideoAPIService', {
         voiceoverId: voiceover.id,
-        audioPath
+        audioPath,
       });
 
       return audioPath;
@@ -260,7 +279,7 @@ export class NovelVideoAPIService {
       await this.logger.error('对白音频生成失败', 'NovelVideoAPIService', {
         projectId,
         voiceoverAssetPath,
-        error
+        error,
       });
       throw error;
     }
@@ -278,7 +297,9 @@ export class NovelVideoAPIService {
   /**
    * 获取角色资产（辅助方法）
    */
-  private async getCharacterAsset(_characterAssetPath: string): Promise<AssetMetadata> {
+  private async getCharacterAsset(
+    _characterAssetPath: string
+  ): Promise<AssetMetadata> {
     // TODO: 通过AssetManager获取元数据
     throw new Error('getCharacterAsset not implemented');
   }
@@ -286,7 +307,9 @@ export class NovelVideoAPIService {
   /**
    * 获取分镜资产（辅助方法）
    */
-  private async getStoryboardAsset(_storyboardAssetPath: string): Promise<AssetMetadata> {
+  private async getStoryboardAsset(
+    _storyboardAssetPath: string
+  ): Promise<AssetMetadata> {
     // TODO: 通过AssetManager获取元数据
     throw new Error('getStoryboardAsset not implemented');
   }
@@ -294,7 +317,9 @@ export class NovelVideoAPIService {
   /**
    * 获取配音资产（辅助方法）
    */
-  private async getVoiceoverAsset(_voiceoverAssetPath: string): Promise<AssetMetadata> {
+  private async getVoiceoverAsset(
+    _voiceoverAssetPath: string
+  ): Promise<AssetMetadata> {
     // TODO: 通过AssetManager获取元数据
     throw new Error('getVoiceoverAsset not implemented');
   }
@@ -315,7 +340,11 @@ export class NovelVideoAPIService {
 
       return savePath;
     } catch (error) {
-      await this.logger.error('图片下载失败', 'NovelVideoAPIService', { url, savePath, error });
+      await this.logger.error('图片下载失败', 'NovelVideoAPIService', {
+        url,
+        savePath,
+        error,
+      });
       throw error;
     }
   }
@@ -336,7 +365,11 @@ export class NovelVideoAPIService {
 
       return savePath;
     } catch (error) {
-      await this.logger.error('视频下载失败', 'NovelVideoAPIService', { url, savePath, error });
+      await this.logger.error('视频下载失败', 'NovelVideoAPIService', {
+        url,
+        savePath,
+        error,
+      });
       throw error;
     }
   }

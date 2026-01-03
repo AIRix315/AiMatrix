@@ -1,0 +1,162 @@
+/**
+ * ProviderListPanel 样式
+ *
+ * 参考cherry-studio的紧凑布局
+ * 使用theme.css中已定义的CSS变量
+ */
+
+.provider-list-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: calc(var(--settings-sidebar-width, 250px) + 10px);
+  height: calc(100vh - var(--nav-height));
+  background: var(--bg-sidebar);
+  border-right: 0.5px solid var(--border-color);
+}
+
+/* 搜索框区域 */
+.provider-search {
+  padding: 10px 8px;
+  border-bottom: 0.5px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.provider-search .search-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.provider-search .search-input:focus {
+  border-color: var(--accent-color);
+}
+
+.provider-search .search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Provider 列表滚动区域 */
+.provider-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+  padding-right: 5px;
+}
+
+/* Provider 列表项 */
+.provider-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  gap: 10px;
+  border: 0.5px solid transparent;
+  border-radius: 6px;
+  user-select: none;
+}
+
+.provider-item:hover {
+  background: var(--bg-hover);
+}
+
+.provider-item.active {
+  background: var(--bg-hover);
+  border-color: var(--border-color);
+  font-weight: bold;
+}
+
+/* Provider 图标 */
+.provider-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Provider 名称 */
+.provider-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Provider 类型标签 */
+.provider-type-tag {
+  padding: 1px 4px;
+  font-size: 10px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 状态徽章 */
+.provider-status-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.provider-status-badge.online {
+  background: var(--success-color);
+}
+
+.provider-status-badge.offline,
+.provider-status-badge.unknown {
+  background: var(--text-muted);
+}
+
+/* 空状态 */
+.provider-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 添加按钮区域 */
+.provider-add-button-wrapper {
+  padding: 10px 8px;
+  border-top: 0.5px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.provider-add-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: var(--accent-color);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.provider-add-button:hover {
+  opacity: 0.8;
+}

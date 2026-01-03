@@ -1,0 +1,274 @@
+/**
+ * AddProviderDialog 样式 - 极简版
+ *
+ * 设计系统：V14 (OKLCH色彩 + Inter字体)
+ * 参考：Cherry Studio 极简设计
+ * 字段数量：2个（名称 + 模板）
+ */
+
+/* 对话框容器 */
+.add-provider-dialog {
+  display: flex;
+  flex-direction: column;
+  background: oklch(100% 0 0);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 8px 32px oklch(0% 0 0 / 0.12),
+    0 2px 8px oklch(0% 0 0 / 0.08);
+}
+
+/* 对话框头部 */
+.add-provider-dialog .dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid oklch(95% 0 0);
+}
+
+.add-provider-dialog .dialog-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: oklch(20% 0 0);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.add-provider-dialog .close-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: oklch(50% 0 0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-provider-dialog .close-button:hover:not(:disabled) {
+  background: oklch(96% 0 0);
+  color: oklch(30% 0 0);
+}
+
+.add-provider-dialog .close-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 对话框主体 */
+.add-provider-dialog .dialog-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 表单字段 */
+.add-provider-dialog .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-provider-dialog .field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: oklch(35% 0 0);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.add-provider-dialog .field-hint {
+  font-size: 12px;
+  color: oklch(55% 0 0);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  margin-top: -4px;
+}
+
+/* 下拉选择框 */
+.add-provider-dialog .select-wrapper {
+  position: relative;
+}
+
+.add-provider-dialog .select-field {
+  width: 100%;
+  height: 40px;
+  padding: 0 40px 0 12px;
+  font-size: 14px;
+  color: oklch(25% 0 0);
+  background: oklch(98% 0 0);
+  border: 1px solid oklch(90% 0 0);
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  appearance: none;
+}
+
+.add-provider-dialog .select-field:hover:not(:disabled) {
+  border-color: oklch(80% 0 0);
+  background: oklch(99% 0 0);
+}
+
+.add-provider-dialog .select-field:focus {
+  border-color: oklch(60% 0.15 250);
+  background: oklch(100% 0 0);
+  box-shadow: 0 0 0 3px oklch(60% 0.15 250 / 0.1);
+}
+
+.add-provider-dialog .select-field:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-provider-dialog .select-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: oklch(50% 0 0);
+  pointer-events: none;
+}
+
+/* 文本输入框 */
+.add-provider-dialog .input-field {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: oklch(25% 0 0);
+  background: oklch(98% 0 0);
+  border: 1px solid oklch(90% 0 0);
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.add-provider-dialog .input-field::placeholder {
+  color: oklch(65% 0 0);
+}
+
+.add-provider-dialog .input-field:hover:not(:disabled) {
+  border-color: oklch(80% 0 0);
+  background: oklch(99% 0 0);
+}
+
+.add-provider-dialog .input-field:focus {
+  border-color: oklch(60% 0.15 250);
+  background: oklch(100% 0 0);
+  box-shadow: 0 0 0 3px oklch(60% 0.15 250 / 0.1);
+}
+
+.add-provider-dialog .input-field:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 提示信息 */
+.add-provider-dialog .info-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: oklch(97% 0.02 220);
+  border: 1px solid oklch(92% 0.03 220);
+  border-radius: 8px;
+  font-size: 12px;
+  color: oklch(45% 0.05 220);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.add-provider-dialog .info-icon {
+  font-size: 14px;
+}
+
+/* 对话框底部 */
+.add-provider-dialog .dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid oklch(95% 0 0);
+  background: oklch(98% 0 0);
+}
+
+/* 响应式优化 */
+@media (max-width: 480px) {
+  .add-provider-dialog {
+    border-radius: 0;
+  }
+
+  .add-provider-dialog .dialog-header,
+  .add-provider-dialog .dialog-body,
+  .add-provider-dialog .dialog-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* 暗色模式支持（可选）*/
+@media (prefers-color-scheme: dark) {
+  .add-provider-dialog {
+    background: oklch(20% 0 0);
+  }
+
+  .add-provider-dialog .dialog-header {
+    border-bottom-color: oklch(25% 0 0);
+  }
+
+  .add-provider-dialog .dialog-title {
+    color: oklch(95% 0 0);
+  }
+
+  .add-provider-dialog .close-button {
+    color: oklch(70% 0 0);
+  }
+
+  .add-provider-dialog .close-button:hover:not(:disabled) {
+    background: oklch(25% 0 0);
+    color: oklch(95% 0 0);
+  }
+
+  .add-provider-dialog .field-label {
+    color: oklch(80% 0 0);
+  }
+
+  .add-provider-dialog .field-hint {
+    color: oklch(65% 0 0);
+  }
+
+  .add-provider-dialog .select-field,
+  .add-provider-dialog .input-field {
+    background: oklch(18% 0 0);
+    border-color: oklch(30% 0 0);
+    color: oklch(95% 0 0);
+  }
+
+  .add-provider-dialog .select-field:hover:not(:disabled),
+  .add-provider-dialog .input-field:hover:not(:disabled) {
+    background: oklch(22% 0 0);
+    border-color: oklch(35% 0 0);
+  }
+
+  .add-provider-dialog .select-icon {
+    color: oklch(70% 0 0);
+  }
+
+  .add-provider-dialog .info-message {
+    background: oklch(22% 0.02 220);
+    border-color: oklch(28% 0.03 220);
+    color: oklch(75% 0.05 220);
+  }
+
+  .add-provider-dialog .dialog-footer {
+    background: oklch(18% 0 0);
+    border-top-color: oklch(25% 0 0);
+  }
+}

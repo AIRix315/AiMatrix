@@ -52,7 +52,7 @@ export class JiekouProvider
 {
   readonly id = 'jiekou-ai';
   readonly name = '接口AI';
-  readonly type = 'online' as const;
+  readonly type = 'official' as const;
   readonly supportedOperations = [
     OperationType.TEXT_TO_IMAGE,
     OperationType.IMAGE_TO_IMAGE,

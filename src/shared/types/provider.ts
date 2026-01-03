@@ -27,7 +27,7 @@ export interface IProvider {
   readonly name: string;
 
   /** Provider 类型 */
-  readonly type: 'online' | 'local';
+  readonly type: 'official' | 'local' | 'relay';
 
   /** 支持的操作类型列表 */
   readonly supportedOperations: OperationType[];
@@ -294,4 +294,32 @@ export interface ProviderConfig {
 
   /** 自定义配置 */
   settings?: Record<string, unknown>;
+}
+
+/**
+ * Provider 模板定义
+ */
+export interface ProviderTemplate {
+  id: string;
+  name: string;
+  category: string[];
+  type: 'official' | 'local' | 'relay';
+  documentationUrl: string;
+  baseUrl: string;
+  authType: 'bearer' | 'apikey' | 'basic' | 'none';
+  endpoints: Record<string, string>;
+  features: {
+    streaming: boolean;
+    async: boolean;
+    polling: boolean;
+  };
+  configFields: Array<{
+    name: string;
+    label: string;
+    required: boolean;
+    type: 'text' | 'password' | 'number';
+    placeholder?: string;
+  }>;
+  costPerUnit?: number;
+  currency?: 'USD' | 'CNY';
 }

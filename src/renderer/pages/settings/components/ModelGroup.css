@@ -1,0 +1,161 @@
+/**
+ * ModelGroup 样式
+ *
+ * 参考cherry-studio的紧凑布局
+ * 使用theme.css中已定义的CSS变量
+ */
+
+.model-group {
+  margin-bottom: 12px;
+  border: 0.5px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-sidebar);
+}
+
+/* 分组标题 */
+.model-group-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: background 0.2s;
+  gap: 8px;
+}
+
+.model-group-header:hover {
+  background: var(--bg-hover);
+}
+
+/* 展开图标 */
+.expand-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  color: var(--text-secondary);
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
+}
+
+/* 分组标题文本 */
+.model-group-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 模型数量徽章 */
+.model-count-badge {
+  padding: 2px 8px;
+  font-size: 11px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* 模型列表 */
+.model-list {
+  background: var(--bg-sidebar);
+}
+
+/* 模型行 */
+.model-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-top: 0.5px solid var(--border-color);
+  transition: background 0.2s;
+  gap: 10px;
+}
+
+.model-row:hover {
+  background: var(--bg-hover);
+}
+
+/* 模型图标 */
+.model-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 模型信息 */
+.model-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.model-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-id-hint {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: normal;
+}
+
+.model-meta {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* 模型操作按钮组 */
+.model-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.model-action-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.model-action-icon:hover {
+  background: var(--bg-hover);
+  color: var(--accent-color);
+}
+
+.model-action-icon.active {
+  color: var(--accent-color);
+}
+
+/* 空状态 */
+.model-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}

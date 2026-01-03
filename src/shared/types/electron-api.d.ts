@@ -22,6 +22,7 @@ import type {
   ImageToVideoParams,
   ImageToVideoResult,
   ProviderConfig,
+  ProviderTemplate,
   OperationType
 } from './provider';
 
@@ -447,6 +448,11 @@ export interface ElectronAPI {
   removeProvider: (providerId: string) => Promise<void>;
   testProviderConnection: (params: ProviderTestParams) => Promise<ProviderTestResult>;
   getProviderStatus: (providerId: string) => Promise<ProviderStatus>;
+
+  // ==================== Provider Template 管理 ====================
+  getProviderTemplate: (typeId: string) => Promise<ProviderTemplate | null>;
+  listProviderTemplates: (category: string) => Promise<ProviderTemplate[]>;
+  refreshProviderTemplates: () => Promise<void>;
 
   // ==================== Provider 操作执行 ====================
   executeTextToImage: (params: TextToImageParams) => Promise<TextToImageResult>;

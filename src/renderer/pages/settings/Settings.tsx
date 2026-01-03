@@ -1,36 +1,20 @@
 /**
- * Settings 页面 - 重构版
+ * Settings 页面
  *
  * 功能：
- * - 按分类组织 Provider（9个功能分类）
- * - 使用 ProviderConfigCard 组件管理 Provider
- * - 使用 ModelSelector 组件管理模型
- * - 全局配置管理
+ * - 基础设置：工作目录、日志地址、语言等
+ * - 模型管理：Provider列表+详情（双面板布局）
  */
 
 import React, { useState, useEffect } from 'react';
-import {
-  Palette, Film, Music, Bot, Workflow, Speech, Ear, Binary, Globe,
-  Settings as SettingsIcon, Package
-} from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Settings as SettingsIcon, Package } from 'lucide-react';
 import { Button, Toast } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
-import { ProviderConfigCard } from './components/ProviderConfigCard';
-import { ModelSelector } from './components/ModelSelector';
+import { ProviderListPanel } from './components/ProviderListPanel';
+import { ProviderDetailPanel } from './components/ProviderDetailPanel';
+import { AddProviderDialog } from './components/AddProviderDialog';
 import './Settings.css';
-
-// API 分类定义
-const API_CATEGORIES = [
-  { id: 'image-generation', name: '图像生成', Icon: Palette },
-  { id: 'video-generation', name: '视频生成', Icon: Film },
-  { id: 'audio-generation', name: '音频生成', Icon: Music },
-  { id: 'llm', name: '大语言模型', Icon: Bot },
-  { id: 'workflow', name: '工作流', Icon: Workflow },
-  { id: 'tts', name: '语音合成', Icon: Speech },
-  { id: 'stt', name: '语音识别', Icon: Ear },
-  { id: 'embedding', name: '向量嵌入', Icon: Binary },
-  { id: 'translation', name: '翻译', Icon: Globe }
-];
 
 interface LoggingConfig {
   savePath: string;
@@ -47,84 +31,114 @@ interface AppConfig {
   providers: unknown[];
 }
 
-const Settings: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState('global');
-  const [currentCategory, setCurrentCategory] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
-  const [config, setConfig] = useState<AppConfig | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [providers, setProviders] = useState<any[]>([]);
-  // TODO: [中期改进] 定义准确的ProviderStatus类型
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [providerStatuses, setProviderStatuses] = useState<Map<string, any>>(new Map());
+// Provider 列表项接口
+interface ProviderListItem {
+  id: string;
+  name: string;
+  category: string;
+  type?: 'official' | 'local' | 'relay';
+  enabled: boolean;
+  status?: 'online' | 'offline' | 'unknown';
+}
 
-  // 加载配置
+// Provider 配置接口
+interface ProviderConfig {
+  id: string;
+  name: string;
+  category: string;
+  baseUrl: string;
+  authType: 'bearer' | 'apikey' | 'basic' | 'none';
+  apiKey?: string;
+  enabled: boolean;
+  costPerUnit?: number;
+  currency?: string;
+  description?: string;
+}
+
+const Settings: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Tab切换状态
+  const [currentTab, setCurrentTab] = useState('models'); // 'general' | 'models'
+
+  // 基础设置
+  const [config, setConfig] = useState<AppConfig | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 模型管理（Provider管理）
+  const [providers, setProviders] = useState<ProviderListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
+    null
+  );
+
+  // Toast 通知
+  const [toast, setToast] = useState<{
+    type: ToastType;
+    message: string;
+  } | null>(null);
+
+  // AddProviderDialog 状态
+  const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
+
+  // 初始化：加载基础配置
   useEffect(() => {
     loadSettings();
   }, []);
 
-  // 切换分类时加载对应的 Provider
+  // 初始化：加载所有 Providers
   useEffect(() => {
-    if (currentCategory) {
-      loadProvidersForCategory(currentCategory);
+    if (currentTab === 'models') {
+      loadAllProviders();
     }
-  }, [currentCategory]);
+  }, [currentTab]);
 
+  // URL 参数同步
+  useEffect(() => {
+    const providerId = searchParams.get('id');
+    if (providerId && providers.some(p => p.id === providerId)) {
+      setSelectedProviderId(providerId);
+    } else if (providers.length > 0 && !selectedProviderId) {
+      // 如果没有选中任何Provider，默认选中第一个
+      setSelectedProviderId(providers[0].id);
+      setSearchParams({ id: providers[0].id });
+    }
+  }, [searchParams, providers, selectedProviderId]);
+
+  // 加载基础设置
   const loadSettings = async () => {
     try {
       setIsLoading(true);
-      // TODO: [中期改进] 定义准确的getAllSettings返回类型
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const settings = await window.electronAPI.getAllSettings() as any;
+      const settings = (await window.electronAPI.getAllSettings()) as any;
       setConfig(settings);
     } catch (error) {
-      setToast({
-        type: 'error',
-        message: `加载配置失败: ${error instanceof Error ? error.message : String(error)}`
-      });
+      showToast(
+        'error',
+        `加载配置失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadProvidersForCategory = async (category: string) => {
+  // 保存基础设置
+  const handleSaveConfig = async () => {
     try {
-      const categoryProviders = await window.electronAPI.listProviders({
-        category,
-        enabledOnly: false
-      });
-      setProviders(categoryProviders);
-
-      // 加载每个 Provider 的状态
-      const statusMap = new Map();
-      for (const provider of categoryProviders) {
-        try {
-          const status = await window.electronAPI.getProviderStatus(provider.id);
-          statusMap.set(provider.id, status);
-        } catch (error) {
-          // 状态加载失败时使用默认值
-          statusMap.set(provider.id, { isOnline: false, error: 'Status unavailable' });
-        }
-      }
-      setProviderStatuses(statusMap);
+      setIsSaving(true);
+      if (!config) return;
+      await window.electronAPI.saveSettings(config as any);
+      showToast('success', '配置保存成功');
     } catch (error) {
-      setToast({
-        type: 'error',
-        message: `加载 Provider 失败: ${error instanceof Error ? error.message : String(error)}`
-      });
+      showToast(
+        'error',
+        `保存配置失败: ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleTabChange = (tabId: string) => {
-    setCurrentTab(tabId);
-    if (tabId !== 'global' && tabId !== 'models') {
-      setCurrentCategory(tabId);
-    } else {
-      setCurrentCategory(null);
-    }
-  };
-
+  // 选择目录
   const handleSelectDirectory = async (field: 'workspacePath' | 'logPath') => {
     try {
       const path = await window.electronAPI.openDirectoryDialog();
@@ -134,8 +148,8 @@ const Settings: React.FC = () => {
             ...config,
             general: {
               ...config.general,
-              workspacePath: path
-            }
+              workspacePath: path,
+            },
           });
         } else if (field === 'logPath') {
           setConfig({
@@ -144,73 +158,157 @@ const Settings: React.FC = () => {
               ...config.general,
               logging: {
                 ...config.general.logging,
-                savePath: path
-              }
-            }
+                savePath: path,
+              },
+            },
           });
         }
       }
     } catch (error) {
-      setToast({
-        type: 'error',
-        message: `选择目录失败: ${error instanceof Error ? error.message : String(error)}`
-      });
+      showToast(
+        'error',
+        `选择目录失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   };
 
-  const handleSaveConfig = async () => {
+  // 加载所有 Providers（不分类）
+  const loadAllProviders = async () => {
     try {
-      setIsSaving(true);
-      if (!config) return;
-      await window.electronAPI.saveSettings(config as any);
-      setToast({
-        type: 'success',
-        message: '配置保存成功'
+      setIsLoading(true);
+
+      // 调用 IPC 获取所有 Providers
+      const allProviders = await window.electronAPI.listProviders({
+        enabledOnly: false,
+      });
+
+      // 转换为列表项格式
+      const providerList: ProviderListItem[] = allProviders.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        category: p.category || 'unknown',
+        type: p.type as 'official' | 'local' | 'relay' | undefined,
+        enabled: p.enabled || false,
+        status: 'unknown', // 初始状态为 unknown
+      }));
+
+      setProviders(providerList);
+
+      // 加载每个 Provider 的状态（异步）
+      const statusPromises = providerList.map(async provider => {
+        try {
+          const status = (await window.electronAPI.getProviderStatus(
+            provider.id
+          )) as any;
+          return {
+            id: provider.id,
+            status: status?.isOnline
+              ? ('online' as const)
+              : ('offline' as const),
+          };
+        } catch (error) {
+          // 状态加载失败时返回unknown
+          return {
+            id: provider.id,
+            status: 'unknown' as const,
+          };
+        }
+      });
+
+      // 等待所有状态加载完成后一次性更新
+      Promise.all(statusPromises).then(statuses => {
+        setProviders(prev =>
+          prev.map(p => {
+            const statusInfo = statuses.find(s => s.id === p.id);
+            return statusInfo ? { ...p, status: statusInfo.status } : p;
+          })
+        );
       });
     } catch (error) {
-      setToast({
-        type: 'error',
-        message: `保存配置失败: ${error instanceof Error ? error.message : String(error)}`
-      });
+      showToast(
+        'error',
+        `加载失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     } finally {
-      setIsSaving(false);
+      setIsLoading(false);
     }
   };
 
-  const handleProviderUpdate = async (providerConfig: unknown) => {
+  // 更新 Provider 状态
+  const updateProviderStatus = (
+    providerId: string,
+    status: 'online' | 'offline' | 'unknown'
+  ) => {
+    setProviders(prev =>
+      prev.map(p => (p.id === providerId ? { ...p, status } : p))
+    );
+  };
+
+  // 选中 Provider
+  const handleSelectProvider = (id: string) => {
+    setSelectedProviderId(id);
+    setSearchParams({ id });
+  };
+
+  // 添加 Provider
+  const handleAddProvider = () => {
+    setShowAddProviderDialog(true);
+  };
+
+  // Provider 配置更新
+  const handleProviderUpdate = async (providerConfig: ProviderConfig) => {
     try {
-      await window.electronAPI.addProvider(providerConfig as any);
-      await loadProvidersForCategory(currentCategory!);
-      setToast({
-        type: 'success',
-        message: 'Provider 配置已更新'
-      });
+      await window.electronAPI.addProvider(providerConfig);
+
+      // 只更新对应的 Provider，保持其他 Provider 的状态
+      setProviders(prev =>
+        prev.map(p =>
+          p.id === providerConfig.id
+            ? {
+                ...p,
+                name: providerConfig.name,
+                enabled: providerConfig.enabled,
+                category: providerConfig.category,
+              }
+            : p
+        )
+      );
+
+      showToast('success', 'Provider 配置已更新');
     } catch (error) {
-      setToast({
-        type: 'error',
-        message: `更新失败: ${error instanceof Error ? error.message : String(error)}`
-      });
+      showToast(
+        'error',
+        `更新失败: ${error instanceof Error ? error.message : String(error)}`
+      );
       throw error;
     }
   };
 
+  // Provider 删除
   const handleProviderRemove = async (providerId: string) => {
     try {
       await window.electronAPI.removeProvider(providerId);
-      await loadProvidersForCategory(currentCategory!);
-      setToast({
-        type: 'success',
-        message: 'Provider 已删除'
-      });
+
+      // 重新加载 Providers
+      await loadAllProviders();
+
+      // 如果删除的是当前选中的，清空选择
+      if (selectedProviderId === providerId) {
+        setSelectedProviderId(null);
+        setSearchParams({});
+      }
+
+      showToast('success', 'Provider 已删除');
     } catch (error) {
-      setToast({
-        type: 'error',
-        message: `删除失败: ${error instanceof Error ? error.message : String(error)}`
-      });
+      showToast(
+        'error',
+        `删除失败: ${error instanceof Error ? error.message : String(error)}`
+      );
       throw error;
     }
   };
 
+  // Provider 连接测试
   const handleTestConnection = async (providerId: string) => {
     try {
       const provider = providers.find(p => p.id === providerId);
@@ -218,38 +316,99 @@ const Settings: React.FC = () => {
         throw new Error('Provider not found');
       }
 
+      // 获取完整的 Provider 配置
+      const providerConfig = (await window.electronAPI.getProvider(
+        providerId
+      )) as any;
+
       const result = await window.electronAPI.testProviderConnection({
         type: provider.category || '',
-        baseUrl: provider.baseUrl || '',
-        apiKey: provider.apiKey,
+        baseUrl: providerConfig.baseUrl || '',
+        apiKey: providerConfig.apiKey,
         providerId,
-        authType: provider.authType
-      } as any);
+        authType: providerConfig.authType,
+      });
 
-      // TODO: [中期改进] 定义准确的testProviderConnection返回类型
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((result as any).success) {
-        setToast({
-          type: 'success',
-          message: '连接测试成功'
-        });
+        updateProviderStatus(providerId, 'online');
+
+        // 如果测试成功返回了模型列表，更新Provider配置
+        if ((result as any).models && (result as any).models.length > 0) {
+          await window.electronAPI.addProvider({
+            ...providerConfig,
+            models: (result as any).models,
+          });
+        }
+
+        // 如果之前被禁用，现在服务恢复，自动启用
+        if (!providerConfig.enabled) {
+          await window.electronAPI.addProvider({
+            ...providerConfig,
+            enabled: true,
+            models: (result as any).models || providerConfig.models,
+          });
+          // 只更新状态，不重新加载整个列表
+          setProviders(prev =>
+            prev.map(p =>
+              p.id === providerId
+                ? { ...p, enabled: true, status: 'online' }
+                : p
+            )
+          );
+        }
+        // 显示成功消息，如果有message字段则显示它
+        const successMsg = (result as any).message || '连接测试成功';
+        showToast('success', successMsg);
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        throw new Error((result as any).error || '连接失败');
+        updateProviderStatus(providerId, 'offline');
+        // 服务离线时自动禁用 Provider（特别是本地服务）
+        const isLocalService =
+          providerId === 'comfyui-local' ||
+          providerId === 'n8n-local' ||
+          providerId === 'ollama-local';
+        if (isLocalService && providerConfig.enabled) {
+          await window.electronAPI.addProvider({
+            ...providerConfig,
+            enabled: false,
+          });
+          // 只更新状态，不重新加载整个列表
+          setProviders(prev =>
+            prev.map(p =>
+              p.id === providerId
+                ? { ...p, enabled: false, status: 'offline' }
+                : p
+            )
+          );
+          showToast('warning', `服务离线，已自动禁用 ${provider.name}`);
+        } else {
+          throw new Error((result as any).error || '连接失败');
+        }
       }
     } catch (error) {
-      setToast({
-        type: 'error',
-        message: `连接测试失败: ${error instanceof Error ? error.message : String(error)}`
-      });
+      showToast(
+        'error',
+        `连接测试失败: ${error instanceof Error ? error.message : String(error)}`
+      );
       throw error;
     }
+  };
+
+  // 显示 Toast
+  const showToast = (type: ToastType, message: string) => {
+    setToast({ type, message });
   };
 
   if (isLoading || !config) {
     return (
       <div className="settings-layout">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+          }}
+        >
           <div>加载配置中...</div>
         </div>
       </div>
@@ -258,7 +417,7 @@ const Settings: React.FC = () => {
 
   return (
     <div className="settings-layout">
-      {/* 侧边栏 */}
+      {/* 左侧：Tab导航 */}
       <div className="settings-sidebar">
         <div className="settings-search-box">
           <input
@@ -268,15 +427,15 @@ const Settings: React.FC = () => {
           />
         </div>
         <div className="provider-list">
-          {/* 全局配置 */}
+          {/* 基础设置 */}
           <div
-            className={`provider-item ${currentTab === 'global' ? 'active' : ''}`}
-            onClick={() => handleTabChange('global')}
+            className={`provider-item ${currentTab === 'general' ? 'active' : ''}`}
+            onClick={() => setCurrentTab('general')}
           >
             <div className="provider-icon">
-              <SettingsIcon className="h-5 w-5 text-foreground" />
+              <SettingsIcon className="h-5 w-5" />
             </div>
-            <span>全局配置</span>
+            <span>基础设置</span>
           </div>
 
           <div className="settings-divider-sidebar"></div>
@@ -284,152 +443,166 @@ const Settings: React.FC = () => {
           {/* 模型管理 */}
           <div
             className={`provider-item ${currentTab === 'models' ? 'active' : ''}`}
-            onClick={() => handleTabChange('models')}
+            onClick={() => setCurrentTab('models')}
           >
             <div className="provider-icon">
-              <Package className="h-5 w-5 text-foreground" />
+              <Package className="h-5 w-5" />
             </div>
             <span>模型管理</span>
           </div>
-
-          <div className="settings-divider-sidebar"></div>
-
-          {/* API 分类 */}
-          {API_CATEGORIES.map(category => (
-            <div
-              key={category.id}
-              className={`provider-item ${currentTab === category.id ? 'active' : ''}`}
-              onClick={() => handleTabChange(category.id)}
-            >
-              <div className="provider-icon">
-                <category.Icon className="h-5 w-5 text-foreground" />
-              </div>
-              <span>{category.name}</span>
-            </div>
-          ))}
         </div>
       </div>
 
-      {/* 内容区域 */}
+      {/* 右侧：内容区域 */}
       <div className="settings-content">
-        {/* 全局配置 */}
-        {currentTab === 'global' && (
-          <div className="settings-tab-content active">
-            <div className="settings-content-header">
-              <div className="settings-title-lg">全局配置</div>
-            </div>
-            <div className="settings-scroll-area">
-              <div className="config-section">
-                <div className="config-label">本地存储 (Storage)</div>
-                <div className="input-group">
-                  <label className="input-label">工作区路径 (Workspace Path)</label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <input
-                      type="text"
-                      className="input-field"
-                      value={config.general.workspacePath}
-                      readOnly
-                    />
-                    <Button onClick={() => handleSelectDirectory('workspacePath')}>浏览...</Button>
-                  </div>
-                </div>
+        {/* 基础设置Tab */}
+        {currentTab === 'general' && (
+          <div className="settings-scroll-area">
+            <h2 className="settings-title-lg">基础设置</h2>
 
-                <div className="input-group">
-                  <label className="input-label">日志路径 (Log Path)</label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <input
-                      type="text"
-                      className="input-field"
-                      value={config.general.logging.savePath}
-                      readOnly
-                    />
-                    <Button onClick={() => handleSelectDirectory('logPath')}>浏览...</Button>
-                  </div>
-                </div>
-
-                <div className="input-group">
-                  <label className="input-label">日志保留天数 (Log Retention Days)</label>
+            <div className="config-section">
+              <h3 className="config-label">工作空间</h3>
+              <div className="input-group">
+                <label>工作目录</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   <input
-                    type="number"
-                    className="input-field"
-                    value={config.general.logging.retentionDays}
-                    onChange={(e) => setConfig({
+                    type="text"
+                    value={config.general.workspacePath}
+                    readOnly
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-color)',
+                    }}
+                  />
+                  <Button
+                    onClick={() => handleSelectDirectory('workspacePath')}
+                  >
+                    选择
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="config-section">
+              <h3 className="config-label">日志设置</h3>
+              <div className="input-group">
+                <label>日志保存路径</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    value={config.general.logging.savePath}
+                    readOnly
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-color)',
+                    }}
+                  />
+                  <Button onClick={() => handleSelectDirectory('logPath')}>
+                    选择
+                  </Button>
+                </div>
+              </div>
+              <div className="input-group">
+                <label>日志保留天数</label>
+                <input
+                  type="number"
+                  value={config.general.logging.retentionDays}
+                  onChange={e =>
+                    setConfig({
                       ...config,
                       general: {
                         ...config.general,
                         logging: {
                           ...config.general.logging,
-                          retentionDays: parseInt(e.target.value) || 7
-                        }
-                      }
-                    })}
-                  />
-                </div>
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Button variant="primary" onClick={handleSaveConfig} disabled={isSaving}>
-                  {isSaving ? '保存中...' : '保存设置'}
-                </Button>
+                          retentionDays: parseInt(e.target.value) || 7,
+                        },
+                      },
+                    })
+                  }
+                  style={{
+                    width: '200px',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-color)',
+                  }}
+                />
               </div>
             </div>
-          </div>
-        )}
 
-        {/* 模型管理 */}
-        {currentTab === 'models' && (
-          <div className="settings-tab-content active">
-            <div className="settings-content-header">
-              <div className="settings-title-lg">模型管理</div>
-            </div>
-            <div className="settings-scroll-area">
-              <ModelSelector enabledProvidersOnly={false} />
-            </div>
-          </div>
-        )}
-
-        {/* Provider 分类页面 */}
-        {currentCategory && (
-          <div className="settings-tab-content active">
-            <div className="settings-content-header">
-              <div className="settings-title-lg">
-                {API_CATEGORIES.find(c => c.id === currentCategory)?.name || currentCategory}
-              </div>
-              <Button variant="primary" onClick={() => {
-                // TODO: 实现添加 Provider 对话框
-                setToast({
-                  type: 'info',
-                  message: '添加 Provider 功能开发中...'
-                });
-              }}>
-                添加 Provider
+            <div style={{ marginTop: '30px' }}>
+              <Button onClick={handleSaveConfig} disabled={isSaving}>
+                {isSaving ? '保存中...' : '保存设置'}
               </Button>
             </div>
-            <div className="settings-scroll-area">
-              {providers.length === 0 ? (
-                <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-                  <p>该分类下暂无 Provider</p>
-                  <p style={{ fontSize: '12px', marginTop: '8px' }}>
-                    点击"添加 Provider"按钮添加新的 Provider
-                  </p>
-                </div>
+          </div>
+        )}
+
+        {/* 模型管理Tab（双面板布局） */}
+        {currentTab === 'models' && (
+          <div style={{ display: 'flex', flex: 1, height: '100%' }}>
+            {/* 左侧：Provider 列表 */}
+            <ProviderListPanel
+              providers={providers}
+              selectedProviderId={selectedProviderId}
+              onSelectProvider={handleSelectProvider}
+              onAddProvider={handleAddProvider}
+            />
+
+            {/* 右侧：Provider 详情 */}
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              {selectedProviderId ? (
+                <ProviderDetailPanel
+                  key={selectedProviderId}
+                  providerId={selectedProviderId}
+                  onUpdate={handleProviderUpdate}
+                  onRemove={handleProviderRemove}
+                  onTestConnection={handleTestConnection}
+                />
               ) : (
-                <div className="provider-cards-container">
-                  {providers.map(provider => (
-                    <ProviderConfigCard
-                      key={provider.id}
-                      provider={provider}
-                      status={providerStatuses.get(provider.id)}
-                      onUpdate={handleProviderUpdate}
-                      onRemove={handleProviderRemove}
-                      onTestConnection={handleTestConnection}
-                    />
-                  ))}
+                <div className="provider-detail-empty">
+                  <p>请从左侧列表选择一个 Provider</p>
+                  <p
+                    style={{
+                      fontSize: '12px',
+                      marginTop: '8px',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    或点击"添加"按钮添加新的 Provider
+                  </p>
                 </div>
               )}
             </div>
           </div>
         )}
       </div>
+
+      {/* AddProviderDialog 对话框 */}
+      {showAddProviderDialog && (
+        <AddProviderDialog
+          isOpen={showAddProviderDialog}
+          onSave={async config => {
+            // 保存 Provider
+            await handleProviderUpdate(config as ProviderConfig);
+
+            // 刷新 Provider 列表
+            await loadAllProviders();
+
+            // 关闭对话框
+            setShowAddProviderDialog(false);
+
+            // 选中新创建的 Provider
+            if (config && typeof config === 'object' && 'id' in config) {
+              handleSelectProvider(config.id as string);
+            }
+          }}
+          onClose={() => setShowAddProviderDialog(false)}
+        />
+      )}
 
       {/* Toast 通知 */}
       {toast && (

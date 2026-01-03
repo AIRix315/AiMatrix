@@ -4,6 +4,7 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.9.4 | 2026-01-03 | 功能增强 | Provider Template系统实现、Settings页面UI组件化重构、项目清理 |
 | 0.3.9.3 | 2026-01-01 | 类型安全 | 完成类型定义基础设施建设，消除所有TypeScript编译错误，实现IPC类型系统 |
 | 0.3.9.2 | 2026-01-01 | 代码质量 | 修复所有ESLint错误和TypeScript构建错误，提升代码类型安全性（77%改进） |
 | 0.3.9.1 | 2025-12-31 | UI优化 | 全局右侧面板布局优化、任务队列真实事件集成、工作流编辑器布局调整 |
@@ -15,6 +16,52 @@
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 0.0.1 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.9.4] - 2026-01-03
+
+### Added
+- **TemplateManager服务**（新增核心服务）
+  - 实现Provider Template管理系统
+  - 支持8个核心Provider类型（OpenAI, Anthropic, Azure, Zhipu, Doubao, Moonshot, Jiekou, Local）
+  - 提供模板CRUD操作和默认模板初始化
+  - 文件位置：`src/main/services/TemplateManager.ts`
+
+- **Settings页面UI组件化**（新增4个子组件）
+  - `AddProviderDialog.tsx`：新增Provider对话框，支持模板选择
+  - `ModelGroup.tsx`：模型分组展示组件
+  - `ProviderDetailPanel.tsx`：Provider详情面板
+  - `ProviderListPanel.tsx`：Provider列表面板
+  - 提升Settings页面可维护性和代码复用性
+
+### Changed
+- **APIManager增强**
+  - 集成TemplateManager，支持从模板创建Provider
+  - 优化Provider配置验证逻辑
+  - 改进错误处理和日志记录
+
+- **类型系统完善**
+  - 扩展 `ProviderTemplate` 类型定义（src/shared/types/provider.ts）
+  - 完善 `ElectronAPI` 接口，新增template相关方法
+  - 优化 `APIConfig` 和 `ModelInfo` 类型定义（src/shared/types/api.ts）
+
+- **主进程IPC集成**
+  - 新增 `api:getProviderTemplates` 通道
+  - 更新预加载脚本，暴露template API
+  - 完善Provider相关IPC处理器
+
+### Removed
+- **清理测试数据**
+  - 删除 `projects/` 目录下7个测试项目文件
+  - 移除重复的 `ANY_TYPE_FIX_REPORT.md`（已归档至 docs/audit）
+  - 清理无效的项目和模板配置
+
+### Improved
+- **Settings页面架构**
+  - 组件职责分离，提升代码可读性
+  - 统一样式管理（独立CSS文件）
+  - 改进用户交互流程（模板选择 → 配置编辑 → 保存）
 
 ---
 

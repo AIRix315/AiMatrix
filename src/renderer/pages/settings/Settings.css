@@ -210,3 +210,24 @@
 .full-width-button {
   width: 100%;
 }
+
+/* =========================================
+   Settings Layout - 使用 theme.css 中的变量
+   ========================================= */
+
+/* Provider 详情空状态 */
+.provider-detail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+  color: var(--text-secondary, #666666);
+}
+
+.provider-detail-empty p:first-child {
+  font-size: 16px;
+  margin: 0 0 8px 0;
+}
