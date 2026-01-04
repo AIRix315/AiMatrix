@@ -17,11 +17,12 @@ import {
   GenerationModeTab,
   GenerationMode,
   ParametersTab,
+  PluginConfigTab,
 } from './tabs';
 import './GlobalRightPanel.css';
 
 type MainTab = 'properties' | 'tools' | 'queue';
-type LowerTab = 'generation-mode' | 'parameters';
+type LowerTab = 'generation-mode' | 'parameters' | 'plugin-config';
 
 interface GenerationSettings {
   model: string;
@@ -147,12 +148,7 @@ export const GlobalRightPanel: React.FC<GlobalRightPanelProps> = () => {
             {/* 队列TAB：占据全部高度 */}
             {mainTab === 'queue' && (
               <div className="full-height-content">
-                <QueueTab
-                  tasks={tasks}
-                  onCancelTask={onCancelTask}
-                  onRetryTask={onRetryTask}
-                  onClearCompleted={onClearCompleted}
-                />
+                <QueueTab />
               </div>
             )}
 
@@ -189,6 +185,12 @@ export const GlobalRightPanel: React.FC<GlobalRightPanelProps> = () => {
                   >
                     参数
                   </button>
+                  <button
+                    className={`tab-button ${lowerTab === 'plugin-config' ? 'active' : ''}`}
+                    onClick={() => setLowerTab('plugin-config')}
+                  >
+                    配置
+                  </button>
                 </div>
 
                 {/* 下部内容区 */}
@@ -211,6 +213,9 @@ export const GlobalRightPanel: React.FC<GlobalRightPanelProps> = () => {
                       selectedItem={selectedItem || null}
                       selectedCount={selectedCount}
                     />
+                  )}
+                  {lowerTab === 'plugin-config' && (
+                    <PluginConfigTab />
                   )}
                 </div>
 

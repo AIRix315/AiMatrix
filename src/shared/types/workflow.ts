@@ -51,11 +51,12 @@ export interface WorkflowStep {
 }
 
 /**
- * 工作流状态
+ * Flow实例执行状态
+ * 记录Flow执行过程中的步骤状态和数据
  */
-export interface WorkflowState {
-  /** 工作流实例ID */
-  workflowId: string
+export interface FlowState {
+  /** Flow实例ID */
+  flowId: string
   /** 绑定的项目ID */
   projectId: string
   /** 当前步骤索引 */
@@ -74,13 +75,16 @@ export interface WorkflowState {
       data?: unknown
     }>
   }>
-  /** 工作流全局数据 */
+  /** Flow全局数据 */
   data?: Record<string, unknown>
   /** 创建时间 (ISO 8601) */
   createdAt: string
   /** 更新时间 (ISO 8601) */
   updatedAt: string
 }
+
+/** @deprecated 使用FlowState代替 */
+export type WorkflowState = FlowState;
 
 /**
  * 工作流定义
@@ -118,35 +122,42 @@ export interface WorkflowDefinition {
 }
 
 /**
- * 工作流实例
+ * Flow实例 - 工作流的实际执行实例
+ * 包含执行状态和运行时数据
  */
-export interface WorkflowInstance {
+export interface FlowInstance {
   /** 实例ID */
   id: string
-  /** 工作流类型 */
+  /** 工作流模板类型 */
   type: string
-  /** 工作流名称 */
+  /** Flow实例名称 */
   name: string
-  /** 项目ID */
+  /** 关联的项目ID */
   projectId: string
-  /** 当前状态 */
-  state: WorkflowState
+  /** 当前执行状态 */
+  state: FlowState
   /** 创建时间 (ISO 8601) */
   createdAt: string
   /** 更新时间 (ISO 8601) */
   updatedAt: string
 }
 
+/** @deprecated 使用FlowInstance代替 */
+export type WorkflowInstance = FlowInstance;
+
 /**
- * 创建工作流实例参数
+ * 创建Flow实例的参数
  */
-export interface CreateWorkflowInstanceParams {
-  /** 工作流类型 */
+export interface CreateFlowInstanceParams {
+  /** 工作流模板类型 */
   type: string
-  /** 项目ID */
+  /** 关联的项目ID */
   projectId: string
   /** 自定义名称 (可选) */
   name?: string
   /** 初始数据 (可选) */
   initialData?: Record<string, unknown>
 }
+
+/** @deprecated 使用CreateFlowInstanceParams代替 */
+export type CreateWorkflowInstanceParams = CreateFlowInstanceParams;

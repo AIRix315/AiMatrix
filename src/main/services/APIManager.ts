@@ -1284,13 +1284,19 @@ export class APIManager {
           };
         }
 
-        // 检查缓存
-        const cached = this.providerStatus.get(providerId);
-        if (cached) {
-          const cacheAge = Date.now() - new Date(cached.lastChecked).getTime();
-          if (cacheAge < 60000) {
-            // 1 分钟缓存
-            return cached;
+        // 优先返回配置文件中的持久化状态（5分钟内有效）
+        if (config.lastStatus && config.lastChecked) {
+          const cacheAge = Date.now() - new Date(config.lastChecked).getTime();
+          if (cacheAge < 300000) {
+            // 5分钟缓存
+            return {
+              id: providerId,
+              name: config.name,
+              category: config.category,
+              status: config.lastStatus,
+              lastChecked: config.lastChecked,
+              latency: config.lastLatency,
+            };
           }
         }
 
@@ -1304,16 +1310,38 @@ export class APIManager {
         };
 
         try {
-          // 简单的健康检查
-          let checkUrl = `${config.baseUrl}/health`;
-          if (config.category === APICategory.LLM) {
-            checkUrl = `${config.baseUrl}/models`;
+          // 根据Provider类型确定健康检查URL
+          let checkUrl = config.baseUrl;
+          const categoryValue = Array.isArray(config.category) ? config.category[0] : config.category;
+
+          if (
+            categoryValue === APICategory.LLM ||
+            (categoryValue as string) === 'llm'
+          ) {
+            // LLM Provider：检查/v1/models或/models端点
+            checkUrl = config.baseUrl.includes('/v1')
+              ? `${config.baseUrl}/models`
+              : `${config.baseUrl}/v1/models`;
+          } else if (config.id.includes('ollama')) {
+            // Ollama：使用/api/tags
+            checkUrl = `${config.baseUrl}/api/tags`;
+          } else {
+            // 其他Provider：尝试health端点
+            checkUrl = `${config.baseUrl}/health`;
           }
 
           const headers: Record<string, string> = {};
-          if (config.authType === AuthType.BEARER && config.apiKey) {
+          const authTypeValue = config.authType as string;
+
+          if (
+            (config.authType === AuthType.BEARER || authTypeValue === 'bearer') &&
+            config.apiKey
+          ) {
             headers['Authorization'] = `Bearer ${config.apiKey}`;
-          } else if (config.authType === AuthType.APIKEY && config.apiKey) {
+          } else if (
+            (config.authType === AuthType.APIKEY || authTypeValue === 'apikey') &&
+            config.apiKey
+          ) {
             headers['X-API-Key'] = config.apiKey;
           }
 
@@ -1337,8 +1365,14 @@ export class APIManager {
           status.latency = Date.now() - startTime;
         }
 
-        // 更新缓存
+        // 更新内存缓存
         this.providerStatus.set(providerId, status);
+
+        // 更新配置文件中的状态（持久化）
+        config.lastStatus = status.status;
+        config.lastChecked = status.lastChecked;
+        config.lastLatency = status.latency;
+        await this.addProvider(config);
 
         return status;
       },
@@ -1367,6 +1401,12 @@ export class APIManager {
         const baseUrl = params.baseUrl || config.baseUrl;
         const apiKey = params.apiKey || config.apiKey;
 
+        // 调试日志：输出Provider配置信息
+        await logger.debug(
+          `Testing Provider: id=${config.id}, category=${config.category}, authType=${config.authType}, hasApiKey=${!!apiKey}`,
+          'APIManager'
+        );
+
         const startTime = Date.now();
 
         try {
@@ -1389,12 +1429,20 @@ export class APIManager {
           ) {
             // Ollama: GET /api/tags
             modelsUrl = `${baseUrl}/api/tags`;
-          } else if (config.category === APICategory.LLM) {
+          } else if (
+            config.category === APICategory.LLM ||
+            (config.category as string) === 'llm' ||
+            (Array.isArray(config.category) && (config.category[0] === 'llm' || config.category[0] === APICategory.LLM))
+          ) {
             // LLM: GET /v1/models or /models
             modelsUrl = baseUrl.includes('/v1')
               ? `${baseUrl}/models`
               : `${baseUrl}/v1/models`;
-            if (config.authType === AuthType.BEARER && apiKey) {
+
+            // 支持字符串和枚举类型的authType比较
+            const isBearerAuth = config.authType === AuthType.BEARER || (config.authType as string) === 'bearer';
+
+            if (isBearerAuth && apiKey) {
               headers['Authorization'] = `Bearer ${apiKey}`;
             }
           } else if (
@@ -1449,6 +1497,7 @@ export class APIManager {
 
           // 如果设置了modelsUrl，执行HTTP请求
           if (modelsUrl) {
+            // 超详细的请求日志
             const response = await fetch(modelsUrl, {
               method: 'GET',
               headers,
@@ -1458,9 +1507,39 @@ export class APIManager {
             const latency = Date.now() - startTime;
 
             if (!response.ok) {
+              // 详细的错误日志
+              await logger.error(
+                `HTTP request failed: status=${response.status}, statusText=${response.statusText}`,
+                'APIManager',
+                {
+                  url: modelsUrl,
+                  status: response.status,
+                  hasAuthHeader: !!headers['Authorization']
+                }
+              );
+
+              // 更新Provider状态缓存为不可用
+              const errorMsg = `服务离线或不可用 (HTTP ${response.status})`;
+              const statusData = {
+                id: params.providerId,
+                name: config.name,
+                category: config.category,
+                status: 'unavailable' as const,
+                error: errorMsg,
+                lastChecked: new Date().toISOString(),
+                latency,
+              };
+              this.providerStatus.set(params.providerId, statusData);
+
+              // 持久化状态到配置文件
+              config.lastStatus = 'unavailable';
+              config.lastChecked = statusData.lastChecked;
+              config.lastLatency = latency;
+              await this.addProvider(config);
+
               return {
                 success: false,
-                error: `服务离线或不可用 (HTTP ${response.status})`,
+                error: errorMsg,
                 latency,
               };
             }
@@ -1499,6 +1578,23 @@ export class APIManager {
               message = `连接成功，发现 ${models.length} 个模型`;
             }
 
+            // 更新Provider状态缓存
+            const statusData = {
+              id: params.providerId,
+              name: config.name,
+              category: config.category,
+              status: 'available' as const,
+              lastChecked: new Date().toISOString(),
+              latency,
+            };
+            this.providerStatus.set(params.providerId, statusData);
+
+            // 持久化状态到配置文件
+            config.lastStatus = 'available';
+            config.lastChecked = statusData.lastChecked;
+            config.lastLatency = latency;
+            await this.addProvider(config);
+
             return {
               success: true,
               models,
@@ -1516,10 +1612,30 @@ export class APIManager {
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
+          const latency = Date.now() - startTime;
+
+          // 更新Provider状态缓存为不可用
+          const statusData = {
+            id: params.providerId,
+            name: config.name,
+            category: config.category,
+            status: 'unavailable' as const,
+            error: errorMessage,
+            lastChecked: new Date().toISOString(),
+            latency,
+          };
+          this.providerStatus.set(params.providerId, statusData);
+
+          // 持久化状态到配置文件
+          config.lastStatus = 'unavailable';
+          config.lastChecked = statusData.lastChecked;
+          config.lastLatency = latency;
+          await this.addProvider(config);
+
           return {
             success: false,
             error: errorMessage,
-            latency: Date.now() - startTime,
+            latency,
           };
         }
       },

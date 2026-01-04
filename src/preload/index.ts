@@ -9,31 +9,11 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import type { ShortcutItem, ProjectConfig, PluginInfo, TaskExecution } from '../common/types';
-import type { AssetMetadata, AssetFilter, AssetScanResult, AssetImportParams } from '../shared/types/asset';
-import type {
-  TextToImageParams,
-  TextToImageResult,
-  ImageToImageParams,
-  ImageToImageResult,
-  ImageToVideoParams,
-  ImageToVideoResult,
-  ProviderConfig
-} from '../shared/types/provider';
+import type { ShortcutItem, ProjectConfig, PluginInfo } from '../common/types';
+import type { AssetMetadata } from '../shared/types/asset';
+import type { ProviderConfig } from '../shared/types/provider';
 import type { WorkflowDefinition, WorkflowInstance, WorkflowState } from '../shared/types/workflow';
-import type {
-  BatchTextToImageParams,
-  BatchImageToVideoParams,
-  BatchResult,
-  ProviderTestParams,
-  ProviderTestResult,
-  APITestResult,
-  MCPConfig,
-  StoryboardPromptParams,
-  SceneCharacterExtractionResult,
-  ModelInfo,
-  AppSettings
-} from '../shared/types/electron-api';
+import type { MCPConfig, ModelInfo } from '../shared/types/electron-api';
 
 /**
  * 暴露给渲染进程的API接口
@@ -159,6 +139,32 @@ contextBridge.exposeInMainWorld('electronAPI', {
    */
   addOutputAsset: (projectId: string, assetId: string): Promise<void> =>
     ipcRenderer.invoke('project:add-output-asset', projectId, assetId),
+
+  // ==================== 项目插件配置相关 ====================
+
+  /**
+   * 获取项目的插件配置
+   */
+  getProjectPluginConfig: (projectId: string, pluginId: string): Promise<unknown> =>
+    ipcRenderer.invoke('project:getPluginConfig', projectId, pluginId),
+
+  /**
+   * 保存项目的插件配置
+   */
+  saveProjectPluginConfig: (projectId: string, pluginId: string, config: unknown): Promise<void> =>
+    ipcRenderer.invoke('project:savePluginConfig', projectId, pluginId, config),
+
+  /**
+   * 验证项目的插件配置
+   */
+  validateProjectPluginConfig: (projectId: string, pluginId: string): Promise<unknown> =>
+    ipcRenderer.invoke('project:validatePluginConfig', projectId, pluginId),
+
+  /**
+   * 重置项目的插件配置为默认值
+   */
+  resetProjectPluginConfig: (projectId: string, pluginId: string): Promise<unknown> =>
+    ipcRenderer.invoke('project:resetPluginConfig', projectId, pluginId),
 
   // ==================== 资产相关（重构版） ====================
 
@@ -340,25 +346,31 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('plugin:toggle', pluginId, enabled),
 
   // ==================== 任务相关 ====================
-  
+
+  /**
+   * 获取任务队列列表（右侧面板队列标签页使用）
+   */
+  listTaskLogs: (filter?: 'running' | 'success' | 'error' | 'all') =>
+    ipcRenderer.invoke('task:list', filter),
+
   /**
    * 创建任务
    */
-  createTask: (config: unknown): Promise<string> => 
+  createTask: (config: unknown): Promise<string> =>
     ipcRenderer.invoke('task:create', config),
-  
+
   /**
    * 执行任务
    */
   executeTask: (taskId: string, inputs: unknown): Promise<string> =>
     ipcRenderer.invoke('task:execute', taskId, inputs),
-  
+
   /**
    * 获取任务状态
    */
-  getTaskStatus: (executionId: string): Promise<unknown> => 
+  getTaskStatus: (executionId: string): Promise<unknown> =>
     ipcRenderer.invoke('task:status', executionId),
-  
+
   /**
    * 取消任务
    */

@@ -8,6 +8,7 @@ import { IPCManager } from './ipc/channels';
 import { ProjectManager } from './services/ProjectManager';
 import { FileSystemService, fileSystemService } from './services/FileSystemService';
 import { AssetManager, getAssetManager } from './services/AssetManager';
+import { projectPluginConfigManager } from './services/ProjectPluginConfigManager';
 import { getSafePath } from './utils/security';
 import { logger, Logger, LogLevel } from './services/Logger';
 import { pluginManager } from './services/PluginManager';
@@ -223,6 +224,14 @@ class MatrixApp {
     // 注册 Providers
     await this.registerProviders();
 
+    // 启动时批量健康检查所有Provider
+    try {
+      const healthCheckResult = await pluginManager.batchHealthCheck();
+      await logger.info('Startup health check completed', 'MatrixApp', healthCheckResult);
+    } catch (error) {
+      await logger.warn('Startup health check failed', 'MatrixApp', { error });
+    }
+
     await logger.info('All Matrix services initialized successfully', 'MatrixApp');
   }
 
@@ -401,6 +410,19 @@ class MatrixApp {
       return await apiManager.getProviderStatus(providerId);
     });
 
+    // Plugin Pre-flight Check相关IPC处理
+    ipcMain.handle('plugin:preflight-check', async (_, pluginId: string, projectId: string) => {
+      return await pluginManager.preflightCheck(pluginId, projectId);
+    });
+    ipcMain.handle('plugin:batch-health-check', async () => {
+      return await pluginManager.batchHealthCheck();
+    });
+
+    // 任务队列管理IPC处理
+    ipcMain.handle('task:list', async (_, filter?: 'running' | 'success' | 'error' | 'all') => {
+      return await pluginManager.listTaskLogs(filter || 'all');
+    });
+
     // Template相关IPC处理
     ipcMain.handle('template:get', async (_, typeId: string) => {
       return await templateManager.getTemplate(typeId);
@@ -448,13 +470,72 @@ class MatrixApp {
     });
 
     // 项目相关IPC处理
-    ipcMain.handle('project:create', (_, name, template) => this.projectManager.createProject(name, template));
+    ipcMain.handle('project:create', async (_, name, template) => {
+      // 创建项目
+      const project = await this.projectManager.createProject(name, template);
+
+      // 如果指定了插件模板，初始化插件配置
+      if (template) {
+        try {
+          const plugin = pluginManager.getPlugin(template);
+          if (plugin) {
+            await projectPluginConfigManager.initializeFromDefaults(
+              project.id,
+              template,
+              plugin.path
+            );
+            await logger.info(
+              `Initialized plugin config for project ${project.id}, plugin ${template}`,
+              'MatrixApp'
+            );
+          }
+        } catch (error) {
+          // 配置初始化失败不影响项目创建
+          await logger.warn(
+            `Failed to initialize plugin config for project ${project.id}, plugin ${template}`,
+            'MatrixApp',
+            { error }
+          );
+        }
+      }
+
+      return project;
+    });
     ipcMain.handle('project:load', (_, projectId) => this.projectManager.loadProject(projectId));
     ipcMain.handle('project:save', (_, projectId, config) => this.projectManager.saveProject(projectId, config));
     ipcMain.handle('project:delete', (_, projectId) => this.projectManager.deleteProject(projectId));
     ipcMain.handle('project:list', () => this.projectManager.listProjects());
     ipcMain.handle('project:add-input-asset', (_, projectId, assetId) => this.projectManager.addInputAsset(projectId, assetId));
     ipcMain.handle('project:add-output-asset', (_, projectId, assetId) => this.projectManager.addOutputAsset(projectId, assetId));
+
+    // 项目插件配置相关IPC处理
+    ipcMain.handle('project:getPluginConfig', async (_, projectId, pluginId) => {
+      const plugin = pluginManager.getPlugin(pluginId);
+      if (!plugin) {
+        throw new Error(`Plugin not found: ${pluginId}`);
+      }
+      return await projectPluginConfigManager.getPluginConfig(projectId, pluginId, plugin.path);
+    });
+
+    ipcMain.handle('project:savePluginConfig', async (_, projectId, pluginId, config) => {
+      return await projectPluginConfigManager.savePluginConfig(projectId, pluginId, config);
+    });
+
+    ipcMain.handle('project:validatePluginConfig', async (_, projectId, pluginId) => {
+      const plugin = pluginManager.getPlugin(pluginId);
+      if (!plugin) {
+        throw new Error(`Plugin not found: ${pluginId}`);
+      }
+      return await projectPluginConfigManager.validateConfig(projectId, pluginId, plugin.path);
+    });
+
+    ipcMain.handle('project:resetPluginConfig', async (_, projectId, pluginId) => {
+      const plugin = pluginManager.getPlugin(pluginId);
+      if (!plugin) {
+        throw new Error(`Plugin not found: ${pluginId}`);
+      }
+      return await projectPluginConfigManager.resetToDefaults(projectId, pluginId, plugin.path);
+    });
 
     // 资产相关IPC处理（重构版）
     // === 索引管理 ===

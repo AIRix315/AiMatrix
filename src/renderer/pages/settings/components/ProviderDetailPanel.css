@@ -243,4 +243,27 @@
   padding-top: 15px;
   border-top: 0.5px solid var(--border-color);
   margin-top: 20px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+/* 删除按钮样式 */
+.provider-detail-footer .delete-button {
+  background: var(--destructive, #dc2626);
+  color: var(--destructive-foreground, white);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.provider-detail-footer .delete-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }

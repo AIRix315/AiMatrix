@@ -4,6 +4,7 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.9.5 | 2026-01-04 | 插件系统 | 插件配置注入、健康检查、任务追踪、原子操作、并发安全、术语规范化 |
 | 0.3.9.4 | 2026-01-03 | 功能增强 | Provider Template系统实现、Settings页面UI组件化重构、项目清理 |
 | 0.3.9.3 | 2026-01-01 | 类型安全 | 完成类型定义基础设施建设，消除所有TypeScript编译错误，实现IPC类型系统 |
 | 0.3.9.2 | 2026-01-01 | 代码质量 | 修复所有ESLint错误和TypeScript构建错误，提升代码类型安全性（77%改进） |
@@ -16,6 +17,81 @@
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 0.0.1 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.9.5] - 2026-01-04
+
+### Added
+- **插件配置注入机制**（M01）
+  - 实现 `PluginManager.injectPluginConfig()` 方法
+  - 自动从插件的 `default-config.json` 注入Provider映射、文件夹路径、参数配置
+  - 扩展 `ProjectConfig` 类型，支持插件运行时配置（selectedProviders, folders, params, prompts）
+  - 文件位置：`src/main/services/PluginManager.ts`, `src/common/types.ts`
+
+- **插件健康检查系统**（M02）
+  - 实现 `preflightCheck()` 方法：执行前验证所需Provider可用性
+  - 实现 `batchHealthCheck()` 方法：批量检测所有插件Provider状态
+  - 启动时自动执行全局健康检查
+  - 新增IPC通道：`plugin:preflight-check`, `plugin:batch-health-check`
+  - 缓存Provider状态（5分钟），避免频繁检测
+
+- **任务追踪系统**（M03）
+  - 实现任务日志记录：`createTaskLog()`, `updateTaskLog()`, `completeTaskLog()`
+  - 任务日志存储：`userData/log/Task/{taskId}.json`
+  - 新增IPC通道：`task:list`, `task:get`
+  - **QueueTab UI实现**：右侧面板任务队列实时展示
+    - 任务过滤器（全部/运行中/失败）
+    - 任务统计Badge（运行中/已完成/失败）
+    - 自动刷新（每3秒）
+    - 任务详情显示（状态、时间、错误信息、进度条）
+  - 新增类型定义：`TaskLog` 接口（src/shared/types/electron-api.d.ts）
+  - 新增Preload API：`listTaskLogs()` 方法
+
+- **原子操作机制**（M04）
+  - 实现临时目录模式：`createTempDir()`, `commitTempDir()`, `rollbackTempDir()`
+  - 临时目录命名：`.temp_{taskId}`
+  - 确保文件操作原子性（成功提交或完全回滚）
+
+- **并发安全保障**（M05）
+  - 实现 `ProjectManager.queuedWrite()` 写入队列
+  - 串行化project.json写操作，避免并发冲突
+  - Promise链式排队机制
+
+- **术语规范化**（M06）
+  - 重命名：`WorkflowStateManager` → `FlowStateManager`
+  - 类型重命名：`WorkflowInstance` → `FlowInstance`
+  - 创建兼容层：`@deprecated` 别名保持向后兼容
+  - 统一术语：Workflow（模板） vs Flow（实例）
+  - 涉及文件：`src/main/services/FlowStateManager.ts`, `src/shared/types/workflow.ts`
+
+### Changed
+- **IPC通道扩展**
+  - 新增：`plugin:preflight-check`, `plugin:batch-health-check`
+  - 新增：`task:list`, `task:get`
+  - Flow相关通道：`flow:create`, `flow:execute`, `flow:status`, `flow:cancel` 等8个
+
+- **类型系统完善**
+  - 扩展 `ProjectConfig`：插件运行时配置字段
+  - 新增 `FlowInstance`, `FlowState`, `CreateFlowInstanceParams` 类型
+  - 新增 `TaskLog` 类型定义
+  - 完善 `ElectronAPI` 接口：新增 `listTaskLogs()` 方法
+
+### Improved
+- **代码规范**
+  - 移除所有 "Phase 12 M0X" 形式的任务标记注释
+  - 替换为功能性描述注释
+  - 遵守 "禁止出现和功能注释无关的注释" 原则
+
+- **构建状态**
+  - ✅ 主进程构建成功（9196ms）
+  - ✅ 渲染进程构建成功（10193ms）
+  - ✅ 预加载脚本构建成功（16399ms）
+  - ✅ 0个TypeScript编译错误
+
+### Documentation
+- 更新 `TODO.md`：Phase 12 M01-M06标记为已完成
+- 创建完成报告：`docs/Plan/M01-M06-completion-report.md`
 
 ---
 

@@ -6,13 +6,19 @@ export const IPC_CHANNELS = {
   PROJECT_DELETE: 'project:delete',
   PROJECT_LIST: 'project:list',
 
-  // 工作流相关
-  WORKFLOW_EXECUTE: 'workflow:execute',
-  WORKFLOW_STATUS: 'workflow:status',
-  WORKFLOW_CANCEL: 'workflow:cancel',
+  // 工作流模板相关
   WORKFLOW_LIST: 'workflow:list',
-  WORKFLOW_SAVE: 'workflow:save',
   WORKFLOW_LOAD: 'workflow:load',
+
+  // Flow实例相关
+  FLOW_CREATE: 'flow:create',
+  FLOW_EXECUTE: 'flow:execute',
+  FLOW_STATUS: 'flow:status',
+  FLOW_CANCEL: 'flow:cancel',
+  FLOW_SAVE: 'flow:save',
+  FLOW_LOAD: 'flow:load',
+  FLOW_DELETE: 'flow:delete',
+  FLOW_LIST_INSTANCES: 'flow:list-instances',
 
   // 资产相关
   ASSET_UPLOAD: 'asset:upload',
@@ -75,6 +81,14 @@ export const IPC_CHANNELS = {
   MODEL_TOGGLE_VISIBILITY: 'model:toggle-visibility',
   MODEL_TOGGLE_FAVORITE: 'model:toggle-favorite',
   MODEL_SET_ALIAS: 'model:set-alias',
+
+  // Plugin健康检查
+  PLUGIN_PREFLIGHT_CHECK: 'plugin:preflight-check',
+  PLUGIN_BATCH_HEALTH_CHECK: 'plugin:batch-health-check',
+
+  // 任务队列管理
+  TASK_LIST: 'task:list',
+  TASK_GET: 'task:get',
 
   // 事件通知
   EVENT_WORKFLOW_PROGRESS: 'event:workflow:progress',

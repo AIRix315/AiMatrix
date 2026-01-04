@@ -30,6 +30,9 @@ export class ProjectManager implements IProjectManager {
   private projectsPath: string;
   private isInitialized = false;
 
+  // 写操作队列，保证project.json的串行写入，防止并发竞争
+  private writeQueue: Promise<void> = Promise.resolve();
+
   constructor() {
     // 设置项目存储路径
     this.projectsPath = path.join(process.cwd(), 'projects');
@@ -142,6 +145,34 @@ export class ProjectManager implements IProjectManager {
       // 如果有模板，复制模板文件
       if (template) {
         await this.applyTemplate(projectPath, template);
+      }
+
+      // 自动注入插件配置（如果template对应插件）
+      if (template && template !== 'workflow') {
+        try {
+          // 动态导入PluginManager以避免循环依赖
+          const { pluginManager } = await import('./PluginManager');
+
+          // 尝试加载插件(如果未加载)
+          try {
+            await pluginManager.loadPlugin(template);
+          } catch (error) {
+            this.log('warn', `Plugin ${template} not found or failed to load`, error);
+          }
+
+          // 注入插件配置
+          const updatedConfig = await pluginManager.injectPluginConfig(
+            template,
+            projectConfig
+          );
+
+          // 更新projectConfig
+          Object.assign(projectConfig, updatedConfig);
+
+          this.log('info', `Plugin config injected for template ${template}`);
+        } catch (error) {
+          this.log('warn', `Failed to inject plugin config for ${template}`, error);
+        }
       }
 
       // 保存项目配置
@@ -664,13 +695,48 @@ export class ProjectManager implements IProjectManager {
   }
 
   /**
-   * 保存项目配置
+   * 队列化写操作，确保串行执行，防止并发写入冲突
+   * @private
+   */
+  private async queuedWrite<T>(operation: () => Promise<T>): Promise<T> {
+    // 将操作加入队列
+    const previousWrite = this.writeQueue;
+
+    // 创建新的Promise链
+    let resolveWrite: () => void;
+    this.writeQueue = new Promise<void>(resolve => {
+      resolveWrite = resolve;
+    });
+
+    try {
+      // 等待前一个写操作完成
+      await previousWrite;
+
+      // 执行当前操作
+      const result = await operation();
+
+      // 标记当前操作完成
+      resolveWrite!();
+
+      return result;
+    } catch (error) {
+      // 即使失败也要标记完成,避免阻塞队列
+      resolveWrite!();
+      throw error;
+    }
+  }
+
+  /**
+   * 保存项目配置到project.json
    * @private
    */
   private async saveProjectConfig(config: ProjectConfig): Promise<void> {
-    const configPath = path.join(config.path, 'project.json');
-    await fs.mkdir(path.dirname(configPath), { recursive: true });
-    await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
+    // 使用队列化写入防止并发竞争
+    await this.queuedWrite(async () => {
+      const configPath = path.join(config.path, 'project.json');
+      await fs.mkdir(path.dirname(configPath), { recursive: true });
+      await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
+    });
   }
 
   /**

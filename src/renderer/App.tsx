@@ -4,6 +4,7 @@ import { ThemeProvider } from './components/theme-provider';
 import { SidebarProvider, useSidebar } from './contexts/SidebarContext';
 import { SelectionProvider, useSelection } from './contexts/SelectionContext';
 import { TaskProvider } from './contexts/TaskContext';
+import { ProjectProvider } from './contexts/ProjectContext';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import Layout from './components/common/Layout';
 import { ProgressOrb } from './components/common';
@@ -228,11 +229,13 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="matrix-ui-theme">
-      <SelectionProvider>
-        <SidebarProvider>
-          <AppContent />
-        </SidebarProvider>
-      </SelectionProvider>
+      <ProjectProvider>
+        <SelectionProvider>
+          <SidebarProvider>
+            <AppContent />
+          </SidebarProvider>
+        </SelectionProvider>
+      </ProjectProvider>
     </ThemeProvider>
   );
 };

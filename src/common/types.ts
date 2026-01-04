@@ -160,16 +160,22 @@ export interface ProjectConfig {
 
   // ========== Phase 9 H0.1 新增字段 ==========
 
-  // 工作流识别字段（UI-2）
-  workflowType?: string;           // 'novel-to-video' | 'custom' | ...
+  // 工作流识别字段
+  workflowType?: string;           // 工作流模板类型: 'novel-to-video' | 'custom' | ...
   pluginId?: string;               // 使用的插件ID（如果是插件工作流）
-  currentWorkflowInstanceId?: string; // 当前关联的工作流实例
+  currentFlowInstanceId?: string;  // 当前关联的Flow实例ID
   status?: ProjectStatus;          // 项目状态
 
   // 资源绑定字段
   inputAssets: string[];   // 引用的输入资源ID列表（用户上传的原始资源）
   outputAssets: string[];  // 该项目生成的输出资源ID列表（AI生成资源）
   immutable: boolean;      // 项目完成后不可修改标志
+
+  // 插件运行时配置
+  selectedProviders?: Record<string, string>;  // 选中的Provider ID映射表 (key: llm/image等, value: provider-id)
+  folders?: Record<string, string>;            // 插件使用的文件夹路径映射
+  params?: Record<string, unknown>;            // 插件运行时参数
+  prompts?: Record<string, string>;            // 提示词模板配置
 }
 
 /**

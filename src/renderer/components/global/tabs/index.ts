@@ -8,3 +8,4 @@ export { QueueTab } from './QueueTab';
 export { GenerationModeTab } from './GenerationModeTab';
 export type { GenerationMode } from './GenerationModeTab';
 export { ParametersTab } from './ParametersTab';
+export { PluginConfigTab } from './PluginConfigTab';

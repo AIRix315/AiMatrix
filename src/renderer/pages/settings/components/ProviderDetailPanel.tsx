@@ -94,7 +94,7 @@ export const ProviderDetailPanel: React.FC<ProviderDetailPanelProps> = ({
       ) {
         // 如果 Provider 配置中有模型列表，直接使用（这是连接测试时获取的）
         const providerModels = (providerConfig as any).models.map(
-          (modelName: string, index: number) => ({
+          (modelName: string) => ({
             id: `${providerId}-${modelName}`,
             name: modelName,
             provider: providerId,
@@ -439,14 +439,10 @@ export const ProviderDetailPanel: React.FC<ProviderDetailPanelProps> = ({
 
       {/* 底部操作区 */}
       <div className="provider-detail-footer">
-        <Button
-          variant="secondary"
-          onClick={handleRemove}
-          className="delete-button"
-        >
-          <Trash2 className="h-4 w-4 mr-1" />
+        <button className="delete-button" onClick={handleRemove}>
+          <Trash2 className="h-4 w-4" />
           删除 Provider
-        </Button>
+        </button>
       </div>
     </div>
   );

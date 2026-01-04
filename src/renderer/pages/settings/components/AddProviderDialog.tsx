@@ -15,6 +15,10 @@ import { Modal, Button, Toast } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
 import './AddProviderDialog.css';
 
+// 从shared types导入APICategory和AuthType
+type APICategory = 'image-generation' | 'video-generation' | 'audio-generation' | 'llm' | 'workflow' | 'tts' | 'stt' | 'embedding' | 'translation';
+type AuthType = 'bearer' | 'apikey' | 'basic' | 'none';
+
 // Template类型ID（8个预定义模板）
 type TemplateTypeId =
   | 'deepseek'       // DeepSeek模板
@@ -95,6 +99,17 @@ export const AddProviderDialog: React.FC<AddProviderDialogProps> = ({
     }
 
     // 3. 构建Provider配置对象（最小化）
+    const templateObj = template as {
+      category?: string;
+      baseUrl?: string;
+      authType?: string;
+      endpoints?: Record<string, string>;
+      features?: unknown;
+      documentationUrl?: string;
+      costPerUnit?: number;
+      currency?: string;
+    };
+
     const config = {
       id: `${providerName.trim().toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
       name: providerName.trim(),
@@ -103,14 +118,19 @@ export const AddProviderDialog: React.FC<AddProviderDialogProps> = ({
 
       // 应用Template默认值（如果有）
       ...(template && typeof template === 'object' ? {
-        baseUrl: (template as { baseUrl?: string }).baseUrl,
-        authType: (template as { authType?: string }).authType,
-        endpoints: (template as { endpoints?: Record<string, string> }).endpoints,
-        features: (template as { features?: unknown }).features,
-        documentationUrl: (template as { documentationUrl?: string }).documentationUrl,
-        costPerUnit: (template as { costPerUnit?: number }).costPerUnit,
-        currency: (template as { currency?: string }).currency
-      } : {})
+        category: (templateObj.category as APICategory) || ('llm' as APICategory),
+        baseUrl: templateObj.baseUrl || '',
+        authType: (templateObj.authType as AuthType) || ('bearer' as AuthType),
+        endpoints: templateObj.endpoints || {},
+        features: templateObj.features,
+        documentationUrl: templateObj.documentationUrl,
+        costPerUnit: templateObj.costPerUnit,
+        currency: templateObj.currency
+      } : {
+        category: 'llm' as APICategory,
+        baseUrl: '',
+        authType: 'bearer' as AuthType
+      })
     };
 
     // 4. 保存Provider

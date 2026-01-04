@@ -20,5 +20,27 @@
     "api:call"
   ],
   "tools": ["ffmpeg", "comfyui"],
-  "schemas": ["chapter", "scene", "character", "storyboard", "voiceover"]
+  "schemas": ["chapter", "scene", "character", "storyboard", "voiceover"],
+  "requiredProviders": [
+    {
+      "category": "llm",
+      "purpose": "章节拆分和场景提取",
+      "required": true
+    },
+    {
+      "category": "image-generation",
+      "purpose": "场景图片生成",
+      "required": true
+    },
+    {
+      "category": "video-generation",
+      "purpose": "分镜视频生成",
+      "required": true
+    },
+    {
+      "category": "tts",
+      "purpose": "对白音频生成",
+      "required": false
+    }
+  ]
 }

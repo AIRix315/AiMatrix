@@ -1,0 +1,20 @@
+{
+  "id": "fa56db48-38e3-4182-b11a-02753353a181",
+  "name": "222",
+  "path": "E:\\Projects\\Matrix\\projects\\fa56db48-38e3-4182-b11a-02753353a181",
+  "createdAt": "2026-01-03T06:53:02.331Z",
+  "updatedAt": "2026-01-03T06:53:02.331Z",
+  "settings": {
+    "defaultWorkflow": "novel-to-video",
+    "outputFormat": "mp4",
+    "quality": 80
+  },
+  "workflows": [
+    "a1936259-71ec-4d9a-86a1-bf076333814b"
+  ],
+  "assets": [],
+  "workflowType": "novel-to-video",
+  "inputAssets": [],
+  "outputAssets": [],
+  "immutable": false
+}

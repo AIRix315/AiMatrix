@@ -228,7 +228,7 @@ export class NovelVideoAPIService {
   async generateDialogueAudio(
     projectId: string,
     voiceoverAssetPath: string,
-    voiceFilePath: string
+    _voiceFilePath: string
   ): Promise<string> {
     try {
       // 1. 获取配音资产元数据
@@ -236,10 +236,6 @@ export class NovelVideoAPIService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const dialogueText = (voiceover.customFields?.novelVideo as any)
         ?.dialogueText;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const emotion = (voiceover.customFields?.novelVideo as any)?.emotion || [
-        0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
-      ];
 
       if (!dialogueText) {
         throw new Error('对白文本为空');

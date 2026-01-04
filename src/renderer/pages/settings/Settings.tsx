@@ -182,48 +182,27 @@ const Settings: React.FC = () => {
         enabledOnly: false,
       });
 
-      // 转换为列表项格式
-      const providerList: ProviderListItem[] = allProviders.map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        category: p.category || 'unknown',
-        type: p.type as 'official' | 'local' | 'relay' | undefined,
-        enabled: p.enabled || false,
-        status: 'unknown', // 初始状态为 unknown
-      }));
+      // 转换为列表项格式，直接从配置文件读取状态
+      const providerList: ProviderListItem[] = allProviders.map((p: any) => {
+        // 映射持久化状态：'available' -> 'online', 'unavailable' -> 'offline'
+        let displayStatus: 'online' | 'offline' | 'unknown' = 'unknown';
+        if (p.lastStatus === 'available') {
+          displayStatus = 'online';
+        } else if (p.lastStatus === 'unavailable') {
+          displayStatus = 'offline';
+        }
+
+        return {
+          id: p.id,
+          name: p.name,
+          category: p.category || 'unknown',
+          type: p.type as 'official' | 'local' | 'relay' | undefined,
+          enabled: p.enabled || false,
+          status: displayStatus,
+        };
+      });
 
       setProviders(providerList);
-
-      // 加载每个 Provider 的状态（异步）
-      const statusPromises = providerList.map(async provider => {
-        try {
-          const status = (await window.electronAPI.getProviderStatus(
-            provider.id
-          )) as any;
-          return {
-            id: provider.id,
-            status: status?.isOnline
-              ? ('online' as const)
-              : ('offline' as const),
-          };
-        } catch (error) {
-          // 状态加载失败时返回unknown
-          return {
-            id: provider.id,
-            status: 'unknown' as const,
-          };
-        }
-      });
-
-      // 等待所有状态加载完成后一次性更新
-      Promise.all(statusPromises).then(statuses => {
-        setProviders(prev =>
-          prev.map(p => {
-            const statusInfo = statuses.find(s => s.id === p.id);
-            return statusInfo ? { ...p, status: statusInfo.status } : p;
-          })
-        );
-      });
     } catch (error) {
       showToast(
         'error',
@@ -322,74 +301,73 @@ const Settings: React.FC = () => {
       )) as any;
 
       const result = await window.electronAPI.testProviderConnection({
-        type: provider.category || '',
-        baseUrl: providerConfig.baseUrl || '',
-        apiKey: providerConfig.apiKey,
         providerId,
-        authType: providerConfig.authType,
+        baseUrl: providerConfig.baseUrl,
+        apiKey: providerConfig.apiKey,
       });
 
       if ((result as any).success) {
+        // 连接成功：启用Provider，设置状态为online
         updateProviderStatus(providerId, 'online');
+        await window.electronAPI.addProvider({
+          ...providerConfig,
+          enabled: true,
+          models: (result as any).models || providerConfig.models,
+        });
 
-        // 如果测试成功返回了模型列表，更新Provider配置
-        if ((result as any).models && (result as any).models.length > 0) {
-          await window.electronAPI.addProvider({
-            ...providerConfig,
-            models: (result as any).models,
-          });
-        }
+        // 更新UI状态
+        setProviders(prev =>
+          prev.map(p =>
+            p.id === providerId
+              ? { ...p, enabled: true, status: 'online' }
+              : p
+          )
+        );
 
-        // 如果之前被禁用，现在服务恢复，自动启用
-        if (!providerConfig.enabled) {
-          await window.electronAPI.addProvider({
-            ...providerConfig,
-            enabled: true,
-            models: (result as any).models || providerConfig.models,
-          });
-          // 只更新状态，不重新加载整个列表
-          setProviders(prev =>
-            prev.map(p =>
-              p.id === providerId
-                ? { ...p, enabled: true, status: 'online' }
-                : p
-            )
-          );
-        }
-        // 显示成功消息，如果有message字段则显示它
         const successMsg = (result as any).message || '连接测试成功';
         showToast('success', successMsg);
       } else {
+        // 连接失败：禁用Provider，设置状态为offline
         updateProviderStatus(providerId, 'offline');
-        // 服务离线时自动禁用 Provider（特别是本地服务）
-        const isLocalService =
-          providerId === 'comfyui-local' ||
-          providerId === 'n8n-local' ||
-          providerId === 'ollama-local';
-        if (isLocalService && providerConfig.enabled) {
-          await window.electronAPI.addProvider({
-            ...providerConfig,
-            enabled: false,
-          });
-          // 只更新状态，不重新加载整个列表
-          setProviders(prev =>
-            prev.map(p =>
-              p.id === providerId
-                ? { ...p, enabled: false, status: 'offline' }
-                : p
-            )
-          );
-          showToast('warning', `服务离线，已自动禁用 ${provider.name}`);
-        } else {
-          throw new Error((result as any).error || '连接失败');
-        }
+        await window.electronAPI.addProvider({
+          ...providerConfig,
+          enabled: false,
+        });
+
+        // 更新UI状态
+        setProviders(prev =>
+          prev.map(p =>
+            p.id === providerId
+              ? { ...p, enabled: false, status: 'offline' }
+              : p
+          )
+        );
+
+        const errorMsg = (result as any).error || '连接失败';
+        showToast('warning', `${provider.name} 连接失败，已自动禁用: ${errorMsg}`);
       }
     } catch (error) {
-      showToast(
-        'error',
-        `连接测试失败: ${error instanceof Error ? error.message : String(error)}`
+      // 连接异常：禁用Provider，设置状态为offline
+      updateProviderStatus(providerId, 'offline');
+      const providerConfig = (await window.electronAPI.getProvider(
+        providerId
+      )) as any;
+      await window.electronAPI.addProvider({
+        ...providerConfig,
+        enabled: false,
+      });
+
+      // 更新UI状态
+      setProviders(prev =>
+        prev.map(p =>
+          p.id === providerId
+            ? { ...p, enabled: false, status: 'offline' }
+            : p
+        )
       );
-      throw error;
+
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      showToast('error', `连接测试失败，已自动禁用: ${errorMsg}`);
     }
   };
 

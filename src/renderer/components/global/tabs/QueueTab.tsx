@@ -1,32 +1,27 @@
 /**
  * QueueTab - 队列TAB
- * 显示大量并发任务，支持滚动和任务操作
+ * 显示真实的插件任务执行队列，支持滚动和任务操作
  */
 
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { X, RotateCw, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { X, RotateCw, CheckCircle2, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../common';
-import type { Task } from '../../common/TaskQueueSheet';
+import type { TaskLog } from '@/shared/types/electron-api';
 
 interface QueueTabProps {
-  tasks: Task[];
-  onCancelTask?: (taskId: string) => void;
-  onRetryTask?: (taskId: string) => void;
-  onClearCompleted?: () => void;
+  // 从GlobalRightPanel传入的props被移除，改为内部获取真实数据
 }
 
-const TaskStatusIcon: React.FC<{ status: Task['status'] }> = ({ status }) => {
+const TaskStatusIcon: React.FC<{ status: TaskLog['status'] }> = ({ status }) => {
   switch (status) {
-    case 'completed':
+    case 'success':
       return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-    case 'failed':
+    case 'error':
       return <AlertCircle className="h-4 w-4 text-red-500" />;
     case 'running':
-      return <CheckCircle2 className="h-4 w-4 text-primary animate-pulse" />;
-    case 'pending':
-      return <Clock className="h-4 w-4 text-muted-foreground" />;
+      return <Clock className="h-4 w-4 text-primary animate-pulse" />;
     default:
       return null;
   }
@@ -39,47 +34,100 @@ const formatTime = (seconds: number): string => {
   return `${minutes}分${secs}秒`;
 };
 
-export const QueueTab: React.FC<QueueTabProps> = ({
-  tasks,
-  onCancelTask,
-  onRetryTask,
-  onClearCompleted,
-}) => {
+export const QueueTab: React.FC<QueueTabProps> = () => {
+  const [tasks, setTasks] = useState<TaskLog[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'running' | 'success' | 'error'>('all');
+
+  // 加载任务列表
+  const loadTasks = async () => {
+    setLoading(true);
+    try {
+      const result = await window.electronAPI.listTaskLogs(filter);
+      setTasks(result);
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 初始加载和定时刷新
+  useEffect(() => {
+    loadTasks();
+    const interval = setInterval(loadTasks, 3000); // 每3秒刷新
+    return () => clearInterval(interval);
+  }, [filter]);
+
   // 任务分组统计
   const {
     runningTasks,
-    pendingTasks,
     completedTasks,
     failedTasks
   } = useMemo(() => ({
     runningTasks: tasks.filter((t) => t.status === 'running'),
-    pendingTasks: tasks.filter((t) => t.status === 'pending'),
-    completedTasks: tasks.filter((t) => t.status === 'completed'),
-    failedTasks: tasks.filter((t) => t.status === 'failed'),
+    completedTasks: tasks.filter((t) => t.status === 'success'),
+    failedTasks: tasks.filter((t) => t.status === 'error'),
   }), [tasks]);
+
+  // 格式化时间显示
+  const formatTaskTime = (startTime: string, endTime: string | null) => {
+    const start = new Date(startTime);
+    if (!endTime) {
+      return `开始于 ${start.toLocaleTimeString()}`;
+    }
+    const end = new Date(endTime);
+    const duration = Math.round((end.getTime() - start.getTime()) / 1000);
+    return `耗时 ${formatTime(duration)}`;
+  };
 
   return (
     <div className="queue-tab">
-      {/* 任务统计 */}
+      {/* 任务统计和刷新 */}
       <div className="task-summary">
-        <Badge variant="default">{runningTasks.length} 运行中</Badge>
-        <Badge variant="secondary">{pendingTasks.length} 等待中</Badge>
-        <Badge variant="outline" className="text-green-500">
-          {completedTasks.length} 已完成
-        </Badge>
-        {failedTasks.length > 0 && (
-          <Badge variant="destructive">{failedTasks.length} 失败</Badge>
-        )}
+        <div className="flex gap-2">
+          <Badge variant="default">{runningTasks.length} 运行中</Badge>
+          <Badge variant="outline" className="text-green-500">
+            {completedTasks.length} 已完成
+          </Badge>
+          {failedTasks.length > 0 && (
+            <Badge variant="destructive">{failedTasks.length} 失败</Badge>
+          )}
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={loadTasks}
+          disabled={loading}
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
       </div>
 
-      {/* 清除已完成按钮 */}
-      {completedTasks.length > 0 && onClearCompleted && (
-        <div className="mb-3 flex justify-end">
-          <Button variant="ghost" size="sm" onClick={onClearCompleted}>
-            清除已完成任务
-          </Button>
-        </div>
-      )}
+      {/* 过滤器 */}
+      <div className="flex gap-2 mb-3">
+        <Button
+          variant={filter === 'all' ? 'primary' : 'ghost'}
+          size="sm"
+          onClick={() => setFilter('all')}
+        >
+          全部
+        </Button>
+        <Button
+          variant={filter === 'running' ? 'primary' : 'ghost'}
+          size="sm"
+          onClick={() => setFilter('running')}
+        >
+          运行中
+        </Button>
+        <Button
+          variant={filter === 'error' ? 'primary' : 'ghost'}
+          size="sm"
+          onClick={() => setFilter('error')}
+        >
+          失败
+        </Button>
+      </div>
 
       {/* 任务列表（可滚动） */}
       <div className="task-list">
@@ -91,7 +139,7 @@ export const QueueTab: React.FC<QueueTabProps> = ({
           <div className="space-y-2">
             {tasks.map((task) => (
               <motion.div
-                key={task.id}
+                key={task.taskId}
                 className="task-item"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -100,7 +148,12 @@ export const QueueTab: React.FC<QueueTabProps> = ({
               >
                 <div className="task-header">
                   <TaskStatusIcon status={task.status} />
-                  <span className="task-name">{task.name}</span>
+                  <div className="flex flex-col flex-1">
+                    <span className="task-name">{task.pluginId}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatTaskTime(task.startTime, task.endTime)}
+                    </span>
+                  </div>
                 </div>
 
                 {task.error && (
@@ -112,45 +165,13 @@ export const QueueTab: React.FC<QueueTabProps> = ({
                     <div className="progress-bar">
                       <motion.div
                         className="progress-fill"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${task.progress}%` }}
-                        transition={{ duration: 0.3 }}
+                        style={{ width: '100%' }}
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
                       />
-                    </div>
-                    <div className="progress-info">
-                      <span className="progress-text">{task.progress}%</span>
-                      {task.estimatedTime && (
-                        <span className="estimated-time">
-                          预计剩余: {formatTime(task.estimatedTime)}
-                        </span>
-                      )}
                     </div>
                   </div>
                 )}
-
-                <div className="task-actions">
-                  {task.status === 'failed' && onRetryTask && (
-                    <button
-                      className="task-action-btn"
-                      onClick={() => onRetryTask(task.id)}
-                      title="重试"
-                    >
-                      <RotateCw className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                  {(task.status === 'pending' ||
-                    task.status === 'running' ||
-                    task.status === 'paused') &&
-                    onCancelTask && (
-                      <button
-                        className="task-action-btn task-action-cancel"
-                        onClick={() => onCancelTask(task.id)}
-                        title="取消"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                </div>
               </motion.div>
             ))}
           </div>

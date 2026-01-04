@@ -9,10 +9,35 @@ import * as path from 'path';
 import { PluginContext, APIManager, GenericAssetHelper, Logger } from '@matrix/sdk';
 import type { AssetMetadata } from '@matrix/sdk';
 
+interface PluginConfig {
+  providers: {
+    llm?: {
+      providerId: string | null;
+      model: string | null;
+    };
+    imageGeneration?: {
+      providerId: string | null;
+      model: string | null;
+      params?: { aspectRatio?: string };
+    };
+    videoGeneration?: {
+      providerId: string | null;
+      model: string | null;
+    };
+    tts?: {
+      providerId: string | null;
+      model: string | null;
+    };
+  };
+}
+
 export class NovelVideoAPIService {
   private apiManager: APIManager;
   private assetHelper: GenericAssetHelper;
   private logger: Logger;
+  private context: PluginContext;
+  private projectId: string | null = null;
+  private pluginConfig: PluginConfig | null = null;
 
   /**
    * 构造函数 - 通过PluginContext注入依赖
@@ -21,6 +46,50 @@ export class NovelVideoAPIService {
     this.apiManager = apiManager;
     this.assetHelper = context.assetHelper;
     this.logger = context.logger;
+    this.context = context;
+  }
+
+  /**
+   * 确保已初始化配置
+   * @param projectId 项目ID
+   */
+  private async ensureInitialized(projectId: string): Promise<void> {
+    // 如果已经为当前项目加载过配置，直接返回
+    if (this.projectId === projectId && this.pluginConfig) {
+      return;
+    }
+
+    this.projectId = projectId;
+    try {
+      this.pluginConfig = (await this.context.getPluginConfig(projectId)) as PluginConfig;
+      await this.logger.info('插件配置加载成功', 'NovelVideoAPIService', {
+        projectId,
+        config: this.pluginConfig
+      });
+    } catch (error) {
+      await this.logger.warn('插件配置加载失败，使用默认配置', 'NovelVideoAPIService', {
+        projectId,
+        error
+      });
+      // 使用默认配置
+      this.pluginConfig = {
+        providers: {
+          imageGeneration: {
+            providerId: 't8star-image',
+            model: 'nano-banana',
+            params: { aspectRatio: '16:9' }
+          },
+          videoGeneration: {
+            providerId: 't8star-video',
+            model: 'sora-2'
+          },
+          tts: {
+            providerId: 'runninghub',
+            model: null
+          }
+        }
+      };
+    }
   }
 
   /**
@@ -34,6 +103,9 @@ export class NovelVideoAPIService {
     sceneAssetPath: string
   ): Promise<string> {
     try {
+      // 0. 确保已加载配置
+      await this.ensureInitialized(projectId);
+
       // 1. 获取场景资产元数据
       const scenes = await this.assetHelper.queryAssets({
         schemaId: 'novel-to-video.scene',
@@ -59,11 +131,24 @@ export class NovelVideoAPIService {
         prompt
       });
 
-      // 2. 调用T8Star API生成图片
-      const imageUrl = await this.apiManager.callT8StarImage(prompt, {
-        model: 'nano-banana',
-        aspectRatio: '16:9'
-      });
+      // 2. 从配置读取Provider并调用API生成图片
+      if (!this.pluginConfig?.providers?.imageGeneration?.providerId) {
+        throw new Error('图像生成Provider未配置，请在项目配置中设置');
+      }
+
+      const { providerId, model, params } = this.pluginConfig.providers.imageGeneration;
+      const aspectRatio = params?.aspectRatio || '16:9';
+
+      let imageUrl: string;
+      if (providerId === 't8star-image') {
+        imageUrl = await this.apiManager.callT8StarImage(prompt, {
+          model: model || 'nano-banana',
+          aspectRatio
+        });
+      } else {
+        // 通用Provider调用（未来扩展）
+        throw new Error(`不支持的图像生成Provider: ${providerId}`);
+      }
 
       // 3. 下载图片到项目目录
       const savePath = path.join(
@@ -106,6 +191,9 @@ export class NovelVideoAPIService {
     characterAssetPath: string
   ): Promise<string> {
     try {
+      // 0. 确保已加载配置
+      await this.ensureInitialized(projectId);
+
       // 1. 获取角色资产元数据
       const characters = await this.assetHelper.queryAssets({
         schemaId: 'novel-to-video.character',
@@ -131,11 +219,22 @@ export class NovelVideoAPIService {
         prompt
       });
 
-      // 2. 调用T8Star API生成图片
-      const imageUrl = await this.apiManager.callT8StarImage(prompt, {
-        model: 'nano-banana',
-        aspectRatio: '1:1'
-      });
+      // 2. 从配置读取Provider并调用API生成图片
+      if (!this.pluginConfig?.providers?.imageGeneration?.providerId) {
+        throw new Error('图像生成Provider未配置，请在项目配置中设置');
+      }
+
+      const { providerId, model } = this.pluginConfig.providers.imageGeneration;
+
+      let imageUrl: string;
+      if (providerId === 't8star-image') {
+        imageUrl = await this.apiManager.callT8StarImage(prompt, {
+          model: model || 'nano-banana',
+          aspectRatio: '1:1'
+        });
+      } else {
+        throw new Error(`不支持的图像生成Provider: ${providerId}`);
+      }
 
       // 3. 下载图片到项目目录
       const savePath = path.join(
@@ -180,6 +279,9 @@ export class NovelVideoAPIService {
     onProgress?: (progress: number) => void
   ): Promise<string> {
     try {
+      // 0. 确保已加载配置
+      await this.ensureInitialized(projectId);
+
       // 1. 获取分镜资产元数据
       const storyboards = await this.assetHelper.queryAssets({
         schemaId: 'novel-to-video.storyboard',
@@ -206,13 +308,24 @@ export class NovelVideoAPIService {
         prompt
       });
 
-      // 2. 调用T8Star视频生成API（带进度回调）
-      const videoUrl = await this.apiManager.callT8StarVideo({
-        prompt,
-        imagePath: sceneImagePath,
-        model: 'sora-2',
-        onProgress
-      });
+      // 2. 从配置读取Provider并调用API生成视频
+      if (!this.pluginConfig?.providers?.videoGeneration?.providerId) {
+        throw new Error('视频生成Provider未配置，请在项目配置中设置');
+      }
+
+      const { providerId, model } = this.pluginConfig.providers.videoGeneration;
+
+      let videoUrl: string;
+      if (providerId === 't8star-video') {
+        videoUrl = await this.apiManager.callT8StarVideo({
+          prompt,
+          imagePath: sceneImagePath,
+          model: model || 'sora-2',
+          onProgress
+        });
+      } else {
+        throw new Error(`不支持的视频生成Provider: ${providerId}`);
+      }
 
       // 3. 下载视频到项目目录
       const savePath = path.join(
@@ -251,6 +364,9 @@ export class NovelVideoAPIService {
     voiceFilePath: string
   ): Promise<string> {
     try {
+      // 0. 确保已加载配置
+      await this.ensureInitialized(projectId);
+
       // 1. 获取配音资产元数据
       const voiceovers = await this.assetHelper.queryAssets({
         schemaId: 'novel-to-video.voiceover',
@@ -277,12 +393,24 @@ export class NovelVideoAPIService {
         dialogueText
       });
 
-      // 2. 调用RunningHub TTS API
-      const audioPath = await this.apiManager.callRunningHubTTS({
-        text: dialogueText,
-        voiceFilePath,
-        emotion
-      });
+      // 2. 从配置读取Provider并调用API生成音频
+      if (!this.pluginConfig?.providers?.tts?.providerId) {
+        await this.logger.warn('TTS Provider未配置，跳过音频生成', 'NovelVideoAPIService');
+        return ''; // TTS是可选的，返回空字符串
+      }
+
+      const { providerId } = this.pluginConfig.providers.tts;
+
+      let audioPath: string;
+      if (providerId === 'runninghub') {
+        audioPath = await this.apiManager.callRunningHubTTS({
+          text: dialogueText,
+          voiceFilePath,
+          emotion
+        });
+      } else {
+        throw new Error(`不支持的TTS Provider: ${providerId}`);
+      }
 
       await this.logger.info('对白音频生成成功', 'NovelVideoAPIService', {
         voiceoverId: voiceover.id,

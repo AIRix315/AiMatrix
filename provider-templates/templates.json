@@ -5,7 +5,7 @@
     {
       "id": "deepseek",
       "name": "DeepSeek (LLM)",
-      "category": ["llm"],
+      "category": "llm",
       "type": "online",
       "documentationUrl": "https://platform.deepseek.com/docs",
       "baseUrl": "https://api.deepseek.com",
@@ -34,7 +34,7 @@
     {
       "id": "ollama",
       "name": "Ollama (LLM本地)",
-      "category": ["llm"],
+      "category": "llm",
       "type": "local",
       "documentationUrl": "https://ollama.ai/docs",
       "baseUrl": "http://localhost:11434",
@@ -54,7 +54,7 @@
     {
       "id": "comfyui",
       "name": "ComfyUI (视图生成本地)",
-      "category": ["image-generation", "video-generation"],
+      "category": "image-generation",
       "type": "local",
       "documentationUrl": "https://github.com/comfyanonymous/ComfyUI",
       "baseUrl": "http://localhost:8188",
@@ -76,7 +76,7 @@
     {
       "id": "t8star",
       "name": "T8Star (视频生成)",
-      "category": ["video-generation"],
+      "category": "video-generation",
       "type": "online",
       "documentationUrl": "https://t8star.com/docs",
       "baseUrl": "https://api.t8star.com",
@@ -106,7 +106,7 @@
     {
       "id": "running-hub",
       "name": "Running Hub (TTS)",
-      "category": ["tts", "audio-generation"],
+      "category": "tts",
       "type": "online",
       "documentationUrl": "https://www.runninghub.cn/runninghub-api-doc-cn/",
       "baseUrl": "https://api.runninghub.cn",
@@ -136,7 +136,7 @@
     {
       "id": "openai",
       "name": "OpenAI (多模态)",
-      "category": ["llm", "image-generation"],
+      "category": "llm",
       "type": "online",
       "documentationUrl": "https://platform.openai.com/docs",
       "baseUrl": "https://api.openai.com",
@@ -166,7 +166,7 @@
     {
       "id": "gemini",
       "name": "Gemini (多模态)",
-      "category": ["llm", "image-generation"],
+      "category": "llm",
       "type": "online",
       "documentationUrl": "https://ai.google.dev/docs",
       "baseUrl": "https://generativelanguage.googleapis.com",
@@ -195,7 +195,7 @@
     {
       "id": "custom",
       "name": "自定义Provider",
-      "category": ["image-generation", "video-generation", "audio-generation", "llm", "tts", "stt", "embedding", "translation"],
+      "category": "llm",
       "type": "online",
       "documentationUrl": "",
       "baseUrl": "",

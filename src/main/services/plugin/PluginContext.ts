@@ -215,6 +215,27 @@ export class PluginContext {
   }
 
   /**
+   * 获取项目的插件配置
+   * @param projectId 项目ID
+   * @returns 插件配置对象
+   */
+  public async getPluginConfig(projectId: string): Promise<unknown> {
+    const { projectPluginConfigManager } = await import('../ProjectPluginConfigManager');
+    const { pluginManager } = await import('../PluginManager');
+
+    const plugin = pluginManager.getPlugin(this.config.pluginId);
+    if (!plugin) {
+      throw new Error(`Plugin not found: ${this.config.pluginId}`);
+    }
+
+    return await projectPluginConfigManager.getPluginConfig(
+      projectId,
+      this.config.pluginId,
+      plugin.path
+    );
+  }
+
+  /**
    * 清理所有注册的资源
    */
   public async cleanup(): Promise<void> {

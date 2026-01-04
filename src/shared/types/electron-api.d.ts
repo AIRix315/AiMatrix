@@ -10,8 +10,7 @@ import type {
   AssetFilter,
   AssetIndex,
   AssetScanResult,
-  AssetImportParams,
-  AssetScope
+  AssetImportParams
 } from './asset';
 
 import type {
@@ -114,6 +113,19 @@ export interface TaskConfig {
     maxRetries: number;
     retryDelay: number;
   };
+}
+
+/**
+ * 任务日志条目（用于队列TAB显示）
+ */
+export interface TaskLog {
+  taskId: string;
+  pluginId: string;
+  projectId: string;
+  status: 'running' | 'success' | 'error';
+  startTime: string;
+  endTime: string | null;
+  error: string | null;
 }
 
 
@@ -244,22 +256,25 @@ export interface StoryboardPromptParams {
 
 /**
  * Provider 连接测试参数
+ * 兼容 ConnectionTestParams 从 @/shared/types/api
  */
 export interface ProviderTestParams {
-  type: string;
-  baseUrl: string;
-  apiKey?: string;
-  [key: string]: unknown;
+  providerId: string;
+  baseUrl?: string;  // 可选覆盖baseUrl
+  apiKey?: string;   // 可选覆盖apiKey
 }
 
 
 /**
  * Provider 连接测试结果
+ * 兼容 ConnectionTestResult 从 @/shared/types/api
  */
 export interface ProviderTestResult {
   success: boolean;
   models?: string[];
   error?: string;
+  latency?: number;
+  message?: string;  // 友好提示信息
 }
 
 
@@ -392,6 +407,12 @@ export interface ElectronAPI {
   addInputAsset: (projectId: string, assetId: string) => Promise<void>;
   addOutputAsset: (projectId: string, assetId: string) => Promise<void>;
 
+  // ==================== 项目插件配置 ====================
+  getProjectPluginConfig: (projectId: string, pluginId: string) => Promise<unknown>;
+  saveProjectPluginConfig: (projectId: string, pluginId: string, config: unknown) => Promise<void>;
+  validateProjectPluginConfig: (projectId: string, pluginId: string) => Promise<unknown>;
+  resetProjectPluginConfig: (projectId: string, pluginId: string) => Promise<unknown>;
+
   // ==================== 资产管理 ====================
   getAssetIndex: (projectId?: string) => Promise<AssetIndex>;
   rebuildAssetIndex: (projectId?: string) => Promise<AssetIndex>;
@@ -427,6 +448,7 @@ export interface ElectronAPI {
   togglePlugin: (pluginId: string, enabled: boolean) => Promise<{ success: boolean }>;
 
   // ==================== 任务调度 ====================
+  listTaskLogs: (filter?: 'running' | 'success' | 'error' | 'all') => Promise<TaskLog[]>;
   createTask: (config: TaskConfig) => Promise<string>;
   executeTask: (taskId: string, inputs: Record<string, unknown>) => Promise<string>;
   getTaskStatus: (executionId: string) => Promise<TaskExecution>;

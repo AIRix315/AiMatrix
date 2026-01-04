@@ -58,6 +58,11 @@ export interface APIProviderConfig {
   description?: string; // 描述
   createdAt?: string; // 创建时间
   updatedAt?: string; // 更新时间
+
+  // 状态持久化
+  lastStatus?: 'available' | 'unavailable' | 'unknown'; // 上次检测状态
+  lastChecked?: string; // 上次检测时间
+  lastLatency?: number; // 上次延迟（毫秒）
 }
 
 /**

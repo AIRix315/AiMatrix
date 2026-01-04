@@ -1,0 +1,31 @@
+{
+  "providers": {
+    "llm": {
+      "providerId": "openai",
+      "model": "gpt-4",
+      "purpose": "章节拆分和场景提取",
+      "optional": false
+    },
+    "imageGeneration": {
+      "providerId": "stability-ai",
+      "model": "sd3-large",
+      "purpose": "场景图片生成",
+      "optional": false,
+      "params": {
+        "aspectRatio": "16:9"
+      }
+    },
+    "videoGeneration": {
+      "providerId": "t8star-video",
+      "model": "sora-2",
+      "purpose": "分镜视频生成",
+      "optional": false
+    },
+    "tts": {
+      "providerId": null,
+      "model": null,
+      "purpose": "对白音频生成",
+      "optional": true
+    }
+  }
+}

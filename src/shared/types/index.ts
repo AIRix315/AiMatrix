@@ -38,3 +38,6 @@ export * from './schema';
 
 // 小说转视频工作流类型
 export * from './novel-video';
+
+// 插件配置相关类型
+export * from './plugin-config';

@@ -21,7 +21,10 @@ import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
 import { timeService } from './TimeService';
 import { configManager } from './ConfigManager';
-import { PluginType, PluginPermission, PluginManifest as BasePluginManifest } from '../../common/types';
+import { apiManager } from './APIManager';
+import { PluginType, PluginPermission, PluginManifest as BasePluginManifest, ProjectConfig } from '../../common/types';
+import type { PluginConfig } from '@/shared/types/plugin-config';
+import type { APIProviderConfig, APICategory, AuthType } from '@/shared/types';
 
 /**
  * 插件 Manifest 接口（扩展基础定义，添加main字段）
@@ -393,6 +396,14 @@ export class PluginManager {
   }
 
   /**
+   * 获取插件信息
+   */
+  public getPlugin(pluginId: string): PluginInfo | null {
+    const loaded = this.loadedPlugins.get(pluginId);
+    return loaded ? loaded.info : null;
+  }
+
+  /**
    * 启用/禁用插件
    */
   public async togglePlugin(pluginId: string, enabled: boolean): Promise<void> {
@@ -595,6 +606,665 @@ export class PluginManager {
         await fs.copyFile(srcPath, destPath);
       }
     }
+  }
+
+  /**
+   * 从插件默认配置注入Provider和参数到项目配置
+   * 读取插件的default-config.json，提取providers并自动注册到APIManager
+   *
+   * @param pluginId - 插件ID
+   * @param projectConfig - 项目配置对象
+   * @returns 更新后的项目配置
+   */
+  public async injectPluginConfig(
+    pluginId: string,
+    projectConfig: ProjectConfig
+  ): Promise<ProjectConfig> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const loaded = this.loadedPlugins.get(pluginId);
+        if (!loaded) {
+          throw new Error(`Plugin not loaded: ${pluginId}`);
+        }
+
+        const pluginPath = loaded.info.path;
+        const defaultConfigPath = path.join(pluginPath, 'default-config.json');
+
+        try {
+          await fs.access(defaultConfigPath);
+        } catch {
+          await logger.warn(
+            `Plugin ${pluginId} has no default-config.json, skipping config injection`,
+            'PluginManager'
+          );
+          return projectConfig;
+        }
+
+        const configContent = await fs.readFile(defaultConfigPath, 'utf-8');
+        const pluginConfig: PluginConfig = JSON.parse(configContent);
+
+        await logger.info(
+          `Injecting config from plugin ${pluginId}`,
+          'PluginManager',
+          { providers: Object.keys(pluginConfig.providers) }
+        );
+
+        // 1. 提取providers并添加到全局APIManager
+        const selectedProviders: Record<string, string> = {};
+        for (const [key, providerItem] of Object.entries(pluginConfig.providers)) {
+          if (providerItem.providerId) {
+            // 构建Provider名称(去重命名规范)
+            const providerName = `[${loaded.manifest.name}]${key}-${providerItem.providerId}`;
+
+            // 检查Provider是否已存在
+            const existingProvider = await apiManager.getProvider(providerName);
+            if (!existingProvider) {
+              // Provider不存在,添加到APIManager
+              const newProvider: APIProviderConfig = {
+                id: providerName,
+                name: providerName,
+                category: this.mapProviderKeyToCategory(key),
+                baseUrl: '', // 需要用户配置
+                authType: 'bearer' as AuthType,
+                enabled: false,
+                description: `${providerItem.purpose} (来自插件 ${loaded.manifest.name})`,
+                models: providerItem.model ? [providerItem.model] : undefined,
+              };
+
+              await apiManager.addProvider(newProvider);
+              await logger.info(
+                `Added Provider ${providerName} to global list`,
+                'PluginManager'
+              );
+            } else {
+              await logger.debug(
+                `Provider ${providerName} already exists, skipping`,
+                'PluginManager'
+              );
+            }
+
+            // 记录到selectedProviders映射
+            selectedProviders[key] = providerName;
+          }
+        }
+
+        // 2. 提取folders并创建物理目录(如果配置中有定义)
+        const folders: Record<string, string> = {};
+        // 注意:default-config.json可能没有folders字段,
+        // 文件夹结构可能在其他地方定义(如模板),这里仅作为扩展点
+
+        // 3. 更新project.json
+        projectConfig.pluginId = pluginId;
+        projectConfig.selectedProviders = selectedProviders;
+        projectConfig.folders = folders;
+        projectConfig.params = pluginConfig.providers ?
+          Object.fromEntries(
+            Object.entries(pluginConfig.providers).map(([k, v]) => [k, v.params || {}])
+          ) : {};
+        projectConfig.prompts = {}; // 提示词配置暂时为空,后续由UI配置
+
+        await logger.info(
+          `Config injection completed for plugin ${pluginId}`,
+          'PluginManager',
+          {
+            selectedProviders: Object.keys(selectedProviders).length,
+            folders: Object.keys(folders).length,
+          }
+        );
+
+        return projectConfig;
+      },
+      'PluginManager',
+      'injectPluginConfig',
+      ErrorCode.PLUGIN_EXECUTION_ERROR
+    );
+  }
+
+  /**
+   * 将Provider配置键映射到APICategory
+   */
+  private mapProviderKeyToCategory(key: string): APICategory {
+    const categoryMap: Record<string, APICategory> = {
+      'llm': 'llm' as APICategory,
+      'imageGeneration': 'image-generation' as APICategory,
+      'videoGeneration': 'video-generation' as APICategory,
+      'tts': 'tts' as APICategory,
+      'stt': 'stt' as APICategory,
+    };
+
+    return categoryMap[key] || ('llm' as APICategory);
+  }
+
+  /**
+   * 执行前健康检查 - 验证所有必需的Provider是否可用
+   * 读取项目配置中的selectedProviders，逐个检查Provider状态
+   *
+   * @param pluginId - 插件ID
+   * @param projectId - 项目ID
+   * @returns 检查结果 {allPassed: boolean, failedProviders: string[]}
+   */
+  public async preflightCheck(
+    pluginId: string,
+    projectId: string
+  ): Promise<{ allPassed: boolean; failedProviders: string[] }> {
+    return errorHandler.wrapAsync(
+      async () => {
+        await logger.info(
+          `Pre-flight check for plugin ${pluginId} in project ${projectId}`,
+          'PluginManager'
+        );
+
+        const loaded = this.loadedPlugins.get(pluginId);
+        if (!loaded) {
+          throw new Error(`Plugin not loaded: ${pluginId}`);
+        }
+
+        // 动态导入ProjectManager获取项目配置
+        const { projectManager } = await import('./ProjectManager');
+        const projectConfig = await projectManager.loadProject(projectId);
+
+        if (!projectConfig.selectedProviders) {
+          await logger.warn(
+            'No selectedProviders in project config, skipping pre-flight check',
+            'PluginManager',
+            { projectId }
+          );
+          return { allPassed: true, failedProviders: [] };
+        }
+
+        const failedProviders: string[] = [];
+
+        // 验证每个选中的Provider
+        for (const [key, providerId] of Object.entries(
+          projectConfig.selectedProviders
+        )) {
+          try {
+            const status = await apiManager.getProviderStatus(providerId);
+
+            if (status.status !== 'available') {
+              failedProviders.push(`${key}: ${providerId} (${status.error || 'unavailable'})`);
+              await logger.warn(
+                `Provider ${providerId} is not available`,
+                'PluginManager',
+                { status }
+              );
+            } else {
+              await logger.debug(
+                `Provider ${providerId} is available`,
+                'PluginManager',
+                { latency: status.latency }
+              );
+            }
+          } catch (error) {
+            failedProviders.push(
+              `${key}: ${providerId} (health check failed)`
+            );
+            await logger.error(
+              `Health check failed for provider ${providerId}`,
+              'PluginManager',
+              { error }
+            );
+          }
+        }
+
+        const allPassed = failedProviders.length === 0;
+
+        await logger.info(
+          `Pre-flight check completed for plugin ${pluginId}`,
+          'PluginManager',
+          {
+            allPassed,
+            totalProviders: Object.keys(projectConfig.selectedProviders).length,
+            failedCount: failedProviders.length,
+          }
+        );
+
+        return { allPassed, failedProviders };
+      },
+      'PluginManager',
+      'preflightCheck',
+      ErrorCode.PLUGIN_EXECUTION_ERROR
+    );
+  }
+
+  /**
+   * 批量检查所有已启用Provider的健康状态
+   * 通常在应用启动时调用，获取Provider可用性统计
+   *
+   * @returns 检查结果 {total: number, available: number, unavailable: number, details: Array}
+   */
+  public async batchHealthCheck(): Promise<{
+    total: number;
+    available: number;
+    unavailable: number;
+    details: Array<{ id: string; status: string; error?: string }>;
+  }> {
+    return errorHandler.wrapAsync(
+      async () => {
+        await logger.info('Starting batch health check for all providers', 'PluginManager');
+
+        const providers = await apiManager.listProviders({ enabledOnly: true });
+        const details: Array<{ id: string; status: string; error?: string }> = [];
+        let available = 0;
+        let unavailable = 0;
+
+        for (const provider of providers) {
+          try {
+            const status = await apiManager.getProviderStatus(provider.id);
+
+            details.push({
+              id: provider.id,
+              status: status.status,
+              error: status.error,
+            });
+
+            if (status.status === 'available') {
+              available++;
+            } else {
+              unavailable++;
+            }
+          } catch (error) {
+            details.push({
+              id: provider.id,
+              status: 'error',
+              error: error instanceof Error ? error.message : String(error),
+            });
+            unavailable++;
+          }
+        }
+
+        await logger.info(
+          'Batch health check completed',
+          'PluginManager',
+          {
+            total: providers.length,
+            available,
+            unavailable,
+          }
+        );
+
+        return {
+          total: providers.length,
+          available,
+          unavailable,
+          details,
+        };
+      },
+      'PluginManager',
+      'batchHealthCheck',
+      ErrorCode.OPERATION_FAILED
+    );
+  }
+
+  /**
+   * 创建任务临时目录，用于存放中间文件
+   * 目录命名: .temp_{taskId}，失败时可自动清理
+   *
+   * @param projectId - 项目ID
+   * @param taskId - 任务ID
+   * @returns 临时目录的绝对路径
+   */
+  public async createTempDir(
+    projectId: string,
+    taskId: string
+  ): Promise<string> {
+    return errorHandler.wrapAsync(
+      async () => {
+        // 动态导入ProjectManager获取项目路径
+        const { projectManager } = await import('./ProjectManager');
+        const projectConfig = await projectManager.loadProject(projectId);
+
+        const tempDir = path.join(projectConfig.path, `.temp_${taskId}`);
+
+        // 创建临时目录
+        await fs.mkdir(tempDir, { recursive: true });
+
+        await logger.info(
+          `Temp directory created: ${tempDir}`,
+          'PluginManager',
+          { projectId, taskId }
+        );
+
+        return tempDir;
+      },
+      'PluginManager',
+      'createTempDir',
+      ErrorCode.OPERATION_FAILED
+    );
+  }
+
+  /**
+   * 提交临时目录内容到目标位置
+   * 使用原子性rename操作移动文件，成功后删除临时目录
+   *
+   * @param projectId - 项目ID
+   * @param taskId - 任务ID
+   * @param targetDirName - 目标目录名称（相对于项目根目录）
+   */
+  public async commitTempDir(
+    projectId: string,
+    taskId: string,
+    targetDirName: string
+  ): Promise<void> {
+    return errorHandler.wrapAsync(
+      async () => {
+        // 动态导入ProjectManager获取项目路径
+        const { projectManager } = await import('./ProjectManager');
+        const projectConfig = await projectManager.loadProject(projectId);
+
+        const tempDir = path.join(projectConfig.path, `.temp_${taskId}`);
+        const targetDir = path.join(projectConfig.path, targetDirName);
+
+        // 检查临时目录是否存在
+        try {
+          await fs.access(tempDir);
+        } catch {
+          await logger.warn(
+            `Temp directory not found: ${tempDir}`,
+            'PluginManager'
+          );
+          return;
+        }
+
+        // 确保目标目录存在
+        await fs.mkdir(targetDir, { recursive: true });
+
+        // 移动临时目录内容到目标目录
+        const files = await fs.readdir(tempDir);
+        for (const file of files) {
+          const srcPath = path.join(tempDir, file);
+          const destPath = path.join(targetDir, file);
+
+          // 使用rename进行原子性移动
+          await fs.rename(srcPath, destPath);
+        }
+
+        // 删除临时目录
+        await fs.rmdir(tempDir);
+
+        await logger.info(
+          `Temp directory committed: ${tempDir} -> ${targetDir}`,
+          'PluginManager',
+          { projectId, taskId, fileCount: files.length }
+        );
+      },
+      'PluginManager',
+      'commitTempDir',
+      ErrorCode.OPERATION_FAILED
+    );
+  }
+
+  /**
+   * 回滚并删除临时目录
+   * 任务失败时调用，清理所有中间文件
+   *
+   * @param projectId - 项目ID
+   * @param taskId - 任务ID
+   */
+  public async rollbackTempDir(
+    projectId: string,
+    taskId: string
+  ): Promise<void> {
+    return errorHandler.wrapAsync(
+      async () => {
+        // 动态导入ProjectManager获取项目路径
+        const { projectManager } = await import('./ProjectManager');
+        const projectConfig = await projectManager.loadProject(projectId);
+
+        const tempDir = path.join(projectConfig.path, `.temp_${taskId}`);
+
+        // 检查临时目录是否存在
+        try {
+          await fs.access(tempDir);
+        } catch {
+          await logger.debug(
+            `Temp directory not found (already cleaned?): ${tempDir}`,
+            'PluginManager'
+          );
+          return;
+        }
+
+        // 递归删除临时目录
+        await fs.rm(tempDir, { recursive: true, force: true });
+
+        await logger.info(
+          `Temp directory rolled back: ${tempDir}`,
+          'PluginManager',
+          { projectId, taskId }
+        );
+      },
+      'PluginManager',
+      'rollbackTempDir',
+      ErrorCode.OPERATION_FAILED
+    );
+  }
+
+  /**
+   * 创建任务执行日志文件
+   * 日志文件位于 userData/log/Task/{taskId}.json
+   *
+   * @param pluginId - 插件ID
+   * @param projectId - 项目ID
+   * @returns 生成的任务ID
+   */
+  public async createTaskLog(
+    pluginId: string,
+    projectId: string
+  ): Promise<string> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const taskId = `${pluginId}_${Date.now()}`;
+        const timestamp = await timeService.getCurrentTime();
+
+        const taskLog = {
+          taskId,
+          pluginId,
+          projectId,
+          status: 'running',
+          startTime: timestamp.toISOString(),
+          endTime: null,
+          error: null,
+          steps: [],
+        };
+
+        // 确保日志目录存在
+        const logDir = path.join(app.getPath('userData'), 'log', 'Task');
+        await fs.mkdir(logDir, { recursive: true });
+
+        // 写入任务日志文件
+        const logFile = path.join(logDir, `${taskId}.json`);
+        await fs.writeFile(logFile, JSON.stringify(taskLog, null, 2), 'utf-8');
+
+        await logger.info(
+          `Task log created: ${taskId}`,
+          'PluginManager',
+          { pluginId, projectId }
+        );
+
+        return taskId;
+      },
+      'PluginManager',
+      'createTaskLog',
+      ErrorCode.OPERATION_FAILED
+    );
+  }
+
+  /**
+   * 更新任务日志状态和执行步骤
+   *
+   * @param taskId - 任务ID
+   * @param status - 任务状态 (running/success/error)
+   * @param data - 额外数据，包括steps数组和error信息
+   */
+  public async updateTaskLog(
+    taskId: string,
+    status: 'running' | 'success' | 'error',
+    data?: { steps?: unknown[]; error?: string }
+  ): Promise<void> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const logDir = path.join(app.getPath('userData'), 'log', 'Task');
+        const logFile = path.join(logDir, `${taskId}.json`);
+
+        try {
+          await fs.access(logFile);
+        } catch {
+          await logger.warn(
+            `Task log not found: ${taskId}`,
+            'PluginManager'
+          );
+          return;
+        }
+
+        const content = await fs.readFile(logFile, 'utf-8');
+        const taskLog = JSON.parse(content);
+
+        taskLog.status = status;
+        if (data?.steps) {
+          taskLog.steps = data.steps;
+        }
+        if (data?.error) {
+          taskLog.error = data.error;
+        }
+
+        await fs.writeFile(logFile, JSON.stringify(taskLog, null, 2), 'utf-8');
+
+        await logger.debug(
+          `Task log updated: ${taskId}`,
+          'PluginManager',
+          { status }
+        );
+      },
+      'PluginManager',
+      'updateTaskLog',
+      ErrorCode.OPERATION_FAILED
+    );
+  }
+
+  /**
+   * 获取所有任务日志列表
+   * 用于右侧面板"队列"标签页展示
+   *
+   * @param filter - 过滤条件 (running/success/error/all)
+   * @returns 任务日志数组
+   */
+  public async listTaskLogs(
+    filter: 'running' | 'success' | 'error' | 'all' = 'all'
+  ): Promise<Array<{
+    taskId: string;
+    pluginId: string;
+    projectId: string;
+    status: string;
+    startTime: string;
+    endTime: string | null;
+    error: string | null;
+  }>> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const logDir = path.join(app.getPath('userData'), 'log', 'Task');
+        const results: Array<any> = [];
+
+        try {
+          await fs.access(logDir);
+        } catch {
+          return results;
+        }
+
+        const files = await fs.readdir(logDir);
+
+        for (const file of files) {
+          if (!file.endsWith('.json')) continue;
+
+          const logFile = path.join(logDir, file);
+          try {
+            const content = await fs.readFile(logFile, 'utf-8');
+            const taskLog = JSON.parse(content);
+
+            // 应用过滤器
+            if (filter !== 'all' && taskLog.status !== filter) {
+              continue;
+            }
+
+            results.push({
+              taskId: taskLog.taskId,
+              pluginId: taskLog.pluginId,
+              projectId: taskLog.projectId,
+              status: taskLog.status,
+              startTime: taskLog.startTime,
+              endTime: taskLog.endTime,
+              error: taskLog.error,
+            });
+          } catch (error) {
+            await logger.warn(
+              `Failed to read task log: ${file}`,
+              'PluginManager',
+              { error }
+            );
+          }
+        }
+
+        // 按时间倒序排序
+        results.sort((a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+        );
+
+        return results;
+      },
+      'PluginManager',
+      'listTaskLogs',
+      ErrorCode.OPERATION_FAILED
+    );
+  }
+
+  /**
+   * 完成任务日志，记录结束时间和最终状态
+   *
+   * @param taskId - 任务ID
+   * @param success - 任务是否成功完成
+   * @param error - 错误信息（失败时）
+   */
+  public async completeTaskLog(
+    taskId: string,
+    success: boolean,
+    error?: string
+  ): Promise<void> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const timestamp = await timeService.getCurrentTime();
+        const logDir = path.join(app.getPath('userData'), 'log', 'Task');
+        const logFile = path.join(logDir, `${taskId}.json`);
+
+        try {
+          await fs.access(logFile);
+        } catch {
+          await logger.warn(
+            `Task log not found: ${taskId}`,
+            'PluginManager'
+          );
+          return;
+        }
+
+        const content = await fs.readFile(logFile, 'utf-8');
+        const taskLog = JSON.parse(content);
+
+        taskLog.status = success ? 'success' : 'error';
+        taskLog.endTime = timestamp.toISOString();
+        if (error) {
+          taskLog.error = error;
+        }
+
+        await fs.writeFile(logFile, JSON.stringify(taskLog, null, 2), 'utf-8');
+
+        await logger.info(
+          `Task log completed: ${taskId}`,
+          'PluginManager',
+          { success, duration: Date.now() - new Date(taskLog.startTime).getTime() }
+        );
+      },
+      'PluginManager',
+      'completeTaskLog',
+      ErrorCode.OPERATION_FAILED
+    );
   }
 
   /**

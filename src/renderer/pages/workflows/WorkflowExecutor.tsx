@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Loading, Toast, Modal } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import { useSelection } from '../../contexts/SelectionContext';
+import { useProject } from '../../contexts/ProjectContext';
 import { WorkflowHeader } from '../../components/workflow/WorkflowHeader';
 import {
   ChapterSplitPanel,
@@ -57,6 +58,7 @@ const WorkflowExecutor: React.FC = () => {
   const actualWorkflowId = pluginId || workflowId;
   const navigate = useNavigate();
   const { setSelectedItem, setSelectedCount } = useSelection();
+  const { updateProjectId } = useProject();
   const [workflowState, setWorkflowState] = useState<WorkflowState | null>(null);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
@@ -515,6 +517,15 @@ const WorkflowExecutor: React.FC = () => {
       });
     }
   };
+
+  /**
+   * 同步当前项目ID到全局ProjectContext
+   */
+  useEffect(() => {
+    if (currentProjectId) {
+      updateProjectId(currentProjectId);
+    }
+  }, [currentProjectId, updateProjectId]);
 
   /**
    * 处理分镜选择变化 - 更新全局选中项
