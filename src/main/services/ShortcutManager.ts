@@ -68,7 +68,7 @@ export class ShortcutManager {
     const shortcuts = settings.shortcuts || [];
 
     // 生成唯一ID
-    const id = `shortcut_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const id = `shortcut_${await this.timeService.getTimestamp()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // 获取当前最大order值
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -87,14 +87,15 @@ export class ServiceError extends Error implements IServiceError {
     message: string,
     service: string,
     operation: string,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
+    timestamp?: string
   ) {
     super(message);
     this.name = 'ServiceError';
     this.code = code;
     this.service = service;
     this.operation = operation;
-    this.timestamp = new Date().toISOString();
+    this.timestamp = timestamp || new Date().toISOString(); // 使用传入的时间戳或当前时间
     this.context = context;
 
     // 维护正确的原型链

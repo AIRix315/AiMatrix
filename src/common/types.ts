@@ -97,44 +97,6 @@ export interface ProjectSettings {
   quality: number;
 }
 
-/**
- * AI资产属性接口
- */
-export interface AIAssetAttributes {
-  baseModelHash?: string;
-  baseModelName?: string;
-  loraRefs?: {
-    name: string;
-    strength: number;
-    hash: string;
-  }[];
-  triggerWords?: string[];
-  seed?: number;
-  cfgScale?: number;
-  sampler?: string;
-  positivePrompt?: string;
-  negativePrompt?: string;
-  generationParams?: Record<string, unknown>; // AI生成参数的动态键值对
-  duration?: number;
-  dimensions?: { width: number; height: number };
-  createdAt?: string; // ISO 8601
-  updatedAt?: string; // ISO 8601
-}
-
-/**
- * 资产配置接口
- */
-export interface AssetConfig {
-  id: string;
-  scope: AssetScope;
-  type: AssetType;
-  path: string;
-  metadata: AssetMetadata;
-  aiAttributes?: AIAssetAttributes;
-  tags: string[];
-  createdAt: string; // ISO 8601
-  updatedAt: string; // ISO 8601
-}
 
 /**
  * 项目状态枚举
@@ -156,7 +118,6 @@ export interface ProjectConfig {
   updatedAt: string; // ISO 8601
   settings: ProjectSettings;
   workflows: string[];
-  assets: AssetConfig[];
 
   // ========== Phase 9 H0.1 新增字段 ==========
 
@@ -327,7 +288,7 @@ export interface ProjectManager {
   deleteProject(projectId: string): Promise<void>;
   listProjects(): Promise<ProjectConfig[]>;
   linkGlobalAsset(projectId: string, globalAssetId: string): Promise<void>;
-  getLinkedAssets(projectId: string): Promise<AssetConfig[]>;
+  getLinkedAssets(projectId: string): Promise<AssetMetadata[]>;
 }
 
 /**
@@ -336,12 +297,12 @@ export interface ProjectManager {
 export interface AssetManager {
   initialize(): Promise<void>;
   cleanup(): Promise<void>;
-  addAsset(target: { scope: AssetScope; id: string }, assetData: Partial<AssetConfig>): Promise<AssetConfig>;
+  addAsset(target: { scope: AssetScope; id: string }, assetData: Partial<AssetMetadata>): Promise<AssetMetadata>;
   removeAsset(scope: AssetScope, containerId: string, assetId: string): Promise<void>;
-  updateAsset(scope: AssetScope, containerId: string, assetId: string, updates: Partial<AssetConfig>): Promise<void>;
-  searchAssets(scope: AssetScope, containerId: string, query: AssetSearchQuery): Promise<AssetConfig[]>;
+  updateAsset(scope: AssetScope, containerId: string, assetId: string, updates: Partial<AssetMetadata>): Promise<void>;
+  searchAssets(scope: AssetScope, containerId: string, query: AssetSearchQuery): Promise<AssetMetadata[]>;
   getAssetPreview(scope: AssetScope, containerId: string, assetId: string): Promise<string>;
-  promoteAssetToGlobal(projectId: string, assetId: string, category: string): Promise<AssetConfig>;
+  promoteAssetToGlobal(projectId: string, assetId: string, category: string): Promise<AssetMetadata>;
 }
 
 /**

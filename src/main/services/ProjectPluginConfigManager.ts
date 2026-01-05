@@ -20,7 +20,7 @@ import { errorHandler, ErrorCode } from './ServiceErrorHandler';
 import type {
   PluginConfig,
   ConfigValidationResult,
-} from '@/shared/types/plugin-config';
+} from '@/shared/types';
 
 export class ProjectPluginConfigManager {
   /**

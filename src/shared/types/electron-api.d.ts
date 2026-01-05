@@ -51,7 +51,7 @@ type APIUsage = CommonAPIUsage;
 // 重新导出以供渲染进程使用
 export type { ProviderConfig } from './provider';
 export type { APIProviderConfig } from './api';
-export type ModelDefinition = ModelInfo;
+// ModelDefinition 已在 api.ts 中定义，此处使用 ModelInfo
 export type AppConfig = AppSettings;
 export type Project = ProjectConfig;
 export type Workflow = WorkflowDefinition;
@@ -576,4 +576,4 @@ declare global {
   }
 }
 
-export {};
+export { };

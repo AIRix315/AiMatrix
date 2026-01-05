@@ -16,7 +16,7 @@ import {
   type ImageToImageResult,
   type ImageToVideoParams,
   type ImageToVideoResult
-} from '@/shared/types/provider';
+} from '@/shared/types';
 import { AsyncTaskManager, TaskStatusEnum, type TaskStatus } from '../services/AsyncTaskManager';
 import type { ConfigManager } from '../services/ConfigManager';
 import type { FileSystemService } from '../services/FileSystemService';
@@ -48,8 +48,7 @@ interface JiekouAPIResponse {
  * 接口AI Provider
  */
 export class JiekouProvider
-  implements ITextToImageProvider, IImageToImageProvider, IImageToVideoProvider
-{
+  implements ITextToImageProvider, IImageToImageProvider, IImageToVideoProvider {
   readonly id = 'jiekou-ai';
   readonly name = '接口AI';
   readonly type = 'official' as const;

@@ -6,6 +6,7 @@
  */
 
 import type { Logger } from './Logger';
+import { timeService } from './TimeService';
 
 /**
  * 任务状态枚举
@@ -115,10 +116,10 @@ export class AsyncTaskManager {
     this.logger.info(`任务已创建，task_id: ${taskId}，开始轮询`, 'AsyncTaskManager');
 
     // 4. 开始轮询任务状态
-    const startTime = Date.now();
+    const startTime = await timeService.getTimestamp();
     let pollCount = 0;
 
-    while (Date.now() - startTime < timeout) {
+    while (await timeService.getTimestamp() - startTime < timeout) {
       // 等待轮询间隔
       await this.sleep(pollInterval);
       pollCount++;
@@ -134,7 +135,7 @@ export class AsyncTaskManager {
       // 任务成功
       if (status.status === TaskStatusEnum.SUCCEED) {
         this.logger.info(
-          `任务成功完成，task_id: ${taskId}，耗时: ${Date.now() - startTime}ms`,
+          `任务成功完成，task_id: ${taskId}，耗时: ${await timeService.getTimestamp() - startTime}ms`,
           'AsyncTaskManager'
         );
 

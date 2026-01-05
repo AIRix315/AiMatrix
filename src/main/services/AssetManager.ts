@@ -736,7 +736,7 @@ export class AssetManagerClass {
         }
 
         // 生成日期文件夹（YYYYMMDD格式）
-        const dateFolder = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        const dateFolder = (await timeService.getISOString()).split('T')[0].replace(/-/g, '');
         targetDir = path.join(
           this.fsService.getDataDir(),
           'assets',
@@ -776,7 +776,7 @@ export class AssetManagerClass {
         // 生成新文件名（添加时间戳）
         const ext = path.extname(fileName);
         const nameWithoutExt = path.basename(fileName, ext);
-        const timestamp = Date.now();
+        const timestamp = await timeService.getTimestamp();
         const newFileName = `${nameWithoutExt}_${timestamp}${ext}`;
         const newTargetPath = path.join(targetDir, newFileName);
 

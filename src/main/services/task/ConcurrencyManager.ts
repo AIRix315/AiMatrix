@@ -15,6 +15,7 @@
 
 import { logger } from '../Logger';
 import { TaskType } from '../TaskScheduler';
+import { timeService } from '../TimeService';
 
 /**
  * 任务优先级
@@ -169,12 +170,12 @@ export class ConcurrencyManager {
     this.running.set(task.id, {
       id: task.id,
       type: task.type,
-      startedAt: new Date().toISOString()
+      startedAt: await timeService.getISOString()
     });
 
     this.runningByType.get(task.type)!.add(task.id);
 
-    const queueTime = Date.now() - new Date(task.queuedAt).getTime();
+    const queueTime = await timeService.getTimestamp() - new Date(task.queuedAt).getTime();
 
     await logger.info(
       `Task started: ${task.id}`,
@@ -233,6 +234,7 @@ export class ConcurrencyManager {
     handler: () => Promise<T>,
     priority: TaskPriority = TaskPriority.NORMAL
   ): Promise<T> {
+    const queuedAt = await timeService.getISOString();
     return new Promise((resolve, reject) => {
       const task: QueuedTask = {
         id,
@@ -241,7 +243,7 @@ export class ConcurrencyManager {
         handler,
         resolve: resolve as (value: unknown) => void,
         reject,
-        queuedAt: new Date().toISOString()
+        queuedAt
       };
 
       // 如果可以立即运行，则运行
@@ -351,11 +353,11 @@ export class ConcurrencyManager {
    * 等待所有任务完成
    */
   public async waitForAll(timeout?: number): Promise<void> {
-    const startTime = Date.now();
+    const startTime = await timeService.getTimestamp();
 
     while (this.running.size > 0 || this.queue.length > 0) {
       // 检查超时
-      if (timeout && Date.now() - startTime > timeout) {
+      if (timeout && await timeService.getTimestamp() - startTime > timeout) {
         throw new Error(`Timeout waiting for tasks to complete (${this.running.size} running, ${this.queue.length} queued)`);
       }
 

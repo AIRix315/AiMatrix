@@ -3,7 +3,7 @@
   "chapters": [
     {
       "index": 1,
-      "chapterId": "chapter-1767080572774",
+      "chapterId": "chapter-1767519162800",
       "title": "第一章 命运的开始",
       "contentPreview": "第一章 命运的开始\n\n清晨的阳光透过窗户洒进卧室，张三缓缓睁开双眼。\n\n\"又是新的一天。\" 他自言自语道，起身走向窗边。窗外的城市已经苏醒，街道上人来人往。...",
       "metadata": {
@@ -14,12 +14,12 @@
           "novel-video",
           "chapter"
         ],
-        "filePath": "E:\\Projects\\Matrix\\test-data\\baseline-1767080572758\\projects\\phase7-baseline-project\\assets\\chapters\\第一章 命运的开始_1767080572779.txt"
+        "filePath": "E:\\Projects\\Matrix\\test-data\\baseline-1767519162782\\assets\\project_outputs\\phase7-baseline-project\\20260104\\第一章 命运的开始.txt"
       }
     },
     {
       "index": 2,
-      "chapterId": "chapter-1767080572794",
+      "chapterId": "chapter-1767519162822",
       "title": "第二章 意外的相遇",
       "contentPreview": "第二章 意外的相遇\n\n午后，张三来到咖啡馆。店内温暖舒适，空气中弥漫着咖啡的香气。\n\n李四坐在角落里看书，阳光照在她的侧脸上。张三不由得多看了几眼。\n\n\"你好，请问这里有人吗？\" 张三问道。\n\n李四抬...",
       "metadata": {
@@ -30,9 +30,9 @@
           "novel-video",
           "chapter"
         ],
-        "filePath": "E:\\Projects\\Matrix\\test-data\\baseline-1767080572758\\projects\\phase7-baseline-project\\assets\\chapters\\第二章 意外的相遇_1767080572797.txt"
+        "filePath": "E:\\Projects\\Matrix\\test-data\\baseline-1767519162782\\assets\\project_outputs\\phase7-baseline-project\\20260104\\第二章 意外的相遇.txt"
       }
     }
   ],
-  "timestamp": "2025-12-30T07:42:52.814Z"
+  "timestamp": "2026-01-04T09:32:42.843Z"
 }

@@ -19,6 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
 import { apiManager } from './APIManager';
+import { timeService } from './TimeService';
 import { APICallParams } from '@/shared/types';
 
 /**
@@ -135,8 +136,8 @@ export class TaskScheduler {
           id: taskId,
           config,
           status: TaskStatus.PENDING,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: await timeService.getISOString(),
+          updatedAt: await timeService.getISOString(),
           executions: []
         };
 
@@ -169,7 +170,7 @@ export class TaskScheduler {
           id: executionId,
           taskId,
           status: TaskStatus.PENDING,
-          startTime: new Date().toISOString(),
+          startTime: await timeService.getISOString(),
           progress: 0,
           inputs
         };
@@ -236,20 +237,20 @@ export class TaskScheduler {
       execution.status = TaskStatus.COMPLETED;
       execution.progress = 100;
       execution.result = result;
-      execution.endTime = new Date().toISOString();
+      execution.endTime = await timeService.getISOString();
 
       task.status = TaskStatus.COMPLETED;
-      task.updatedAt = new Date().toISOString();
+      task.updatedAt = await timeService.getISOString();
 
       await logger.info(`Task completed: ${execution.id}`, 'TaskScheduler');
     } catch (error) {
       // 任务失败
       execution.status = TaskStatus.FAILED;
       execution.error = error instanceof Error ? error.message : String(error);
-      execution.endTime = new Date().toISOString();
+      execution.endTime = await timeService.getISOString();
 
       task.status = TaskStatus.FAILED;
-      task.updatedAt = new Date().toISOString();
+      task.updatedAt = await timeService.getISOString();
 
       await logger.error(`Task failed: ${execution.id}`, 'TaskScheduler', { error });
     } finally {
@@ -373,14 +374,14 @@ export class TaskScheduler {
         }
 
         execution.status = TaskStatus.CANCELLED;
-        execution.endTime = new Date().toISOString();
+        execution.endTime = await timeService.getISOString();
 
         this.runningExecutions.delete(executionId);
 
         const task = this.tasks.get(execution.taskId);
         if (task) {
           task.status = TaskStatus.CANCELLED;
-          task.updatedAt = new Date().toISOString();
+          task.updatedAt = await timeService.getISOString();
         }
 
         await logger.info(`Task cancelled: ${executionId}`, 'TaskScheduler');

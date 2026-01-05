@@ -16,6 +16,7 @@ import { app } from 'electron';
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
 import { apiManager } from './APIManager';
+import { timeService } from './TimeService';
 import {
   APICategory,
   ModelDefinition,
@@ -148,7 +149,7 @@ export class ModelRegistry {
 
       const data: ModelConfigFile = {
         version: '1.0.0',
-        lastUpdated: new Date().toISOString(),
+        lastUpdated: await timeService.getISOString(),
         models: this.customModels
       };
 

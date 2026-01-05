@@ -51,7 +51,7 @@ export class FlowStateManager {
       }
 
       // 获取当前时间（ISO 8601 字符串）
-      const currentTime = (await timeService.getCurrentTime()).toISOString()
+      const currentTime = await timeService.getISOString()
 
       // 生成实例ID
       const instanceId = this.generateInstanceId(params.type)
@@ -124,7 +124,7 @@ export class FlowStateManager {
       const statePath = this.getStatePath(flowId)
 
       // 更新时间戳（ISO 8601 字符串）
-      state.updatedAt = (await timeService.getCurrentTime()).toISOString()
+      state.updatedAt = await timeService.getISOString()
 
       // 保存状态文件
       await this.fsService.saveJSON(statePath, state)
@@ -204,7 +204,7 @@ export class FlowStateManager {
       }
 
       // 获取当前时间（ISO 8601 字符串）
-      const currentTime = (await timeService.getCurrentTime()).toISOString()
+      const currentTime = await timeService.getISOString()
 
       // 更新步骤状态
       state.steps[stepId] = {

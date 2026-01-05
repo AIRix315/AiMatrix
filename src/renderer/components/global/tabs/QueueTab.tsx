@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { X, RotateCw, CheckCircle2, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../common';
-import type { TaskLog } from '@/shared/types/electron-api';
+import type { TaskLog } from '@/shared/types';
 
 interface QueueTabProps {
   // 从GlobalRightPanel传入的props被移除，改为内部获取真实数据

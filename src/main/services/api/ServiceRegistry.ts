@@ -13,6 +13,7 @@
  */
 
 import { logger } from '../Logger';
+import { timeService } from '../TimeService';
 
 /**
  * 服务定义
@@ -101,13 +102,13 @@ export class ServiceRegistry {
       throw new Error(`Method not found: ${key}.${method}`);
     }
 
-    const startTime = Date.now();
+    const startTime = await timeService.getTimestamp();
     const record: ServiceCallRecord = {
       namespace,
       name,
       method,
       caller,
-      timestamp: new Date().toISOString(),
+      timestamp: await timeService.getISOString(),
       success: false
     };
 
@@ -115,14 +116,14 @@ export class ServiceRegistry {
       const result = await service.methods[method](...args);
 
       record.success = true;
-      record.duration = Date.now() - startTime;
+      record.duration = await timeService.getTimestamp() - startTime;
 
       this.recordCall(record);
 
       return result;
     } catch (error) {
       record.success = false;
-      record.duration = Date.now() - startTime;
+      record.duration = await timeService.getTimestamp() - startTime;
       record.error = error instanceof Error ? error.message : String(error);
 
       this.recordCall(record);

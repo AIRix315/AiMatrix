@@ -14,7 +14,7 @@ import type {
   ImageToVideoParams,
   ImageToVideoResult,
   IProvider
-} from '@/shared/types/provider';
+} from '@/shared/types';
 import { logger } from '../services/Logger';
 import { taskScheduler } from '../services/TaskScheduler';
 import type { BatchResult } from '../services/TaskScheduler';
@@ -256,5 +256,5 @@ export function registerProviderHandlers(providerRouter: ProviderRouter): void {
     }
   );
 
-  logger.info('Provider IPC handlers registered', 'provider-handlers').catch(() => {});
+  logger.info('Provider IPC handlers registered', 'provider-handlers').catch(() => { });
 }

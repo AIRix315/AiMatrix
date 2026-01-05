@@ -23,7 +23,7 @@ import { timeService } from './TimeService';
 import { configManager } from './ConfigManager';
 import { apiManager } from './APIManager';
 import { PluginType, PluginPermission, PluginManifest as BasePluginManifest, ProjectConfig } from '../../common/types';
-import type { PluginConfig } from '@/shared/types/plugin-config';
+import type { PluginConfig } from '@/shared/types';
 import type { APIProviderConfig, APICategory, AuthType } from '@/shared/types';
 
 /**
@@ -80,7 +80,7 @@ export class PluginManager {
   constructor(pluginsDir?: string) {
     this.pluginsDir = pluginsDir || path.join(app.getPath('userData'), 'plugins');
     this.ensurePluginsDir().catch(error => {
-      logger.error('Failed to create plugins directory', 'PluginManager', { error }).catch(() => {});
+      logger.error('Failed to create plugins directory', 'PluginManager', { error }).catch(() => { });
     });
   }
 
@@ -134,7 +134,7 @@ export class PluginManager {
       logger.info(
         `Plugin ${manifest.id} requires permissions: ${manifest.permissions.join(', ')}`,
         'PluginManager'
-      ).catch(() => {});
+      ).catch(() => { });
     }
   }
 
@@ -463,7 +463,7 @@ export class PluginManager {
         }
 
         // 创建临时目录
-        const tempDir = path.join(app.getPath('temp'), `plugin-install-${Date.now()}`);
+        const tempDir = path.join(app.getPath('temp'), `plugin-install-${await timeService.getTimestamp()}`);
         await fs.mkdir(tempDir, { recursive: true });
 
         try {
@@ -1053,15 +1053,15 @@ export class PluginManager {
   ): Promise<string> {
     return errorHandler.wrapAsync(
       async () => {
-        const taskId = `${pluginId}_${Date.now()}`;
-        const timestamp = await timeService.getCurrentTime();
+        const taskId = `${pluginId}_${await timeService.getTimestamp()}`;
+        const timestamp = await timeService.getISOString();
 
         const taskLog = {
           taskId,
           pluginId,
           projectId,
           status: 'running',
-          startTime: timestamp.toISOString(),
+          startTime: timestamp,
           endTime: null,
           error: null,
           steps: [],
@@ -1258,7 +1258,7 @@ export class PluginManager {
         await logger.info(
           `Task log completed: ${taskId}`,
           'PluginManager',
-          { success, duration: Date.now() - new Date(taskLog.startTime).getTime() }
+          { success, duration: await timeService.getTimestamp() - new Date(taskLog.startTime).getTime() }
         );
       },
       'PluginManager',

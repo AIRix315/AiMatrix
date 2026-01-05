@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { useProject } from '../../../contexts/ProjectContext';
 import { Button } from '../../common';
-import type { PluginConfig, ProviderConfigItem } from '@/shared/types/plugin-config';
+import type { PluginConfig, ProviderConfigItem } from '@/shared/types';
 import type { APIProviderConfig } from '@/shared/types';
 import './PluginConfigTab.css';
 

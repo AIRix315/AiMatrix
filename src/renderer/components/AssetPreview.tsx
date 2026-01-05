@@ -1,10 +1,10 @@
 import React from 'react';
 import { Modal } from './common';
-import type { AssetConfig } from '../../common/types';
+import type { AssetMetadata } from '../../shared/types';
 import './AssetPreview.css';
 
 interface AssetPreviewProps {
-  asset: AssetConfig | null;
+  asset: AssetMetadata | null;
   onClose: () => void;
 }
 
@@ -16,15 +16,15 @@ const AssetPreview: React.FC<AssetPreviewProps> = ({ asset, onClose }) => {
       case 'image':
         return (
           <img
-            src={`file://${asset.path}`}
-            alt={asset.metadata.name}
+            src={`file://${asset.filePath}`}
+            alt={asset.name}
             className="asset-preview-image"
           />
         );
       case 'video':
         return (
           <video
-            src={`file://${asset.path}`}
+            src={`file://${asset.filePath}`}
             controls
             className="asset-preview-video"
           />
@@ -32,7 +32,7 @@ const AssetPreview: React.FC<AssetPreviewProps> = ({ asset, onClose }) => {
       case 'audio':
         return (
           <audio
-            src={`file://${asset.path}`}
+            src={`file://${asset.filePath}`}
             controls
             className="asset-preview-audio"
           />
@@ -48,7 +48,7 @@ const AssetPreview: React.FC<AssetPreviewProps> = ({ asset, onClose }) => {
   };
 
   return (
-    <Modal isOpen={!!asset} title={asset.metadata.name} onClose={onClose} width="80vw">
+    <Modal isOpen={!!asset} title={asset.name} onClose={onClose} width="80vw">
       <div className="asset-preview-container">
         <div className="preview-content">
           {renderPreview()}
@@ -60,11 +60,11 @@ const AssetPreview: React.FC<AssetPreviewProps> = ({ asset, onClose }) => {
           </div>
           <div className="info-row">
             <span className="info-label">路径:</span>
-            <span className="info-value">{asset.path}</span>
+            <span className="info-value">{asset.filePath}</span>
           </div>
           <div className="info-row">
             <span className="info-label">大小:</span>
-            <span className="info-value">{formatFileSize(asset.metadata.size)}</span>
+            <span className="info-value">{formatFileSize(asset.size)}</span>
           </div>
           <div className="info-row">
             <span className="info-label">创建时间:</span>

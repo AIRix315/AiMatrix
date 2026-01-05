@@ -14,6 +14,7 @@
 
 import { logger } from '../Logger';
 import { APIProvider } from '../APIManager';
+import { timeService } from '../TimeService';
 
 /**
  * 成本记录
@@ -128,8 +129,8 @@ export class CostMonitor {
    */
   public async recordCost(record: Omit<CostRecord, 'id' | 'timestamp' | 'estimatedCost'>): Promise<CostRecord> {
     const fullRecord: CostRecord = {
-      id: `cost-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date().toISOString(),
+      id: `cost-${await timeService.getTimestamp()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: await timeService.getISOString(),
       estimatedCost: this.calculateCost(record),
       ...record
     };
@@ -192,7 +193,7 @@ export class CostMonitor {
    * 检查预算
    */
   private async checkBudget(): Promise<void> {
-    const stats = this.getStats();
+    const stats = await this.getStats();
 
     // 检查每日预算
     if (this.budget.daily && stats.today > this.budget.daily) {
@@ -230,14 +231,14 @@ export class CostMonitor {
   /**
    * 获取统计信息
    */
-  public getStats(): {
+  public async getStats(): Promise<{
     total: number;
     today: number;
     thisMonth: number;
     byProvider: Record<string, number>;
     recentRecords: CostRecord[];
-  } {
-    const now = new Date();
+  }> {
+    const now = await timeService.getCurrentTime();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 

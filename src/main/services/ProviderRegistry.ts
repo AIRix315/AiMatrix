@@ -4,8 +4,8 @@
  * Provider 注册表，管理所有 AI Provider 的注册、查询和可用性检查
  */
 
-import { OperationType } from '@/shared/types/provider';
-import type { IProvider } from '@/shared/types/provider';
+import { OperationType } from '@/shared/types';
+import type { IProvider } from '@/shared/types';
 import type { Logger } from './Logger';
 
 /**

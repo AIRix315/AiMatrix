@@ -5,7 +5,7 @@
  * MATRIX Studio 作为编排平台，不直接执行 AI 操作，而是路由到具体 Provider
  */
 
-import { OperationType } from '@/shared/types/provider';
+import { OperationType } from '@/shared/types';
 import type {
   IProvider,
   ITextToImageProvider,
@@ -17,7 +17,7 @@ import type {
   ImageToImageResult,
   ImageToVideoParams,
   ImageToVideoResult
-} from '@/shared/types/provider';
+} from '@/shared/types';
 import type { ProviderRegistry } from './ProviderRegistry';
 import type { ConfigManager } from './ConfigManager';
 import type { Logger } from './Logger';

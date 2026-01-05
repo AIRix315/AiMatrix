@@ -18,6 +18,17 @@ export interface TimeService {
   getCurrentTime(): Promise<Date>;
   getUTCTime(): Promise<string>;
   getLocalTime(): Promise<string>;
+  /**
+   * 获取当前时间的 ISO 8601 字符串
+   * 这是推荐的时间获取方法，统一返回 ISO 8601 格式
+   * @returns Promise<string> ISO 8601 时间字符串
+   */
+  getISOString(): Promise<string>;
+  /**
+   * 获取当前时间戳（毫秒）
+   * @returns Promise<number> 当前时间戳
+   */
+  getTimestamp(): Promise<number>;
   syncWithNTP(): Promise<boolean>;
   validateTimeIntegrity(): Promise<boolean>;
 }
@@ -72,6 +83,25 @@ export class TimeServiceImpl implements TimeService {
   public async getLocalTime(): Promise<string> {
     const now = await this.getCurrentTime();
     return now.toLocaleString();
+  }
+
+  /**
+   * 获取当前时间的 ISO 8601 字符串
+   * 这是推荐的时间获取方法，统一返回 ISO 8601 格式
+   * @returns Promise<string> ISO 8601 时间字符串
+   */
+  public async getISOString(): Promise<string> {
+    const now = await this.getCurrentTime();
+    return now.toISOString();
+  }
+
+  /**
+   * 获取当前时间戳（毫秒）
+   * @returns Promise<number> 当前时间戳
+   */
+  public async getTimestamp(): Promise<number> {
+    const now = await this.getCurrentTime();
+    return now.getTime();
   }
 
   /**

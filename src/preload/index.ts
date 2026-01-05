@@ -10,27 +10,27 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 import type { ShortcutItem, ProjectConfig, PluginInfo } from '../common/types';
-import type { AssetMetadata } from '../shared/types/asset';
-import type { ProviderConfig } from '../shared/types/provider';
-import type { WorkflowDefinition, WorkflowInstance, WorkflowState } from '../shared/types/workflow';
-import type { MCPConfig, ModelInfo } from '../shared/types/electron-api';
+import type { AssetMetadata } from '../shared/types';
+import type { ProviderConfig } from '../shared/types';
+import type { WorkflowDefinition, WorkflowInstance, WorkflowState } from '../shared/types';
+import type { MCPConfig, ModelInfo } from '../shared/types';
 
 /**
  * 暴露给渲染进程的API接口
  */
 contextBridge.exposeInMainWorld('electronAPI', {
   // ==================== 应用相关 ====================
-  
+
   /**
    * 获取应用版本
    */
   getAppVersion: (): Promise<string> => ipcRenderer.invoke('app:version'),
-  
+
   /**
    * 退出应用
    */
   quitApp: (): Promise<void> => ipcRenderer.invoke('app:quit'),
-  
+
   /**
    * 重启应用
    */
@@ -53,22 +53,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getCurrentTime: (): Promise<number> => ipcRenderer.invoke('time:getCurrentTime'),
 
   // ==================== 窗口相关 ====================
-  
+
   /**
    * 最小化窗口
    */
   minimizeWindow: (): Promise<void> => ipcRenderer.invoke('window:minimize'),
-  
+
   /**
    * 最大化/还原窗口
    */
   maximizeWindow: (): Promise<void> => ipcRenderer.invoke('window:maximize'),
-  
+
   /**
    * 关闭窗口
    */
   closeWindow: (): Promise<void> => ipcRenderer.invoke('window:close'),
-  
+
   /**
    * 检查窗口是否最大化
    */
@@ -97,31 +97,31 @@ contextBridge.exposeInMainWorld('electronAPI', {
   listShortcuts: (): Promise<ShortcutItem[]> => ipcRenderer.invoke('shortcut:list'),
 
   // ==================== 项目相关 ====================
-  
+
   /**
    * 创建项目
    */
-  createProject: (name: string, template?: string): Promise<unknown> => 
+  createProject: (name: string, template?: string): Promise<unknown> =>
     ipcRenderer.invoke('project:create', name, template),
-  
+
   /**
    * 加载项目
    */
-  loadProject: (projectId: string): Promise<unknown> => 
+  loadProject: (projectId: string): Promise<unknown> =>
     ipcRenderer.invoke('project:load', projectId),
-  
+
   /**
    * 保存项目
    */
   saveProject: (projectId: string, config: ProjectConfig): Promise<void> =>
     ipcRenderer.invoke('project:save', projectId, config),
-  
+
   /**
    * 删除项目
    */
-  deleteProject: (projectId: string): Promise<void> => 
+  deleteProject: (projectId: string): Promise<void> =>
     ipcRenderer.invoke('project:delete', projectId),
-  
+
   /**
    * 列出项目
    */
@@ -246,25 +246,25 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('asset:get-references', assetId),
 
   // ==================== 工作流相关 ====================
-  
+
   /**
    * 执行工作流
    */
-  executeWorkflow: (config: unknown): Promise<string> => 
+  executeWorkflow: (config: unknown): Promise<string> =>
     ipcRenderer.invoke('workflow:execute', config),
-  
+
   /**
    * 获取工作流状态
    */
-  getWorkflowStatus: (jobId: string): Promise<unknown> => 
+  getWorkflowStatus: (jobId: string): Promise<unknown> =>
     ipcRenderer.invoke('workflow:status', jobId),
-  
+
   /**
    * 取消工作流
    */
-  cancelWorkflow: (jobId: string): Promise<void> => 
+  cancelWorkflow: (jobId: string): Promise<void> =>
     ipcRenderer.invoke('workflow:cancel', jobId),
-  
+
   /**
    * 列出工作流
    */
@@ -282,33 +282,33 @@ contextBridge.exposeInMainWorld('electronAPI', {
    */
   deleteWorkflow: (workflowId: string): Promise<void> =>
     ipcRenderer.invoke('workflow:delete', workflowId),
-  
+
   /**
    * 加载工作流
    */
-  loadWorkflow: (workflowId: string): Promise<unknown> => 
+  loadWorkflow: (workflowId: string): Promise<unknown> =>
     ipcRenderer.invoke('workflow:load', workflowId),
 
   // ==================== 插件相关 ====================
-  
+
   /**
    * 安装插件
    */
-  installPlugin: (pluginPackage: unknown): Promise<void> => 
+  installPlugin: (pluginPackage: unknown): Promise<void> =>
     ipcRenderer.invoke('plugin:install', pluginPackage),
-  
+
   /**
    * 卸载插件
    */
-  uninstallPlugin: (pluginId: string): Promise<void> => 
+  uninstallPlugin: (pluginId: string): Promise<void> =>
     ipcRenderer.invoke('plugin:uninstall', pluginId),
-  
+
   /**
    * 加载插件
    */
-  loadPlugin: (pluginId: string): Promise<unknown> => 
+  loadPlugin: (pluginId: string): Promise<unknown> =>
     ipcRenderer.invoke('plugin:load', pluginId),
-  
+
   /**
    * 执行插件动作
    */
@@ -390,25 +390,25 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('task:results', executionId),
 
   // ==================== API相关 ====================
-  
+
   /**
    * 调用API
    */
   callAPI: (name: string, params: unknown): Promise<unknown> =>
     ipcRenderer.invoke('api:call', name, params),
-  
+
   /**
    * 设置API密钥
    */
-  setAPIKey: (name: string, key: string): Promise<void> => 
+  setAPIKey: (name: string, key: string): Promise<void> =>
     ipcRenderer.invoke('api:set-key', name, key),
-  
+
   /**
    * 获取API状态
    */
-  getAPIStatus: (name: string): Promise<unknown> => 
+  getAPIStatus: (name: string): Promise<unknown> =>
     ipcRenderer.invoke('api:get-status', name),
-  
+
   /**
    * 获取API使用情况
    */
@@ -623,43 +623,43 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('dialog:open-directory'),
 
   // ==================== 文件系统相关 ====================
-  
+
   /**
    * 读取文件
    */
-  readFile: (filePath: string): Promise<unknown> => 
+  readFile: (filePath: string): Promise<unknown> =>
     ipcRenderer.invoke('file:read', filePath),
-  
+
   /**
    * 写入文件
    */
   writeFile: (filePath: string, content: string | Buffer): Promise<void> =>
     ipcRenderer.invoke('file:write', filePath, content),
-  
+
   /**
    * 删除文件
    */
-  deleteFile: (filePath: string): Promise<void> => 
+  deleteFile: (filePath: string): Promise<void> =>
     ipcRenderer.invoke('file:delete', filePath),
-  
+
   /**
    * 检查文件是否存在
    */
-  fileExists: (filePath: string): Promise<boolean> => 
+  fileExists: (filePath: string): Promise<boolean> =>
     ipcRenderer.invoke('file:exists', filePath),
-  
+
   /**
    * 列出文件
    */
   listFiles: (dirPath: string): Promise<string[]> =>
     ipcRenderer.invoke('file:list', dirPath),
-  
+
   /**
    * 监视文件变化
    */
-  watchFile: (filePath: string): Promise<void> => 
+  watchFile: (filePath: string): Promise<void> =>
     ipcRenderer.invoke('file:watch', filePath),
-  
+
   /**
    * 取消监视文件
    */
@@ -673,31 +673,31 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('dialog:selectFiles', options),
 
   // ==================== MCP服务相关 ====================
-  
+
   /**
    * 连接MCP服务
    */
-  connectMCP: (config: unknown): Promise<void> => 
+  connectMCP: (config: unknown): Promise<void> =>
     ipcRenderer.invoke('mcp:connect', config),
-  
+
   /**
    * 断开MCP服务
    */
-  disconnectMCP: (serviceId: string): Promise<void> => 
+  disconnectMCP: (serviceId: string): Promise<void> =>
     ipcRenderer.invoke('mcp:disconnect', serviceId),
-  
+
   /**
    * 调用MCP服务
    */
   callMCP: (serviceId: string, method: string, params: unknown): Promise<unknown> =>
     ipcRenderer.invoke('mcp:call', serviceId, method, params),
-  
+
   /**
    * 获取MCP服务状态
    */
-  getMCPStatus: (serviceId: string): Promise<unknown> => 
+  getMCPStatus: (serviceId: string): Promise<unknown> =>
     ipcRenderer.invoke('mcp:status', serviceId),
-  
+
   /**
    * 列出MCP服务
    */
@@ -705,25 +705,25 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('mcp:list'),
 
   // ==================== 本地服务相关 ====================
-  
+
   /**
    * 启动本地服务
    */
   startLocal: (serviceId: string, config: unknown): Promise<void> =>
     ipcRenderer.invoke('local:start', serviceId, config),
-  
+
   /**
    * 停止本地服务
    */
-  stopLocal: (serviceId: string): Promise<void> => 
+  stopLocal: (serviceId: string): Promise<void> =>
     ipcRenderer.invoke('local:stop', serviceId),
-  
+
   /**
    * 获取本地服务状态
    */
-  getLocalStatus: (serviceId: string): Promise<unknown> => 
+  getLocalStatus: (serviceId: string): Promise<unknown> =>
     ipcRenderer.invoke('local:status', serviceId),
-  
+
   /**
    * 重启本地服务
    */
@@ -793,35 +793,35 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('workflow:listInstances', projectId),
 
   // ==================== 事件监听 ====================
-  
+
   /**
    * 监听工作流进度事件
    */
   onWorkflowProgress: (callback: (data: unknown) => void) => {
     ipcRenderer.on('event:workflow:progress', (_, data) => callback(data));
   },
-  
+
   /**
    * 监听工作流完成事件
    */
   onWorkflowCompleted: (callback: (data: unknown) => void) => {
     ipcRenderer.on('event:workflow:completed', (_, data) => callback(data));
   },
-  
+
   /**
    * 监听工作流错误事件
    */
   onWorkflowError: (callback: (data: unknown) => void) => {
     ipcRenderer.on('event:workflow:error', (_, data) => callback(data));
   },
-  
+
   /**
    * 监听文件变化事件
    */
   onFileChanged: (callback: (data: unknown) => void) => {
     ipcRenderer.on('event:file:changed', (_, data) => callback(data));
   },
-  
+
   /**
    * 监听服务状态事件
    */

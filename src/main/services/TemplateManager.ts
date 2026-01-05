@@ -2,7 +2,8 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { app } from 'electron';
 import { logger } from './Logger';
-import type { ProviderTemplate } from '@/shared/types/provider';
+import { timeService } from './TimeService';
+import type { ProviderTemplate } from '@/shared/types';
 
 export class TemplateManager {
   private templates: Map<string, ProviderTemplate> = new Map();
@@ -71,7 +72,7 @@ export class TemplateManager {
     await fs.ensureDir(path.dirname(this.localCachePath));
     await fs.writeJSON(this.localCachePath, {
       version: data.version || '1.0.1',
-      lastUpdated: new Date().toISOString(),
+      lastUpdated: await timeService.getISOString(),
       templates: data.templates
     }, { spaces: 2 });
   }

@@ -16,6 +16,7 @@ import * as path from 'path';
 import { app } from 'electron';
 import { logger } from '../Logger';
 import { TaskStatus } from '../TaskScheduler';
+import { timeService } from '../TimeService';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Datastore = require('nedb');
@@ -181,11 +182,12 @@ export class TaskPersistence {
    * 更新任务状态
    */
   public async updateTaskStatus(taskId: string, status: TaskStatus): Promise<void> {
+    const updatedAt = await timeService.getISOString();
     return new Promise((resolve, reject) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.tasksDb as any).update(
         { id: taskId },
-        { $set: { status, updatedAt: new Date().toISOString() } },
+        { $set: { status, updatedAt } },
         {},
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (err: any) => {
@@ -286,14 +288,19 @@ export class TaskPersistence {
     result?: unknown,
     error?: string
   ): Promise<void> {
+    let endTime: string | undefined;
+    if (status === TaskStatus.COMPLETED || status === TaskStatus.FAILED || status === TaskStatus.CANCELLED) {
+      endTime = await timeService.getISOString();
+    }
+
     return new Promise((resolve, reject) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const update: any = { status };
       if (progress !== undefined) update.progress = progress;
       if (result !== undefined) update.resultJson = JSON.stringify(result);
       if (error !== undefined) update.error = error;
-      if (status === TaskStatus.COMPLETED || status === TaskStatus.FAILED || status === TaskStatus.CANCELLED) {
-        update.endTime = new Date().toISOString();
+      if (endTime) {
+        update.endTime = endTime;
       }
 
       // TODO: [中期改进] 定义准确的NeDB类型
@@ -337,7 +344,7 @@ export class TaskPersistence {
    * 清理过期任务（完成或失败超过30天的任务）
    */
   public async cleanupOldTasks(daysOld: number = 30): Promise<number> {
-    const cutoffDate = new Date();
+    const cutoffDate = await timeService.getCurrentTime();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 
     return new Promise((resolve, reject) => {
@@ -361,7 +368,7 @@ export class TaskPersistence {
    * 清理过期执行记录
    */
   public async cleanupOldExecutions(daysOld: number = 30): Promise<number> {
-    const cutoffDate = new Date();
+    const cutoffDate = await timeService.getCurrentTime();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 
     return new Promise((resolve, reject) => {

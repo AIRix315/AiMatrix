@@ -18,6 +18,7 @@ import { app } from 'electron';
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
 import { APIKeyEncryption } from './ConfigManager'; // 导入加密工具
+import { timeService } from './TimeService';
 import {
   APICategory,
   AuthType,
@@ -432,7 +433,7 @@ export class APIManager {
         // 检查缓存
         const cached = this.statusCache.get(name);
         if (cached) {
-          const cacheAge = Date.now() - new Date(cached.lastChecked).getTime();
+          const cacheAge = await timeService.getTimestamp() - new Date(cached.lastChecked).getTime();
           if (cacheAge < 60000) {
             // 1 分钟缓存
             return cached;
@@ -443,7 +444,7 @@ export class APIManager {
           name,
           provider: config.provider,
           status: 'unknown',
-          lastChecked: new Date().toISOString(),
+          lastChecked: await timeService.getISOString(),
         };
 
         try {
@@ -1021,7 +1022,7 @@ export class APIManager {
     const tempDir = path.join(app.getPath('userData'), 'temp');
     await fs.mkdir(tempDir, { recursive: true });
 
-    const fileName = `audio-${Date.now()}.wav`;
+    const fileName = `audio-${await timeService.getTimestamp()}.wav`;
     const localPath = path.join(tempDir, fileName);
     await fs.writeFile(localPath, buffer);
 
@@ -1194,7 +1195,7 @@ export class APIManager {
 
         this.providers.set(config.id, {
           ...config,
-          updatedAt: new Date().toISOString(),
+          updatedAt: await timeService.getISOString(),
         });
         await this.saveProviders();
         await logger.info(
@@ -1280,13 +1281,13 @@ export class APIManager {
             category: APICategory.LLM,
             status: 'unavailable',
             error: 'Provider not found',
-            lastChecked: new Date().toISOString(),
+            lastChecked: await timeService.getISOString(),
           };
         }
 
         // 优先返回配置文件中的持久化状态（5分钟内有效）
         if (config.lastStatus && config.lastChecked) {
-          const cacheAge = Date.now() - new Date(config.lastChecked).getTime();
+          const cacheAge = await timeService.getTimestamp() - new Date(config.lastChecked).getTime();
           if (cacheAge < 300000) {
             // 5分钟缓存
             return {
@@ -1300,13 +1301,13 @@ export class APIManager {
           }
         }
 
-        const startTime = Date.now();
+        const startTime = await timeService.getTimestamp();
         const status: APIProviderStatus = {
           id: providerId,
           name: config.name,
           category: config.category,
           status: 'unknown',
-          lastChecked: new Date().toISOString(),
+          lastChecked: await timeService.getISOString(),
         };
 
         try {
@@ -1351,7 +1352,7 @@ export class APIManager {
             signal: AbortSignal.timeout(5000),
           });
 
-          status.latency = Date.now() - startTime;
+          status.latency = await timeService.getTimestamp() - startTime;
 
           if (response.ok) {
             status.status = 'available';
@@ -1362,7 +1363,7 @@ export class APIManager {
         } catch (error) {
           status.status = 'unavailable';
           status.error = error instanceof Error ? error.message : String(error);
-          status.latency = Date.now() - startTime;
+          status.latency = await timeService.getTimestamp() - startTime;
         }
 
         // 更新内存缓存
@@ -1407,7 +1408,7 @@ export class APIManager {
           'APIManager'
         );
 
-        const startTime = Date.now();
+        const startTime = await timeService.getTimestamp();
 
         try {
           let modelsUrl: string;
@@ -1462,7 +1463,7 @@ export class APIManager {
               return {
                 success: false,
                 error: '此类型Provider需要配置API密钥后才能测试连接',
-                latency: Date.now() - startTime,
+                latency: await timeService.getTimestamp() - startTime,
               };
             }
 
@@ -1478,7 +1479,7 @@ export class APIManager {
               return {
                 success: true,
                 models: config.models || [],
-                latency: Date.now() - startTime,
+                latency: await timeService.getTimestamp() - startTime,
                 message: apiKey
                   ? 'Provider配置有效（已配置API密钥）'
                   : 'Provider配置有效（建议配置API密钥以启用完整功能）',
@@ -1487,7 +1488,7 @@ export class APIManager {
               return {
                 success: false,
                 error: `无效的API地址: ${baseUrl}`,
-                latency: Date.now() - startTime,
+                latency: await timeService.getTimestamp() - startTime,
               };
             }
           } else {
@@ -1504,7 +1505,7 @@ export class APIManager {
               signal: AbortSignal.timeout(10000), // 10秒超时
             });
 
-            const latency = Date.now() - startTime;
+            const latency = await timeService.getTimestamp() - startTime;
 
             if (!response.ok) {
               // 详细的错误日志
@@ -1526,7 +1527,7 @@ export class APIManager {
                 category: config.category,
                 status: 'unavailable' as const,
                 error: errorMsg,
-                lastChecked: new Date().toISOString(),
+                lastChecked: await timeService.getISOString(),
                 latency,
               };
               this.providerStatus.set(params.providerId, statusData);
@@ -1584,7 +1585,7 @@ export class APIManager {
               name: config.name,
               category: config.category,
               status: 'available' as const,
-              lastChecked: new Date().toISOString(),
+              lastChecked: await timeService.getISOString(),
               latency,
             };
             this.providerStatus.set(params.providerId, statusData);
@@ -1621,7 +1622,7 @@ export class APIManager {
             category: config.category,
             status: 'unavailable' as const,
             error: errorMessage,
-            lastChecked: new Date().toISOString(),
+            lastChecked: await timeService.getISOString(),
             latency,
           };
           this.providerStatus.set(params.providerId, statusData);

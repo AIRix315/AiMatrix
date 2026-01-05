@@ -14,6 +14,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { TaskScheduler, TaskStatus, TaskConfig } from '../TaskScheduler';
 import { logger } from '../Logger';
+import { timeService } from '../TimeService';
 
 /**
  * 链式任务节点
@@ -129,7 +130,7 @@ export class ChainTaskExecutor {
       id: executionId,
       chainId: definition.id,
       status: 'running',
-      startedAt: new Date().toISOString(),
+      startedAt: await timeService.getISOString(),
       nodeStatus: new Map(),
       results: new Map()
     };
@@ -151,7 +152,7 @@ export class ChainTaskExecutor {
       });
 
       execution.status = 'failed';
-      execution.endedAt = new Date().toISOString();
+      execution.endedAt = await timeService.getISOString();
 
       if (definition.onError) {
         try {
@@ -191,7 +192,7 @@ export class ChainTaskExecutor {
 
       // 全部完成
       execution.status = 'completed';
-      execution.endedAt = new Date().toISOString();
+      execution.endedAt = await timeService.getISOString();
 
       await logger.info('链式任务执行完成', 'ChainTaskExecutor', {
         executionId: execution.id,
@@ -210,7 +211,7 @@ export class ChainTaskExecutor {
       // 记录错误并重新抛出
       await logger.error('链式任务执行失败', 'ChainTaskExecutor', { error });
       execution.status = 'failed';
-      execution.endedAt = new Date().toISOString();
+      execution.endedAt = await timeService.getISOString();
       throw error;
     }
   }

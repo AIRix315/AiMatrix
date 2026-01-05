@@ -7,6 +7,7 @@
 import { NovelVideoAPIService } from './NovelVideoAPIService';
 import { TaskScheduler, TaskType } from '../TaskScheduler';
 import { Logger } from '../Logger';
+import { timeService } from '../TimeService';
 // import type { AssetMetadata } from '@/shared/types'; // 暂时未使用
 
 /**
@@ -258,9 +259,9 @@ export class ResourceService {
    * @returns 任务结果
    */
   async waitForTask(taskId: string, timeout: number = 300000): Promise<any> {
-    const startTime = Date.now();
+    const startTime = await timeService.getTimestamp();
 
-    while (Date.now() - startTime < timeout) {
+    while (await timeService.getTimestamp() - startTime < timeout) {
       const task = await this.taskScheduler.getTaskStatus(taskId);
 
       if (task.status === 'completed') {
