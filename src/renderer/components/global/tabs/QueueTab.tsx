@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { X, RotateCw, CheckCircle2, AlertCircle, Clock, RefreshCw } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../common';
 import type { TaskLog } from '@/shared/types';

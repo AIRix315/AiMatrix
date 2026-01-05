@@ -43,4 +43,5 @@ export * from './novel-video';
 export * from './plugin-config';
 
 // Electron API 相关类型（IPC 通道、任务日志等）
-export * from './electron-api';
+export * from './electron-api-types';
+

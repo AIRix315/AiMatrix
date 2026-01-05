@@ -51,8 +51,7 @@ export const GlobalRightPanel: React.FC<GlobalRightPanelProps> = () => {
   // 从Context获取选中项数据
   const { selectedItem, selectedCount } = useSelection();
 
-  // 从TaskContext获取任务数据和操作函数
-  const { tasks, onCancelTask, onRetryTask, onClearCompleted } = useTask();
+  const { tasks } = useTask();
 
   const linkedAssets: LinkedAsset[] = [];
   const isGenerating = tasks.some((t) => t.status === 'running');

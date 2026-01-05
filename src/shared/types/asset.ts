@@ -138,6 +138,7 @@ export interface AssetIndex {
     byCategory?: Record<string, number>;             // 按分类统计
   };
   categories: AssetCategory[];       // 分类列表
+  assets: AssetMetadata[];           // 所有资产的完整元数据（替代 sidecar 文件）
 }
 
 /**

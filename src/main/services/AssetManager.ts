@@ -1,19 +1,3 @@
-/**
- * 资产管理器（重构版）
- *
- * 核心功能：
- * - JSON索引系统：快速查询和统计
- * - 文件监听：自动检测文件变化并更新索引
- * - 分页查询：支持大量资产的高效加载
- * - 元数据管理：Sidecar JSON文件存储元数据
- * - 导入/删除：支持级联删除
- *
- * 遵循全局时间处理要求：
- * 任何涉及时间的文字写入、记录，必须先查询系统时间
- *
- * 参考：phase4-e01-asset-library-implementation-plan.md
- */
-
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { watch, FSWatcher } from 'chokidar';
@@ -35,9 +19,6 @@ import {
   AspectRatio
 } from '@/shared/types';
 
-/**
- * 资产管理器类（新实现）
- */
 export class AssetManagerClass {
   private fsService: FileSystemService;
   private logger: Logger;
@@ -60,32 +41,25 @@ export class AssetManagerClass {
   setConfigManager(configManager: any): void {
     this.configManager = configManager;
 
-    // 获取当前工作区路径
     const config = configManager.getConfig();
     this.currentWorkspacePath = config.general.workspacePath;
-
-    // 监听配置变更
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     configManager.onConfigChange((newConfig: any) => {
       const newWorkspacePath = newConfig.general.workspacePath;
 
-      // 如果工作区路径发生变化，重新扫描资源
       if (newWorkspacePath !== this.currentWorkspacePath) {
         this.logger.info('资源库路径变更，开始重新扫描...', 'AssetManager', {
           oldPath: this.currentWorkspacePath,
           newPath: newWorkspacePath
-        }).catch(() => {});
+        }).catch(() => { });
 
         this.currentWorkspacePath = newWorkspacePath;
-
-        // 清空全局资产索引缓存
         this.indexCache.delete('global');
 
-        // 重新构建全局索引
         this.buildIndex().then(() => {
-          this.logger.info('资源库重新扫描完成', 'AssetManager').catch(() => {});
+          this.logger.info('资源库重新扫描完成', 'AssetManager').catch(() => { });
         }).catch((error) => {
-          this.logger.error('资源库重新扫描失败', 'AssetManager', { error }).catch(() => {});
+          this.logger.error('资源库重新扫描失败', 'AssetManager', { error }).catch(() => { });
         });
       }
     });
@@ -125,7 +99,6 @@ export class AssetManagerClass {
     try {
       await this.logger.info('清理资产管理器', 'AssetManager');
 
-      // 停止所有文件监听
       for (const [key, watcher] of this.watchers.entries()) {
         await watcher.close();
         await this.logger.debug('停止文件监听', 'AssetManager', { key });
@@ -142,27 +115,14 @@ export class AssetManagerClass {
     }
   }
 
-  // ========================================
-  // 索引管理
-  // ========================================
-
-  /**
-   * 构建资产索引
-   * @param projectId 可选的项目ID（不提供则构建全局索引）
-   */
   async buildIndex(projectId?: string): Promise<AssetIndex> {
     try {
       await this.logger.info('开始构建资产索引: ' + JSON.stringify({ projectId: projectId || 'global' }), 'AssetManager');
-
       const indexPath = this.fsService.getAssetIndexPath(projectId);
       const baseDir = projectId
         ? path.join(this.fsService.getDataDir(), 'assets', 'project_outputs', projectId)
         : path.join(this.fsService.getDataDir(), 'assets', 'user_uploaded');
-
-      // 确保基础目录存在
       await this.fsService.ensureDir(baseDir);
-
-      // 初始化索引结构
       const currentTime = await timeService.getCurrentTime();
       const index: AssetIndex = {
         projectId,
@@ -173,12 +133,10 @@ export class AssetManagerClass {
           byType: {},
           byCategory: {}
         },
-        categories: []
+        categories: [],
+        assets: []
       };
-
-      // 如果是项目索引，读取项目名称
       if (projectId) {
-        // 项目配置在 WorkSpace/projects/{projectId}/project.json
         const projectJsonPath = path.join(
           this.fsService.getDataDir(),
           'projects',
@@ -195,7 +153,6 @@ export class AssetManagerClass {
       const entries = await this.fsService.readDirWithFileTypes(baseDir);
 
       // 先扫描直接放在 baseDir 下的文件（例如 user_uploaded 平铺结构）
-      const directFiles: AssetMetadata[] = [];
       for (const entry of entries) {
         if (entry.isDirectory) continue;
 
@@ -206,22 +163,23 @@ export class AssetManagerClass {
 
         const filePath = path.join(baseDir, entry.name);
         try {
-          const metadata = await this.getMetadata(filePath);
-          if (metadata) {
-            directFiles.push(metadata);
-          }
+          // 直接创建元数据，不调用 getMetadata（避免循环依赖）
+          const metadata = await this.createDefaultMetadata(
+            filePath,
+            projectId ? 'project' : 'global',
+            projectId,
+            undefined,
+            !projectId // 全局资产默认为用户上传
+          );
+
+          // 添加到索引
+          index.assets.push(metadata);
+          index.statistics.total++;
+          index.statistics.byType[metadata.type] =
+            (index.statistics.byType[metadata.type] || 0) + 1;
         } catch (error) {
           await this.logger.warn(`跳过无效文件: ${entry.name}`, 'AssetManager', { error });
         }
-      }
-
-      // 如果有直接文件，添加到统计中
-      if (directFiles.length > 0) {
-        index.statistics.total += directFiles.length;
-        directFiles.forEach(file => {
-          index.statistics.byType[file.type] =
-            (index.statistics.byType[file.type] || 0) + 1;
-        });
       }
 
       // 然后扫描子目录（例如分类目录或日期文件夹）
@@ -245,6 +203,9 @@ export class AssetManagerClass {
         );
 
         if (files.length > 0) {
+          // 添加所有文件元数据到索引
+          index.assets.push(...files);
+
           // 统计分类信息
           const category: AssetCategory = {
             name: categoryName,
@@ -501,17 +462,15 @@ export class AssetManagerClass {
   }
 
   /**
-   * 扫描目录中的资产
+   * 扫描目录中的资产（直接创建元数据）
    * @private
    */
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   private async scanDirectory(
     dirPath: string,
-    _scope: AssetScope, // 参数保留供未来使用
-    _projectId?: string, // 参数保留供未来使用
-    _category?: string // 参数保留供未来使用
+    scope: AssetScope,
+    projectId?: string,
+    category?: string
   ): Promise<AssetMetadata[]> {
-    /* eslint-enable @typescript-eslint/no-unused-vars */
     const assets: AssetMetadata[] = [];
 
     try {
@@ -528,12 +487,17 @@ export class AssetManagerClass {
 
         if (stats.isFile()) {
           try {
-            const metadata = await this.getMetadata(filePath);
-            if (metadata) {
-              assets.push(metadata);
-            }
+            // 直接创建元数据，不调用 getMetadata（避免循环依赖）
+            const metadata = await this.createDefaultMetadata(
+              filePath,
+              scope,
+              projectId,
+              category,
+              scope === 'global' // 全局资产默认为用户上传
+            );
+            assets.push(metadata);
           } catch (error) {
-            await this.logger.warn('读取资产元数据失败: ' + JSON.stringify({ filePath, error }), 'AssetManager');
+            await this.logger.warn('创建资产元数据失败: ' + JSON.stringify({ filePath, error }), 'AssetManager');
           }
         }
       }
@@ -549,53 +513,62 @@ export class AssetManagerClass {
   // ========================================
 
   /**
-   * 获取资产元数据
+   * 获取资产元数据（从索引中查询）
    * @param filePath 文件路径
    */
   async getMetadata(filePath: string): Promise<AssetMetadata | null> {
     try {
       const normalizedPath = this.fsService.normalizePath(filePath);
-      const metadataPath = this.fsService.getAssetMetadataPath(normalizedPath);
 
-      // 尝试读取Sidecar元数据文件
-      const metadata = await this.fsService.readJSON<AssetMetadata>(metadataPath);
-
-      if (metadata) {
-        return metadata;
-      }
-
-      // 元数据不存在，创建默认元数据
-      await this.logger.debug('元数据不存在，创建默认元数据: ' + JSON.stringify({ filePath: normalizedPath }), 'AssetManager');
-
-      // 根据文件路径推断作用域和项目ID
-      const scope = normalizedPath.includes('/projects/') ? 'project' : 'global';
+      // 确定项目ID和作用域
+      const scope = normalizedPath.includes('/projects/') || normalizedPath.includes('\\projects\\') ? 'project' : 'global';
       let projectId: string | undefined;
       let category: string | undefined;
 
       if (scope === 'project') {
-        const match = normalizedPath.match(/\/projects\/([^/]+)\//);
+        const match = normalizedPath.match(/[/\\]projects[/\\]([^/\\]+)[/\\]/);
         if (match) {
           projectId = match[1];
         }
 
-        const assetMatch = normalizedPath.match(/\/assets\/([^/]+)\//);
+        const assetMatch = normalizedPath.match(/[/\\]assets[/\\]([^/\\]+)[/\\]/);
         if (assetMatch) {
           category = assetMatch[1];
         }
       } else {
-        const globalMatch = normalizedPath.match(/\/assets\/([^/]+)\//);
+        const globalMatch = normalizedPath.match(/[/\\]assets[/\\]([^/\\]+)[/\\]/);
         if (globalMatch) {
           category = globalMatch[1];
         }
       }
 
-      return await this.createDefaultMetadata(
+      // 从索引中查找
+      const index = await this.getIndex(projectId);
+      const metadata = index.assets.find(a => a.filePath === normalizedPath);
+
+      if (metadata) {
+        return metadata;
+      }
+
+      // 如果索引中没有，创建新的元数据并添加到索引
+      await this.logger.debug('元数据不存在于索引中，创建新元数据: ' + JSON.stringify({ filePath: normalizedPath }), 'AssetManager');
+
+      const newMetadata = await this.createDefaultMetadata(
         normalizedPath,
         scope,
         projectId,
         category,
         undefined
       );
+
+      // 添加到索引
+      index.assets.push(newMetadata);
+
+      // 保存索引
+      const indexPath = this.fsService.getAssetIndexPath(projectId);
+      await this.fsService.saveJSON(indexPath, index);
+
+      return newMetadata;
     } catch (error) {
       await this.logger.error('获取资产元数据失败: ' + JSON.stringify({ filePath, error }), 'AssetManager');
       return null;
@@ -603,7 +576,7 @@ export class AssetManagerClass {
   }
 
   /**
-   * 更新资产元数据
+   * 更新资产元数据（更新索引）
    * @param filePath 文件路径
    * @param updates 要更新的字段
    */
@@ -613,28 +586,40 @@ export class AssetManagerClass {
   ): Promise<AssetMetadata> {
     try {
       const normalizedPath = this.fsService.normalizePath(filePath);
-      const currentMetadata = await this.getMetadata(normalizedPath);
 
-      if (!currentMetadata) {
+      // 确定项目ID
+      let projectId: string | undefined;
+      if (normalizedPath.includes('/projects/') || normalizedPath.includes('\\projects\\')) {
+        const match = normalizedPath.match(/[/\\]projects[/\\]([^/\\]+)[/\\]/);
+        if (match) {
+          projectId = match[1];
+        }
+      }
+
+      // 从索引中查找
+      const index = await this.getIndex(projectId);
+      const assetIndex = index.assets.findIndex(a => a.filePath === normalizedPath);
+
+      if (assetIndex === -1) {
         throw new Error(`资产不存在: ${normalizedPath}`);
       }
 
       // 合并更新
       const currentTime = await timeService.getCurrentTime();
       const updatedMetadata: AssetMetadata = {
-        ...currentMetadata,
+        ...index.assets[assetIndex],
         ...updates,
         modifiedAt: currentTime.toISOString()
       };
 
-      // 保存更新后的元数据
-      const metadataPath = this.fsService.getAssetMetadataPath(normalizedPath);
-      await this.fsService.saveJSON(metadataPath, updatedMetadata);
+      // 更新索引中的元数据
+      index.assets[assetIndex] = updatedMetadata;
+
+      // 保存索引
+      const indexPath = this.fsService.getAssetIndexPath(projectId);
+      await this.fsService.saveJSON(indexPath, index);
 
       await this.logger.info('资产元数据更新成功: ' + JSON.stringify({ filePath: normalizedPath }), 'AssetManager');
-
-      // 触发索引更新
-      await this.updateIndex(updatedMetadata.projectId);
 
       return updatedMetadata;
     } catch (error) {
@@ -644,7 +629,7 @@ export class AssetManagerClass {
   }
 
   /**
-   * 创建默认元数据
+   * 创建默认元数据（不保存 sidecar 文件）
    * @private
    */
   private async createDefaultMetadata(
@@ -677,10 +662,6 @@ export class AssetManagerClass {
       tags: [],
       status: 'none'
     };
-
-    // 保存元数据
-    const metadataPath = this.fsService.getAssetMetadataPath(filePath);
-    await this.fsService.saveJSON(metadataPath, metadata);
 
     return metadata;
   }
@@ -875,30 +856,32 @@ export class AssetManagerClass {
   }
 
   /**
-   * 删除资产（级联删除）
+   * 删除资产（从索引中移除）
    * @param filePath 文件路径
-   * @param deleteMetadata 是否删除元数据文件（默认true）
+   * @param _deleteMetadata 是否删除元数据（已废弃，保留参数以兼容）
    */
-  async deleteAsset(filePath: string, deleteMetadata = true): Promise<void> {
+  async deleteAsset(filePath: string, _deleteMetadata = true): Promise<void> {
     try {
       const normalizedPath = this.fsService.normalizePath(filePath);
 
-      await this.logger.info('开始删除资产: ' + JSON.stringify({ filePath: normalizedPath, deleteMetadata }), 'AssetManager');
+      await this.logger.info('开始删除资产: ' + JSON.stringify({ filePath: normalizedPath }), 'AssetManager');
 
-      // 获取元数据以便后续更新索引
-      const metadata = await this.getMetadata(normalizedPath);
-
-      // 删除文件
-      if (await this.fsService.exists(normalizedPath)) {
-        await this.fsService.deleteFile(normalizedPath);
+      // 确定项目ID
+      let projectId: string | undefined;
+      if (normalizedPath.includes('/projects/') || normalizedPath.includes('\\projects\\')) {
+        const match = normalizedPath.match(/[/\\]projects[/\\]([^/\\]+)[/\\]/);
+        if (match) {
+          projectId = match[1];
+        }
       }
 
-      // 删除元数据文件
-      if (deleteMetadata) {
-        const metadataPath = this.fsService.getAssetMetadataPath(normalizedPath);
-        if (await this.fsService.exists(metadataPath)) {
-          await this.fsService.deleteFile(metadataPath);
-        }
+      // 从索引中获取元数据
+      const index = await this.getIndex(projectId);
+      const metadata = index.assets.find(a => a.filePath === normalizedPath);
+
+      // 删除物理文件
+      if (await this.fsService.exists(normalizedPath)) {
+        await this.fsService.deleteFile(normalizedPath);
       }
 
       // 删除缩略图（如果存在）
@@ -908,12 +891,14 @@ export class AssetManagerClass {
         }
       }
 
-      await this.logger.info('资产删除成功: ' + JSON.stringify({ filePath: normalizedPath }), 'AssetManager');
+      // 从索引中移除元数据
+      index.assets = index.assets.filter(a => a.filePath !== normalizedPath);
 
-      // 更新索引
-      if (metadata) {
-        await this.updateIndex(metadata.projectId);
-      }
+      // 保存索引
+      const indexPath = this.fsService.getAssetIndexPath(projectId);
+      await this.fsService.saveJSON(indexPath, index);
+
+      await this.logger.info('资产删除成功: ' + JSON.stringify({ filePath: normalizedPath }), 'AssetManager');
     } catch (error) {
       await this.logger.error('删除资产失败: ' + JSON.stringify({ filePath, error }), 'AssetManager');
       throw error;

@@ -7,11 +7,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-// import {
-//   PanelLeftOpen,
-//   PanelLeftClose
-// } from 'lucide-react'; // 暂时未使用
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Loading, Toast, Modal } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import { useSelection } from '../../contexts/SelectionContext';
@@ -53,41 +49,27 @@ interface WorkflowState {
 }
 
 const WorkflowExecutor: React.FC = () => {
-  const { workflowId, pluginId } = useParams<{ workflowId?: string; pluginId?: string }>();
-  // 统一处理：pluginId 和 workflowId 都可以作为工作流ID使用
+  const { workflowId, pluginId } = useParams<{ workflowId?: string; pluginId?: string }>();
   const actualWorkflowId = pluginId || workflowId;
   const navigate = useNavigate();
   const { setSelectedItem, setSelectedCount } = useSelection();
   const { updateProjectId } = useProject();
   const [workflowState, setWorkflowState] = useState<WorkflowState | null>(null);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
-
-  // 左侧面板状态（右侧面板改用全局控制）
-  // 默认收缩，因为资源库已整合到全局
-  const [_leftPanelCollapsed, _setLeftPanelCollapsed] = useState(true);
-
-  // 资产相关状态
+  const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
+  const [_leftPanelCollapsed, _setLeftPanelCollapsed] = useState(true);
   const [_selectedAssets, _setSelectedAssets] = useState<Set<string>>(new Set());
   const [selectedScope, _setSelectedScope] = useState<'global' | 'project'>('project');
-  const [selectedCategory, _setSelectedCategory] = useState<AssetCategoryId>('all');
-
-  // 项目相关状态
+  const [selectedCategory, _setSelectedCategory] = useState<AssetCategoryId>('all');
   const [currentProjectId, setCurrentProjectId] = useState('');
   const [projects, setProjects] = useState<Array<{ id: string; name: string; status: string }>>([]);
   const [currentProject, setCurrentProject] = useState<{ id: string; status: string } | null>(
     null
-  );
-
-  // 新建项目对话框状态
+  );
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
-  const [isCreatingProject, setIsCreatingProject] = useState(false);
-
-  // 当前步骤选中的项目
-  const [selectedStoryboardIds, setSelectedStoryboardIds] = useState<string[]>([]);
-
-  // ========== 新增状态 ==========
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [selectedStoryboardIds, setSelectedStoryboardIds] = useState<string[]>([]);
   /** 当前子步骤索引（-1表示无子步骤或在主步骤视图） */
   const [currentSubStepIndex, setCurrentSubStepIndex] = useState(-1);
 
@@ -95,39 +77,29 @@ const WorkflowExecutor: React.FC = () => {
   const [_viewMode, _setViewMode] = useState<'grid' | 'list'>('grid');
 
   /** 全屏状态 */
-  const [_isFullscreen, _setIsFullscreen] = useState(false);
-
-  // 构建资产过滤器
+  const [_isFullscreen, _setIsFullscreen] = useState(false);
   const _getAssetFilter = useCallback((): AssetFilter => {
     const filter: AssetFilter = {
       scope: selectedScope,
       projectId: selectedScope === 'project' ? currentProjectId : undefined,
       sortBy: 'modifiedAt',
       sortOrder: 'desc'
-    };
-
-    // 全局Tab分类过滤
+    };
     if (selectedScope === 'global') {
-      if (selectedCategory === 'input') {
-        // 输入分类：过滤用户上传的资产
+      if (selectedCategory === 'input') {
         filter.isUserUploaded = true;
-      } else if (selectedCategory !== 'all') {
-        // 文件类型分类
+      } else if (selectedCategory !== 'all') {
         filter.type = selectedCategory as AssetType;
       }
-    }
-    // 项目Tab分类过滤
+    }
     else if (selectedScope === 'project') {
-      if (selectedCategory !== 'all') {
-        // 工作流分类
+      if (selectedCategory !== 'all') {
         filter.category = selectedCategory;
       }
     }
 
     return filter;
-  }, [selectedScope, selectedCategory, currentProjectId]);
-
-  // 处理资产选择
+  }, [selectedScope, selectedCategory, currentProjectId]);
   const _handleAssetSelect = useCallback((asset: AssetMetadata, multiSelect: boolean) => {
     _setSelectedAssets((prev) => {
       const newSet = new Set(prev);
@@ -147,9 +119,7 @@ const WorkflowExecutor: React.FC = () => {
 
   useEffect(() => {
     loadWorkflow();
-  }, [actualWorkflowId]);
-
-  // 更新当前项目对象
+  }, [actualWorkflowId]);
   useEffect(() => {
     const project = projects.find((p) => p.id === currentProjectId);
     setCurrentProject(project || null);
@@ -160,9 +130,7 @@ const WorkflowExecutor: React.FC = () => {
    */
   useEffect(() => {
     loadProjects();
-  }, []);
-
-  // ========== 视图模式持久化 ==========
+  }, [actualWorkflowId]);
   useEffect(() => {
     const savedMode = localStorage.getItem('workflow-view-mode');
     if (savedMode === 'grid' || savedMode === 'list') {
@@ -172,9 +140,7 @@ const WorkflowExecutor: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem('workflow-view-mode', _viewMode);
-  }, [_viewMode]);
-
-  // ========== 全屏监听 ==========
+  }, [_viewMode]);
   useEffect(() => {
     const handleFullscreenChange = () => {
       _setIsFullscreen(!!document.fullscreenElement);
@@ -182,30 +148,20 @@ const WorkflowExecutor: React.FC = () => {
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
-
-  // ========== 当前步骤改变时，重置子步骤索引 ==========
+  }, []);
   useEffect(() => {
     if (!workflowState) return;
 
     const currentStep = workflowState.steps[workflowState.currentStepIndex];
-    const hasSubSteps = currentStep?.subSteps && currentStep.subSteps.length > 0;
-
-    // 如果新步骤有子步骤，默认选中第一个子步骤
-    // 否则设置为 -1（无子步骤）
+    const hasSubSteps = currentStep?.subSteps && currentStep.subSteps.length > 0;
     setCurrentSubStepIndex(hasSubSteps ? 0 : -1);
-  }, [workflowState?.currentStepIndex]);
-
-  // ========== 快捷键监听 ==========
+  }, [workflowState?.currentStepIndex]);
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // F11: 全屏切换
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'F11') {
         e.preventDefault();
         handleToggleFullscreen();
-      }
-
-      // Ctrl+Shift+V: 视图切换
+      }
       if (e.ctrlKey && e.shiftKey && e.key === 'V') {
         e.preventDefault();
         const currentStep = workflowState?.steps[workflowState.currentStepIndex];
@@ -230,40 +186,25 @@ const WorkflowExecutor: React.FC = () => {
     }
 
     try {
-      setLoading(true);
-
-      // eslint-disable-next-line no-console
-      console.log('WorkflowExecutor: 加载工作流', { workflowId: actualWorkflowId, isPlugin: !!pluginId });
-
-      // 步骤1：先加载工作流实例（从文件系统）
-      // TODO: [中期改进] 定义准确的loadWorkflow返回类型
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const workflowInstance = await window.electronAPI.loadWorkflow(actualWorkflowId) as any;
-      // eslint-disable-next-line no-console
+      setLoading(true);
+      console.log('WorkflowExecutor: 加载工作流', { workflowId: actualWorkflowId, isPlugin: !!pluginId });
+      const workflowInstance = await window.electronAPI.loadWorkflow(actualWorkflowId) as any;
       console.log('WorkflowExecutor: 工作流实例加载成功', {
         type: (workflowInstance as any).type,
         name: (workflowInstance as any).name
-      });
-
-      // 步骤2：用type查询工作流定义（从Registry）
-      // TODO: [中期改进] 定义准确的getWorkflowDefinition返回类型
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const definition = await window.electronAPI.getWorkflowDefinition((workflowInstance as any).type) as any;
-      // eslint-disable-next-line no-console
+      });
+      const definition = await window.electronAPI.getWorkflowDefinition((workflowInstance as any).type) as any;
       console.log('WorkflowExecutor: 工作流定义获取成功', {
         definitionName: (definition as any).name,
         stepCount: (definition as any).steps.length
       });
 
-      if (!definition) {
-        // eslint-disable-next-line no-console
+      if (!definition) {
         console.error('WorkflowExecutor: 工作流定义不存在', { type: (workflowInstance as any).type });
         setToast({ type: 'error', message: `工作流定义不存在: ${(workflowInstance as any).type}` });
         setLoading(false);
         return;
-      }
-
-      // 组件映射表（将 componentType 字符串映射到实际组件）
+      }
       const componentMap: Record<string, React.ComponentType<any>> = {
         ChapterSplitPanel,
         SceneCharacterPanel,
@@ -271,30 +212,21 @@ const WorkflowExecutor: React.FC = () => {
         VoiceoverPanel,
         ExportPanel,
         RemoteControlPanel
-      };
-
-      // 步骤3：合并定义和实例，创建工作流状态
-      // TODO: [中期改进] 定义准确的WorkflowState类型
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      };
       const workflow: WorkflowState = {
         name: (workflowInstance as any).name || (definition as any).name || '未命名工作流',
-        currentStepIndex: 0,
-        // TODO: [中期改进] 定义准确的step类型
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        currentStepIndex: 0,
         steps: (definition as any).steps.map((step: any, index: number) => ({
           id: (step as any).id,
           name: (step as any).name,
           component: componentMap[(step as any).componentType] || (() => <div>组件未找到: {(step as any).componentType}</div>),
           status: index === 0 ? 'in_progress' : 'pending'
-        })),
-        // TODO: [中期改进] 定义准确的defaultState类型
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        })),
         data: (definition as any).defaultState || {}
       };
 
       setWorkflowState(workflow);
-    } catch (error) {
-      // eslint-disable-next-line no-console
+    } catch (error) {
       console.error('加载工作流失败:', error);
       setToast({
         type: 'error',
@@ -311,27 +243,25 @@ const WorkflowExecutor: React.FC = () => {
   const loadProjects = async () => {
     try {
       if (window.electronAPI?.listProjects) {
-        const projectList = await window.electronAPI.listProjects();
-
-        // 过滤只显示"小说转视频"类型的项目
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const novelProjects = projectList
-          .filter((p: any) => p.workflowType === 'novel-to-video')
+        const projectList = await window.electronAPI.listProjects();
+        const filteredProjects = projectList
+          .filter((p: any) => {
+            const matchesWorkflowType = p.workflowType === 'novel-to-video';
+            const matchesPluginId = actualWorkflowId ? p.pluginId === actualWorkflowId : true;
+            return matchesWorkflowType && matchesPluginId;
+          })
           .map((p: any) => ({
             id: p.id,
             name: p.name,
             status: p.status || 'in-progress'
           }));
 
-        setProjects(novelProjects);
-
-        // 如果当前项目ID为空且有项目列表，设置第一个为当前项目
-        if (!currentProjectId && novelProjects.length > 0) {
-          setCurrentProjectId(novelProjects[0].id);
+        setProjects(filteredProjects);
+        if (!currentProjectId && filteredProjects.length > 0) {
+          setCurrentProjectId(filteredProjects[0].id);
         }
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
+    } catch (error) {
       console.error('加载项目列表失败:', error);
       setToast({
         type: 'error',
@@ -353,28 +283,18 @@ const WorkflowExecutor: React.FC = () => {
     }
 
     try {
-      setIsCreatingProject(true);
-
-      // 创建项目（使用 novel-to-video 模板）
+      setIsCreatingProject(true);
       if (window.electronAPI?.createProject) {
-        await window.electronAPI.createProject(newProjectName, 'novel-to-video');
-
-        // 重新加载项目列表
-        await loadProjects();
-
-        // 自动选择新创建的项目
-        const updatedProjects = await window.electronAPI.listProjects();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await window.electronAPI.createProject(newProjectName, 'novel-to-video');
+        await loadProjects();
+        const updatedProjects = await window.electronAPI.listProjects();
         const newProject = updatedProjects.find(
           (p: any) => p.name === newProjectName && p.workflowType === 'novel-to-video'
         );
 
-        if (newProject) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (newProject) {
           setCurrentProjectId((newProject as any).id);
-        }
-
-        // 关闭对话框
+        }
         setShowCreateProjectModal(false);
         setNewProjectName('');
 
@@ -397,17 +317,11 @@ const WorkflowExecutor: React.FC = () => {
    * 处理步骤完成
    */
   const handleStepComplete = async (data: unknown) => {
-    if (!workflowState) return;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!workflowState) return;
     const newData = { ...workflowState.data, ...(data as any) };
     const currentStepIndex = workflowState.currentStepIndex;
-    const steps = [...workflowState.steps];
-
-    // 标记当前步骤为已完成
-    steps[currentStepIndex].status = 'completed';
-
-    // 移动到下一步
+    const steps = [...workflowState.steps];
+    steps[currentStepIndex].status = 'completed';
     if (currentStepIndex < steps.length - 1) {
       steps[currentStepIndex + 1].status = 'in_progress';
       setWorkflowState({
@@ -421,21 +335,15 @@ const WorkflowExecutor: React.FC = () => {
         type: 'success',
         message: `${steps[currentStepIndex].name} 完成！`
       });
-    } else {
-      // 工作流完成
+    } else {
       setToast({
         type: 'success',
         message: '工作流执行完成！'
-      });
-
-      // 延迟跳转回工作流列表
+      });
       setTimeout(() => {
         navigate('/workflows');
       }, 2000);
-    }
-
-    // TODO: 保存工作流状态到主进程
-    // await window.electronAPI.saveWorkflow(workflowId, { ...workflowState, data: newData });
+    }
   };
 
   /**
@@ -461,14 +369,10 @@ const WorkflowExecutor: React.FC = () => {
    * 判断步骤是否可点击
    */
   const canClickStep = (stepIndex: number): boolean => {
-    if (!currentProject || !workflowState) return false;
-
-    // 已完成项目: 所有步骤可点击
+    if (!currentProject || !workflowState) return false;
     if (currentProject.status === 'completed') {
       return true;
-    }
-
-    // 进行中项目: 当前步骤及之前的可点击
+    }
     return stepIndex <= workflowState.currentStepIndex;
   };
 
@@ -478,9 +382,7 @@ const WorkflowExecutor: React.FC = () => {
   const handleStepClick = (stepIndex: number) => {
     if (!canClickStep(stepIndex) || !workflowState) return;
 
-    const steps = [...workflowState.steps];
-
-    // 更新步骤状态
+    const steps = [...workflowState.steps];
     steps[workflowState.currentStepIndex].status =
       stepIndex > workflowState.currentStepIndex ? 'completed' : 'pending';
     steps[stepIndex].status = 'in_progress';
@@ -495,21 +397,15 @@ const WorkflowExecutor: React.FC = () => {
   /**
    * 处理项目切换
    */
-  const handleProjectChange = async (projectId: string) => {
-    // 检测是否为"新建项目"特殊值
+  const handleProjectChange = async (projectId: string) => {
     if (projectId === '__CREATE_NEW__') {
       setShowCreateProjectModal(true);
       return;
     }
 
     try {
-      setCurrentProjectId(projectId);
-
-      // 重新加载工作流（切换到新项目的工作流）
-      // 这里需要根据projectId加载对应的工作流
-      // 暂时只切换ID，后续可以扩展
-    } catch (error) {
-      // eslint-disable-next-line no-console
+      setCurrentProjectId(projectId);
+    } catch (error) {
       console.error('切换项目失败:', error);
       setToast({
         type: 'error',
@@ -531,14 +427,9 @@ const WorkflowExecutor: React.FC = () => {
    * 处理分镜选择变化 - 更新全局选中项
    */
   const handleStoryboardSelectionChange = (selectedIds: string[]) => {
-    setSelectedStoryboardIds(selectedIds);
-
-    // 更新全局选中状态
-    if (!workflowState) return;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const storyboards = (workflowState.data as any).storyboards || [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setSelectedStoryboardIds(selectedIds);
+    if (!workflowState) return;
+    const storyboards = (workflowState.data as any).storyboards || [];
     const selectedStoryboards = storyboards.filter((sb: any) => selectedIds.includes(sb.id));
 
     if (selectedStoryboards.length === 1) {
@@ -567,12 +458,8 @@ const WorkflowExecutor: React.FC = () => {
    * 处理Prompt更新
    */
   const _handlePromptChange = (prompt: string) => {
-    if (!workflowState || selectedStoryboardIds.length === 0) return;
-
-    // TODO: [中期改进] 定义准确的workflowState.data类型
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const storyboards = (workflowState.data as any).storyboards || [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!workflowState || selectedStoryboardIds.length === 0) return;
+    const storyboards = (workflowState.data as any).storyboards || [];
     const updatedStoryboards = storyboards.map((sb: any) =>
       selectedStoryboardIds.includes(sb.id) ? { ...sb, prompt } : sb
     );
@@ -590,34 +477,17 @@ const WorkflowExecutor: React.FC = () => {
    * 处理生成设置更新
    */
   const _handleSettingsChange = (_settings: unknown) => {
-    if (!workflowState || selectedStoryboardIds.length === 0) return;
-
-    // const storyboards = workflowState.data.storyboards || [];
-    // const updatedStoryboards = storyboards.map((sb: unknown) =>
-    //   selectedStoryboardIds.includes(sb.id) ? { ...sb, settings } : sb
-    // );
-
-    // setWorkflowState({
-    //   ...workflowState,
-    //   data: {
-    //     ...workflowState.data,
-    //     storyboards: updatedStoryboards
-    //   }
-    // });
+    if (!workflowState || selectedStoryboardIds.length === 0) return;
   };
 
   /**
    * 处理子步骤点击
    */
   const handleSubStepClick = (stepIndex: number, subStepIndex: number) => {
-    if (!workflowState) return;
-
-    // 如果点击的不是当前步骤的子步骤，先切换到该步骤
+    if (!workflowState) return;
     if (stepIndex !== workflowState.currentStepIndex) {
       handleStepClick(stepIndex);
-    }
-
-    // 切换到指定子步骤
+    }
     setCurrentSubStepIndex(subStepIndex);
   };
 
@@ -633,8 +503,7 @@ const WorkflowExecutor: React.FC = () => {
    */
   const handleToggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        // eslint-disable-next-line no-console
+      document.documentElement.requestFullscreen().catch((err) => {
         console.error('进入全屏失败:', err);
         setToast({
           type: 'error',
@@ -653,9 +522,7 @@ const WorkflowExecutor: React.FC = () => {
   const getCurrentPanelComponent = () => {
     if (!workflowState) return null;
 
-    const currentStep = workflowState.steps[workflowState.currentStepIndex];
-
-    // 组件映射表（将 componentType 字符串映射到实际组件）
+    const currentStep = workflowState.steps[workflowState.currentStepIndex];
     const componentMap: Record<string, React.ComponentType<any>> = {
       ChapterSplitPanel,
       SceneCharacterPanel,
@@ -663,9 +530,7 @@ const WorkflowExecutor: React.FC = () => {
       VoiceoverPanel,
       ExportPanel,
       RemoteControlPanel
-    };
-
-    // 如果有子步骤且子步骤索引有效
+    };
     if (
       currentStep.subSteps &&
       currentSubStepIndex >= 0 &&
@@ -687,9 +552,7 @@ const WorkflowExecutor: React.FC = () => {
           config: currentSubStep.config
         }
       };
-    }
-
-    // 默认渲染主步骤组件
+    }
     const CurrentPanelComponent = currentStep.component;
     return {
       component: CurrentPanelComponent,
@@ -767,8 +630,7 @@ const WorkflowExecutor: React.FC = () => {
 
         {/* 当前步骤面板 */}
         <div className="workflow-content-area">
-          {!currentProjectId || currentProjectId === '__CREATE_NEW__' ? (
-            // 空状态引导
+          {!currentProjectId || currentProjectId === '__CREATE_NEW__' ? (
             <div className="empty-state-guide">
               <div className="empty-icon">📁</div>
               <h2>开始使用小说转视频</h2>
@@ -786,8 +648,7 @@ const WorkflowExecutor: React.FC = () => {
                 </p>
               )}
             </div>
-          ) : (
-            // 动态渲染步骤/子步骤面板组件
+          ) : (
             (() => {
               const panelConfig = getCurrentPanelComponent();
               if (!panelConfig) return null;

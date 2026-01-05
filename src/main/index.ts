@@ -28,6 +28,7 @@ import { testWorkflowDefinition } from './workflows/test-workflow';
 import { novelToVideoWorkflow } from './workflows/novel-to-video-definition';
 import { ProviderRegistry } from './services/ProviderRegistry';
 import { ProviderRouter } from './services/ProviderRouter';
+import { ProviderHub } from './services/ProviderHub';
 import { JiekouProvider } from './providers/JiekouProvider';
 import { AIService } from './services/AIService';
 import { templateManager } from './services/TemplateManager';
@@ -54,6 +55,7 @@ class MatrixApp {
   private shortcutManager: ShortcutManager;
   private providerRegistry: ProviderRegistry;
   private providerRouter: ProviderRouter;
+  private providerHub: ProviderHub;
   private aiService: AIService;
   private fileWatchers: Map<string, fsSync.FSWatcher> = new Map();
 
@@ -66,32 +68,34 @@ class MatrixApp {
     this.shortcutManager = ShortcutManager.getInstance(timeService, logger, configManager);
     this.providerRegistry = new ProviderRegistry(logger);
     this.providerRouter = new ProviderRouter(this.providerRegistry, configManager, logger);
+    this.providerHub = new ProviderHub(
+      this.providerRegistry,
+      apiManager,
+      this.providerRouter,
+      logger
+    );
     this.aiService = new AIService(logger, apiManager);
 
     this.initializeEventListeners();
   }
 
   private initializeEventListeners(): void {
-    // 应用就绪事件
     app.whenReady().then(() => {
       this.onReady();
     });
 
-    // 所有窗口关闭事件
     app.on('window-all-closed', () => {
       if (process.platform !== 'darwin') {
         app.quit();
       }
     });
 
-    // 应用激活事件
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
         this.windowManager.createMainWindow();
       }
     });
 
-    // 应用退出前事件
     app.on('before-quit', async () => {
       await this.cleanup();
     });
@@ -99,22 +103,11 @@ class MatrixApp {
 
   private async onReady(): Promise<void> {
     try {
-      // 初始化服务
       await this.initializeServices();
-
-      // 注册测试工作流
       this.registerTestWorkflows();
-
-      // 确保插件默认文件存在
       await this.ensurePluginDefaultFiles();
-
-      // 注册自定义协议处理器
       this.registerCustomProtocols();
-
-      // 创建主窗口
       this.windowManager.createMainWindow();
-
-      // 设置IPC处理器
       this.setupIPCHandlers();
 
       await logger.info('Matrix AI Workflow 应用启动成功', 'MatrixApp');
@@ -132,14 +125,12 @@ class MatrixApp {
    */
   private registerTestWorkflows(): void {
     try {
-      // 注册测试工作流模板
       workflowRegistry.register(testWorkflowDefinition);
       logger.info('测试工作流已注册', 'MatrixApp', {
         workflowName: testWorkflowDefinition.name,
         workflowType: testWorkflowDefinition.type
       });
 
-      // 注册"小说转视频"工作流定义
       // 注意：虽然"小说转视频"是插件，但仍需注册到 WorkflowRegistry 以提供步骤定义
       // WorkflowExecutor 需要通过 type 从 Registry 获取定义
       // 路由：/plugins/novel-to-video（不是 /workflows/novel-to-video）
@@ -162,12 +153,10 @@ class MatrixApp {
       const workflowsDir = path.join(workspacePath, 'workflows');
       const novelToVideoFile = path.join(workflowsDir, 'novel-to-video.json');
 
-      // 检查文件是否存在
       try {
         await fs.access(novelToVideoFile);
         logger.debug('小说转视频插件文件已存在', 'MatrixApp');
       } catch {
-        // 文件不存在，创建默认文件
         const defaultWorkflow = {
           id: 'novel-to-video',
           name: '小说转视频',
@@ -186,11 +175,9 @@ class MatrixApp {
   }
 
   private async initializeServices(): Promise<void> {
-    // 1. 首先初始化 ConfigManager
     await configManager.initialize();
     await logger.debug('ConfigManager initialized', 'MatrixApp');
 
-    // 2. 使用配置重新初始化 Logger（支持动态路径）
     const logSettings = configManager.getLogSettings();
     const enhancedLogger = new Logger({
       logDir: logSettings.savePath,
@@ -198,19 +185,14 @@ class MatrixApp {
       minLevel: LogLevel.INFO,
       configManager: configManager
     });
-    // 替换全局 logger 实例
     Object.assign(logger, enhancedLogger);
 
     await logger.info('Initializing Matrix services', 'MatrixApp');
 
-    // 3. 初始化文件系统服务
     await this.fileSystemService.initialize();
-
-    // 4. 初始化其他服务
     await this.projectManager.initialize();
     await this.assetManager.initialize();
 
-    // 5. 设置 AssetManager 的 ConfigManager（用于监听配置变更）
     this.assetManager.setConfigManager(configManager);
 
     await pluginManager.initialize();
@@ -221,10 +203,9 @@ class MatrixApp {
     await templateManager.initialize();
     await this.shortcutManager.initialize();
 
-    // 注册 Providers
+    await this.providerHub.initialize();
     await this.registerProviders();
 
-    // 启动时批量健康检查所有Provider
     try {
       const healthCheckResult = await pluginManager.batchHealthCheck();
       await logger.info('Startup health check completed', 'MatrixApp', healthCheckResult);
@@ -247,7 +228,7 @@ class MatrixApp {
       this.fileSystemService,
       logger
     );
-    this.providerRegistry.register(jiekouProvider);
+    this.providerHub.registerProvider(jiekouProvider);
 
     await logger.info('Providers registered successfully', 'MatrixApp');
   }
@@ -259,18 +240,15 @@ class MatrixApp {
   private registerCustomProtocols(): void {
     protocol.handle('asset', async (request) => {
       try {
-        // 解析 URL: asset://filepath
         const url = new URL(request.url);
         const filePath = decodeURIComponent(url.pathname);
 
-        // 路径安全验证
         const dataDir = this.fileSystemService.getDataDir();
         const normalizedPath = path.normalize(filePath);
         const absolutePath = path.isAbsolute(normalizedPath)
           ? normalizedPath
           : path.join(dataDir, normalizedPath);
 
-        // 验证路径是否在允许的目录内
         if (!absolutePath.startsWith(dataDir)) {
           await logger.warn(`Blocked access to file outside data directory: ${absolutePath}`, 'ProtocolHandler');
           return new Response('Access Denied', {
@@ -279,7 +257,6 @@ class MatrixApp {
           });
         }
 
-        // 检查文件是否存在
         try {
           await fs.access(absolutePath);
         } catch {
@@ -290,13 +267,9 @@ class MatrixApp {
           });
         }
 
-        // 读取文件
         const fileData = await fs.readFile(absolutePath);
-
-        // 获取 MIME 类型
         const mimeType = mimeTypes.lookup(absolutePath) || 'application/octet-stream';
 
-        // 返回响应（将 Buffer 转换为 Uint8Array）
         return new Response(new Uint8Array(fileData), {
           status: 200,
           headers: {
@@ -469,12 +442,9 @@ class MatrixApp {
       return await logger.getRecentLogs(limit, levelFilter as any); // IPC层是string，内部是LogLevel枚举
     });
 
-    // 项目相关IPC处理
     ipcMain.handle('project:create', async (_, name, template) => {
-      // 创建项目
       const project = await this.projectManager.createProject(name, template);
 
-      // 如果指定了插件模板，初始化插件配置
       if (template) {
         try {
           const plugin = pluginManager.getPlugin(template);
@@ -600,9 +570,7 @@ class MatrixApp {
       return await this.assetManager.getAssetReferences(assetId);
     });
 
-    // 工作流相关IPC处理
     ipcMain.handle('workflow:execute', async (_, config) => {
-      // 创建工作流任务并执行
       const taskId = await taskScheduler.createTask({
         type: TaskType.WORKFLOW,
         name: config.name || 'Workflow Execution',
@@ -657,7 +625,6 @@ class MatrixApp {
         const workflowsDir = path.join(workspacePath, 'workflows');
         const filePath = path.join(workflowsDir, `${workflowId}.json`);
 
-        // 删除工作流定义文件
         await fs.unlink(filePath);
 
         logger.info(`工作流定义已删除: ${workflowId}`);

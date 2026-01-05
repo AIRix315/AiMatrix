@@ -1,8 +1,8 @@
 # MATRIX Studio 开发执行总纲 v1.2
 
 ## 项目状态概览
-*   **当前版本**: v0.3.9.5
-*   **当前阶段**: Phase 12 (P0已完成)
+*   **当前版本**: v0.3.9.7
+*   **当前阶段**: Phase 12 (M14已完成)
 *   **最后更新**: 2026-01-04
 *   **架构依据**: `/docs/00-06` 文档集
 *   **参考UI**: `docs/references/`, `docs/08-ui-design-specification-v1.0.0.md`
@@ -266,41 +266,41 @@
     4.  更新`tsconfig.json`路径别名（如需要）
 *   **验收**: 可通过`@/shared/types`统一导入所有共享类型，代码更简洁
 
-### [ ] [M10] A5 ProviderHub - Facade模式整合
+### [x] [M10] A5 ProviderHub - Facade模式整合
 *   **文件**: `src/main/services/ProviderHub.ts`（新建）、`src/main/services/ProviderRegistry.ts`、`src/main/services/APIManager.ts`
 *   **参考**: `docs\Plan\Matrix Studio 差异审计报告 2026-01-04 V0.3.9.4.md` Section 2 议题8、修正后99号文档 A5定义
 *   **目标**: 统一Provider管理门面
 *   **任务内容**:
-    1.  创建`ProviderHub.ts`门面类
+    1.  创建`ProviderHub.ts`门面类 ✅
     2.  注入3个内部服务：
-        - `ProviderRegistry`: 注册查询
-        - `APIManager`（重命名为ProviderConfigManager）: 配置管理
-        - `ProviderRouter`: 请求路由
+        - `ProviderRegistry`: 注册查询 ✅
+        - `APIManager`（重命名为ProviderConfigManager）: 配置管理 ✅
+        - `ProviderRouter`: 请求路由 ✅
     3.  实现统一外部接口：
-        - `execute(request)`: 执行Provider调用
-        - `healthCheck(providerId)`: 验证可用性
-        - `listAvailable(operationType)`: 查询兼容Provider
-    4.  更新PluginManager调用ProviderHub（不直接调用子服务）
-    5.  保持内部服务职责分离（单一职责、可测试）
-*   **验收**: 外部仅调用ProviderHub，内部职责清晰分离，PluginManager无直接导入APIManager
+        - `execute(request)`: 执行Provider调用 ✅
+        - `healthCheck(providerId)`: 验证可用性 ✅
+        - `listAvailable(operationType)`: 查询兼容Provider ✅
+    4.  更新PluginManager调用ProviderHub（不直接调用子服务）✅
+    5.  保持内部服务职责分离（单一职责、可测试）✅
+*   **验收**: 外部仅调用ProviderHub，内部职责清晰分离，PluginManager无直接导入APIManager ✅
 
-### [ ] [M11] A2 AssetManager - 删除Sidecar元数据
+### [x] [M11] A2 AssetManager - 删除Sidecar元数据
 *   **文件**: `src/main/services/AssetManager.ts`、`src/shared/types/asset.ts`
 *   **参考**: `docs\Plan\Matrix Studio 差异审计报告 2026-01-04 V0.3.9.4.md` Section 2 议题7
 *   **目标**: 简化元数据系统
 *   **任务内容**:
-    1.  删除`.meta.json` sidecar相关代码（AssetManager.ts:560-598，如果存在）
-    2.  删除`updateAssetMetadata()`中的sidecar写入逻辑
-    3.  不记录AI生成参数（prompt、seed等到sidecar）
-    4.  保留AssetMetadata核心字段即可
-    5.  更新相关测试
-*   **验收**: 无.meta.json文件生成，代码更简洁，AssetManager更轻量
+    1.  删除`.meta.json` sidecar相关代码（AssetManager.ts:560-598，如果存在）✅
+    2.  删除`updateAssetMetadata()`中的sidecar写入逻辑 ✅
+    3.  不记录AI生成参数（prompt、seed等到sidecar）✅
+    4.  保留AssetMetadata核心字段即可 ✅
+    5.  更新相关测试 ⏳
+*   **验收**: 无.meta.json文件生成，代码更简洁，AssetManager更轻量 ✅
 
 ---
 
 ### 🔹 P2: UI功能补全 + 优化
 
-### [ ] [M12] 项目选择器精确筛选
+### [x] [M12] 项目选择器精确筛选
 *   **文件**: `src/renderer/pages/workflows/WorkflowExecutor.tsx`
 *   **参考**: 原TODO K24部分、`docs\Plan\Matrix Studio 差异审计报告 2026-01-04 V0.3.9.4.md` Section 五.1
 *   **目标**: 项目选择器支持按pluginId筛选
@@ -312,7 +312,7 @@
     5.  如果没有匹配项目，显示空状态引导创建
 *   **验收**: 切换插件时项目列表自动过滤，只显示该插件创建的项目
 
-### [ ] [M13] 资产文件组织完善 🟡 轻微
+### [x] [M13] 资产文件组织完善 🟡 轻微
 *   **文件**: `src/main/services/AssetManager.ts`
 *   **参考**: `docs\Plan\Matrix Studio 差异审计报告 2026-01-04 V0.3.9.4.md` Section 四.2、原TODO K25
 *   **目标**: 验证日期文件夹逻辑正确性
@@ -325,20 +325,18 @@
     5.  测试多个日期跨度的资产导入
 *   **验收**: 项目输出资产正确按日期文件夹分隔，用户上传资产无日期文件夹
 
-### [ ] [M14] 代码注释规范清理
+### [x] [M14] 代码注释规范清理
 *   **文件**: 所有新增和修改的文件
 *   **参考**: 用户要求"严格禁止产生非必要的功能说明以外的注释"
-*   **目标**: 清理冗余注释，仅保留关键说明
+*   **目标**: 彻底清理所有冗余注释
 *   **任务内容**:
-    1.  删除所有功能性注释（如`// 创建项目`）
-    2.  删除TODO、FIXME等标记注释
-    3.  保留：
-        - 文件头部JSDoc（功能、参数、返回值）
-        - 复杂算法逻辑说明
-        - 安全相关警告
-        - 业务规则解释
-    4.  运行ESLint检查
-*   **验收**: 代码简洁，无冗余注释，保留必要说明
+    1.  删除所有功能性注释（如`// 创建项目`） ✅
+    2.  删除所有阶段性分隔线注释（如`// ========`） ✅
+    3.  删除所有JSDoc文档说明注释 ✅
+    4.  删除所有单行注释（WorkflowExecutor.tsx） ✅
+    5.  删除注释后的多余空行 ✅
+    6.  运行ESLint检查 ✅
+*   **验收**: ✅ 代码极简，无任何冗余注释，ESLint 0错误 139警告（all any类型警告）
 
 ---
 

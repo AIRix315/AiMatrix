@@ -1,6 +1,6 @@
 {
   "name": "MATRIX-Studio",
-  "version": "0.3.9.6",
+  "version": "0.3.9.7",
   "description": "AI影视生成管理平台",
   "main": "build/main/index.js",
   "homepage": "./",
