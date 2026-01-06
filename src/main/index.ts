@@ -74,7 +74,7 @@ class MatrixApp {
       this.providerRouter,
       logger
     );
-    this.aiService = new AIService(logger, apiManager);
+    this.aiService = new AIService(logger, apiManager, taskScheduler);
 
     this.initializeEventListeners();
   }
@@ -700,24 +700,7 @@ class MatrixApp {
       return await taskScheduler.getTaskResults(executionId);
     });
 
-    // API相关IPC处理
-    ipcMain.handle('api:call', async (_, name, params) => {
-      return await apiManager.callAPI(name, params);
-    });
-    ipcMain.handle('api:set-key', async (_, name, key) => {
-      await apiManager.setAPIKey(name, key);
-      return { success: true };
-    });
-    ipcMain.handle('api:get-status', async (_, name) => {
-      return await apiManager.getAPIStatus(name);
-    });
-    ipcMain.handle('api:get-usage', async (_, name) => {
-      // MVP: 暂时返回模拟使用量数据（后续迭代实现）
-      return Promise.resolve({ name, usage: { requests: 0, cost: 0 } });
-    });
-    ipcMain.handle('api:test-connection', async (_, params: { type: string; baseUrl: string; apiKey?: string }) => {
-      return await apiManager.testConnection(params);
-    });
+    // API相关IPC处理已废弃，使用Provider系统替代
 
     // Settings相关IPC处理
     ipcMain.handle('settings:get-all', async () => {

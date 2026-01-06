@@ -4,6 +4,7 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.9.8 | 2026-01-06 | 功能增强 | 工作流状态持久化、双重存储架构、TaskScheduler进度事件、DeepSeek JSON清理 |
 | 0.3.9.7 | 2026-01-05 | 代码质量 | 彻底清理所有冗余注释（阶段性注释、JSDoc文档、单行注释），代码极简化 |
 | 0.3.9.6 | 2026-01-05 | 类型系统 | 时间格式统一（ISO 8601）、统一类型导出文件、类型冲突解决 |
 | 0.3.9.5 | 2026-01-04 | 插件系统 | 插件配置注入、健康检查、任务追踪、原子操作、并发安全、术语规范化 |
@@ -19,6 +20,91 @@
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 0.0.1 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.9.8] - 2026-01-06
+
+### Added
+- **AssetDataManager 服务**
+  - 新增物料数据管理服务（254行代码）
+  - 实现双重存储架构：WorkflowState（状态管理）+ 项目JSON（物料归档）
+  - 支持章节、场景、角色、场景详情、分镜等物料类型同步
+  - 项目文件夹自动创建物料子目录：`chapters/`, `scenes/`, `characters/`, `storyboards/`
+  - 提供加载和清空物料功能
+
+- **TaskScheduler 进度事件系统**
+  - 新增 `sendProgressEvent()` 方法发送IPC事件到渲染进程
+  - 任务执行关键节点自动发送进度更新（启动、执行中、完成、失败）
+  - 支持浮动球实时显示AI调用进度
+  - 事件通道：`task:updated`
+
+### Changed
+- **WorkflowExecutor 核心重构**
+  - `loadWorkflow()`: 加载时恢复已保存状态，首次运行自动保存初始状态
+  - `handleStepComplete()`: 步骤完成时调用3个后端API（`updateWorkflowStepStatus`, `saveWorkflowState`, `updateWorkflowCurrentStep`）
+  - `handleGoBack()`: 回退前重新加载后端状态，防止数据丢失
+  - 即使保存失败也允许继续操作（容错机制）
+
+- **Panel 组件状态保存增强**
+  - `ChapterSplitPanel`, `SceneCharacterPanel`, `StoryboardPanel` 在 `onComplete()` 前调用 `updateWorkflowStepStatus()`
+  - 每步完成数据自动持久化到后端
+  - 新增 `workflowId` prop 传递
+
+- **FlowStateManager 集成 AssetDataManager**
+  - `saveState()` 方法异步调用 `assetDataManager.syncAssetsToProject()`
+  - 每次状态保存自动同步物料到项目文件夹（非阻塞）
+  - 同步失败仅记录警告日志，不影响状态保存
+
+- **AIService 集成 TaskScheduler**
+  - 构造函数接收 `taskScheduler` 依赖
+  - `extractScenesAndCharacters()` 通过 TaskScheduler 创建和执行任务
+  - 新增 `waitForTaskCompletion<T>()` 轮询方法（最大等待2分钟，轮询间隔1秒）
+
+### Fixed
+- **工作流状态丢失问题**
+  - 根本原因：前端只使用 React state，未调用后端 FlowStateManager API
+  - 解决方案：WorkflowExecutor 现在在加载、步骤完成、回退时都调用后端持久化
+  - 页面刷新后自动恢复状态
+  - 回退操作不再丢失数据
+
+- **DeepSeek JSON 解析错误**
+  - 新增 `cleanMarkdownJSON()` 方法清理 markdown 包裹的 JSON
+  - 支持 ` ```json\n{}\n``` ` 格式和裸 JSON 两种格式
+  - 解决 `SyntaxError: Unexpected token '```'` 错误
+  - 即使 DeepSeek 返回 markdown 格式也能正确解析
+
+- **浮动球进度未显示问题**
+  - TaskScheduler 现在在关键进度点发送 `task:updated` 事件
+  - 前端 App.tsx 监听器自动更新 ProgressOrb
+  - AI 操作进度实时可见
+
+### Improved
+- **双重存储架构完整实现**
+  - WorkflowState（`workflows/{flowId}/state.json`）：运行时状态管理
+  - Project JSONs（`projects/{projectId}/*`）：物料归档和跨会话持久化
+  - 随时退出工作流，项目文件夹保留完整物料数据
+
+- **代码质量提升**
+  - TypeScript 编译 0 错误
+  - 构建成功：Preload（8.8秒）、Main（10.1秒）、Renderer（15.9秒）
+  - 所有服务正确依赖注入
+
+### Technical Details
+- **修改文件**:
+  - 新增：`src/main/services/AssetDataManager.ts`（254行）
+  - 修改：8个文件（AIService, TaskScheduler, FlowStateManager, WorkflowExecutor, 3个Panel组件, workflow-handlers）
+- **存储路径**:
+  - 章节：`projects/{projectId}/chapters/chapters.json`
+  - 场景：`projects/{projectId}/scenes/scenes.json`
+  - 角色：`projects/{projectId}/characters/characters.json`
+  - 分镜：`projects/{projectId}/storyboards/storyboards.json`
+- **IPC 事件**:
+  - 新增：`task:updated`（TaskScheduler → 渲染进程）
+- **任务轮询**:
+  - 最大等待时间：120秒
+  - 轮询间隔：1秒
+  - 超时抛出异常
 
 ---
 

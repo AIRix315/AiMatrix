@@ -249,6 +249,7 @@ export interface StoryboardPromptParams {
   characters: string[];
   characterImages?: Record<string, string>;
   sceneImage?: string;
+  providerId?: string;
 }
 
 
@@ -456,13 +457,6 @@ export interface ElectronAPI {
   retryTask: (executionId: string) => Promise<void>;
   getTaskResults: (executionId: string) => Promise<unknown>;
 
-  // ==================== API 管理 ====================
-  callAPI: (name: string, params: unknown) => Promise<unknown>;
-  setAPIKey: (name: string, key: string) => Promise<void>;
-  getAPIStatus: (name: string) => Promise<APIStatus>;
-  getAPIUsage: (name: string) => Promise<APIUsage>;
-  testAPIConnection: (params: { type: string; baseUrl: string; apiKey?: string }) => Promise<APITestResult>;
-
   // ==================== Provider 管理 ====================
   listProviders: (options?: { category?: string; enabledOnly?: boolean }) => Promise<ProviderConfig[]>;
   getProvider: (providerId: string) => Promise<ProviderConfig>;
@@ -485,9 +479,9 @@ export interface ElectronAPI {
   batchImageToVideo: (params: BatchImageToVideoParams) => Promise<BatchResult<ImageToVideoResult>>;
 
   // ==================== AI 服务 ====================
-  extractScenesAndCharacters: (novelText: string) => Promise<SceneCharacterExtractionResult>;
-  generateCharacterPrompt: (characterName: string, context?: string) => Promise<string>;
-  generateScenePrompt: (sceneName: string, context?: string) => Promise<string>;
+  extractScenesAndCharacters: (params: { novelText: string; providerId?: string }) => Promise<SceneCharacterExtractionResult>;
+  generateCharacterPrompt: (params: { characterName: string; context?: string; providerId?: string }) => Promise<string>;
+  generateScenePrompt: (params: { sceneName: string; context?: string; providerId?: string }) => Promise<string>;
   generateStoryboardPrompt: (params: StoryboardPromptParams) => Promise<string>;
 
   // ==================== 模型管理 ====================

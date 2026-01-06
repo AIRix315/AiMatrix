@@ -16,6 +16,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { BrowserWindow } from 'electron';
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
 import { apiManager } from './APIManager';
@@ -198,6 +199,27 @@ export class TaskScheduler {
   }
 
   /**
+   * 发送任务进度事件到渲染进程
+   */
+  private sendProgressEvent(execution: TaskExecution): void {
+    try {
+      const windows = BrowserWindow.getAllWindows();
+      windows.forEach(win => {
+        win.webContents.send('task:updated', {
+          id: execution.id,
+          taskId: execution.taskId,
+          status: execution.status,
+          progress: execution.progress,
+          result: execution.result,
+          error: execution.error
+        });
+      });
+    } catch (error) {
+      logger.error('发送任务进度事件失败', 'TaskScheduler', { error });
+    }
+  }
+
+  /**
    * 运行任务
    */
   private async runTask(execution: TaskExecution, task: Task): Promise<void> {
@@ -206,6 +228,9 @@ export class TaskScheduler {
       execution.status = TaskStatus.RUNNING;
       execution.progress = 0;
       this.runningExecutions.add(execution.id);
+
+      // 发送初始进度事件
+      this.sendProgressEvent(execution);
 
       await logger.debug(`Running task: ${execution.id}`, 'TaskScheduler');
 
@@ -242,6 +267,9 @@ export class TaskScheduler {
       task.status = TaskStatus.COMPLETED;
       task.updatedAt = await timeService.getISOString();
 
+      // 发送完成事件
+      this.sendProgressEvent(execution);
+
       await logger.info(`Task completed: ${execution.id}`, 'TaskScheduler');
     } catch (error) {
       // 任务失败
@@ -251,6 +279,9 @@ export class TaskScheduler {
 
       task.status = TaskStatus.FAILED;
       task.updatedAt = await timeService.getISOString();
+
+      // 发送失败事件
+      this.sendProgressEvent(execution);
 
       await logger.error(`Task failed: ${execution.id}`, 'TaskScheduler', { error });
     } finally {
@@ -266,18 +297,9 @@ export class TaskScheduler {
       throw new Error('API name is required for API_CALL task');
     }
 
-    const apiParams = {
-      ...task.config.apiParams,
-      ...execution.inputs as Record<string, unknown>
-    };
-
     execution.progress = 50;
 
-    const result = await apiManager.callAPI(task.config.apiName, apiParams);
-
-    execution.progress = 100;
-
-    return result;
+    throw new Error('API_CALL task type is not yet implemented with new Provider system');
   }
 
   /**
@@ -311,11 +333,13 @@ export class TaskScheduler {
       throw new Error('Custom handler is required for CUSTOM task');
     }
 
-    execution.progress = 50;
+    execution.progress = 10;
+    this.sendProgressEvent(execution);
 
     const result = await task.config.customHandler(execution.inputs);
 
-    execution.progress = 100;
+    execution.progress = 90;
+    this.sendProgressEvent(execution);
 
     return result;
   }

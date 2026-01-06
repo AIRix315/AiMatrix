@@ -37,7 +37,7 @@ interface PanelProps {
   initialData?: unknown;
 }
 
-export const SceneCharacterPanel: React.FC<PanelProps> = ({ onComplete, initialData }) => {
+export const SceneCharacterPanel: React.FC<PanelProps> = ({ workflowId, onComplete, initialData }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [chapters] = useState((initialData as any)?.chapters || []);
   const [selectedChapterId, setSelectedChapterId] = useState('');
@@ -210,7 +210,7 @@ export const SceneCharacterPanel: React.FC<PanelProps> = ({ onComplete, initialD
   /**
    * 处理下一步
    */
-  const _handleNext = () => {
+  const _handleNext = async () => {
     if (scenes.length === 0 && characters.length === 0) {
       setToast({
         type: 'warning',
@@ -219,10 +219,25 @@ export const SceneCharacterPanel: React.FC<PanelProps> = ({ onComplete, initialD
       return;
     }
 
-    onComplete({
+    const completionData = {
       scenes,
       characters
-    });
+    };
+
+    // 保存步骤数据到后端
+    try {
+      await window.electronAPI.updateWorkflowStepStatus(
+        workflowId,
+        'scene-character',
+        'completed',
+        completionData
+      );
+      console.log('SceneCharacterPanel: 步骤状态已保存');
+    } catch (saveError) {
+      console.error('SceneCharacterPanel: 保存步骤状态失败', saveError);
+    }
+
+    onComplete(completionData);
   };
 
   return (

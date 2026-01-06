@@ -26,7 +26,7 @@ interface PanelProps {
   initialData?: unknown;
 }
 
-export const ChapterSplitPanel: React.FC<PanelProps> = ({ onComplete, initialData }) => {
+export const ChapterSplitPanel: React.FC<PanelProps> = ({ workflowId, onComplete, initialData }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = initialData as any || {};
   const [novelPath, setNovelPath] = useState(data.novelPath || '');
@@ -115,7 +115,7 @@ export const ChapterSplitPanel: React.FC<PanelProps> = ({ onComplete, initialDat
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const extractionResult = await window.electronAPI.extractScenesAndCharacters(novelText) as any;
+      const extractionResult = await window.electronAPI.extractScenesAndCharacters({ novelText }) as any;
 
       if (!extractionResult || !extractionResult.scenes || !extractionResult.characters) {
         throw new Error('AI 提取结果格式错误');
@@ -142,9 +142,8 @@ export const ChapterSplitPanel: React.FC<PanelProps> = ({ onComplete, initialDat
         message: `分析完成！共识别 ${(extractionResult as any).scenes.length} 个场景，${(extractionResult as any).characters.length} 个角色`
       });
 
-      // 自动标记步骤完成，触发下一步骤
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onComplete({
+      // 保存步骤数据到后端
+      const completionData = {
         novelPath,
         fileName,
         chapters: chaptersFromScenes,
@@ -154,7 +153,22 @@ export const ChapterSplitPanel: React.FC<PanelProps> = ({ onComplete, initialDat
         characters: (extractionResult as any).characters,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sceneDetails: (extractionResult as any).details
-      });
+      };
+
+      try {
+        await window.electronAPI.updateWorkflowStepStatus(
+          workflowId,
+          'split-chapter',
+          'completed',
+          completionData
+        );
+        console.log('ChapterSplitPanel: 步骤状态已保存');
+      } catch (saveError) {
+        console.error('ChapterSplitPanel: 保存步骤状态失败', saveError);
+      }
+
+      // 触发父组件完成回调
+      onComplete(completionData);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('场景角色提取失败:', error);

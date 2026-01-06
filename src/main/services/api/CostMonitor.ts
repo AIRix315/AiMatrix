@@ -13,7 +13,7 @@
  */
 
 import { logger } from '../Logger';
-import { APIProvider } from '../APIManager';
+import type { ProviderConfig } from '../../../shared/types/provider';
 import { timeService } from '../TimeService';
 
 /**
@@ -22,7 +22,7 @@ import { timeService } from '../TimeService';
 export interface CostRecord {
   id: string;
   apiName: string;
-  provider: APIProvider;
+  provider: string;
   model?: string;
   timestamp: string; // ISO 8601
   tokenUsage?: {
@@ -39,7 +39,7 @@ export interface CostRecord {
  * 定价配置
  */
 export interface PricingConfig {
-  provider: APIProvider;
+  provider: string;
   model: string;
   unit: 'token' | 'credit' | 'request';
   pricePerUnit: number; // USD
@@ -75,7 +75,7 @@ export class CostMonitor {
   private initializeDefaultPricing(): void {
     // OpenAI GPT-4
     this.registerPricing({
-      provider: APIProvider.OPENAI,
+      provider: 'openai',
       model: 'gpt-4',
       unit: 'token',
       pricePerUnit: 0.00003, // $0.03 per 1K tokens
@@ -85,7 +85,7 @@ export class CostMonitor {
 
     // OpenAI GPT-3.5
     this.registerPricing({
-      provider: APIProvider.OPENAI,
+      provider: 'openai',
       model: 'gpt-3.5-turbo',
       unit: 'token',
       pricePerUnit: 0.000002, // $0.002 per 1K tokens
@@ -95,7 +95,7 @@ export class CostMonitor {
 
     // Anthropic Claude
     this.registerPricing({
-      provider: APIProvider.ANTHROPIC,
+      provider: 'anthropic',
       model: 'claude-3-opus',
       unit: 'token',
       pricePerUnit: 0.000015, // $0.015 per 1K tokens
@@ -248,8 +248,7 @@ export class CostMonitor {
 
     const byProvider: Record<string, number> = {};
     for (const record of this.records) {
-      const provider = record.provider;
-      byProvider[provider] = (byProvider[provider] || 0) + (record.estimatedCost || 0);
+      byProvider[record.provider] = (byProvider[record.provider] || 0) + (record.estimatedCost || 0);
     }
 
     return {

@@ -28,66 +28,19 @@ import {
   ConnectionTestParams,
   ConnectionTestResult,
 } from '@/shared/types';
-
-/**
- * 旧版 API 提供商类型（向后兼容）
- * @deprecated 使用 APIProviderConfig 和 APICategory 代替
- */
-export enum APIProvider {
-  OPENAI = 'openai',
-  ANTHROPIC = 'anthropic',
-  OLLAMA = 'ollama',
-  SILICONFLOW = 'siliconflow',
-  T8STAR = 't8star',
-  RUNNINGHUB = 'runninghub',
-  CUSTOM = 'custom',
-}
-
-/**
- * 旧版 API 配置接口（向后兼容）
- * @deprecated 使用 APIProviderConfig 代替
- */
-export interface APIConfig {
-  provider: APIProvider;
-  name: string;
-  baseUrl: string;
-  apiKey?: string;
-  models?: string[];
-  headers?: Record<string, string>;
-  timeout?: number;
-}
-
-/**
- * 旧版 API 状态接口（向后兼容）
- * @deprecated 使用 APIProviderStatus 代替
- */
-export interface APIStatus {
-  name: string;
-  provider: APIProvider;
-  status: 'available' | 'unavailable' | 'unknown';
-  lastChecked: string;
-  error?: string;
-}
-
 /**
  * APIManager 服务类
  */
 export class APIManager {
-  private configFile: string;
-  private apis: Map<string, APIConfig> = new Map(); // 旧版配置（向后兼容）
-  private statusCache: Map<string, APIStatus> = new Map(); // 旧版状态（向后兼容）
-
-  // v2.0 新增字段
-  private providers: Map<string, APIProviderConfig> = new Map(); // 新版Provider配置
-  private providerStatus: Map<string, APIProviderStatus> = new Map(); // 新版Provider状态
-  private providersConfigFile: string; // 新版配置文件路径
-  private encryption: APIKeyEncryption; // API 密钥加密工具
+  private providers: Map<string, APIProviderConfig> = new Map();
+  private providerStatus: Map<string, APIProviderStatus> = new Map();
+  private providersConfigFile: string;
+  private encryption: APIKeyEncryption;
 
   constructor(configDir?: string) {
     const dir = configDir || path.join(app.getPath('userData'), 'config');
-    this.configFile = path.join(dir, 'apis.json'); // 旧版配置文件
-    this.providersConfigFile = path.join(dir, 'providers.json'); // 新版配置文件
-    this.encryption = new APIKeyEncryption(); // 初始化加密工具
+    this.providersConfigFile = path.join(dir, 'providers.json');
+    this.encryption = new APIKeyEncryption();
     this.ensureConfigDir().catch(error => {
       logger
         .error('Failed to create config directory', 'APIManager', { error })
@@ -95,42 +48,15 @@ export class APIManager {
     });
   }
 
-  /**
-   * 确保配置目录存在
-   */
   private async ensureConfigDir(): Promise<void> {
     try {
-      const dir = path.dirname(this.configFile);
+      const dir = path.dirname(this.providersConfigFile);
       await fs.access(dir);
     } catch {
-      const dir = path.dirname(this.configFile);
+      const dir = path.dirname(this.providersConfigFile);
       await fs.mkdir(dir, { recursive: true });
     }
   }
-
-  /**
-   * 加载配置文件（旧版，向后兼容）
-   * @deprecated
-   */
-  private async loadConfig(): Promise<void> {
-    try {
-      const content = await fs.readFile(this.configFile, 'utf-8');
-      const configs: APIConfig[] = JSON.parse(content);
-
-      this.apis.clear();
-      for (const config of configs) {
-        this.apis.set(config.name, config);
-      }
-    } catch (error) {
-      // 文件不存在或解析失败，使用空配置
-      await logger.warn(
-        'Failed to load API config, using defaults',
-        'APIManager',
-        { error }
-      );
-    }
-  }
-
   /**
    * 加载 Provider 配置文件（v2.0）
    * 自动解密 API Keys
@@ -225,396 +151,23 @@ export class APIManager {
       );
     }
   }
-
-  /**
-   * 保存配置文件
-   */
-  private async saveConfig(): Promise<void> {
-    try {
-      const configs = Array.from(this.apis.values());
-      await fs.writeFile(
-        this.configFile,
-        JSON.stringify(configs, null, 2),
-        'utf-8'
-      );
-    } catch (error) {
-      throw errorHandler.createError(
-        ErrorCode.OPERATION_FAILED,
-        'APIManager',
-        'saveConfig',
-        `Failed to save API config: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  /**
-   * 初始化服务
-   */
   public async initialize(): Promise<void> {
-    await logger.info('Initializing APIManager v2.0', 'APIManager');
+    await logger.info('Initializing APIManager', 'APIManager');
     await this.ensureConfigDir();
-
-    // 加载旧版配置（向后兼容）
-    await this.loadConfig();
-
-    // 加载新版 Provider 配置
     await this.loadProviders();
 
-    // 如果新版配置为空，注册默认 Providers
     if (this.providers.size === 0) {
       await this.registerDefaultProviders();
     }
 
-    // 如果旧版配置存在但新版配置为空，尝试迁移
-    if (this.apis.size > 0 && this.providers.size === 0) {
-      await this.migrateOldConfig();
-    }
-
-    // 注册默认 API（如果旧版配置为空）- 向后兼容
-    if (this.apis.size === 0) {
-      await this.registerDefaultAPIs();
-    }
-
     await logger.info('APIManager initialized', 'APIManager', {
       providersCount: this.providers.size,
-      legacyApisCount: this.apis.size,
     });
   }
-
-  /**
-   * 注册默认 API
-   */
-  private async registerDefaultAPIs(): Promise<void> {
-    const defaults: APIConfig[] = [
-      {
-        provider: APIProvider.OLLAMA,
-        name: 'Ollama (Local)',
-        baseUrl: 'http://localhost:11434/v1',
-        models: ['llama3:8b', 'mistral:latest'],
-      },
-      {
-        provider: APIProvider.OPENAI,
-        name: 'OpenAI',
-        baseUrl: 'https://api.openai.com/v1',
-        models: ['gpt-4', 'gpt-3.5-turbo'],
-      },
-    ];
-
-    for (const config of defaults) {
-      await this.registerAPI(config.name, config);
-    }
-
-    await logger.info('Default APIs registered', 'APIManager');
-  }
-
-  /**
-   * 注册 API
-   */
-  public async registerAPI(name: string, config: APIConfig): Promise<void> {
-    return errorHandler.wrapAsync(
-      async () => {
-        this.apis.set(name, config);
-        await this.saveConfig();
-        await logger.info(`API registered: ${name}`, 'APIManager', {
-          provider: config.provider,
-        });
-      },
-      'APIManager',
-      'registerAPI',
-      ErrorCode.OPERATION_FAILED
-    );
-  }
-
-  /**
-   * 设置 API 密钥
-   */
-  public async setAPIKey(name: string, apiKey: string): Promise<void> {
-    return errorHandler.wrapAsync(
-      async () => {
-        const config = this.apis.get(name);
-        if (!config) {
-          throw new Error(`API not found: ${name}`);
-        }
-
-        config.apiKey = apiKey;
-        await this.saveConfig();
-        await logger.info(`API key updated: ${name}`, 'APIManager');
-      },
-      'APIManager',
-      'setAPIKey',
-      ErrorCode.API_KEY_ERROR
-    );
-  }
-
-  /**
-   * 获取 API 配置
-   */
-  public async getAPIConfig(name: string): Promise<APIConfig> {
-    const config = this.apis.get(name);
-    if (!config) {
-      throw errorHandler.createError(
-        ErrorCode.API_NOT_FOUND,
-        'APIManager',
-        'getAPIConfig',
-        `API not found: ${name}`
-      );
-    }
-    return config;
-  }
-
-  /**
-   * 调用 API
-   */
-  public async callAPI(name: string, params: APICallParams): Promise<unknown> {
-    return errorHandler.wrapAsync(
-      async () => {
-        const config = await this.getAPIConfig(name);
-
-        // 构建请求
-        const url = `${config.baseUrl}/chat/completions`;
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          ...config.headers,
-        };
-
-        if (config.apiKey) {
-          headers['Authorization'] = `Bearer ${config.apiKey}`;
-        }
-
-        const body = {
-          model: params.model || config.models?.[0] || 'default',
-          messages: params.messages || [
-            { role: 'user', content: params.prompt || '' },
-          ],
-          temperature: params.temperature || 0.7,
-          max_tokens: params.maxTokens || 1000,
-          ...params,
-        };
-
-        await logger.debug(`Calling API: ${name}`, 'APIManager', {
-          url,
-          model: body.model,
-        });
-
-        // 发送请求
-        const response = await fetch(url, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(body),
-          signal: AbortSignal.timeout(config.timeout || 30000),
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `API call failed: ${response.status} ${response.statusText}`
-          );
-        }
-
-        const result = await response.json();
-
-        await logger.debug(`API call successful: ${name}`, 'APIManager');
-
-        return result;
-      },
-      'APIManager',
-      'callAPI',
-      ErrorCode.API_CALL_ERROR
-    );
-  }
-
-  /**
-   * 检查 API 状态
-   */
-  public async getAPIStatus(name: string): Promise<APIStatus> {
-    return errorHandler.wrapAsync(
-      async () => {
-        const config = await this.getAPIConfig(name);
-
-        // 检查缓存
-        const cached = this.statusCache.get(name);
-        if (cached) {
-          const cacheAge = await timeService.getTimestamp() - new Date(cached.lastChecked).getTime();
-          if (cacheAge < 60000) {
-            // 1 分钟缓存
-            return cached;
-          }
-        }
-
-        const status: APIStatus = {
-          name,
-          provider: config.provider,
-          status: 'unknown',
-          lastChecked: await timeService.getISOString(),
-        };
-
-        try {
-          // 简单的健康检查（尝试获取模型列表）
-          const response = await fetch(`${config.baseUrl}/models`, {
-            method: 'GET',
-            headers: config.apiKey
-              ? {
-                  Authorization: `Bearer ${config.apiKey}`,
-                }
-              : {},
-            signal: AbortSignal.timeout(5000),
-          });
-
-          if (response.ok) {
-            status.status = 'available';
-          } else {
-            status.status = 'unavailable';
-            status.error = `HTTP ${response.status}`;
-          }
-        } catch (error) {
-          status.status = 'unavailable';
-          status.error = error instanceof Error ? error.message : String(error);
-        }
-
-        // 更新缓存
-        this.statusCache.set(name, status);
-
-        return status;
-      },
-      'APIManager',
-      'getAPIStatus',
-      ErrorCode.OPERATION_FAILED
-    );
-  }
-
-  /**
-   * 测试 API 连接
-   *
-   * @param params - 测试参数
-   * @returns 测试结果，包括连接状态和可用模型列表
-   */
-  public async testConnection(params: {
-    type: 'ollama' | 'openai' | 'siliconflow' | string;
-    baseUrl: string;
-    apiKey?: string;
-  }): Promise<{ success: boolean; models?: string[]; error?: string }> {
-    return errorHandler.wrapAsync(
-      async () => {
-        const { type, baseUrl, apiKey } = params;
-
-        try {
-          let modelsUrl: string;
-          const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-          };
-
-          // 根据不同类型构造请求
-          if (type === 'ollama') {
-            // Ollama: GET /api/tags
-            modelsUrl = `${baseUrl}/api/tags`;
-          } else {
-            // OpenAI / SiliconFlow: GET /v1/models
-            modelsUrl = `${baseUrl}/models`;
-            if (apiKey) {
-              headers['Authorization'] = `Bearer ${apiKey}`;
-            }
-          }
-
-          await logger.info(`Testing connection to ${type}`, 'APIManager', {
-            url: modelsUrl,
-          });
-
-          const response = await fetch(modelsUrl, {
-            method: 'GET',
-            headers,
-            signal: AbortSignal.timeout(10000), // 10秒超时
-          });
-
-          if (!response.ok) {
-            const errorText = await response
-              .text()
-              .catch(() => 'Unknown error');
-            return {
-              success: false,
-              error: `HTTP ${response.status}: ${errorText}`,
-            };
-          }
-
-          const data = await response.json();
-
-          // 解析模型列表
-          let models: string[] = [];
-          if (type === 'ollama') {
-            // Ollama 返回格式: { models: [{ name: "..." }, ...] }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            models = data.models?.map((m: any) => m.name || m.model) || [];
-          } else {
-            // OpenAI/SiliconFlow 返回格式: { data: [{ id: "..." }, ...] }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            models = data.data?.map((m: any) => m.id) || [];
-          }
-
-          await logger.info(
-            `Connection test successful: ${type}`,
-            'APIManager',
-            {
-              modelsCount: models.length,
-            }
-          );
-
-          return {
-            success: true,
-            models,
-          };
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          await logger.error(`Connection test failed: ${type}`, 'APIManager', {
-            error: errorMessage,
-          });
-          return {
-            success: false,
-            error: errorMessage,
-          };
-        }
-      },
-      'APIManager',
-      'testConnection',
-      ErrorCode.API_CALL_ERROR
-    );
-  }
-
-  /**
-   * 列出所有 API
-   */
-  public async listAPIs(): Promise<APIConfig[]> {
-    return Array.from(this.apis.values());
-  }
-
-  /**
-   * 移除 API
-   */
-  public async removeAPI(name: string): Promise<void> {
-    return errorHandler.wrapAsync(
-      async () => {
-        if (!this.apis.has(name)) {
-          throw new Error(`API not found: ${name}`);
-        }
-
-        this.apis.delete(name);
-        this.statusCache.delete(name);
-        await this.saveConfig();
-        await logger.info(`API removed: ${name}`, 'APIManager');
-      },
-      'APIManager',
-      'removeAPI',
-      ErrorCode.OPERATION_FAILED
-    );
-  }
-
-  /**
-   * T8Star图片生成API调用
-   * @param prompt 图片生成提示词
-   * @param options 可选参数
-   * @returns 生成的图片URL
-   */
   public async callT8StarImage(
     prompt: string,
     options?: {
+      providerId?: string;
       model?: string;
       aspectRatio?: string;
       apiKey?: string;
@@ -622,9 +175,25 @@ export class APIManager {
   ): Promise<string> {
     return errorHandler.wrapAsync(
       async () => {
-        const apiKey = options?.apiKey || this.apis.get('T8Star')?.apiKey;
+        let apiKey = options?.apiKey;
+
+        if (!apiKey && options?.providerId) {
+          const provider = await this.getProvider(options.providerId);
+          apiKey = provider?.apiKey;
+        }
+
         if (!apiKey) {
-          throw new Error('T8Star API key not found');
+          const providers = await this.listProviders({
+            category: APICategory.IMAGE_GENERATION,
+            enabledOnly: true
+          });
+          if (providers.length > 0) {
+            apiKey = providers[0].apiKey;
+          }
+        }
+
+        if (!apiKey) {
+          throw new Error('未找到可用的图像生成Provider，请配置并启用Provider');
         }
 
         const url = 'https://ai.t8star.cn/v1/images/generations';
@@ -672,12 +241,8 @@ export class APIManager {
     );
   }
 
-  /**
-   * T8Star视频生成API调用
-   * @param options 视频生成参数
-   * @returns 生成的视频URL
-   */
   public async callT8StarVideo(options: {
+    providerId?: string;
     prompt: string;
     imagePath?: string;
     model?: string;
@@ -686,9 +251,25 @@ export class APIManager {
   }): Promise<string> {
     return errorHandler.wrapAsync(
       async () => {
-        const apiKey = options.apiKey || this.apis.get('T8Star')?.apiKey;
+        let apiKey = options.apiKey;
+
+        if (!apiKey && options.providerId) {
+          const provider = await this.getProvider(options.providerId);
+          apiKey = provider?.apiKey;
+        }
+
         if (!apiKey) {
-          throw new Error('T8Star API key not found');
+          const providers = await this.listProviders({
+            category: APICategory.VIDEO_GENERATION,
+            enabledOnly: true
+          });
+          if (providers.length > 0) {
+            apiKey = providers[0].apiKey;
+          }
+        }
+
+        if (!apiKey) {
+          throw new Error('未找到可用的视频生成Provider，请配置并启用Provider');
         }
 
         const url = 'https://ai.t8star.cn/v2/videos/generations';
@@ -789,12 +370,8 @@ export class APIManager {
     throw new Error('Video generation timed out');
   }
 
-  /**
-   * RunningHub ComfyUI 工作流任务调用
-   * @param params 工作流参数
-   * @returns 任务ID和结果
-   */
   public async callRunningHubWorkflow(params: {
+    providerId?: string;
     workflowId: string;
     nodeInfoList: Array<{
       nodeId: string;
@@ -805,10 +382,25 @@ export class APIManager {
   }): Promise<{ taskId: string; outputs?: any[] }> {
     return errorHandler.wrapAsync(
       async () => {
-        const apiKey =
-          params.apiKey || this.providers.get('runninghub')?.apiKey;
+        let apiKey = params.apiKey;
+
+        if (!apiKey && params.providerId) {
+          const provider = await this.getProvider(params.providerId);
+          apiKey = provider?.apiKey;
+        }
+
         if (!apiKey) {
-          throw new Error('RunningHub API key not found');
+          const providers = await this.listProviders({
+            category: APICategory.WORKFLOW,
+            enabledOnly: true
+          });
+          if (providers.length > 0) {
+            apiKey = providers[0].apiKey;
+          }
+        }
+
+        if (!apiKey) {
+          throw new Error('未找到可用的工作流Provider，请配置并启用Provider');
         }
 
         await logger.debug('Starting RunningHub workflow task', 'APIManager', {
@@ -831,18 +423,34 @@ export class APIManager {
     );
   }
 
-  /**
-   * 上传资源到RunningHub（图片、视频、音频）
-   */
   public async uploadRunningHubFile(
     filePath: string,
-    apiKey?: string
+    options?: {
+      providerId?: string;
+      apiKey?: string;
+    }
   ): Promise<{ fileName: string; fileType: string }> {
     return errorHandler.wrapAsync(
       async () => {
-        const key = apiKey || this.providers.get('runninghub')?.apiKey;
-        if (!key) {
-          throw new Error('RunningHub API key not found');
+        let apiKey = options?.apiKey;
+
+        if (!apiKey && options?.providerId) {
+          const provider = await this.getProvider(options.providerId);
+          apiKey = provider?.apiKey;
+        }
+
+        if (!apiKey) {
+          const providers = await this.listProviders({
+            category: APICategory.WORKFLOW,
+            enabledOnly: true
+          });
+          if (providers.length > 0) {
+            apiKey = providers[0].apiKey;
+          }
+        }
+
+        if (!apiKey) {
+          throw new Error('未找到可用的工作流Provider，请配置并启用Provider');
         }
 
         const formData = new FormData();
@@ -855,7 +463,7 @@ export class APIManager {
           {
             method: 'POST',
             headers: {
-              Authorization: key,
+              Authorization: apiKey,
             },
             body: formData as any,
           }
@@ -920,18 +528,34 @@ export class APIManager {
     return result.data.taskId;
   }
 
-  /**
-   * 查询RunningHub任务状态
-   */
   public async queryRunningHubTaskStatus(
     taskId: string,
-    apiKey?: string
+    options?: {
+      providerId?: string;
+      apiKey?: string;
+    }
   ): Promise<{ status: string; progress?: number }> {
     return errorHandler.wrapAsync(
       async () => {
-        const key = apiKey || this.providers.get('runninghub')?.apiKey;
-        if (!key) {
-          throw new Error('RunningHub API key not found');
+        let apiKey = options?.apiKey;
+
+        if (!apiKey && options?.providerId) {
+          const provider = await this.getProvider(options.providerId);
+          apiKey = provider?.apiKey;
+        }
+
+        if (!apiKey) {
+          const providers = await this.listProviders({
+            category: APICategory.WORKFLOW,
+            enabledOnly: true
+          });
+          if (providers.length > 0) {
+            apiKey = providers[0].apiKey;
+          }
+        }
+
+        if (!apiKey) {
+          throw new Error('未找到可用的工作流Provider，请配置并启用Provider');
         }
 
         const response = await fetch(
@@ -940,7 +564,7 @@ export class APIManager {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: key,
+              Authorization: apiKey,
             },
             body: JSON.stringify({ taskId }),
           }
@@ -966,18 +590,34 @@ export class APIManager {
     );
   }
 
-  /**
-   * 查询RunningHub任务生成结果
-   */
   public async queryRunningHubTaskOutputs(
     taskId: string,
-    apiKey?: string
+    options?: {
+      providerId?: string;
+      apiKey?: string;
+    }
   ): Promise<Array<{ fileUrl: string; fileType: string; nodeId: string }>> {
     return errorHandler.wrapAsync(
       async () => {
-        const key = apiKey || this.providers.get('runninghub')?.apiKey;
-        if (!key) {
-          throw new Error('RunningHub API key not found');
+        let apiKey = options?.apiKey;
+
+        if (!apiKey && options?.providerId) {
+          const provider = await this.getProvider(options.providerId);
+          apiKey = provider?.apiKey;
+        }
+
+        if (!apiKey) {
+          const providers = await this.listProviders({
+            category: APICategory.WORKFLOW,
+            enabledOnly: true
+          });
+          if (providers.length > 0) {
+            apiKey = providers[0].apiKey;
+          }
+        }
+
+        if (!apiKey) {
+          throw new Error('未找到可用的工作流Provider，请配置并启用Provider');
         }
 
         const response = await fetch(
@@ -986,7 +626,7 @@ export class APIManager {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: key,
+              Authorization: apiKey,
             },
             body: JSON.stringify({ taskId }),
           }
@@ -1134,57 +774,6 @@ export class APIManager {
       'APIManager'
     );
   }
-
-  /**
-   * 从旧配置迁移到新配置
-   */
-  private async migrateOldConfig(): Promise<void> {
-    await logger.info(
-      'Migrating old API config to new provider config',
-      'APIManager'
-    );
-
-    for (const [_name, oldConfig] of this.apis.entries()) {
-      // 映射旧的provider到新的category
-      let category: APICategory = APICategory.LLM;
-      switch (oldConfig.provider) {
-        case APIProvider.T8STAR:
-          category = APICategory.IMAGE_GENERATION;
-          break;
-        case APIProvider.RUNNINGHUB:
-          category = APICategory.TTS;
-          break;
-        case APIProvider.OPENAI:
-        case APIProvider.ANTHROPIC:
-        case APIProvider.OLLAMA:
-        case APIProvider.SILICONFLOW:
-          category = APICategory.LLM;
-          break;
-      }
-
-      const newConfig: APIProviderConfig = {
-        id: `migrated-${oldConfig.provider}`,
-        name: oldConfig.name,
-        category,
-        baseUrl: oldConfig.baseUrl,
-        authType: oldConfig.apiKey ? AuthType.BEARER : AuthType.NONE,
-        apiKey: oldConfig.apiKey,
-        enabled: true,
-        timeout: oldConfig.timeout,
-        headers: oldConfig.headers,
-        models: oldConfig.models,
-        description: `从旧配置迁移 (${oldConfig.provider})`,
-      };
-
-      this.providers.set(newConfig.id, newConfig);
-    }
-
-    await this.saveProviders();
-    await logger.info('Migration completed', 'APIManager', {
-      migratedCount: this.apis.size,
-    });
-  }
-
   /**
    * 添加或更新 Provider
    */
@@ -1651,14 +1240,7 @@ export class APIManager {
    */
   public async cleanup(): Promise<void> {
     await logger.info('Cleaning up APIManager', 'APIManager');
-    // 保存旧版配置
-    await this.saveConfig().catch(error => {
-      logger
-        .error('Failed to save config during cleanup', 'APIManager', { error })
-        .catch(() => {});
-    });
-    // 保存新版配置
-    await this.saveProviders().catch(error => {
+    await this.saveProviders().catch((error: Error) => {
       logger
         .error('Failed to save providers during cleanup', 'APIManager', {
           error,

@@ -7,11 +7,13 @@ import { logger } from '../services/Logger'
 import { workflowRegistry } from '../services/WorkflowRegistry'
 import { WorkflowStateManager } from '../services/WorkflowStateManager'
 import { FileSystemService } from '../services/FileSystemService'
+import { AssetDataManager } from '../services/AssetDataManager'
 import { CreateWorkflowInstanceParams } from '@/shared/types'
 
 // 创建WorkflowStateManager实例
 const fsService = new FileSystemService()
-const workflowStateManager = new WorkflowStateManager(fsService)
+const assetDataManager = new AssetDataManager(logger, fsService)
+const workflowStateManager = new WorkflowStateManager(fsService, assetDataManager)
 
 /**
  * 注册工作流相关IPC处理器

@@ -81,7 +81,11 @@
       "Bash(node verify-build.js:*)",
       "Bash(git log:*)",
       "Bash(rm:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(git describe:*)",
+      "Bash(python -c \"\nimport re\n\nwith open\\(''src/main/services/APIManager.ts'', ''r'', encoding=''utf-8''\\) as f:\n    lines = f.readlines\\(\\)\n\n# 找到需要删除的方法区域（通过检测方法声明和对this.apis的引用）\nmethods_to_delete = [\n    ''loadConfig'', ''saveConfig'', ''registerDefaultAPIs'', ''registerAPI'',\n    ''setAPIKey'', ''getAPIConfig'', ''callAPI'', ''getAPIStatus'',\n    ''testConnection'', ''listAPIs'', ''removeAPI'', ''migrateOldConfig''\n]\n\nresult_lines = []\nskip_until = -1\nindent_stack = []\n\nfor i, line in enumerate\\(lines\\):\n    # 如果在跳过区域中\n    if i < skip_until:\n        continue\n    \n    # 检测方法声明\n    for method in methods_to_delete:\n        if re.search\\(rf''\\(public|private\\) async {method}\\\\\\('', line\\):\n            # 找到方法结束位置（通过检测缩进和大括号）\n            depth = 0\n            for j in range\\(i, len\\(lines\\)\\):\n                if ''{'' in lines[j]:\n                    depth += lines[j].count\\(''{''\\)\n                if ''}'' in lines[j]:\n                    depth -= lines[j].count\\(''}''\\)\n                if depth == 0 and j > i:\n                    skip_until = j + 1\n                    # 同时删除方法前的注释\n                    while result_lines and result_lines[-1].strip\\(\\).startswith\\(''*''\\):\n                        result_lines.pop\\(\\)\n                    if result_lines and result_lines[-1].strip\\(\\) == ''/**'':\n                        result_lines.pop\\(\\)\n                    break\n            break\n    else:\n        result_lines.append\\(line\\)\n\nwith open\\(''src/main/services/APIManager.ts'', ''w'', encoding=''utf-8''\\) as f:\n    f.writelines\\(result_lines\\)\n\nprint\\(f''删除完成，从{len\\(lines\\)}行减少到{len\\(result_lines\\)}行''\\)\n\")",
+      "Bash(node fix-workflow-executor.js:*)",
+      "Bash(node fix-handle-step-complete.js:*)"
     ]
   },
   "enabledPlugins": {

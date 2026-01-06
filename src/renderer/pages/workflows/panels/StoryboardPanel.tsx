@@ -36,7 +36,7 @@ interface PanelProps {
 }
 
 export const StoryboardPanel: React.FC<PanelProps> = ({
-  workflowId: _workflowId, // 待后端 API 集成时使用
+  workflowId,
   onComplete,
   initialData,
   onStoryboardSelectionChange,
@@ -564,7 +564,7 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
   /**
    * 处理下一步
    */
-  const _handleNext = () => {
+  const _handleNext = async () => {
     if (storyboards.length === 0) {
       setToast({
         type: 'warning',
@@ -573,9 +573,24 @@ export const StoryboardPanel: React.FC<PanelProps> = ({
       return;
     }
 
-    onComplete({
+    const completionData = {
       storyboards
-    });
+    };
+
+    // 保存步骤数据到后端
+    try {
+      await window.electronAPI.updateWorkflowStepStatus(
+        workflowId,
+        'generate-storyboard',
+        'completed',
+        completionData
+      );
+      console.log('StoryboardPanel: 步骤状态已保存');
+    } catch (saveError) {
+      console.error('StoryboardPanel: 保存步骤状态失败', saveError);
+    }
+
+    onComplete(completionData);
   };
 
   return (

@@ -13,6 +13,7 @@ import { logger } from './Logger'
 import { errorHandler, ErrorCode } from './ServiceErrorHandler'
 import { timeService } from './TimeService'
 import { FileSystemService } from './FileSystemService'
+import { AssetDataManager } from './AssetDataManager'
 import {
   FlowState,
   WorkflowStepStatus,
@@ -26,10 +27,12 @@ import { workflowRegistry } from './WorkflowRegistry'
  */
 export class FlowStateManager {
   private fsService: FileSystemService
+  private assetDataManager: AssetDataManager
   private instances: Map<string, FlowInstance> = new Map()
 
-  constructor(fsService: FileSystemService) {
+  constructor(fsService: FileSystemService, assetDataManager: AssetDataManager) {
     this.fsService = fsService
+    this.assetDataManager = assetDataManager
   }
 
   /**
@@ -128,6 +131,17 @@ export class FlowStateManager {
 
       // 保存状态文件
       await this.fsService.saveJSON(statePath, state)
+
+      // 同步物料到项目文件夹（异步，不阻塞状态保存）
+      if (state.data) {
+        this.assetDataManager.syncAssetsToProject(state.projectId, state.data).catch(err => {
+          logger.warn(
+            `同步物料到项目失败: ${err instanceof Error ? err.message : String(err)}`,
+            'FlowStateManager',
+            { projectId: state.projectId, flowId }
+          )
+        })
+      }
 
       logger.debug(
         `工作流状态已保存: ${flowId}`,

@@ -10,6 +10,8 @@
 
 import type { Logger } from './Logger';
 import type { APIManager } from './APIManager';
+import type { TaskScheduler } from './TaskScheduler';
+import { TaskType, TaskStatus } from './TaskScheduler';
 
 /**
  * 场景角色提取结果
@@ -27,6 +29,7 @@ export interface SceneCharacterExtractionResult {
  * LLM 调用选项
  */
 interface LLMCallOptions {
+  providerId?: string;
   model: string;
   responseFormat?: 'json_object' | 'text';
   temperature?: number;
@@ -39,23 +42,28 @@ interface LLMCallOptions {
 export class AIService {
   private logger: Logger;
   private apiManager: APIManager;
+  private taskScheduler: TaskScheduler;
 
-  constructor(logger: Logger, apiManager: APIManager) {
+  constructor(logger: Logger, apiManager: APIManager, taskScheduler: TaskScheduler) {
     this.logger = logger;
     this.apiManager = apiManager;
+    this.taskScheduler = taskScheduler;
   }
 
-  /**
-   * 提取场景和角色
-   * @param novelText 小说文本
-   * @returns 场景和角色信息
-   */
-  async extractScenesAndCharacters(novelText: string): Promise<SceneCharacterExtractionResult> {
-    await this.logger.info('开始提取场景和角色', 'AIService', {
+  async extractScenesAndCharacters(
+    novelText: string,
+    providerId?: string
+  ): Promise<SceneCharacterExtractionResult> {
+    await this.logger.info('开始提取场景和角色（通过TaskScheduler）', 'AIService', {
       textLength: novelText.length
     });
 
-    const prompt = `你是一位经验丰富的影视制片人和资源管理专家，擅长分析剧本并识别制作所需的关键物料。
+    // 创建任务通过TaskScheduler执行
+    const taskId = await this.taskScheduler.createTask({
+      type: TaskType.CUSTOM,
+      name: '场景角色提取',
+      customHandler: async () => {
+        const prompt = `你是一位经验丰富的影视制片人和资源管理专家，擅长分析剧本并识别制作所需的关键物料。
 现在你需要将可视化的影视文本进行场景分解，并识别出需要固定形象的物料。
 
 你的任务目标：
@@ -85,46 +93,51 @@ ${novelText}
   ]
 }`;
 
-    try {
-      const response = await this.callLLM(prompt, {
-        model: 'deepseek-chat',
-        responseFormat: 'json_object',
-        temperature: 0.3 // 较低温度保证稳定输出
-      });
+        const response = await this.callLLM(prompt, {
+          providerId,
+          model: 'deepseek-chat',
+          responseFormat: 'json_object',
+          temperature: 0.3
+        });
 
-      const data = JSON.parse(response);
+        // 清理可能的 markdown 格式后再解析
+        const cleanedResponse = this.cleanMarkdownJSON(response);
+        const data = JSON.parse(cleanedResponse);
 
-      // 验证响应格式
-      if (!data.data || !Array.isArray(data.data)) {
-        throw new Error('AI 响应格式错误：缺少 data 字段');
-      }
+        // 验证响应格式
+        if (!data.data || !Array.isArray(data.data)) {
+          throw new Error('AI 响应格式错误：缺少 data 字段');
+        }
 
-      // 提取唯一的场景和角色列表
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const scenes = [...new Set(data.data.map((item: any) => item.scene))] as string[];
-      const characters = [
+        // 提取唯一的场景和角色列表
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ...new Set(data.data.flatMap((item: any) => item.characters || []))
-      ] as string[];
+        const scenes = [...new Set(data.data.map((item: any) => item.scene))] as string[];
+        const characters = [
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...new Set(data.data.flatMap((item: any) => item.characters || []))
+        ] as string[];
 
-      await this.logger.info('场景和角色提取完成', 'AIService', {
-        scenesCount: scenes.length,
-        charactersCount: characters.length
-      });
+        await this.logger.info('场景和角色提取完成', 'AIService', {
+          scenesCount: scenes.length,
+          charactersCount: characters.length
+        });
 
-      return {
-        scenes,
-        characters,
-        details: data.data
-      };
-    } catch (error) {
-      await this.logger.error(
-        `场景角色提取失败: ${error instanceof Error ? error.message : String(error)}`,
-        'AIService',
-        { error }
-      );
-      throw error;
-    }
+        return {
+          scenes,
+          characters,
+          details: data.data
+        };
+      }
+    });
+
+    // 执行任务
+    const executionId = await this.taskScheduler.executeTask(taskId, {
+      novelText,
+      providerId
+    });
+
+    // 等待任务完成
+    return await this.waitForTaskCompletion<SceneCharacterExtractionResult>(executionId);
   }
 
   /**
@@ -133,7 +146,11 @@ ${novelText}
    * @param context 上下文信息（角色描述、性格等）
    * @returns 角色图片生成 Prompt
    */
-  async generateCharacterPrompt(characterName: string, context?: string): Promise<string> {
+  async generateCharacterPrompt(
+    characterName: string,
+    context?: string,
+    providerId?: string
+  ): Promise<string> {
     await this.logger.debug(`生成角色 Prompt: ${characterName}`, 'AIService');
 
     const prompt = `你是一位专业的角色设计师和 AI 绘画 Prompt 工程师。
@@ -156,6 +173,7 @@ ${context ? `角色背景信息：\n${context}\n\n` : ''}核心要求：
 
     try {
       const response = await this.callLLM(prompt, {
+        providerId,
         model: 'deepseek-chat',
         responseFormat: 'text',
         temperature: 0.7
@@ -183,7 +201,11 @@ ${context ? `角色背景信息：\n${context}\n\n` : ''}核心要求：
    * @param context 上下文信息（场景描述、氛围等）
    * @returns 场景图片生成 Prompt
    */
-  async generateScenePrompt(sceneName: string, context?: string): Promise<string> {
+  async generateScenePrompt(
+    sceneName: string,
+    context?: string,
+    providerId?: string
+  ): Promise<string> {
     await this.logger.debug(`生成场景 Prompt: ${sceneName}`, 'AIService');
 
     const prompt = `你是一位专业的场景设计师和 AI 绘画 Prompt 工程师。
@@ -207,6 +229,7 @@ ${context ? `场景背景信息：\n${context}\n\n` : ''}核心要求：
 
     try {
       const response = await this.callLLM(prompt, {
+        providerId,
         model: 'deepseek-chat',
         responseFormat: 'text',
         temperature: 0.7
@@ -239,7 +262,8 @@ ${context ? `场景背景信息：\n${context}\n\n` : ''}核心要求：
     sceneDescription: string,
     characters: string[],
     characterImages?: Record<string, string>,
-    sceneImage?: string
+    sceneImage?: string,
+    providerId?: string
   ): Promise<string> {
     await this.logger.debug('生成分镜 Prompt', 'AIService', {
       charactersCount: characters.length
@@ -295,20 +319,106 @@ ${hasImages ? '注意：已有角色和场景的参考图片，需要保持风�
   }
 
   /**
+   * 等待任务完成
+   * @param executionId 任务执行ID
+   * @returns 任务结果
+   */
+  private async waitForTaskCompletion<T>(executionId: string): Promise<T> {
+    const maxWaitTime = 120000; // 2分钟超时
+    const startTime = Date.now();
+    const pollInterval = 1000; // 每秒轮询一次
+
+    while (Date.now() - startTime < maxWaitTime) {
+      try {
+        const execution = await this.taskScheduler.getTaskStatus(executionId);
+
+        if (execution.status === TaskStatus.COMPLETED) {
+          await this.logger.debug(`任务完成: ${executionId}`, 'AIService');
+          return execution.result as T;
+        }
+
+        if (execution.status === TaskStatus.FAILED) {
+          const errorMsg = execution.error || '任务执行失败';
+          await this.logger.error(`任务失败: ${errorMsg}`, 'AIService', { executionId });
+          throw new Error(errorMsg);
+        }
+
+        // 任务仍在运行，等待后继续轮询
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      } catch (error) {
+        // 如果获取状态失败，记录错误但继续轮询
+        await this.logger.warn(
+          `获取任务状态失败: ${error instanceof Error ? error.message : String(error)}`,
+          'AIService',
+          { executionId }
+        );
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      }
+    }
+
+    // 超时
+    await this.logger.error('任务执行超时', 'AIService', { executionId, maxWaitTime });
+    throw new Error(`任务执行超时（${maxWaitTime}ms）`);
+  }
+
+  /**
+   * 清理 Markdown 格式的 JSON
+   * @param text 可能包含 markdown 代码块的文本
+   * @returns 清理后的纯 JSON 文本
+   */
+  private cleanMarkdownJSON(text: string): string {
+    let cleaned = text.trim();
+
+    // 匹配 ```json ... ``` 或 ```... ```
+    const codeBlockRegex = /^```(?:json|JSON)?\s*\n?([\s\S]*?)\n?```$/m;
+    const match = cleaned.match(codeBlockRegex);
+
+    if (match) {
+      cleaned = match[1].trim();
+    }
+
+    // 移除可能的前导文本（查找第一个 { 或 [）
+    const jsonStartIndex = Math.max(
+      cleaned.indexOf('{') >= 0 ? cleaned.indexOf('{') : Infinity,
+      cleaned.indexOf('[') >= 0 ? cleaned.indexOf('[') : Infinity
+    );
+
+    if (jsonStartIndex !== Infinity && jsonStartIndex > 0) {
+      cleaned = cleaned.substring(jsonStartIndex);
+    }
+
+    return cleaned;
+  }
+
+  /**
    * 调用 LLM（DeepSeek API）
    * @param prompt 提示词
    * @param options 调用选项
    * @returns LLM 响应内容
    */
   private async callLLM(prompt: string, options: LLMCallOptions): Promise<string> {
-    // 从 APIManager 获取 DeepSeek Provider 配置
-    const provider = await this.apiManager.getProvider('deepseek');
+    let provider = null;
+
+    if (options.providerId) {
+      provider = await this.apiManager.getProvider(options.providerId);
+    }
+
+    if (!provider) {
+      const providers = await this.apiManager.listProviders({
+        category: 'llm' as any,
+        enabledOnly: true
+      });
+      if (providers.length > 0) {
+        provider = providers[0];
+      }
+    }
 
     if (!provider || !provider.apiKey) {
-      throw new Error('DeepSeek API Key 未配置，请在设置中配置 DeepSeek Provider');
+      throw new Error('未找到可用的LLM Provider，请在设置中配置并启用LLM Provider');
     }
 
     const apiKey = provider.apiKey;
+    const baseUrl = provider.baseUrl || 'https://api.deepseek.com';
 
     await this.logger.debug('调用 DeepSeek API', 'AIService', {
       model: options.model,
@@ -334,7 +444,8 @@ ${hasImages ? '注意：已有角色和场景的参考图片，需要保持风�
         requestBody.max_tokens = options.maxTokens;
       }
 
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      const url = baseUrl.includes('/v1') ? `${baseUrl}/chat/completions` : `${baseUrl}/v1/chat/completions`;
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${apiKey}`,

@@ -188,10 +188,11 @@ const WorkflowExecutor: React.FC = () => {
     try {
       setLoading(true);
       console.log('WorkflowExecutor: 加载工作流', { workflowId: actualWorkflowId, isPlugin: !!pluginId });
-      const workflowInstance = await window.electronAPI.loadWorkflow(actualWorkflowId) as any;
+      const workflowInstance = await window.electronAPI.loadWorkflowInstance(actualWorkflowId) as any;
       console.log('WorkflowExecutor: 工作流实例加载成功', {
         type: (workflowInstance as any).type,
-        name: (workflowInstance as any).name
+        name: (workflowInstance as any).name,
+        projectId: (workflowInstance as any).projectId
       });
       const definition = await window.electronAPI.getWorkflowDefinition((workflowInstance as any).type) as any;
       console.log('WorkflowExecutor: 工作流定义获取成功', {
@@ -213,17 +214,69 @@ const WorkflowExecutor: React.FC = () => {
         ExportPanel,
         RemoteControlPanel
       };
-      const workflow: WorkflowState = {
-        name: (workflowInstance as any).name || (definition as any).name || '未命名工作流',
-        currentStepIndex: 0,
-        steps: (definition as any).steps.map((step: any, index: number) => ({
-          id: (step as any).id,
-          name: (step as any).name,
-          component: componentMap[(step as any).componentType] || (() => <div>组件未找到: {(step as any).componentType}</div>),
-          status: index === 0 ? 'in_progress' : 'pending'
-        })),
-        data: (definition as any).defaultState || {}
-      };
+      // 尝试加载已保存的工作流状态
+      let savedState: any = null;
+      try {
+        savedState = await window.electronAPI.loadWorkflowState(actualWorkflowId);
+        console.log('WorkflowExecutor: 已保存状态加载成功', {
+          currentStep: savedState?.currentStep,
+          hasData: !!savedState?.data
+        });
+      } catch (error) {
+        console.log('WorkflowExecutor: 无已保存状态，将创建新状态', { error });
+      }
+
+      // 构建工作流状态
+      let workflow: WorkflowState;
+      if (savedState && savedState.currentStep !== undefined) {
+        // 从已保存状态恢复
+        workflow = {
+          name: (workflowInstance as any).name || (definition as any).name || '未命名工作流',
+          currentStepIndex: savedState.currentStep,
+          steps: (definition as any).steps.map((step: any, index: number) => ({
+            id: (step as any).id,
+            name: (step as any).name,
+            component: componentMap[(step as any).componentType] || (() => <div>组件未找到: {(step as any).componentType}</div>),
+            status: savedState.steps?.[step.id]?.status ||
+                   (index < savedState.currentStep ? 'completed' :
+                   index === savedState.currentStep ? 'in_progress' : 'pending')
+          })),
+          data: savedState.data || {}
+        };
+        console.log('WorkflowExecutor: 状态恢复完成', {
+          currentStepIndex: workflow.currentStepIndex,
+          dataKeys: Object.keys(workflow.data)
+        });
+      } else {
+        // 首次执行，创建新状态
+        workflow = {
+          name: (workflowInstance as any).name || (definition as any).name || '未命名工作流',
+          currentStepIndex: 0,
+          steps: (definition as any).steps.map((step: any, index: number) => ({
+            id: (step as any).id,
+            name: (step as any).name,
+            component: componentMap[(step as any).componentType] || (() => <div>组件未找到: {(step as any).componentType}</div>),
+            status: index === 0 ? 'in_progress' : 'pending'
+          })),
+          data: (definition as any).defaultState || {}
+        };
+
+        // 立即保存初始状态
+        try {
+          await window.electronAPI.saveWorkflowState(actualWorkflowId, {
+            flowId: actualWorkflowId,
+            projectId: (workflowInstance as any).projectId,
+            currentStep: 0,
+            steps: {},
+            data: workflow.data,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+          console.log('WorkflowExecutor: 初始状态保存成功');
+        } catch (saveError) {
+          console.error('WorkflowExecutor: 保存初始状态失败', saveError);
+        }
+      }
 
       setWorkflowState(workflow);
     } catch (error) {
@@ -317,52 +370,139 @@ const WorkflowExecutor: React.FC = () => {
    * 处理步骤完成
    */
   const handleStepComplete = async (data: unknown) => {
-    if (!workflowState) return;
-    const newData = { ...workflowState.data, ...(data as any) };
+    if (!workflowState || !actualWorkflowId) return;
+
     const currentStepIndex = workflowState.currentStepIndex;
-    const steps = [...workflowState.steps];
-    steps[currentStepIndex].status = 'completed';
+    const currentStep = workflowState.steps[currentStepIndex];
+    const newData = { ...workflowState.data, ...(data as any) };
+    const nextStepIndex = currentStepIndex + 1;
+
+    try {
+      // 持久化步骤状态到后端
+      await window.electronAPI.updateWorkflowStepStatus(
+        actualWorkflowId,
+        currentStep.id,
+        'completed',
+        data
+      );
+
+      // 持久化全局工作流状态
+      const updatedSteps = { ...workflowState.steps.reduce((acc, step) => {
+        acc[step.id] = { status: step.status };
+        return acc;
+      }, {} as Record<string, any>) };
+      updatedSteps[currentStep.id] = { status: 'completed', data };
+
+      await window.electronAPI.saveWorkflowState(actualWorkflowId, {
+        flowId: actualWorkflowId,
+        projectId: currentProjectId,
+        currentStep: nextStepIndex,
+        steps: updatedSteps,
+        data: newData,
+        updatedAt: new Date().toISOString()
+      });
+
+      // 更新当前步骤索引
+      await window.electronAPI.updateWorkflowCurrentStep(actualWorkflowId, nextStepIndex);
+
+      console.log('WorkflowExecutor: 步骤状态保存成功', {
+        stepId: currentStep.id,
+        nextStepIndex
+      });
+    } catch (error) {
+      console.error('WorkflowExecutor: 保存步骤状态失败', error);
+      setToast({
+        type: 'error',
+        message: '保存状态失败，但可以继续操作'
+      });
+    }
+
+    // 更新本地React状态
+    const steps = [...workflowState.steps];
+    steps[currentStepIndex].status = 'completed';
+
     if (currentStepIndex < steps.length - 1) {
-      steps[currentStepIndex + 1].status = 'in_progress';
+      steps[nextStepIndex].status = 'in_progress';
       setWorkflowState({
         ...workflowState,
-        currentStepIndex: currentStepIndex + 1,
+        currentStepIndex: nextStepIndex,
         steps,
         data: newData
       });
 
       setToast({
         type: 'success',
-        message: `${steps[currentStepIndex].name} 完成！`
+        message: `${currentStep.name} 完成！`
       });
-    } else {
+    } else {
+      // 最后一步完成
+      setWorkflowState({
+        ...workflowState,
+        steps,
+        data: newData
+      });
+
       setToast({
         type: 'success',
         message: '工作流执行完成！'
-      });
+      });
+
       setTimeout(() => {
         navigate('/workflows');
       }, 2000);
-    }
+    }
   };
 
   /**
    * 处理返回上一步
    */
-  const _handleGoBack = () => {
-    if (!workflowState || workflowState.currentStepIndex === 0) return;
+  const _handleGoBack = async () => {
+    if (!workflowState || workflowState.currentStepIndex === 0 || !actualWorkflowId) return;
 
-    const steps = [...workflowState.steps];
-    const currentStepIndex = workflowState.currentStepIndex;
+    const prevStepIndex = workflowState.currentStepIndex - 1;
 
-    steps[currentStepIndex].status = 'pending';
-    steps[currentStepIndex - 1].status = 'in_progress';
+    try {
+      // 从后端重新加载状态，恢复到上一步的数据
+      const savedState = await window.electronAPI.loadWorkflowState(actualWorkflowId);
 
-    setWorkflowState({
-      ...workflowState,
-      currentStepIndex: currentStepIndex - 1,
-      steps
-    });
+      const steps = [...workflowState.steps];
+      steps[workflowState.currentStepIndex].status = 'pending';
+      steps[prevStepIndex].status = 'in_progress';
+
+      setWorkflowState({
+        ...workflowState,
+        currentStepIndex: prevStepIndex,
+        steps,
+        data: savedState?.data || workflowState.data
+      });
+
+      // 更新后端当前步骤索引
+      await window.electronAPI.updateWorkflowCurrentStep(actualWorkflowId, prevStepIndex);
+
+      // 保存回退后的状态
+      await window.electronAPI.saveWorkflowState(actualWorkflowId, {
+        flowId: actualWorkflowId,
+        projectId: currentProjectId,
+        currentStep: prevStepIndex,
+        steps: steps.reduce((acc, step) => {
+          acc[step.id] = { status: step.status };
+          return acc;
+        }, {} as Record<string, any>),
+        data: savedState?.data || workflowState.data,
+        updatedAt: new Date().toISOString()
+      });
+
+      console.log('WorkflowExecutor: 回退到上一步', {
+        prevStepIndex,
+        stepId: steps[prevStepIndex].id
+      });
+    } catch (error) {
+      console.error('WorkflowExecutor: 回退失败', error);
+      setToast({
+        type: 'error',
+        message: '回退失败，请重试'
+      });
+    }
   };
 
   /**

@@ -1,0 +1,35 @@
+{
+  "id": "2bc67b15-56ce-4912-8b04-2439a4371fd8",
+  "name": "1122",
+  "path": "E:\\Projects\\Matrix\\projects\\2bc67b15-56ce-4912-8b04-2439a4371fd8",
+  "createdAt": "2026-01-05T04:57:12.512Z",
+  "updatedAt": "2026-01-05T04:57:12.512Z",
+  "settings": {
+    "defaultWorkflow": "novel-to-video",
+    "outputFormat": "mp4",
+    "quality": 80
+  },
+  "workflows": [
+    "ce68934c-5caf-4248-8221-e109dc9ac37c"
+  ],
+  "workflowType": "novel-to-video",
+  "inputAssets": [],
+  "outputAssets": [],
+  "immutable": false,
+  "pluginId": "novel-to-video",
+  "selectedProviders": {
+    "llm": "[小说转视频]llm-openai",
+    "imageGeneration": "[小说转视频]imageGeneration-stability-ai",
+    "videoGeneration": "[小说转视频]videoGeneration-t8star-video"
+  },
+  "folders": {},
+  "params": {
+    "llm": {},
+    "imageGeneration": {
+      "aspectRatio": "16:9"
+    },
+    "videoGeneration": {},
+    "tts": {}
+  },
+  "prompts": {}
+}

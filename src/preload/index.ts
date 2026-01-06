@@ -389,38 +389,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getTaskResults: (executionId: string): Promise<unknown> =>
     ipcRenderer.invoke('task:results', executionId),
 
-  // ==================== API相关 ====================
-
-  /**
-   * 调用API
-   */
-  callAPI: (name: string, params: unknown): Promise<unknown> =>
-    ipcRenderer.invoke('api:call', name, params),
-
-  /**
-   * 设置API密钥
-   */
-  setAPIKey: (name: string, key: string): Promise<void> =>
-    ipcRenderer.invoke('api:set-key', name, key),
-
-  /**
-   * 获取API状态
-   */
-  getAPIStatus: (name: string): Promise<unknown> =>
-    ipcRenderer.invoke('api:get-status', name),
-
-  /**
-   * 获取API使用情况
-   */
-  getAPIUsage: (name: string): Promise<unknown> =>
-    ipcRenderer.invoke('api:get-usage', name),
-
-  /**
-   * 测试API连接
-   */
-  testAPIConnection: (params: { type: string; baseUrl: string; apiKey?: string }): Promise<{ success: boolean; models?: string[]; error?: string }> =>
-    ipcRenderer.invoke('api:test-connection', params),
-
   // ==================== Provider相关 ====================
 
   /**
@@ -522,20 +490,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 提取场景和角色
    */
-  extractScenesAndCharacters: (novelText: string): Promise<unknown> =>
-    ipcRenderer.invoke('ai:extract-scenes-and-characters', novelText),
+  extractScenesAndCharacters: (params: { novelText: string; providerId?: string }): Promise<unknown> =>
+    ipcRenderer.invoke('ai:extract-scenes-and-characters', params),
 
   /**
    * 生成角色 Prompt
    */
-  generateCharacterPrompt: (characterName: string, context?: string): Promise<string> =>
-    ipcRenderer.invoke('ai:generate-character-prompt', characterName, context),
+  generateCharacterPrompt: (params: { characterName: string; context?: string; providerId?: string }): Promise<string> =>
+    ipcRenderer.invoke('ai:generate-character-prompt', params),
 
   /**
    * 生成场景 Prompt
    */
-  generateScenePrompt: (sceneName: string, context?: string): Promise<string> =>
-    ipcRenderer.invoke('ai:generate-scene-prompt', sceneName, context),
+  generateScenePrompt: (params: { sceneName: string; context?: string; providerId?: string }): Promise<string> =>
+    ipcRenderer.invoke('ai:generate-scene-prompt', params),
 
   /**
    * 生成分镜 Prompt
@@ -545,6 +513,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     characters: string[];
     characterImages?: Record<string, string>;
     sceneImage?: string;
+    providerId?: string;
   }): Promise<string> =>
     ipcRenderer.invoke('ai:generate-storyboard-prompt', params),
 

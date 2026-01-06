@@ -18,11 +18,11 @@ export function registerAIHandlers(aiService: AIService): void {
    */
   ipcMain.handle(
     'ai:extract-scenes-and-characters',
-    async (_, novelText: string): Promise<SceneCharacterExtractionResult> => {
+    async (_, params: { novelText: string; providerId?: string }): Promise<SceneCharacterExtractionResult> => {
       try {
-        await logger.debug(`IPC: ai:extract-scenes-and-characters - textLength=${novelText.length}`, 'ai-handlers');
+        await logger.debug(`IPC: ai:extract-scenes-and-characters - textLength=${params.novelText.length}`, 'ai-handlers');
 
-        const result = await aiService.extractScenesAndCharacters(novelText);
+        const result = await aiService.extractScenesAndCharacters(params.novelText, params.providerId);
         return result;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -41,14 +41,21 @@ export function registerAIHandlers(aiService: AIService): void {
    */
   ipcMain.handle(
     'ai:generate-character-prompt',
-    async (_, characterName: string, context?: string): Promise<string> => {
+    async (
+      _,
+      params: { characterName: string; context?: string; providerId?: string }
+    ): Promise<string> => {
       try {
         await logger.debug(
-          `IPC: ai:generate-character-prompt - character=${characterName}`,
+          `IPC: ai:generate-character-prompt - character=${params.characterName}`,
           'ai-handlers'
         );
 
-        const prompt = await aiService.generateCharacterPrompt(characterName, context);
+        const prompt = await aiService.generateCharacterPrompt(
+          params.characterName,
+          params.context,
+          params.providerId
+        );
         return prompt;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -66,11 +73,18 @@ export function registerAIHandlers(aiService: AIService): void {
    */
   ipcMain.handle(
     'ai:generate-scene-prompt',
-    async (_, sceneName: string, context?: string): Promise<string> => {
+    async (
+      _,
+      params: { sceneName: string; context?: string; providerId?: string }
+    ): Promise<string> => {
       try {
-        await logger.debug(`IPC: ai:generate-scene-prompt - scene=${sceneName}`, 'ai-handlers');
+        await logger.debug(`IPC: ai:generate-scene-prompt - scene=${params.sceneName}`, 'ai-handlers');
 
-        const prompt = await aiService.generateScenePrompt(sceneName, context);
+        const prompt = await aiService.generateScenePrompt(
+          params.sceneName,
+          params.context,
+          params.providerId
+        );
         return prompt;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -95,6 +109,7 @@ export function registerAIHandlers(aiService: AIService): void {
         characters: string[];
         characterImages?: Record<string, string>;
         sceneImage?: string;
+        providerId?: string;
       }
     ): Promise<string> => {
       try {
@@ -107,7 +122,8 @@ export function registerAIHandlers(aiService: AIService): void {
           params.sceneDescription,
           params.characters,
           params.characterImages,
-          params.sceneImage
+          params.sceneImage,
+          params.providerId
         );
         return prompt;
       } catch (error) {
