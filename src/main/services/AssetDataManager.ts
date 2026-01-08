@@ -36,7 +36,6 @@ export class AssetDataManager {
   async syncAssetsToProject(projectId: string, flowData: Record<string, unknown>): Promise<void> {
     await this.logger.info('开始同步物料到项目', 'AssetDataManager', { projectId });
 
-    const projectDir = path.join(this.fsService.getDataDir(), 'projects', projectId);
     const timestamp = await timeService.getISOString();
 
     try {

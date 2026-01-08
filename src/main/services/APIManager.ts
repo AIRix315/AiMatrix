@@ -25,7 +25,6 @@ import {
   APIFormat,
   APIProviderConfig,
   APIProviderStatus,
-  APICallParams,
   ConnectionTestParams,
   ConnectionTestResult,
 } from '@/shared/types';

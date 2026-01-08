@@ -19,7 +19,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { BrowserWindow } from 'electron';
 import { logger } from './Logger';
 import { errorHandler, ErrorCode } from './ServiceErrorHandler';
-import { apiManager } from './APIManager';
 import { timeService } from './TimeService';
 import { APICallParams } from '@/shared/types';
 

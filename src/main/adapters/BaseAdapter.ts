@@ -105,10 +105,11 @@ export abstract class BaseAdapter {
         case 'apikey':
           headers['X-API-Key'] = provider.apiKey;
           break;
-        case 'basic':
+        case 'basic': {
           const encoded = Buffer.from(`api:${provider.apiKey}`).toString('base64');
           headers['Authorization'] = `Basic ${encoded}`;
           break;
+        }
       }
     }
 

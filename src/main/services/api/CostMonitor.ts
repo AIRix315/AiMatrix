@@ -13,7 +13,6 @@
  */
 
 import { logger } from '../Logger';
-import type { ProviderConfig } from '../../../shared/types/provider';
 import { timeService } from '../TimeService';
 
 /**

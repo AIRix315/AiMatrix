@@ -263,7 +263,7 @@ ${context ? `场景背景信息：\n${context}\n\n` : ''}核心要求：
     characters: string[],
     characterImages?: Record<string, string>,
     sceneImage?: string,
-    providerId?: string
+    _providerId?: string
   ): Promise<string> {
     await this.logger.debug('生成分镜 Prompt', 'AIService', {
       charactersCount: characters.length
