@@ -327,4 +327,119 @@ export class ResourceService {
 
     return results;
   }
+
+  /**
+   * 生成分镜视频（V0.4.0 新增）
+   * @param projectId 项目ID
+   * @param storyboardAssetPath 分镜资产文件路径
+   * @returns 任务ID
+   */
+  async generateStoryboardVideo(
+    projectId: string,
+    storyboardAssetPath: string
+  ): Promise<string> {
+    try {
+      await this.logger.info('创建分镜视频生成任务', 'ResourceService', {
+        projectId,
+        storyboardAssetPath
+      });
+
+      // 创建异步任务
+      const taskId = await this.taskScheduler.createTask({
+        type: 'API_CALL' as TaskType,
+        name: `生成分镜视频: ${storyboardAssetPath}`,
+        metadata: {
+          taskType: 'novel-video:generate-storyboard-video',
+          projectId,
+          storyboardAssetPath
+        }
+      });
+
+      // 执行任务（在后台运行）
+      this.executeStoryboardVideoTask(taskId, projectId, storyboardAssetPath).catch(error => {
+        this.logger.error('分镜视频生成任务执行失败', 'ResourceService', {
+          taskId,
+          error
+        }).catch(() => {});
+      });
+
+      return taskId;
+    } catch (error) {
+      await this.logger.error('创建分镜视频生成任务失败', 'ResourceService', {
+        projectId,
+        storyboardAssetPath,
+        error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * 执行分镜视频生成任务
+   */
+  private async executeStoryboardVideoTask(
+    taskId: string,
+    projectId: string,
+    storyboardAssetPath: string
+  ): Promise<void> {
+    try {
+      // 调用API生成视频
+      const videoPath = await this.apiService.generateStoryboardVideo(
+        projectId,
+        storyboardAssetPath
+      );
+
+      // 标记任务完成
+      await this.taskScheduler.completeTask(taskId, { videoPath });
+    } catch (error) {
+      // 标记任务失败
+      await this.taskScheduler.failTask(taskId, {
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+
+  /**
+   * 批量生成分镜视频（V0.4.0 新增）
+   * @param projectId 项目ID
+   * @param storyboardAssetPaths 分镜资产文件路径列表
+   * @returns 视频路径列表
+   */
+  async generateStoryboardVideos(
+    projectId: string,
+    storyboardAssetPaths: string[]
+  ): Promise<string[]> {
+    try {
+      await this.logger.info('开始批量生成分镜视频', 'ResourceService', {
+        projectId,
+        count: storyboardAssetPaths.length
+      });
+
+      // 创建所有任务
+      const taskIds: string[] = [];
+      for (const path of storyboardAssetPaths) {
+        const taskId = await this.generateStoryboardVideo(projectId, path);
+        taskIds.push(taskId);
+      }
+
+      // 等待所有任务完成
+      const results = await this.waitForTasks(taskIds);
+
+      // 提取视频路径
+      const videoPaths = results.map(r => r.videoPath);
+
+      await this.logger.info('批量分镜视频生成完成', 'ResourceService', {
+        projectId,
+        count: videoPaths.length
+      });
+
+      return videoPaths;
+    } catch (error) {
+      await this.logger.error('批量分镜视频生成失败', 'ResourceService', {
+        projectId,
+        error
+      });
+      throw error;
+    }
+  }
 }

@@ -255,6 +255,7 @@ export class WorkflowExecutor {
 
     const storyboards = stage3Output.outputs.storyboards;
 
+    // 1. 生成分镜图片
     const imageStoryboards = storyboards
       .map((s: any) => ({
         prompt: s.customFields?.imagePrompts?.[0] || '',
@@ -267,10 +268,29 @@ export class WorkflowExecutor {
       '9x16'
     );
 
+    await this.logger.info('分镜图片生成完成', 'WorkflowExecutor', {
+      count: storyboardImages.length
+    });
+
+    // 2. 生成分镜视频（V0.4.0 新增）
+    const storyboardAssetPaths = storyboards
+      .map((s: any) => s.filePath)
+      .filter((path: string) => path);
+
+    const videoSegments = await this.resourceService.generateStoryboardVideos(
+      context.projectId,
+      storyboardAssetPaths
+    );
+
+    await this.logger.info('分镜视频生成完成', 'WorkflowExecutor', {
+      count: videoSegments.length
+    });
+
     return {
       success: true,
       outputs: {
-        storyboardImages
+        storyboardImages,
+        videoSegments
       }
     };
   }
@@ -300,7 +320,7 @@ export class WorkflowExecutor {
       'stage2': ['sceneImages', 'characterImages'],
       'stage2.5': ['sceneSummaries'],
       'stage3': ['storyboards'],
-      'stage4': ['storyboardImages']
+      'stage4': ['storyboardImages', 'videoSegments'] // V0.4.0: 添加 videoSegments
     };
 
     return requirements[stageId] || [];
