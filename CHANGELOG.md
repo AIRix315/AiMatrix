@@ -4,6 +4,7 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.3.9.9 | 2026-01-08 | 架构重构 | Adapter架构实现、模型优先路由、插件层解耦、Stage4视频生成完善、代码质量优化（0错误） |
 | 0.4.0 | 2026-01-06 | 功能增强 | Novel-to-Video工作流完整实现（5阶段执行器、物料收集器、Jiekou AI集成、进度追踪） |
 | 0.3.9.8 | 2026-01-06 | 功能增强 | 工作流状态持久化、双重存储架构、TaskScheduler进度事件、DeepSeek JSON清理 |
 | 0.3.9.7 | 2026-01-05 | 代码质量 | 彻底清理所有冗余注释（阶段性注释、JSDoc文档、单行注释），代码极简化 |
@@ -21,6 +22,42 @@
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 0.0.1 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.3.9.9] - 2026-01-08
+
+### 架构重构
+- **Adapter 架构实现**
+  - 创建 4 个适配器：BaseAdapter（抽象基类）、OpenAICompatibleAdapter（同步）、AsyncPollingAdapter（异步轮询）、ComfyUIWorkflowAdapter（工作流）
+  - 新增 APIFormat 枚举：openai-compatible、async-polling、comfyui-workflow
+  - APIManager 扩展：callModel() 统一调用方法、Provider 优先级路由（templateRecommended > priority）
+
+- **模型优先架构**
+  - 插件配置简化：移除 providerId 依赖，仅保留 model 字段
+  - NovelVideoAPIService 重构：5 个方法改用 apiManager.callModel()（generateSceneImage、generateCharacterImage、generateStoryboardVideo、generateDialogueAudio、callI2IAPI）
+  - 删除硬编码依赖：移除 JiekouAIProvider 直接调用、删除 providers/ 目录
+
+- **工作流完善**
+  - WorkflowExecutor.executeStage4：添加视频生成调用，双重输出（storyboardImages + videoSegments）
+  - ResourceService 扩展：3 个新方法（generateStoryboardVideo、executeStoryboardVideoTask、generateStoryboardVideos）
+  - Gate Condition 更新：Stage 4 必须输出图片和视频才能通过阀门
+
+### 代码质量
+- **ESLint 修复**：0 errors（从 2 降至 0），189 warnings（仅 any 类型）
+- **类型安全**：所有新方法有完整类型定义
+- **错误处理**：所有方法有 try-catch 和错误日志
+- **构建优化**：主进程 2.42 MiB（+70KB adapter 层）
+
+### 技术债务清理
+- 删除 8 个过时规划文档（-6759 行）
+- 归档已完成的实现报告至 docs/Plan/Done/
+- 修复 6 个未使用变量/导入错误
+
+### 新增文档
+- V0.4.0-Architecture-Alignment.md：架构对齐说明
+- V0.4.0-Implementation-Plan.md：完整实施计划
+- V0.4.0-Test-Cases.md：49 个测试用例设计
 
 ---
 
