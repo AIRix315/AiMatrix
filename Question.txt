@@ -1,0 +1,230 @@
+我还不清楚的问题清单
+
+  一、Provider 全局化架构问题 🔴
+
+  问题 1：Jiekou AI Provider 的归属
+
+  - 当前情况：JiekouAIProvider.ts 完整实现在插件内（138行），包含硬编码的 API 端点
+  - 设计文档说法：Provider 永远是全局的，通过 ProviderHub 注册
+  - 我的疑问：
+    - Jiekou AI 应该作为全局 Provider 注册到 src/main/services/APIManager.ts，还是允许插件自定义实现？
+    - 如果是全局的，插件应该如何使用它（通过 apiManager.callAPI() 还是直接 new JiekouAIProvider()）？
+
+  问题 2：插件如何引用全局 Provider
+
+  - 当前情况：default-config.json 中硬编码了 6 个 Provider ID（openai, stability-ai, t8star-video, jiekou-ai-t2i/i2i/video）
+  - 我的疑问：
+    - 插件应该通过 providerId（如 "jiekou-ai-t2i"）引用，还是通过 category（如 "IMAGE_GENERATION"）筛选可用 Provider？
+    - 如果用户想切换 Provider（如从 Jiekou AI 切换到 ComfyUI），是在哪里配置（Settings 全局配置，还是项目级 PluginConfig）？
+
+  问题 3：本地 Provider vs 远程 Provider
+
+  - 设计提到：ComfyUI、Ollama 是本地 Provider，OpenAI、Jiekou AI 是远程 Provider
+  - 我的疑问：
+    - 本地 Provider 需要启动本地服务，远程 Provider 需要 API Key，这两者在架构上如何统一处理？
+    - 本地 Provider 的健康检查和状态管理应该由谁负责（ProviderHub 还是 LocalServiceManager）？
+
+**Q1-03统一回答：
+1. 本项目核心能力或实现功能总结为两条：
+a. 资源文件的管理--包括所有输入、输出的文本、视频、音频、图像格式。这些都会伴随项目或应用由AI产出，或复用。
+b. 全局管理执行调用--项目不执行任何操作，仅作"路由"式的分配,包括本地的Ollama、ComfyUI,N8N等；在线的OpenAI、Google；又或者平台聚集商，T8、JiekouAPI等；
+路由方式，主体以API调用为主。不管ComfyUI本地或云端、Ollama本地或云端都支持API，所以无论哪种调用都可以统筹为API调用，换句话说，全局执行都通过APIManger来协调。
+而设置Provirder就是检查连接方式准确性。实现全局复用。
+2. 插件只是一个逻辑编排模板，所有外部输入和执行都有默认值，在实例项目中建立对应插件模板时，程序会转化2个目标，1.a和1.b，以适配本项目。
+
+**回复：
+理解。
+- 根据 Q1-Q3 统一回答，我明白了：
+  1. Provider 永远是全局的，JiekouAIProvider 应该注册到全局 APIManager，插件通过 apiManager.callAPI() 调用，而不是在插件内部实现
+  2. 插件只是逻辑编排模板，通过 providerId 引用全局 Provider，用户在 Settings 全局配置中切换 Provider
+  3. 本地和远程 Provider 统一为 API 调用，由 APIManager 协调，无需区分处理      
+Q1、Q2、Q3 的疑问已消除。
+
+
+
+  ---
+  二、UI 架构与接驳问题 🎨
+
+  问题 4：工作流面板的标准化
+
+  - 当前情况：ChapterSplitPanel、StoryboardPanel 等 5 个工作流面板都是硬编码的 React 组件（每个 100+ 行）
+  - 设计预期：所有面板应该使用 PluginPanelConfig JSON + PluginPanelRenderer 渲染
+  - 我的疑问：
+    - 是否应该将这 5 个工作流面板全部重构为 JSON 配置？
+    - 还是保持核心工作流面板硬编码，只对插件自定义面板使用 JSON 配置？
+    - 如果重构，工作量大约多少（是否在当前迭代完成）？
+
+  问题 5：GlobalRightPanel 的职责边界
+
+  - 当前情况：
+    - PluginConfigTab 混入了全局 Provider 列表加载（应该只在 Settings 中）
+    - PluginConfigTab 与 ParametersTab 功能重叠（都有参数编辑）
+  - 我的疑问：
+    - PluginConfigTab 的职责应该严格限定为项目级插件配置注入，不应该显示全局 Provider 列表？
+    - 如何区分 "项目级 Provider 引用" 和 "全局 Provider 管理"（前者在 PluginConfigTab，后者在 Settings）？
+
+  问题 6：资产面板的数据流
+
+  - 当前情况：UnifiedAssetPanel（左侧）和工作流面板（中间）之间的数据流不清晰
+  - 我的疑问：
+    - 用户在 UnifiedAssetPanel 中选择资产后，工作流面板如何获取选中的资产？
+    - 是通过全局状态（Context/Zustand），还是通过父组件传递 props，还是通过 IPC 事件？
+    - StoryboardPanel 中显示的资产列表，是从 UnifiedAssetPanel 同步过来，还是独立查询 AssetManager？
+
+**Q4-Q6统一回答：
+1. 首先完整理解Q1-Q3的回答，那是背景和设计规划
+2. Q4的问题，主体在于当前必须通过特定逻辑页实现N8N工作流的分段和操控。
+- 项目希望通过中间抽象层的方式实现逻辑编排，为将来程序可以同时适配更多不同种类的流程编排做准备。也为自定义流程做一套模板化应用做准备，但目前仅需实现一个Nov2Vid而勾画。
+基于以上，是先做MVP还是全局勾画确实是一个问题，我更倾向先实现MVP，所以部分纠结不清、或硬编码可以接受，以便快速实现。但核心比如Q1-Q3中，资源管理和供应商管理必须符合设计要求。
+3. 比如PluginConfig的问题，明显是执行错误、理解不透彻导致！
+4. 关于全局资产管理，更加细节说明：
+所有资产必须存储于"项目"文件夹中；项目下有project.json，统筹记录插件模板、配置信息选择、生成文件路径等信息；全局资源管理通过检索汇聚项目下的json文件获得具体资产的位置，
+包括分类（不同模板可能资源分类不同）；插件项目如Nov2Vid一样需要建立项目，那么就有对应的项目json，资源面板就可以显示对应的资产。这是在没有数据库的情况下，检索配置集约的实现方式。
+请仔细理解体会。
+通过以上或许能解答Q4-Q6问题。
+
+**回复：
+● 理解。
+  根据 Q4-Q6 统一回答，我明白了：
+  Q4：先做 MVP，5个工作流面板暂时保持硬编码可以接受，但核心架构（Provider 管理、资源管理）必须符合设计。未来再逐步抽象为 PluginPanelConfig JSON。
+  Q5：PluginConfigTab 混入全局 Provider 列表是执行错误，应该严格限定为项目级插件配置，全局 Provider 管理只在 Settings 中。
+  Q6：资产数据流基于文件系统 + project.json，而非内存状态同步。流程是：
+  - 项目下 project.json 记录插件模板、配置、资产路径
+  - UnifiedAssetPanel 通过检索 project.json 显示资产
+  - 工作流面板也从 project.json/AssetManager 读取资产
+  - 不同插件的资源分类记录在各自的 project.json 中
+
+  ---
+  三、配置管理与优先级问题 ⚙️
+
+  问题 7：default-config.json 的定位
+
+  - 当前情况：default-config.json 包含硬编码的 Provider ID 和参数
+  - 我的疑问：
+    - default-config.json 应该作为插件默认模板（允许硬编码），还是应该完全外部化为占位符（如 "providerId": null）？
+    - 如果允许硬编码，用户首次使用插件时，是直接使用这些默认 Provider，还是强制用户配置？
+
+  问题 8：配置优先级
+
+  - 场景：全局 ConfigManager 有 Provider 配置，项目级 PluginConfig 也有 Provider 配置
+  - 我的疑问：
+    - 优先级顺序是什么？（项目级 > 插件默认 > 全局默认？）
+    - 如果项目级配置缺失某个 Provider，应该回退到全局配置，还是报错提示用户配置？
+
+  ---
+  四、实施策略与范围问题 📋
+
+  问题 9：修正的范围
+
+  - 当前已完成：WorkflowExecutor、MaterialCollector、JiekouAIProvider、5 个工作流面板
+  - 我的疑问：
+    - 修正工作是增量修正（保留现有代码，仅修复硬编码问题），还是结构重构（按照设计文档重新组织）？
+    - 如果是重构，是否需要保持现有功能的兼容性（如已有的 WorkflowExecutor.tsx 是否保留）？
+
+  问题 10：测试和文档
+
+  - 当前情况：已有 tests/integration/workflow.test.ts（316 行，5 个测试用例）
+  - 我的疑问：
+    - 修正后的代码是否需要更新现有测试，还是新增测试用例？
+    - 是否需要更新 docs/Plan/V0.4.0-Nov2Vid-modify-Plan.md 以反映实际实施的偏差？
+
+  ---
+  五、具体技术细节问题 💻
+
+  问题 11：API 密钥管理
+
+  - 当前情况：NovelVideoAPIService.ts:471 直接从 process.env.JIEKOU_API_KEY 读取
+  - 我的疑问：
+    - API 密钥应该统一由 APIManager 管理（全局配置），还是允许插件级别配置（项目私有密钥）？
+    - 如果支持两者，优先级如何？
+
+  问题 12：Provider 类型判断
+
+  - 当前情况：NovelVideoAPIService.ts 有多处硬判断（如 if (providerId === 't8star-image')）
+  - 我的疑问：
+    - 应该保留这些判断（支持特定 Provider 的特殊逻辑），还是抽象为通用接口（所有 Provider 统一调用）？
+    - 如果 Jiekou AI 和 ComfyUI 的调用方式完全不同，如何统一？
+
+**所以基于以上解答Q7-Q12是否需要再次回复？
+**不需要。
+基于 Q1-Q6 的回答，我可以推断出 Q7-Q12 的答案：
+  Q7-Q8（配置）：default-config.json 作为插件模板可以有默认 Provider ID，优先级 为：项目级 > 插件默认 > 全局默认
+  Q9-Q10（实施策略）：增量修正（保留工作流面板硬编码），重点修复 Provider 全局化，更新相关测试
+  Q11-Q12（技术细节）：API 密钥统一由 APIManager 管理，Provider 调用抽象为通用接口，消除硬判断
+
+------
+
+> 延申一个问题，就是关于现在执行的5个工作流面板，是否应该直接抽象化为PluginP    
+anelConfig，5个现有的工作流模板只是针对当前Nov2vid的实例化应用。因为过于考虑    
+MVP，会使技术债务积攒，同时以后升级改造困难，何况现在的工作量并非很大；另外     
+以后会对比如”镜头设计“这样的实例化页面做更加细致化的改进，这样两边同时考虑，    
+会增加复杂性。你如何建议，简要回复 
+
+● 建议：现在就抽象化为 PluginPanelConfig
+
+  理由：
+  1. PluginPanelRenderer 已存在且模式验证通过
+  2. 5个面板结构相似（列表+表单+按钮），转换成本可控
+  3. 避免未来两套系统并存（硬编码工作流面板 vs JSON配置插件面板）
+  4. 为"镜头设计"等细致化改进提供统一基础，只需扩展 JSON 配置而非修改代码       
+
+  前提：需先验证 PluginPanelConfig 的字段类型是否足够（如需要富文本编辑器、拖拽 排序等复杂交互，可能需要扩展）
+
+  风险可控：可以逐个迁移（先1个面板验证，再批量迁移其余4个）
+
+-------
+
+**随后你设计了一个计划，从计划中我看出问题：
+> 我发现依然有问题！就是你将jiekouAIProvier提出来！这个就错了！为什么？因为JiekouAI更本就不该是关注对象！详细说明AI产出来源于"模型"，
+模型要么来源于厂家、要么来源于开源社区。那么API的调用，无非就是开源的ComfyUI，要么像OpenAI或者中间聚合商如JiekouAI、T8等。
+N8N执行核心是用什么模型！不是哪个供应商！明白？ 本项目的核心的Provider是专门处理过程，指向模型的"路由"；所以你提炼个Jiekou.ts就是错误的！
+如果我没有jiekouai供应商的API就不能用嘛？只要我提供或更换其它供应商，目标对应到"模型"即可！
+举例：N8N用JiekouAI指向Sora2模型，我在程序里就可以设置用T8或者ComfyUI指向Sora2一样可获得相同结果！明白？！ 
+
+● 完全理解了！ 我犯了一个根本性的架构错误。
+
+  我错误的理解：
+
+  - 将 JiekouAI 当作核心对象，提取 JiekouAIProvider.ts
+  - 认为 Provider = 供应商
+
+  正确的理解：
+
+  - 核心是模型（Sora2、SD3-Large、GPT-4），不是供应商
+  - Provider 是路由层：模型 → 供应商的映射和适配
+  - 同一个模型可以通过多个供应商访问：
+    - Sora2 ← JiekouAI / T8 / ComfyUI（本地）
+    - 用户选择模型，系统自动路由到可用供应商
+
+  正确的架构应该是：
+
+  插件配置（关注模型，不关注供应商）：
+  {
+    "workflow": {
+      "models": {
+        "videoGeneration": "sora-2",     // 指定模型
+        "imageGeneration": "sd3-large",
+        "llm": "gpt-4"
+      }
+    }
+  }
+
+  Provider 配置（供应商 + 支持的模型列表）：
+  {
+    "id": "jiekou-ai",
+    "name": "JiekouAI",
+    "baseUrl": "https://api.jiekou.ai",
+    "apiFormat": "custom",
+    "models": ["sora-2", "sd3-large", "flux-1"],  // 该供应商支持的模型
+    "apiKey": "..."
+  }
+
+  Provider 路由逻辑：
+  1. 插件请求生成视频，使用模型 "sora-2"
+  2. APIManager 查询哪些 Provider 支持 "sora-2"
+  3. 找到 JiekouAI、T8、ComfyUI 都支持
+  4. 根据优先级/成本/速度选择一个
+  5. 适配该 Provider 的 API 调用格式
+
+  所以不应该有 JiekouAIProvider.ts，而应该有通用的 API 适配器层！  
+  

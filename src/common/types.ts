@@ -487,6 +487,11 @@ export interface IAppSettings {
   general: IGeneralSettings;
   providers: IProviderConfig[];
   mcpServers: IMCPServerConfig[];
-  plugins?: Record<string, IPluginConfig>; // 插件配置（插件ID -> 配置）
-  shortcuts?: ShortcutItem[];    // 菜单栏快捷方式列表
+  plugins?: Record<string, IPluginConfig>;
+  shortcuts?: ShortcutItem[];
+  async?: {
+    pollInterval: number;
+    pollTimeout: number;
+    maxRetries: number;
+  };
 }

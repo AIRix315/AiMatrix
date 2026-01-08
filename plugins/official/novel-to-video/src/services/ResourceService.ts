@@ -250,6 +250,41 @@ export class ResourceService {
     }
   }
 
+  async generateI2IImages(
+    prompts: Array<{ prompt: string; referenceImages: string[] }>,
+    size: string = '9x16'
+  ): Promise<Array<{ url: string; filePath: string }>> {
+    try {
+      await this.logger.info('开始批量图生图', 'ResourceService', {
+        count: prompts.length,
+        size
+      });
+
+      const results: Array<{ url: string; filePath: string }> = [];
+
+      for (const item of prompts) {
+        const result = await this.apiService.callI2IAPI({
+          prompt: item.prompt,
+          images: item.referenceImages,
+          size
+        });
+
+        results.push(result);
+      }
+
+      await this.logger.info('批量图生图完成', 'ResourceService', {
+        count: results.length
+      });
+
+      return results;
+    } catch (error) {
+      await this.logger.error('批量图生图失败', 'ResourceService', {
+        error
+      });
+      throw error;
+    }
+  }
+
   /**
    * 等待任务完成
    * @param taskId 任务ID

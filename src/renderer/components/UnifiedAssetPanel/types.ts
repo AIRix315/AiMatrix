@@ -12,7 +12,9 @@ import {
   Upload,
   Users,
   Layout,
-  Mic
+  Mic,
+  Film,
+  FileImage
 } from 'lucide-react';
 
 // ===== 全局资产分类（基于文件类型 + 来源）=====
@@ -29,15 +31,18 @@ export const GLOBAL_ASSET_CATEGORIES = [
 ] as const;
 
 // ===== 项目资产分类（基于小说转视频工作流）=====
-export type ProjectCategoryId = 'all' | 'chapters' | 'scenes' | 'characters' | 'storyboards' | 'voiceovers';
+export type ProjectCategoryId = 'all' | 'chapters' | 'scenes' | 'characters' | 'storyboards' | 'voiceovers' | 'scene-summaries' | 'storyboard-images' | 'final-videos';
 
 export const PROJECT_WORKFLOW_CATEGORIES = [
   { id: 'all' as ProjectCategoryId, label: '全部资产', icon: Folder },
   { id: 'chapters' as ProjectCategoryId, label: '章节', icon: FileText },
   { id: 'scenes' as ProjectCategoryId, label: '场景', icon: ImageIcon },
   { id: 'characters' as ProjectCategoryId, label: '角色', icon: Users },
+  { id: 'scene-summaries' as ProjectCategoryId, label: '场景摘要', icon: FileText },
   { id: 'storyboards' as ProjectCategoryId, label: '分镜脚本', icon: Layout },
+  { id: 'storyboard-images' as ProjectCategoryId, label: '分镜图', icon: FileImage },
   { id: 'voiceovers' as ProjectCategoryId, label: '配音', icon: Mic },
+  { id: 'final-videos' as ProjectCategoryId, label: '最终视频', icon: Film },
 ] as const;
 
 // ===== 联合类型 =====

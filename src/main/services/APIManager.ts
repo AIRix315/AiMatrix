@@ -22,12 +22,21 @@ import { timeService } from './TimeService';
 import {
   APICategory,
   AuthType,
+  APIFormat,
   APIProviderConfig,
   APIProviderStatus,
   APICallParams,
   ConnectionTestParams,
   ConnectionTestResult,
 } from '@/shared/types';
+import {
+  BaseAdapter,
+  OpenAICompatibleAdapter,
+  AsyncPollingAdapter,
+  ComfyUIWorkflowAdapter,
+  type APICallRequest,
+  type APICallResponse,
+} from '../adapters';
 /**
  * APIManager 服务类
  */
@@ -37,10 +46,17 @@ export class APIManager {
   private providersConfigFile: string;
   private encryption: APIKeyEncryption;
 
+  // V0.4.0 新增：Adapter 管理
+  private adapters: Map<string, BaseAdapter> = new Map();
+
   constructor(configDir?: string) {
     const dir = configDir || path.join(app.getPath('userData'), 'config');
     this.providersConfigFile = path.join(dir, 'providers.json');
     this.encryption = new APIKeyEncryption();
+
+    // 注册适配器
+    this.registerAdapters();
+
     this.ensureConfigDir().catch(error => {
       logger
         .error('Failed to create config directory', 'APIManager', { error })
@@ -683,6 +699,7 @@ export class APIManager {
         category: APICategory.IMAGE_GENERATION,
         baseUrl: 'http://localhost:8188',
         authType: AuthType.NONE,
+        apiFormat: APIFormat.COMFYUI_WORKFLOW,
         enabled: false,
         description: '本地部署的 ComfyUI 工作流引擎',
       },
@@ -692,6 +709,7 @@ export class APIManager {
         category: APICategory.IMAGE_GENERATION,
         baseUrl: 'https://api.stability.ai/v1',
         authType: AuthType.BEARER,
+        apiFormat: APIFormat.OPENAI_COMPATIBLE,
         enabled: false,
         models: ['stable-diffusion-xl-1024-v1-0', 'sd3-medium', 'sd3-large'],
         description: 'Stability AI 官方图像生成服务',
@@ -704,6 +722,7 @@ export class APIManager {
         category: APICategory.VIDEO_GENERATION,
         baseUrl: 'https://ai.t8star.cn/v2',
         authType: AuthType.BEARER,
+        apiFormat: APIFormat.OPENAI_COMPATIBLE,
         enabled: false,
         models: ['sora-2'],
         description: 'T8Star Sora-2 视频生成服务',
@@ -714,6 +733,7 @@ export class APIManager {
         category: APICategory.VIDEO_GENERATION,
         baseUrl: 'https://api.runwayml.com/v1',
         authType: AuthType.BEARER,
+        apiFormat: APIFormat.ASYNC_POLLING,
         enabled: false,
         models: ['gen3-alpha', 'gen3-alpha-turbo'],
         description: 'Runway Gen-3 视频生成服务',
@@ -726,6 +746,7 @@ export class APIManager {
         category: APICategory.LLM,
         baseUrl: 'http://localhost:11434',
         authType: AuthType.NONE,
+        apiFormat: APIFormat.OPENAI_COMPATIBLE,
         enabled: false,
         models: ['llama3:8b', 'mistral:latest'],
         description: '本地部署的 Ollama LLM 服务',
@@ -736,6 +757,7 @@ export class APIManager {
         category: APICategory.LLM,
         baseUrl: 'https://api.openai.com/v1',
         authType: AuthType.BEARER,
+        apiFormat: APIFormat.OPENAI_COMPATIBLE,
         enabled: false,
         models: ['gpt-4', 'gpt-3.5-turbo'],
         description: 'OpenAI 官方 API',
@@ -748,6 +770,7 @@ export class APIManager {
         category: APICategory.WORKFLOW,
         baseUrl: 'https://www.runninghub.cn/task/openapi',
         authType: AuthType.BEARER,
+        apiFormat: APIFormat.COMFYUI_WORKFLOW,
         enabled: false,
         description: 'RunningHub ComfyUI 工作流云端执行服务',
       },
@@ -759,6 +782,7 @@ export class APIManager {
         category: APICategory.WORKFLOW,
         baseUrl: 'http://localhost:5678',
         authType: AuthType.NONE,
+        apiFormat: APIFormat.COMFYUI_WORKFLOW,
         enabled: false,
         description: '本地部署的 N8N 工作流引擎',
       },
@@ -1248,6 +1272,177 @@ export class APIManager {
         .catch(() => {});
     });
     await logger.info('APIManager cleaned up', 'APIManager');
+  }
+
+  // ==================== V0.4.0 新增：Adapter 系统 ====================
+
+  /**
+   * 注册所有适配器
+   */
+  private registerAdapters(): void {
+    this.adapters.set(APIFormat.OPENAI_COMPATIBLE, new OpenAICompatibleAdapter(logger));
+    this.adapters.set(APIFormat.ASYNC_POLLING, new AsyncPollingAdapter(logger));
+    this.adapters.set(APIFormat.COMFYUI_WORKFLOW, new ComfyUIWorkflowAdapter(logger));
+
+    logger
+      .info(`Registered ${this.adapters.size} adapters`, 'APIManager')
+      .catch(() => {});
+  }
+
+  /**
+   * 统一的模型调用方法（V0.4.0 核心方法）
+   *
+   * 根据模型名称自动路由到合适的 Provider 和 Adapter
+   *
+   * @param params - 调用参数
+   * @returns API 调用响应
+   */
+  public async callModel(params: {
+    model: string;
+    category: APICategory;
+    input: {
+      prompt?: string;
+      messages?: Array<{ role: string; content: string }>;
+      imageUrl?: string;
+      videoUrl?: string;
+      referenceImages?: string[];
+      temperature?: number;
+      maxTokens?: number;
+      aspectRatio?: string;
+      [key: string]: unknown;
+    };
+    providerId?: string; // 可选：指定使用特定的 Provider
+  }): Promise<APICallResponse> {
+    return errorHandler.wrapAsync(
+      async () => {
+        await logger.info(
+          `调用模型: ${params.model} (${params.category})`,
+          'APIManager',
+          { providerId: params.providerId || 'auto' }
+        );
+
+        // 1. 选择 Provider
+        const provider = params.providerId
+          ? await this.selectProviderById(params.providerId)
+          : await this.selectProviderByModel(params.model, params.category);
+
+        if (!provider) {
+          throw new Error(
+            `未找到支持模型 ${params.model} 的 ${params.category} Provider`
+          );
+        }
+
+        // 2. 选择 Adapter
+        const adapter = this.adapters.get(provider.apiFormat);
+        if (!adapter) {
+          throw new Error(`不支持的 API 格式: ${provider.apiFormat}`);
+        }
+
+        // 3. 构建请求
+        const request: APICallRequest = {
+          model: params.model,
+          category: params.category,
+          input: params.input,
+        };
+
+        // 4. 执行调用
+        const response = await adapter.callAPI(provider, request);
+
+        await logger.info(
+          `模型调用${response.success ? '成功' : '失败'}`,
+          'APIManager',
+          {
+            providerId: provider.id,
+            model: params.model,
+            duration: response.duration,
+          }
+        );
+
+        return response;
+      },
+      'APIManager',
+      'callModel',
+      ErrorCode.API_CALL_ERROR
+    );
+  }
+
+  /**
+   * 根据 Provider ID 选择 Provider
+   */
+  private async selectProviderById(providerId: string): Promise<APIProviderConfig | null> {
+    const provider = this.providers.get(providerId);
+    if (!provider) {
+      await logger.warn(
+        `Provider ${providerId} 不存在`,
+        'APIManager'
+      );
+      return null;
+    }
+
+    if (!provider.enabled) {
+      await logger.warn(
+        `Provider ${providerId} 未启用`,
+        'APIManager'
+      );
+      return null;
+    }
+
+    return provider;
+  }
+
+  /**
+   * 根据模型名称和功能类型选择 Provider（优先级排序）
+   *
+   * 优先级规则：
+   * 1. 插件模板推荐（templateRecommended = true）
+   * 2. 已启用（enabled = true）
+   * 3. 手动优先级（priority 数值大的优先）
+   */
+  private async selectProviderByModel(
+    model: string,
+    category: APICategory
+  ): Promise<APIProviderConfig | null> {
+    // 查找支持该模型的所有 Providers
+    const candidates = Array.from(this.providers.values()).filter(
+      (p) =>
+        p.category === category &&
+        p.models?.includes(model) &&
+        p.enabled
+    );
+
+    if (candidates.length === 0) {
+      await logger.warn(
+        `未找到支持模型 ${model} 的已启用 Provider`,
+        'APIManager',
+        { category }
+      );
+      return null;
+    }
+
+    // 按优先级排序
+    candidates.sort((a, b) => {
+      // 1. 插件模板推荐优先
+      if (a.templateRecommended && !b.templateRecommended) return -1;
+      if (!a.templateRecommended && b.templateRecommended) return 1;
+
+      // 2. 手动优先级（数值越大越优先）
+      return (b.priority ?? 0) - (a.priority ?? 0);
+    });
+
+    const selected = candidates[0];
+    await logger.info(
+      `自动选择 Provider: ${selected.name} (${selected.id})`,
+      'APIManager',
+      {
+        model,
+        category,
+        totalCandidates: candidates.length,
+        templateRecommended: selected.templateRecommended || false,
+        priority: selected.priority || 0,
+      }
+    );
+
+    return selected;
   }
 }
 

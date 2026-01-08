@@ -25,6 +25,7 @@ import { apiManager } from './APIManager';
 import { PluginType, PluginPermission, PluginManifest as BasePluginManifest, ProjectConfig } from '../../common/types';
 import type { PluginConfig } from '@/shared/types';
 import type { APIProviderConfig, APICategory, AuthType } from '@/shared/types';
+import { APIFormat } from '@/shared/types';
 
 /**
  * 插件 Manifest 接口（扩展基础定义，添加main字段）
@@ -666,6 +667,7 @@ export class PluginManager {
                 category: this.mapProviderKeyToCategory(key),
                 baseUrl: '', // 需要用户配置
                 authType: 'bearer' as AuthType,
+                apiFormat: APIFormat.OPENAI_COMPATIBLE, // 默认使用OpenAI兼容格式，用户可在设置中调整
                 enabled: false,
                 description: `${providerItem.purpose} (来自插件 ${loaded.manifest.name})`,
                 models: providerItem.model ? [providerItem.model] : undefined,

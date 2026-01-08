@@ -175,7 +175,12 @@ const DEFAULT_CONFIG: IAppSettings = {
       models: []
     }
   ],
-  mcpServers: []
+  mcpServers: [],
+  async: {
+    pollInterval: 10000,
+    pollTimeout: 600000,
+    maxRetries: 3
+  }
 };
 
 /**

@@ -32,6 +32,16 @@ export enum AuthType {
 }
 
 /**
+ * API格式类型枚举
+ * 用于确定使用哪个Adapter进行API调用
+ */
+export enum APIFormat {
+  OPENAI_COMPATIBLE = 'openai-compatible', // OpenAI兼容格式（同步）
+  ASYNC_POLLING = 'async-polling', // 异步轮询格式（提交任务后轮询结果）
+  COMFYUI_WORKFLOW = 'comfyui-workflow', // ComfyUI工作流格式
+}
+
+/**
  * API Provider 统一配置接口
  */
 export interface APIProviderConfig {
@@ -43,6 +53,11 @@ export interface APIProviderConfig {
   authType: AuthType; // 认证方式
   apiKey?: string; // API密钥（加密存储）
   enabled: boolean; // 是否启用
+
+  // V0.4.0 新增：Adapter路由配置
+  apiFormat: APIFormat; // API格式类型，用于选择对应的Adapter
+  templateRecommended?: boolean; // 插件模板推荐标记（最高优先级）
+  priority?: number; // 手动优先级（数值越大优先级越高）
 
   // 成本估算（可选）
   costPerUnit?: number; // 单位成本

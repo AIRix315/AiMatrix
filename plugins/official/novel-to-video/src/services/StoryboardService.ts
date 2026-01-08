@@ -7,6 +7,7 @@
 
 import { PluginContext, GenericAssetHelper, Logger } from '@matrix/sdk';
 import type { AssetMetadata } from '@matrix/sdk';
+import type { SceneSummary } from '../types/workflow';
 
 /**
  * 分镜脚本生成器接口
@@ -203,6 +204,145 @@ export class StoryboardService {
     });
 
     return storyboards;
+  }
+
+  async generateSceneSummaries(
+    projectId: string,
+    scenes: any[]
+  ): Promise<SceneSummary[]> {
+    try {
+      await this.logger.info('开始生成场景摘要', 'StoryboardService', {
+        projectId,
+        sceneCount: scenes.length
+      });
+
+      if (!this.generator) {
+        throw new Error('分镜脚本生成器未初始化');
+      }
+
+      const summaries: SceneSummary[] = [];
+
+      for (const scene of scenes) {
+        const summary = await (this.generator as any).generateSceneSummary({
+          story: scene.sceneStory,
+          location: scene.sceneLocation
+        });
+
+        summaries.push({
+          sceneId: scene.sceneId,
+          summary: summary.summary || summary
+        });
+      }
+
+      await this.logger.info('场景摘要生成完成', 'StoryboardService', {
+        count: summaries.length
+      });
+
+      return summaries;
+    } catch (error) {
+      await this.logger.error('场景摘要生成失败', 'StoryboardService', {
+        projectId,
+        error
+      });
+      throw error;
+    }
+  }
+
+  async generateContextualScript(
+    projectId: string,
+    sceneAssetPath: string,
+    artStyle: string,
+    previousSummary?: string,
+    nextSummary?: string
+  ): Promise<AssetMetadata> {
+    try {
+      await this.logger.info('开始生成上下文分镜脚本', 'StoryboardService', {
+        projectId,
+        sceneAssetPath,
+        hasPreviousSummary: !!previousSummary,
+        hasNextSummary: !!nextSummary
+      });
+
+      if (!this.generator) {
+        throw new Error('分镜脚本生成器未初始化');
+      }
+
+      const scenes = await this.assetHelper.queryAssets({
+        schemaId: 'novel-to-video.scene',
+        projectId,
+        limit: 1000
+      });
+
+      const sceneAsset = scenes.find(s => s.filePath === sceneAssetPath);
+      if (!sceneAsset) {
+        throw new Error('场景资产不存在');
+      }
+
+      const scene = sceneAsset.customFields?.novelVideo;
+
+      if (!scene || !scene.sceneStory) {
+        throw new Error('场景数据不完整');
+      }
+
+      const characters = await this.getRelatedCharacters(projectId);
+      const chapter = await this.getRelatedChapter(projectId, scene.sceneChapterId);
+
+      const scriptScenes = await (this.generator as any).generateScriptScenes({
+        story: scene.sceneStory,
+        characters,
+        chapter,
+        previousSummary,
+        nextSummary
+      });
+
+      const videoScenes = await this.generator.generateVideoPrompts(
+        scriptScenes,
+        characters,
+        scene,
+        artStyle
+      );
+
+      const [replacedScenes, imageScenes] = await Promise.all([
+        this.generator.replaceCharacterNames(videoScenes, characters),
+        this.generator.generateImageStoryboardPrompts(videoScenes, characters)
+      ]);
+
+      const currentTime = await this.context.timeService.getCurrentTime();
+      const storyboardId = `storyboard-${currentTime.getTime()}`;
+
+      const storyboardAsset = await this.assetHelper.createAsset({
+        schemaId: 'novel-to-video.storyboard',
+        projectId,
+        category: 'storyboards',
+        type: 'text',
+        tags: ['novel-video', 'storyboard'],
+        customFields: {
+          storyboardId,
+          storyboardSceneId: scene.sceneId,
+          storyboardType: 'video',
+          videoPrompt: JSON.stringify(replacedScenes),
+          imagePrompts: imageScenes.map((s: any) => s.prompt || JSON.stringify(s)),
+          characterIds: characters.map((c: any) => c.characterId),
+          contextMetadata: {
+            hasPreviousSummary: !!previousSummary,
+            hasNextSummary: !!nextSummary
+          }
+        }
+      });
+
+      await this.logger.info('上下文分镜资产创建成功', 'StoryboardService', {
+        storyboardId: storyboardAsset.id
+      });
+
+      return storyboardAsset;
+    } catch (error) {
+      await this.logger.error('上下文分镜脚本生成失败', 'StoryboardService', {
+        projectId,
+        sceneAssetPath,
+        error
+      });
+      throw error;
+    }
   }
 
   /**
