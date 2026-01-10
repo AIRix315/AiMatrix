@@ -34,11 +34,11 @@ const topNavItems: NavItem[] = [
     title: '资产库 (Assets)',
   },
   {
-    id: 'workflows',
-    label: '工作流',
+    id: 'workbench',
+    label: '工作台',
     icon: 'filter.ico',
-    path: '/workflows',
-    title: '工作流 (Workflows)',
+    path: '/workbench',
+    title: '工作台 (Workbench)',
   },
   {
     id: 'plugins',
@@ -133,11 +133,9 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ onItemClick }) => {
         navigate(`/projects/${shortcut.targetId}`);
         break;
       case 'workflow':
-        // 工作流类型：跳转到工作流编辑器（自定义工作流用节点图编辑）
-        navigate(`/workflows/editor/${shortcut.targetId}`);
+        navigate(`/workbench/editor/${shortcut.targetId}`);
         break;
       case 'plugin':
-        // 插件类型：跳转到插件页面（按 docs/workflow-vs-executor.md 规范）
         navigate(`/plugins/${shortcut.targetId}`);
         break;
     }

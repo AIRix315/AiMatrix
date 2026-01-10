@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { Edit2, Check, X, FileText } from 'lucide-react';
-// import { ChapterListItem } from '../../../components/workflow/ChapterListItem'; // 暂时未使用
+// import { ChapterListItem } from '../../../components/flow/ChapterListItem'; // 暂时未使用
 import { Button, Loading, Toast } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
 import './ChapterSplitPanel.css';

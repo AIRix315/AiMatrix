@@ -18,10 +18,10 @@ import { Button, Toast, Loading } from '../../components/common';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import type { ToastType } from '../../components/common/Toast';
 import { validateWorkflow } from './utils/workflowValidator';
-import { InputNode, ExecuteNode, OutputNode } from '../../components/workflow/nodes';
-import './WorkflowEditor.css';
+import { InputNode, ExecuteNode, OutputNode } from '../../components/flow/nodes';
+import './FlowDesigner.css';
 
-const WorkflowEditor: React.FC = () => {
+const FlowDesigner: React.FC = () => {
   const { workflowId } = useParams<{ workflowId: string }>();
   const navigate = useNavigate();
 
@@ -114,7 +114,7 @@ const WorkflowEditor: React.FC = () => {
       const config = {
         id: workflowId === 'new' || !workflowId ? `workflow-${timestamp}` : workflowId,
         name: workflowName,
-        type: 'custom',
+        type: 'DefTemplate',
         nodes,
         edges,
         config: {},
@@ -131,7 +131,7 @@ const WorkflowEditor: React.FC = () => {
 
         // 如果是新建，跳转到编辑页面
         if (workflowId === 'new') {
-          navigate(`/workflows/${config.id}`, { replace: true });
+          navigate(`/workbench/editor/${config.id}`, { replace: true });
         }
       }
     } catch (error) {
@@ -377,7 +377,7 @@ const WorkflowEditor: React.FC = () => {
                   placeholder="工作流名称"
                 />
                 <div className="toolbar-actions">
-                  <Button variant="ghost" onClick={() => navigate('/workflows')}>
+                  <Button variant="ghost" onClick={() => navigate('/workbench')}>
                     返回
                   </Button>
                   <Button
@@ -455,4 +455,4 @@ const WorkflowEditor: React.FC = () => {
   );
 };
 
-export default WorkflowEditor;
+export default FlowDesigner;

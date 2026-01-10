@@ -122,7 +122,7 @@ export const PluginConfigTab: React.FC<PluginConfigTabProps> = ({ className }) =
         [key]: {
           ...config.providers[key],
           providerId,
-          model: provider?.models?.[0] || null,
+          model: provider?.selectedModels?.[0] || null, // 使用 selectedModels 而不是 models
         },
       },
     };
@@ -167,7 +167,7 @@ export const PluginConfigTab: React.FC<PluginConfigTabProps> = ({ className }) =
   const getModelsForProvider = (providerId: string | null): string[] => {
     if (!providerId) return [];
     const provider = providers.find(p => p.id === providerId);
-    return provider?.models || [];
+    return provider?.selectedModels || []; // 使用 selectedModels 而不是 models
   };
 
   // 如果没有项目或插件，显示提示

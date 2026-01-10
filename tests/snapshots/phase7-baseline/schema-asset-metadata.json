@@ -146,7 +146,7 @@
   },
   "example": {
     "baseMetadata": {
-      "id": "43a9f83b-b2c2-4c65-a969-4b4fb03076ea",
+      "id": "2c3202ec-7aae-4880-acab-6e0995abe95d",
       "type": "text",
       "scope": "project",
       "projectId": "phase7-baseline-project",
@@ -155,12 +155,12 @@
         "novel-video",
         "chapter"
       ],
-      "filePath": "E:\\Projects\\Matrix\\test-data\\baseline-1767689977116\\assets\\project_outputs\\phase7-baseline-project\\20260106\\Schema测试章节.txt",
-      "createdAt": "2026-01-06T08:59:37.128Z"
+      "filePath": "E:\\Projects\\Matrix\\test-data\\baseline-1768051197823\\assets\\project_outputs\\phase7-baseline-project\\20260110\\Schema测试章节.txt",
+      "createdAt": "2026-01-10T13:19:57.835Z"
     },
     "customFields": {
       "novelVideo": {
-        "chapterId": "chapter-1767689977122",
+        "chapterId": "chapter-1768051197829",
         "chapterTitle": "Schema测试章节",
         "chapterContent": "这是用于记录Schema的测试章节",
         "chapterIndex": 1

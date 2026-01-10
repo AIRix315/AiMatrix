@@ -4,8 +4,8 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.4.0 | 2026-01-11 | BUG修复 | 修复插件路由逻辑、重命名WorkflowExecutor方法、优化代码可读性 |
 | 0.3.9.9 | 2026-01-08 | 架构重构 | Adapter架构实现、模型优先路由、插件层解耦、Stage4视频生成完善、代码质量优化（0错误） |
-| 0.4.0 | 2026-01-06 | 功能增强 | Novel-to-Video工作流完整实现（5阶段执行器、物料收集器、Jiekou AI集成、进度追踪） |
 | 0.3.9.8 | 2026-01-06 | 功能增强 | 工作流状态持久化、双重存储架构、TaskScheduler进度事件、DeepSeek JSON清理 |
 | 0.3.9.7 | 2026-01-05 | 代码质量 | 彻底清理所有冗余注释（阶段性注释、JSDoc文档、单行注释），代码极简化 |
 | 0.3.9.6 | 2026-01-05 | 类型系统 | 时间格式统一（ISO 8601）、统一类型导出文件、类型冲突解决 |
@@ -22,6 +22,33 @@
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 0.0.1 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.4.0] - 2026-01-11
+
+### BUG修复
+- **插件路由逻辑修复**
+  - 修复 PluginRunner.tsx 第46行错误：移除 `actualWorkflowId = pluginId || workflowId` 的错误定义
+  - 添加 actualWorkflowId 状态变量，通过 currentProjectId 动态获取实际 workflowId
+  - 重写 loadWorkflow() 函数：支持通过 pluginId 访问时自动加载项目列表
+  - 修复 useEffect 依赖：添加 currentProjectId 依赖
+  - 修复 projects 类型定义：添加 pluginId 和 workflowType 字段
+  - 解决"工作流不存在"错误：区分插件ID和工作流实例ID
+
+- **WorkflowExecutor 方法重命名**
+  - executeStage1 → executeSceneExtraction（场景和角色提取）
+  - executeStage2 → executeT2I（文生图）
+  - executeStage2_5 → executeSceneSummary（场景摘要生成）
+  - executeStage3 → executeStoryboardScript（分镜脚本生成）
+  - executeStage4 → executeT2V（图生视频）
+  - 移除多余注释，提升代码可读性
+  - 保持 stageId 字符串不变，确保向后兼容
+
+### 代码质量
+- ESLint 检查通过（仅警告，无错误）
+- TypeScript 编译通过
+- Webpack 构建成功
 
 ---
 

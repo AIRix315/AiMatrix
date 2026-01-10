@@ -29,7 +29,7 @@ const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState('workflow');
+  const [selectedTemplate, setSelectedTemplate] = useState('DefTemplate');
   // const [workspacePath, setWorkspacePath] = useState(''); // 暂时未使用
   const [availableTemplates, setAvailableTemplates] = useState<TemplateOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,7 +72,7 @@ const Dashboard: React.FC = () => {
 
   const loadAvailableTemplates = async () => {
     try {
-      const templates: TemplateOption[] = [{ id: 'workflow', name: '工作流' }];
+      const templates: TemplateOption[] = [{ id: 'DefTemplate', name: '工作流' }];
 
       // 获取插件列表
       if (window.electronAPI?.listPlugins) {

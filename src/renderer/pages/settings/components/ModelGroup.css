@@ -159,3 +159,19 @@
   color: var(--text-secondary);
   font-size: 13px;
 }
+
+/* 选择按钮样式 */
+.model-action-icon.selected {
+  color: var(--accent-color);
+  background: rgba(88, 134, 255, 0.1);
+}
+
+.model-action-icon.selected:hover {
+  background: rgba(88, 134, 255, 0.2);
+}
+
+/* 已选择的模型行高亮 */
+.model-row.selected {
+  background: rgba(88, 134, 255, 0.05);
+  border-left: 2px solid var(--accent-color);
+}

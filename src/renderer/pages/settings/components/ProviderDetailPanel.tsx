@@ -33,7 +33,7 @@ interface ProviderDetailPanelProps {
   providerId: string;
   onUpdate: (config: ProviderConfig) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
-  onTestConnection: (id: string) => Promise<void>;
+  onTestConnection: (id: string) => Promise<unknown>; // 返回检测结果
 }
 
 export const ProviderDetailPanel: React.FC<ProviderDetailPanelProps> = ({
@@ -57,6 +57,12 @@ export const ProviderDetailPanel: React.FC<ProviderDetailPanelProps> = ({
   // 模型列表状态
   const [models, setModels] = useState<ModelInfo[]>([]);
 
+  // 已选择模型状态
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+
+  // 临时检测到的模型列表（不持久化）
+  const [detectedModels, setDetectedModels] = useState<string[]>([]);
+
   // 加载 Provider 数据和模型列表
   useEffect(() => {
     loadProvider();
@@ -75,6 +81,12 @@ export const ProviderDetailPanel: React.FC<ProviderDetailPanelProps> = ({
       setLocalApiKey(config.apiKey || '');
       setLocalWorkflowId(config.workflowId || '');
       setLocalName(config.name || '');
+
+      // 加载已选择模型
+      const selectedResult = await window.electronAPI.getSelectedModels(providerId);
+      if (selectedResult.success && selectedResult.data) {
+        setSelectedModels(selectedResult.data);
+      }
     } catch (error) {
       // 加载失败时保持 loading 状态
     } finally {
@@ -84,40 +96,25 @@ export const ProviderDetailPanel: React.FC<ProviderDetailPanelProps> = ({
 
   const loadModels = async () => {
     try {
-      // 优先从 Provider 配置中获取模型列表（特别是本地服务如 Ollama）
-      const providerConfig = await window.electronAPI.getProvider(providerId);
-
-      if (
-        providerConfig &&
-        (providerConfig as any).models &&
-        Array.isArray((providerConfig as any).models)
-      ) {
-        // 如果 Provider 配置中有模型列表，直接使用（这是连接测试时获取的）
-        const providerModels = (providerConfig as any).models.map(
-          (modelName: string) => ({
-            id: `${providerId}-${modelName}`,
-            name: modelName,
-            provider: providerId,
-            providerId: providerId,
-            hidden: false,
-            favorite: false,
-            alias: modelName,
-          })
-        );
+      // 优先使用临时检测到的模型列表
+      if (detectedModels.length > 0) {
+        const providerModels = detectedModels.map((modelName: string) => ({
+          id: `${providerId}-${modelName}`,
+          name: modelName,
+          provider: providerId,
+          providerId: providerId,
+          category: 'unknown',
+          hidden: false,
+          favorite: false,
+          alias: modelName,
+          selected: selectedModels.includes(modelName), // 标记是否已选择
+        }));
         setModels(providerModels as ModelInfo[]);
       } else {
-        // 否则从 ModelRegistry 加载
-        const allModels = await window.electronAPI.listModels({
-          includeHidden: true,
-        });
-        // 过滤出属于当前Provider的模型
-        const providerModels = allModels.filter(
-          (m: any) => m.providerId === providerId || m.provider === providerId
-        );
-        setModels(providerModels as ModelInfo[]);
+        // 如果没有检测结果，显示空列表
+        setModels([]);
       }
     } catch (error) {
-      // 模型加载失败时使用空数组
       setModels([]);
     }
   };
@@ -185,13 +182,69 @@ export const ProviderDetailPanel: React.FC<ProviderDetailPanelProps> = ({
       // 先保存当前配置
       await handleSaveConfig();
       // 再测试连接
-      await onTestConnection(provider.id);
-      // 重新加载 Provider 配置（包含更新后的模型列表）
+      const result = await onTestConnection(provider.id);
+
+      // 保存检测到的模型列表到临时 state（不持久化）
+      if ((result as any).success && (result as any).models) {
+        setDetectedModels((result as any).models);
+      }
+
+      // 重新加载 Provider 配置
       await loadProvider();
-      // 刷新模型列表（以显示新检测到的模型）
+      // 刷新模型列表（使用临时检测结果）
       await loadModels();
     } finally {
       setIsTesting(false);
+    }
+  };
+
+  // 切换模型选择状态
+  const handleToggleSelect = async (modelId: string) => {
+    if (!provider) return;
+
+    try {
+      // 从 modelId 中提取模型名称（格式：providerId-modelName）
+      const modelName = modelId.split('-').slice(1).join('-');
+
+      let newSelectedModels: string[];
+      if (selectedModels.includes(modelName)) {
+        // 取消选择
+        newSelectedModels = selectedModels.filter(m => m !== modelName);
+      } else {
+        // 添加选择
+        newSelectedModels = [...selectedModels, modelName];
+      }
+
+      // 保存到后端
+      const result = await window.electronAPI.setSelectedModels(
+        provider.id,
+        newSelectedModels
+      );
+
+      if (result.success) {
+        setSelectedModels(newSelectedModels);
+        // 刷新模型列表以更新选择状态
+        await loadModels();
+      }
+    } catch (error) {
+      console.error('Toggle select failed:', error);
+    }
+  };
+
+  // 移除已选择的模型
+  const handleRemoveSelectedModel = async (modelName: string) => {
+    if (!provider) return;
+
+    const newSelectedModels = selectedModels.filter(m => m !== modelName);
+
+    const result = await window.electronAPI.setSelectedModels(
+      provider.id,
+      newSelectedModels
+    );
+
+    if (result.success) {
+      setSelectedModels(newSelectedModels);
+      await loadModels();
     }
   };
 
@@ -377,6 +430,27 @@ export const ProviderDetailPanel: React.FC<ProviderDetailPanelProps> = ({
         )}
       </div>
 
+      {/* 已选择模型区 - 新增 */}
+      {selectedModels.length > 0 && (
+        <div className="selected-models-section">
+          <h3>已选择模型</h3>
+          <div className="selected-models-tags">
+            {selectedModels.map(modelName => (
+              <div key={modelName} className="model-tag">
+                <span className="model-tag-name">{modelName}</span>
+                <button
+                  className="model-tag-remove"
+                  onClick={() => handleRemoveSelectedModel(modelName)}
+                  title="移除"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 模型列表区 */}
       <div className="models-section">
         <div className="models-section-header">
@@ -428,6 +502,7 @@ export const ProviderDetailPanel: React.FC<ProviderDetailPanelProps> = ({
                 console.error('Set alias failed:', error);
               }
             }}
+            onToggleSelect={handleToggleSelect}
           />
         )}
         {models.length === 0 && (

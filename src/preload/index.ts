@@ -427,6 +427,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getProviderStatus: (providerId: string): Promise<unknown> =>
     ipcRenderer.invoke('api:get-provider-status', providerId),
 
+  /**
+   * 设置Provider的已选择模型
+   */
+  setSelectedModels: (providerId: string, selectedModels: string[]): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('api:set-selected-models', providerId, selectedModels),
+
+  /**
+   * 获取Provider的已选择模型
+   */
+  getSelectedModels: (providerId: string): Promise<{ success: boolean; data?: string[]; error?: string }> =>
+    ipcRenderer.invoke('api:get-selected-models', providerId),
+
   // Template 管理 API
 
   /**

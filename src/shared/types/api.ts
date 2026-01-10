@@ -66,7 +66,7 @@ export interface APIProviderConfig {
   // 高级配置（可选）
   timeout?: number; // 超时时间（毫秒）
   headers?: Record<string, string>; // 自定义请求头
-  models?: string[]; // 支持的模型列表
+  selectedModels?: string[]; // 用户选择的模型列表（持久化）
   workflowId?: string; // 工作流ID（用于N8N、ComfyUI等工作流引擎）
 
   // 元数据

@@ -464,6 +464,8 @@ export interface ElectronAPI {
   removeProvider: (providerId: string) => Promise<void>;
   testProviderConnection: (params: ProviderTestParams) => Promise<ProviderTestResult>;
   getProviderStatus: (providerId: string) => Promise<ProviderStatus>;
+  setSelectedModels: (providerId: string, selectedModels: string[]) => Promise<{ success: boolean; error?: string }>;
+  getSelectedModels: (providerId: string) => Promise<{ success: boolean; data?: string[]; error?: string }>;
 
   // ==================== Provider Template 管理 ====================
   getProviderTemplate: (typeId: string) => Promise<ProviderTemplate | null>;

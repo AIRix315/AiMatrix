@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, Edit2, Check, X, Clapperboard, Image } from 'lucide-react';
 import { Button, Card, Loading, Toast } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
-import { StoryboardListItem } from '../../../components/workflow/StoryboardListItem';
+import { StoryboardListItem } from '../../../components/flow/StoryboardListItem';
 import './StoryboardPanel.css';
 
 interface Storyboard {

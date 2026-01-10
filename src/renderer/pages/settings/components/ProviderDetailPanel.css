@@ -208,6 +208,10 @@
 .models-section {
   margin-top: 20px;
   margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 420px); /* 动态高度，减去头部、配置区和已选择模型区 */
+  min-height: 200px;
 }
 
 .models-section-header {
@@ -215,6 +219,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  flex-shrink: 0; /* 标题固定不滚动 */
 }
 
 .models-section-header h3 {
@@ -222,6 +227,31 @@
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+}
+
+/* ModelGroup 组件容器可滚动 */
+.models-section > div {
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 优化滚动条样式 */
+.models-section > div::-webkit-scrollbar {
+  width: 6px;
+}
+
+.models-section > div::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+
+.models-section > div::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.models-section > div::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
 
 .model-actions {
@@ -266,4 +296,70 @@
 .provider-detail-footer .delete-button:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+}
+
+/* 已选择模型区 */
+.selected-models-section {
+  margin-top: 20px;
+  margin-bottom: 15px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.selected-models-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 10px 0;
+}
+
+.selected-models-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.model-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--accent-color);
+  color: white;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.model-tag:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.model-tag-name {
+  line-height: 1;
+}
+
+.model-tag-remove {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.model-tag-remove:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

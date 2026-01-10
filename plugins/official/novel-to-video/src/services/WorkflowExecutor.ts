@@ -100,19 +100,19 @@ export class WorkflowExecutor {
 
       switch (stageId) {
         case 'stage1':
-          result = await this.executeStage1(context);
+          result = await this.executeSceneExtraction(context);
           break;
         case 'stage2':
-          result = await this.executeStage2(context);
+          result = await this.executeT2I(context);
           break;
         case 'stage2.5':
-          result = await this.executeStage2_5(context);
+          result = await this.executeSceneSummary(context);
           break;
         case 'stage3':
-          result = await this.executeStage3(context);
+          result = await this.executeStoryboardScript(context);
           break;
         case 'stage4':
-          result = await this.executeStage4(context);
+          result = await this.executeT2V(context);
           break;
         default:
           throw new Error(`未知阶段: ${stageId}`);
@@ -139,7 +139,7 @@ export class WorkflowExecutor {
     }
   }
 
-  private async executeStage1(context: WorkflowContext): Promise<StageExecutionResult> {
+  private async executeSceneExtraction(context: WorkflowContext): Promise<StageExecutionResult> {
     const chapters = await this.chapterService.splitChapters(
       context.projectId,
       context.novelPath
@@ -160,7 +160,7 @@ export class WorkflowExecutor {
     };
   }
 
-  private async executeStage2(context: WorkflowContext): Promise<StageExecutionResult> {
+  private async executeT2I(context: WorkflowContext): Promise<StageExecutionResult> {
     const stage1Output = context.progress.stages['stage1'];
     if (!stage1Output) {
       throw new Error('Stage 1输出不存在');
@@ -189,7 +189,7 @@ export class WorkflowExecutor {
     };
   }
 
-  private async executeStage2_5(context: WorkflowContext): Promise<StageExecutionResult> {
+  private async executeSceneSummary(context: WorkflowContext): Promise<StageExecutionResult> {
     const stage1Output = context.progress.stages['stage1'];
     if (!stage1Output) {
       throw new Error('Stage 1输出不存在');
@@ -210,7 +210,7 @@ export class WorkflowExecutor {
     };
   }
 
-  private async executeStage3(context: WorkflowContext): Promise<StageExecutionResult> {
+  private async executeStoryboardScript(context: WorkflowContext): Promise<StageExecutionResult> {
     const stage1Output = context.progress.stages['stage1'];
     const stage2_5Output = context.progress.stages['stage2.5'];
 
@@ -247,7 +247,7 @@ export class WorkflowExecutor {
     };
   }
 
-  private async executeStage4(context: WorkflowContext): Promise<StageExecutionResult> {
+  private async executeT2V(context: WorkflowContext): Promise<StageExecutionResult> {
     const stage3Output = context.progress.stages['stage3'];
     if (!stage3Output) {
       throw new Error('Stage 3输出不存在');
@@ -255,7 +255,6 @@ export class WorkflowExecutor {
 
     const storyboards = stage3Output.outputs.storyboards;
 
-    // 1. 生成分镜图片
     const imageStoryboards = storyboards
       .map((s: any) => ({
         prompt: s.customFields?.imagePrompts?.[0] || '',
@@ -272,7 +271,6 @@ export class WorkflowExecutor {
       count: storyboardImages.length
     });
 
-    // 2. 生成分镜视频（V0.4.0 新增）
     const storyboardAssetPaths = storyboards
       .map((s: any) => s.filePath)
       .filter((path: string) => path);

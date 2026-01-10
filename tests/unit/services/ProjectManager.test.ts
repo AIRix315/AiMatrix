@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { ProjectManager } from '../../../src/main/services/ProjectManager';
+import { FlowStateManager } from '../../../src/main/services/FlowStateManager';
+import { FileSystemService } from '../../../src/main/services/FileSystemService';
+import { AssetDataManager } from '../../../src/main/services/AssetDataManager';
+import { logger } from '../../../src/main/services/Logger';
 import { ProjectConfig } from '../../../src/common/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -7,6 +11,8 @@ import * as path from 'path';
 vi.mock('../../../src/main/services/TimeService', () => ({
   timeService: {
     getCurrentTime: vi.fn(() => Promise.resolve(new Date('2025-12-29T10:00:00Z'))),
+    getISOString: vi.fn(() => Promise.resolve('2025-12-29T10:00:00.000Z')),
+    getTimestamp: vi.fn(() => Promise.resolve(1735466400000)),
     validateTimeIntegrity: vi.fn(() => Promise.resolve(true)),
     syncWithNTP: vi.fn(() => Promise.resolve(true)),
   }
@@ -14,6 +20,7 @@ vi.mock('../../../src/main/services/TimeService', () => ({
 
 describe('ProjectManager - 真实文件系统测试', () => {
   let projectManager: ProjectManager;
+  let flowStateManager: FlowStateManager;
   let testProjectsDir: string;
   const originalCwd = process.cwd();
 
@@ -23,7 +30,13 @@ describe('ProjectManager - 真实文件系统测试', () => {
 
     process.chdir(testProjectsDir);
 
-    projectManager = new ProjectManager();
+    // 创建依赖服务
+    const fsService = new FileSystemService();
+    const assetDataManager = new AssetDataManager(logger, fsService);
+    flowStateManager = new FlowStateManager(fsService, assetDataManager);
+
+    // 传入 FlowStateManager
+    projectManager = new ProjectManager(flowStateManager);
     await projectManager.initialize();
   });
 

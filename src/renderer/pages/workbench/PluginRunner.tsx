@@ -1,10 +1,3 @@
-/**
- * WorkflowExecutor - 工作流执行器页面
- *
- * 功能：动态显示工作流的各个步骤面板
- * H02 重构：三栏布局(左项目树 + 中内容区 + 右属性面板)
- */
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +5,7 @@ import { Button, Loading, Toast, Modal } from '../../components/common';
 import type { ToastType } from '../../components/common/Toast';
 import { useSelection } from '../../contexts/SelectionContext';
 import { useProject } from '../../contexts/ProjectContext';
-import { WorkflowHeader } from '../../components/workflow/WorkflowHeader';
+import { FlowHeader } from '../../components/flow/FlowHeader';
 import {
   ChapterSplitPanel,
   SceneCharacterPanel,
@@ -23,7 +16,7 @@ import {
 } from './panels';
 import { UnifiedAssetPanel, AssetCategoryId } from '../../components/UnifiedAssetPanel';
 import { AssetMetadata, AssetFilter, AssetType } from '@/shared/types';
-import './WorkflowExecutor.css';
+import './PluginRunner.css';
 
 interface WorkflowStep {
   id: string;
@@ -48,9 +41,8 @@ interface WorkflowState {
   data: Record<string, unknown>;
 }
 
-const WorkflowExecutor: React.FC = () => {
+const PluginRunner: React.FC = () => {
   const { workflowId, pluginId } = useParams<{ workflowId?: string; pluginId?: string }>();
-  const actualWorkflowId = pluginId || workflowId;
   const navigate = useNavigate();
   const { setSelectedItem, setSelectedCount } = useSelection();
   const { updateProjectId } = useProject();
@@ -62,7 +54,8 @@ const WorkflowExecutor: React.FC = () => {
   const [selectedScope, _setSelectedScope] = useState<'global' | 'project'>('project');
   const [selectedCategory, _setSelectedCategory] = useState<AssetCategoryId>('all');
   const [currentProjectId, setCurrentProjectId] = useState('');
-  const [projects, setProjects] = useState<Array<{ id: string; name: string; status: string }>>([]);
+  const [actualWorkflowId, setActualWorkflowId] = useState('');
+  const [projects, setProjects] = useState<Array<{ id: string; name: string; status: string; pluginId?: string; workflowType?: string }>>([]);
   const [currentProject, setCurrentProject] = useState<{ id: string; status: string } | null>(
     null
   );
@@ -119,7 +112,7 @@ const WorkflowExecutor: React.FC = () => {
 
   useEffect(() => {
     loadWorkflow();
-  }, [actualWorkflowId]);
+  }, [workflowId, pluginId, currentProjectId]);
   useEffect(() => {
     const project = projects.find((p) => p.id === currentProjectId);
     setCurrentProject(project || null);
@@ -130,7 +123,7 @@ const WorkflowExecutor: React.FC = () => {
    */
   useEffect(() => {
     loadProjects();
-  }, [actualWorkflowId]);
+  }, [workflowId, pluginId, currentProjectId]);
   useEffect(() => {
     const savedMode = localStorage.getItem('workflow-view-mode');
     if (savedMode === 'grid' || savedMode === 'list') {
@@ -175,37 +168,59 @@ const WorkflowExecutor: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [_viewMode, workflowState]);
 
-  /**
-   * 加载工作流
-   */
   const loadWorkflow = async () => {
-    if (!actualWorkflowId) {
-      setToast({ type: 'error', message: '工作流ID不存在' });
+    if (pluginId && !workflowId) {
+      await loadProjects();
+      const matchedProjects = projects.filter(p => p.pluginId === pluginId || p.workflowType === pluginId);
+
+      if (matchedProjects.length === 1) {
+        setCurrentProjectId(matchedProjects[0].id);
+      } else if (matchedProjects.length === 0) {
+        setLoading(false);
+        return;
+      } else {
+        setLoading(false);
+        return;
+      }
+    }
+
+    if (!currentProjectId && !workflowId) {
       setLoading(false);
       return;
     }
 
     try {
-      setLoading(true);
-      console.log('WorkflowExecutor: 加载工作流', { workflowId: actualWorkflowId, isPlugin: !!pluginId });
-      const workflowInstance = await window.electronAPI.loadWorkflowInstance(actualWorkflowId) as any;
+      setLoading(true);
+
+      let resolvedWorkflowId;
+      if (workflowId) {
+        resolvedWorkflowId = workflowId;
+      } else {
+        const project = await window.electronAPI.loadProject(currentProjectId);
+        resolvedWorkflowId = project.workflows[0];
+      }
+
+      setActualWorkflowId(resolvedWorkflowId);
+
+      console.log('WorkflowExecutor: 加载工作流', { workflowId: resolvedWorkflowId, isPlugin: !!pluginId });
+      const workflowInstance = await window.electronAPI.loadWorkflowInstance(resolvedWorkflowId) as any;
       console.log('WorkflowExecutor: 工作流实例加载成功', {
         type: (workflowInstance as any).type,
         name: (workflowInstance as any).name,
         projectId: (workflowInstance as any).projectId
-      });
-      const definition = await window.electronAPI.getWorkflowDefinition((workflowInstance as any).type) as any;
+      });
+      const definition = await window.electronAPI.getWorkflowDefinition((workflowInstance as any).type) as any;
       console.log('WorkflowExecutor: 工作流定义获取成功', {
         definitionName: (definition as any).name,
         stepCount: (definition as any).steps.length
       });
 
-      if (!definition) {
+      if (!definition) {
         console.error('WorkflowExecutor: 工作流定义不存在', { type: (workflowInstance as any).type });
         setToast({ type: 'error', message: `工作流定义不存在: ${(workflowInstance as any).type}` });
         setLoading(false);
         return;
-      }
+      }
       const componentMap: Record<string, React.ComponentType<any>> = {
         ChapterSplitPanel,
         SceneCharacterPanel,
@@ -213,11 +228,10 @@ const WorkflowExecutor: React.FC = () => {
         VoiceoverPanel,
         ExportPanel,
         RemoteControlPanel
-      };
-      // 尝试加载已保存的工作流状态
+      };
       let savedState: any = null;
       try {
-        savedState = await window.electronAPI.loadWorkflowState(actualWorkflowId);
+        savedState = await window.electronAPI.loadWorkflowState(resolvedWorkflowId);
         console.log('WorkflowExecutor: 已保存状态加载成功', {
           currentStep: savedState?.currentStep,
           hasData: !!savedState?.data
@@ -226,10 +240,8 @@ const WorkflowExecutor: React.FC = () => {
         console.log('WorkflowExecutor: 无已保存状态，将创建新状态', { error });
       }
 
-      // 构建工作流状态
       let workflow: WorkflowState;
       if (savedState && savedState.currentStep !== undefined) {
-        // 从已保存状态恢复
         workflow = {
           name: (workflowInstance as any).name || (definition as any).name || '未命名工作流',
           currentStepIndex: savedState.currentStep,
@@ -248,7 +260,6 @@ const WorkflowExecutor: React.FC = () => {
           dataKeys: Object.keys(workflow.data)
         });
       } else {
-        // 首次执行，创建新状态
         workflow = {
           name: (workflowInstance as any).name || (definition as any).name || '未命名工作流',
           currentStepIndex: 0,
@@ -261,10 +272,9 @@ const WorkflowExecutor: React.FC = () => {
           data: (definition as any).defaultState || {}
         };
 
-        // 立即保存初始状态
         try {
-          await window.electronAPI.saveWorkflowState(actualWorkflowId, {
-            flowId: actualWorkflowId,
+          await window.electronAPI.saveWorkflowState(resolvedWorkflowId, {
+            flowId: resolvedWorkflowId,
             projectId: (workflowInstance as any).projectId,
             currentStep: 0,
             steps: {},
@@ -279,7 +289,7 @@ const WorkflowExecutor: React.FC = () => {
       }
 
       setWorkflowState(workflow);
-    } catch (error) {
+    } catch (error) {
       console.error('加载工作流失败:', error);
       setToast({
         type: 'error',
@@ -299,9 +309,17 @@ const WorkflowExecutor: React.FC = () => {
         const projectList = await window.electronAPI.listProjects();
         const filteredProjects = projectList
           .filter((p: any) => {
-            const matchesWorkflowType = p.workflowType === 'novel-to-video';
-            const matchesPluginId = actualWorkflowId ? p.pluginId === actualWorkflowId : true;
-            return matchesWorkflowType && matchesPluginId;
+            // 根据路由类型使用不同的筛选逻辑
+            if (workflowId) {
+              // 通过 /workflows/:workflowId 访问，查找包含该工作流的项目
+              return p.workflows && p.workflows.includes(workflowId);
+            }
+            if (pluginId) {
+              // 通过 /plugins/:pluginId 访问，按插件ID或工作流类型筛选
+              return p.pluginId === pluginId || p.workflowType === pluginId;
+            }
+            // 默认筛选所有 novel-to-video 项目
+            return p.workflowType === 'novel-to-video';
           })
           .map((p: any) => ({
             id: p.id,
@@ -448,7 +466,7 @@ const WorkflowExecutor: React.FC = () => {
       });
 
       setTimeout(() => {
-        navigate('/workflows');
+        navigate('/workbench');
       }, 2000);
     }
   };
@@ -719,7 +737,7 @@ const WorkflowExecutor: React.FC = () => {
     return (
       <div className="workflow-executor-error">
         <h2>工作流不存在</h2>
-        <Button variant="primary" onClick={() => navigate('/workflows')}>
+        <Button variant="primary" onClick={() => navigate('/workbench')}>
           返回工作流列表
         </Button>
       </div>
@@ -753,7 +771,7 @@ const WorkflowExecutor: React.FC = () => {
       {/* 中间：统一头部 + 内容区 */}
       <div className="workflow-middle-column">
         {/* 统一头部组件（两行布局） */}
-        <WorkflowHeader
+        <FlowHeader
           currentProjectId={currentProjectId}
           projects={projects}
           onProjectChange={handleProjectChange}
@@ -863,4 +881,4 @@ const WorkflowExecutor: React.FC = () => {
   );
 };
 
-export default WorkflowExecutor;
+export default PluginRunner;

@@ -77,12 +77,20 @@ interface LoadedPlugin {
 export class PluginManager {
   private pluginsDir: string;
   private loadedPlugins: Map<string, LoadedPlugin> = new Map();
+  private projectManager: any; // ProjectManager 实例，延迟注入
 
   constructor(pluginsDir?: string) {
     this.pluginsDir = pluginsDir || path.join(app.getPath('userData'), 'plugins');
     this.ensurePluginsDir().catch(error => {
       logger.error('Failed to create plugins directory', 'PluginManager', { error }).catch(() => { });
     });
+  }
+
+  /**
+   * 设置 ProjectManager 实例（依赖注入）
+   */
+  public setProjectManager(projectManager: any): void {
+    this.projectManager = projectManager;
   }
 
   /**
@@ -670,7 +678,7 @@ export class PluginManager {
                 apiFormat: APIFormat.OPENAI_COMPATIBLE, // 默认使用OpenAI兼容格式，用户可在设置中调整
                 enabled: false,
                 description: `${providerItem.purpose} (来自插件 ${loaded.manifest.name})`,
-                models: providerItem.model ? [providerItem.model] : undefined,
+                // 不保存 models 字段，插件推荐的模型将在用户检测后显示
               };
 
               await apiManager.addProvider(newProvider);
@@ -761,9 +769,11 @@ export class PluginManager {
           throw new Error(`Plugin not loaded: ${pluginId}`);
         }
 
-        // 动态导入ProjectManager获取项目配置
-        const { projectManager } = await import('./ProjectManager');
-        const projectConfig = await projectManager.loadProject(projectId);
+        // 使用注入的 ProjectManager 获取项目配置
+        if (!this.projectManager) {
+          throw new Error('ProjectManager not injected. Call setProjectManager() first.');
+        }
+        const projectConfig = await this.projectManager.loadProject(projectId);
 
         if (!projectConfig.selectedProviders) {
           await logger.warn(
@@ -781,7 +791,7 @@ export class PluginManager {
           projectConfig.selectedProviders
         )) {
           try {
-            const status = await apiManager.getProviderStatus(providerId);
+            const status = await apiManager.getProviderStatus(providerId as string);
 
             if (status.status !== 'available') {
               failedProviders.push(`${key}: ${providerId} (${status.error || 'unavailable'})`);
@@ -912,9 +922,11 @@ export class PluginManager {
   ): Promise<string> {
     return errorHandler.wrapAsync(
       async () => {
-        // 动态导入ProjectManager获取项目路径
-        const { projectManager } = await import('./ProjectManager');
-        const projectConfig = await projectManager.loadProject(projectId);
+        // 使用注入的 ProjectManager 获取项目路径
+        if (!this.projectManager) {
+          throw new Error('ProjectManager not injected. Call setProjectManager() first.');
+        }
+        const projectConfig = await this.projectManager.loadProject(projectId);
 
         const tempDir = path.join(projectConfig.path, `.temp_${taskId}`);
 
@@ -950,9 +962,11 @@ export class PluginManager {
   ): Promise<void> {
     return errorHandler.wrapAsync(
       async () => {
-        // 动态导入ProjectManager获取项目路径
-        const { projectManager } = await import('./ProjectManager');
-        const projectConfig = await projectManager.loadProject(projectId);
+        // 使用注入的 ProjectManager 获取项目路径
+        if (!this.projectManager) {
+          throw new Error('ProjectManager not injected. Call setProjectManager() first.');
+        }
+        const projectConfig = await this.projectManager.loadProject(projectId);
 
         const tempDir = path.join(projectConfig.path, `.temp_${taskId}`);
         const targetDir = path.join(projectConfig.path, targetDirName);
@@ -1009,9 +1023,11 @@ export class PluginManager {
   ): Promise<void> {
     return errorHandler.wrapAsync(
       async () => {
-        // 动态导入ProjectManager获取项目路径
-        const { projectManager } = await import('./ProjectManager');
-        const projectConfig = await projectManager.loadProject(projectId);
+        // 使用注入的 ProjectManager 获取项目路径
+        if (!this.projectManager) {
+          throw new Error('ProjectManager not injected. Call setProjectManager() first.');
+        }
+        const projectConfig = await this.projectManager.loadProject(projectId);
 
         const tempDir = path.join(projectConfig.path, `.temp_${taskId}`);
 

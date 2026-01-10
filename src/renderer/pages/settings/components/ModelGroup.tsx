@@ -8,7 +8,7 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronRight, Eye, EyeOff, Star, Edit2, Settings } from 'lucide-react';
+import { ChevronRight, Eye, EyeOff, Star, Edit2, Settings, CheckCircle } from 'lucide-react';
 import './ModelGroup.css';
 
 export interface ModelInfo {
@@ -22,6 +22,7 @@ export interface ModelInfo {
   contextWindow?: number;
   costPerMillionInput?: number;
   costPerMillionOutput?: number;
+  selected?: boolean; // 新增：是否已选择
 }
 
 interface ModelGroupProps {
@@ -32,6 +33,7 @@ interface ModelGroupProps {
   onToggleFavorite: (id: string) => void;
   onSetAlias: (id: string, alias: string) => void;
   onEditModel?: (id: string) => void;
+  onToggleSelect?: (id: string) => void; // 新增：选择/取消选择
 }
 
 export const ModelGroup: React.FC<ModelGroupProps> = ({
@@ -41,7 +43,8 @@ export const ModelGroup: React.FC<ModelGroupProps> = ({
   onToggleVisibility,
   onToggleFavorite,
   onSetAlias,
-  onEditModel
+  onEditModel,
+  onToggleSelect // 新增
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -74,7 +77,7 @@ export const ModelGroup: React.FC<ModelGroupProps> = ({
             <div className="model-empty">该分组暂无模型</div>
           ) : (
             models.map(model => (
-              <div key={model.id} className="model-row">
+              <div key={model.id} className={`model-row ${model.selected ? 'selected' : ''}`}>
                 {/* 模型图标 */}
                 <div className="model-icon">
                   {model.name.charAt(0).toUpperCase()}
@@ -97,6 +100,17 @@ export const ModelGroup: React.FC<ModelGroupProps> = ({
 
                 {/* 操作按钮 */}
                 <div className="model-actions">
+                  {/* 选择按钮 - 新增 */}
+                  {onToggleSelect && (
+                    <button
+                      className={`model-action-icon ${model.selected ? 'selected' : ''}`}
+                      onClick={() => onToggleSelect(model.id)}
+                      title={model.selected ? '取消选择' : '选择模型'}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </button>
+                  )}
+
                   {/* 可见性切换 */}
                   <button
                     className={`model-action-icon ${model.hidden ? '' : 'active'}`}

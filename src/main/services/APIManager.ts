@@ -710,7 +710,6 @@ export class APIManager {
         authType: AuthType.BEARER,
         apiFormat: APIFormat.OPENAI_COMPATIBLE,
         enabled: false,
-        models: ['stable-diffusion-xl-1024-v1-0', 'sd3-medium', 'sd3-large'],
         description: 'Stability AI 官方图像生成服务',
       },
 
@@ -723,7 +722,6 @@ export class APIManager {
         authType: AuthType.BEARER,
         apiFormat: APIFormat.OPENAI_COMPATIBLE,
         enabled: false,
-        models: ['sora-2'],
         description: 'T8Star Sora-2 视频生成服务',
       },
       {
@@ -734,7 +732,6 @@ export class APIManager {
         authType: AuthType.BEARER,
         apiFormat: APIFormat.ASYNC_POLLING,
         enabled: false,
-        models: ['gen3-alpha', 'gen3-alpha-turbo'],
         description: 'Runway Gen-3 视频生成服务',
       },
 
@@ -747,7 +744,6 @@ export class APIManager {
         authType: AuthType.NONE,
         apiFormat: APIFormat.OPENAI_COMPATIBLE,
         enabled: false,
-        models: ['llama3:8b', 'mistral:latest'],
         description: '本地部署的 Ollama LLM 服务',
       },
       {
@@ -758,7 +754,6 @@ export class APIManager {
         authType: AuthType.BEARER,
         apiFormat: APIFormat.OPENAI_COMPATIBLE,
         enabled: false,
-        models: ['gpt-4', 'gpt-3.5-turbo'],
         description: 'OpenAI 官方 API',
       },
 
@@ -1090,7 +1085,7 @@ export class APIManager {
               // 返回成功，但提示需要API密钥进行完整测试
               return {
                 success: true,
-                models: config.models || [],
+                models: [], // 这些Provider没有标准的模型列表端点
                 latency: await timeService.getTimestamp() - startTime,
                 message: apiKey
                   ? 'Provider配置有效（已配置API密钥）'
@@ -1169,13 +1164,13 @@ export class APIManager {
               message = ramUsed
                 ? `ComfyUI 服务在线 (内存使用: ${Math.round(ramUsed / 1024 / 1024)}MB)`
                 : `ComfyUI 服务在线`;
-              models = config.models || [];
+              models = []; // ComfyUI 没有标准的模型列表
             } else if (config.id === 'n8n-local') {
               // N8N 健康检查 - 返回 { status: "ok" } 或直接 200 OK
               message = data.status
                 ? `N8N 服务在线 (状态: ${data.status})`
                 : `N8N 服务在线`;
-              models = config.models || [];
+              models = []; // N8N 没有标准的模型列表
             } else if (
               config.id === 'ollama-local' ||
               config.id.includes('ollama')
@@ -1255,6 +1250,61 @@ export class APIManager {
       'APIManager',
       'testProviderConnection',
       ErrorCode.API_CALL_ERROR
+    );
+  }
+
+  /**
+   * 设置Provider的已选择模型
+   */
+  public async setSelectedModels(
+    providerId: string,
+    selectedModels: string[]
+  ): Promise<void> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const config = this.providers.get(providerId);
+        if (!config) {
+          throw new Error(`Provider ${providerId} not found`);
+        }
+
+        // 验证并记录警告
+        if (!selectedModels || selectedModels.length === 0) {
+          await logger.warn(
+            `Setting empty model list for provider: ${providerId}`,
+            'APIManager'
+          );
+        }
+
+        // 注意：不再验证 selectedModels 是否在 models 列表中
+        // 因为 models 字段已被移除，检测结果只是临时数据
+
+        config.selectedModels = selectedModels;
+        this.providers.set(providerId, config);
+        await this.saveProviders();
+
+        await logger.info(
+          `Updated selected models for ${providerId}: ${selectedModels.join(', ')}`,
+          'APIManager'
+        );
+      },
+      'APIManager',
+      'setSelectedModels',
+      ErrorCode.OPERATION_FAILED
+    );
+  }
+
+  /**
+   * 获取Provider的已选择模型
+   */
+  public async getSelectedModels(providerId: string): Promise<string[]> {
+    return errorHandler.wrapAsync(
+      async () => {
+        const config = this.providers.get(providerId);
+        return config?.selectedModels || [];
+      },
+      'APIManager',
+      'getSelectedModels',
+      ErrorCode.OPERATION_FAILED
     );
   }
 
@@ -1401,11 +1451,11 @@ export class APIManager {
     model: string,
     category: APICategory
   ): Promise<APIProviderConfig | null> {
-    // 查找支持该模型的所有 Providers
+    // 查找支持该模型的所有 Providers（从用户选择的模型中查找）
     const candidates = Array.from(this.providers.values()).filter(
       (p) =>
         p.category === category &&
-        p.models?.includes(model) &&
+        p.selectedModels?.includes(model) &&
         p.enabled
     );
 

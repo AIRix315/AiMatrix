@@ -12,7 +12,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { timeService } from './TimeService';
-import { configManager } from './ConfigManager';
+import { FlowStateManager } from './FlowStateManager';
+import { logger } from './Logger';
 import {
   ProjectManager as IProjectManager,
   ProjectConfig,
@@ -29,13 +30,17 @@ export class ProjectManager implements IProjectManager {
   private projects: Map<string, ProjectConfig> = new Map();
   private projectsPath: string;
   private isInitialized = false;
+  private flowStateManager: FlowStateManager;
 
   // 写操作队列，保证project.json的串行写入，防止并发竞争
   private writeQueue: Promise<void> = Promise.resolve();
 
-  constructor() {
+  constructor(flowStateManager: FlowStateManager) {
     // 设置项目存储路径
     this.projectsPath = path.join(process.cwd(), 'projects');
+
+    // 使用注入的 FlowStateManager
+    this.flowStateManager = flowStateManager;
   }
 
   /**
@@ -115,9 +120,26 @@ export class ProjectManager implements IProjectManager {
       // 创建项目目录
       await fs.mkdir(projectPath, { recursive: true });
 
-      // 创建工作流JSON文件
-      const workflowId = uuidv4();
-      await this.createWorkflowFile(workflowId, name, template || 'workflow');
+      // 使用 FlowStateManager 创建工作流实例
+      const workflowType = template || 'DefTemplate';
+      let workflowId: string;
+      try {
+        const workflowInstance = await this.flowStateManager.createInstance({
+          type: workflowType,
+          name: name,
+          projectId: projectId
+        });
+        workflowId = workflowInstance.id;
+      } catch (error) {
+        await logger.error('创建工作流实例失败', 'ProjectManager', {
+          error: error instanceof Error ? error.message : String(error),
+          projectId,
+          workflowType
+        });
+        // 清理已创建的项目目录
+        await fs.rm(projectPath, { recursive: true, force: true });
+        throw new Error(`Failed to create workflow instance: ${error instanceof Error ? error.message : String(error)}`);
+      }
 
       // 创建项目配置
       const currentTime = await timeService.getISOString();
@@ -626,10 +648,7 @@ export class ProjectManager implements IProjectManager {
             try {
               await fs.access(configPath);
             } catch {
-              this.log(
-                'warn',
-                `跳过无效项目目录: ${dir.name} (缺少 project.json)`
-              );
+              // 静默跳过：没有 project.json 的目录不是项目
               continue;
             }
 
@@ -638,12 +657,7 @@ export class ProjectManager implements IProjectManager {
 
             // 检查文件是否为空
             if (!configData || configData.trim().length === 0) {
-              this.log(
-                'warn',
-                `跳过无效项目目录: ${dir.name} (project.json 为空，可能是测试残留)`
-              );
-              // 可选：自动清理空项目目录
-              // await fs.rm(path.join(this.projectsPath, dir.name), { recursive: true, force: true });
+              // 静默跳过：空文件不是有效项目
               continue;
             }
 
@@ -652,7 +666,7 @@ export class ProjectManager implements IProjectManager {
 
             // 验证必要字段
             if (!projectConfig.id || !projectConfig.name) {
-              this.log('warn', `跳过无效项目目录: ${dir.name} (缺少必要字段)`);
+              // 静默跳过：缺少必要字段的不是有效项目
               continue;
             }
 
@@ -660,14 +674,8 @@ export class ProjectManager implements IProjectManager {
             this.projects.set(projectConfig.id, projectConfig);
             this.log('info', `项目加载成功: ${projectConfig.id}`);
           } catch (error) {
-            if (error instanceof SyntaxError) {
-              this.log(
-                'warn',
-                `跳过无效项目目录: ${dir.name} (JSON 格式错误，可能是测试残留)`
-              );
-            } else {
-              this.log('warn', `跳过无效项目目录: ${dir.name}, 错误: ${error}`);
-            }
+            // 静默跳过：JSON 格式错误或其他读取错误
+            continue;
           }
         }
       }
@@ -738,44 +746,6 @@ export class ProjectManager implements IProjectManager {
     });
   }
 
-  /**
-   * 创建工作流JSON文件
-   * @param workflowId 工作流ID
-   * @param projectName 项目名称
-   * @param template 模板类型
-   * @private
-   */
-  private async createWorkflowFile(
-    workflowId: string,
-    projectName: string,
-    template: string
-  ): Promise<void> {
-    // 从配置管理器获取正确的工作区路径
-    const workspacePath = configManager.getGeneralSettings().workspacePath;
-    const workflowsDir = path.join(workspacePath, 'workflows');
-    await fs.mkdir(workflowsDir, { recursive: true });
-
-    const timestamp = await timeService.getCurrentTime();
-
-    const workflowType =
-      template === 'novel-to-video' ? 'novel-to-video' : 'custom';
-
-    const workflow = {
-      id: workflowId,
-      name: projectName, // 直接使用项目名称
-      type: workflowType,
-      nodes: [],
-      edges: [],
-      config: {},
-      createdAt: timestamp.toISOString(),
-      updatedAt: timestamp.toISOString(),
-    };
-
-    const filePath = path.join(workflowsDir, `${workflowId}.json`);
-    await fs.writeFile(filePath, JSON.stringify(workflow, null, 2), 'utf-8');
-
-    await this.log('info', `工作流文件创建: ${filePath}`);
-  }
 
   /**
    * 应用项目模板
@@ -888,5 +858,6 @@ export class ProjectManager implements IProjectManager {
   }
 }
 
-// 导出单例实例
-export const projectManager = new ProjectManager();
+// 注意：ProjectManager 需要 FlowStateManager 作为依赖
+// 不再导出单例，应该在主进程中创建并传入依赖
+// export const projectManager = new ProjectManager(flowStateManager);

@@ -8,6 +8,8 @@ import { IPCManager } from './ipc/channels';
 import { ProjectManager } from './services/ProjectManager';
 import { FileSystemService, fileSystemService } from './services/FileSystemService';
 import { AssetManager, getAssetManager } from './services/AssetManager';
+import { AssetDataManager } from './services/AssetDataManager';
+import { FlowStateManager } from './services/FlowStateManager';
 import { projectPluginConfigManager } from './services/ProjectPluginConfigManager';
 import { getSafePath } from './utils/security';
 import { logger, Logger, LogLevel } from './services/Logger';
@@ -20,12 +22,14 @@ import { modelRegistry } from './services/ModelRegistry';
 import { configManager } from './services/ConfigManager';
 import { timeService } from './services/TimeService';
 import { ShortcutManager } from './services/ShortcutManager';
+import { WorkflowStateManager } from './services/WorkflowStateManager';
 import { registerWorkflowHandlers } from './ipc/workflow-handlers';
 import { registerProviderHandlers } from './ipc/provider-handlers';
 import { registerAIHandlers } from './ipc/ai-handlers';
 import { workflowRegistry } from './services/WorkflowRegistry';
 import { testWorkflowDefinition } from './workflows/test-workflow';
 import { novelToVideoWorkflow } from './workflows/novel-to-video-definition';
+import { defTemplateDefinition } from './workflows/default-template';
 import { ProviderRegistry } from './services/ProviderRegistry';
 import { ProviderRouter } from './services/ProviderRouter';
 import { ProviderHub } from './services/ProviderHub';
@@ -57,12 +61,13 @@ class MatrixApp {
   private providerRouter: ProviderRouter;
   private providerHub: ProviderHub;
   private aiService: AIService;
+  private workflowStateManager: WorkflowStateManager;
   private fileWatchers: Map<string, fsSync.FSWatcher> = new Map();
 
   constructor() {
     this.windowManager = new WindowManager();
     this.ipcManager = new IPCManager();
-    this.projectManager = new ProjectManager();
+    // ProjectManager 将在初始化 FlowStateManager 后创建
     this.fileSystemService = fileSystemService;
     this.assetManager = getAssetManager(this.fileSystemService);
     this.shortcutManager = ShortcutManager.getInstance(timeService, logger, configManager);
@@ -75,6 +80,14 @@ class MatrixApp {
       logger
     );
     this.aiService = new AIService(logger, apiManager, taskScheduler);
+
+    // 初始化 FlowStateManager 和 WorkflowStateManager
+    const assetDataManager = new AssetDataManager(logger, this.fileSystemService);
+    const flowStateManager = new FlowStateManager(this.fileSystemService, assetDataManager);
+    this.workflowStateManager = new WorkflowStateManager(this.fileSystemService, assetDataManager);
+
+    // 初始化 ProjectManager（传入 FlowStateManager）
+    this.projectManager = new ProjectManager(flowStateManager);
 
     this.initializeEventListeners();
   }
@@ -138,6 +151,11 @@ class MatrixApp {
       logger.info('小说转视频工作流定义已注册（插件模式）', 'MatrixApp', {
         workflowType: novelToVideoWorkflow.type
       });
+
+      workflowRegistry.register(defTemplateDefinition);
+      logger.info('默认模板工作流已注册', 'MatrixApp', {
+        workflowType: defTemplateDefinition.type
+      });
     } catch (error) {
       logger.error('注册工作流失败', 'MatrixApp', { error });
     }
@@ -194,6 +212,9 @@ class MatrixApp {
     await this.assetManager.initialize();
 
     this.assetManager.setConfigManager(configManager);
+
+    // 注入 ProjectManager 到 PluginManager
+    pluginManager.setProjectManager(this.projectManager);
 
     await pluginManager.initialize();
     await pluginMarketService.initialize();
@@ -381,6 +402,14 @@ class MatrixApp {
     });
     ipcMain.handle('api:get-provider-status', async (_, providerId: string) => {
       return await apiManager.getProviderStatus(providerId);
+    });
+    ipcMain.handle('api:set-selected-models', async (_, providerId: string, selectedModels: string[]) => {
+      await apiManager.setSelectedModels(providerId, selectedModels);
+      return { success: true };
+    });
+    ipcMain.handle('api:get-selected-models', async (_, providerId: string) => {
+      const models = await apiManager.getSelectedModels(providerId);
+      return { success: true, data: models };
     });
 
     // Plugin Pre-flight Check相关IPC处理
@@ -587,28 +616,48 @@ class MatrixApp {
       return { success: true };
     });
     ipcMain.handle('workflow:list', async () => {
-      // 读取工作空间路径下的 workflows 目录
       try {
-        const workspacePath = configManager.getGeneralSettings().workspacePath;
-        const workflowsDir = path.join(workspacePath, 'workflows');
-        const files = await fs.readdir(workflowsDir);
         const workflows = [];
 
-        for (const file of files) {
-          if (file.endsWith('.json')) {
-            const content = await fs.readFile(path.join(workflowsDir, file), 'utf-8');
-            const workflow = JSON.parse(content);
-            workflows.push(workflow);
+        // 1. 读取工作空间工作流文件（旧系统）
+        const workspacePath = configManager.getGeneralSettings().workspacePath;
+        const workflowsDir = path.join(workspacePath, 'workflows');
+
+        try {
+          const files = await fs.readdir(workflowsDir);
+          for (const file of files) {
+            if (file.endsWith('.json')) {
+              const content = await fs.readFile(path.join(workflowsDir, file), 'utf-8');
+              const workflow = JSON.parse(content);
+              workflows.push(workflow);
+            }
+          }
+        } catch (error) {
+          // 目录不存在，忽略
+        }
+
+        // 2. 获取工作流实例（新系统）
+        const instances = await this.workflowStateManager.listInstances();
+
+        // 3. 合并列表（避免重复）
+        const workflowIds = new Set(workflows.map((w: any) => w.id));
+        for (const instance of instances) {
+          if (!workflowIds.has(instance.id)) {
+            workflows.push({
+              id: instance.id,
+              name: instance.name,
+              type: instance.type,
+              projectId: instance.projectId,
+              createdAt: instance.createdAt,
+              updatedAt: instance.updatedAt
+            });
           }
         }
 
         return workflows;
       } catch (error) {
-        // 目录不存在或为空，返回默认工作流
-        return [
-          { id: 'workflow1', name: '默认工作流', type: 'comfyui' },
-          { id: 'workflow2', name: '视频生成', type: 'n8n' }
-        ];
+        logger.error('获取工作流列表失败', 'workflow:list', { error });
+        return [];
       }
     });
     ipcMain.handle('workflow:save', async (_, workflowId, config) => {

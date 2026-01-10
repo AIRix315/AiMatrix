@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './components/theme-provider';
 import { SidebarProvider, useSidebar } from './contexts/SidebarContext';
 import { SelectionProvider, useSelection } from './contexts/SelectionContext';
@@ -12,9 +12,9 @@ import type { Task } from './components/common/TaskQueueSheet';
 import Dashboard from './pages/dashboard/Dashboard';
 import Assets from './pages/assets/Assets';
 import Plugins from './pages/plugins/Plugins';
-import Workflows from './pages/workflows/Workflows';
-import WorkflowEditor from './pages/workflows/WorkflowEditor';
-import WorkflowExecutor from './pages/workflows/WorkflowExecutor';
+import Workbench from './pages/workbench/Workbench';
+import FlowDesigner from './pages/workbench/FlowDesigner';
+import PluginRunner from './pages/workbench/PluginRunner';
 import Settings from './pages/settings/Settings';
 import About from './pages/about/About';
 import UIDemo from './pages/demo/UIDemo';
@@ -189,15 +189,17 @@ const AppContentWithRouter: React.FC = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="assets" element={<Assets />} />
           <Route path="plugins" element={<Plugins />} />
-          {/* 插件执行器（如"小说转视频"）- 使用工作流执行器UI */}
-          <Route path="plugins/:pluginId" element={<WorkflowExecutor />} />
-          <Route path="workflow" element={<Workflows />} />
-          <Route path="workflows" element={<Workflows />} />
-          {/* 自定义工作流编辑器（可视化流程图） */}
-          <Route path="workflows/new" element={<WorkflowEditor />} />
-          <Route path="workflows/editor/:workflowId" element={<WorkflowEditor />} />
-          {/* 工作流执行器（步骤化流程） */}
-          <Route path="workflows/:workflowId" element={<WorkflowExecutor />} />
+          <Route path="plugins/:pluginId" element={<PluginRunner />} />
+          <Route path="workbench" element={<Workbench />} />
+          <Route path="workbench/new" element={<FlowDesigner />} />
+          <Route path="workbench/editor/:flowId" element={<FlowDesigner />} />
+
+          {/* 向后兼容重定向 */}
+          <Route path="workflow" element={<Navigate to="/workbench" replace />} />
+          <Route path="workflows" element={<Navigate to="/workbench" replace />} />
+          <Route path="workflows/new" element={<Navigate to="/workbench/new" replace />} />
+          <Route path="workflows/editor/:workflowId" element={<Navigate to="/workbench/editor/:workflowId" replace />} />
+          <Route path="workflows/:workflowId" element={<Navigate to="/plugins/:workflowId" replace />} />
           <Route path="settings" element={<Settings />} />
           <Route path="about" element={<About />} />
           <Route path="demo" element={<UIDemo />} />

@@ -2,7 +2,7 @@
   "characterCount": 2,
   "characters": [
     {
-      "characterId": "character-1767786170855",
+      "characterId": "character-1768051197789",
       "name": "张三",
       "appearance": "年轻男子，黑色短发，阳光帅气",
       "imagePrompt": "年轻的中国男子，黑色短发，阳光气质，现代服装",
@@ -18,7 +18,7 @@
       }
     },
     {
-      "characterId": "character-1767786170863",
+      "characterId": "character-1768051197800",
       "name": "李四",
       "appearance": "优雅女子，长发及肩，温柔气质",
       "imagePrompt": "优雅的中国女子，长发及肩，温柔气质，休闲装",
@@ -34,5 +34,5 @@
       }
     }
   ],
-  "timestamp": "2026-01-07T11:42:50.873Z"
+  "timestamp": "2026-01-10T13:19:57.814Z"
 }

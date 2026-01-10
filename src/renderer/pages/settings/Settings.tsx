@@ -312,7 +312,7 @@ const Settings: React.FC = () => {
         await window.electronAPI.addProvider({
           ...providerConfig,
           enabled: true,
-          models: (result as any).models || providerConfig.models,
+          // 不保存 models 字段，检测结果只是临时数据
         });
 
         // 更新UI状态
@@ -326,6 +326,9 @@ const Settings: React.FC = () => {
 
         const successMsg = (result as any).message || '连接测试成功';
         showToast('success', successMsg);
+
+        // 返回检测结果（包含 models 列表）
+        return result;
       } else {
         // 连接失败：禁用Provider，设置状态为offline
         updateProviderStatus(providerId, 'offline');

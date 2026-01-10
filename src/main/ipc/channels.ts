@@ -72,6 +72,8 @@ export const IPC_CHANNELS = {
   API_REMOVE_PROVIDER: 'api:remove-provider',
   API_TEST_PROVIDER_CONNECTION: 'api:test-provider-connection',
   API_GET_PROVIDER_STATUS: 'api:get-provider-status',
+  API_SET_SELECTED_MODELS: 'api:set-selected-models',
+  API_GET_SELECTED_MODELS: 'api:get-selected-models',
 
   // Model相关
   MODEL_LIST: 'model:list',

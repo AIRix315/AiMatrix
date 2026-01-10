@@ -1,14 +1,9 @@
-/**
- * WorkflowListItem - 工作流列表项组件
- * 符合设计规范的列表项样式
- */
-
 import React from 'react';
 import { Workflow, Pin, Trash2 } from 'lucide-react';
 import { formatRelativeTime } from '../../utils/formatters';
-import './WorkflowListItem.css';
+import './FlowListItem.css';
 
-interface WorkflowListItemProps {
+interface FlowListItemProps {
   id: string;
   name: string;
   description?: string;
@@ -20,7 +15,7 @@ interface WorkflowListItemProps {
   onClick?: () => void;
 }
 
-export const WorkflowListItem: React.FC<WorkflowListItemProps> = ({
+export const FlowListItem: React.FC<FlowListItemProps> = ({
   id: _id,
   name,
   description,
@@ -86,4 +81,4 @@ export const WorkflowListItem: React.FC<WorkflowListItemProps> = ({
   );
 };
 
-export default WorkflowListItem;
+export default FlowListItem;

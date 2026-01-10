@@ -165,8 +165,14 @@ export class WorkflowRegistry {
       throw new Error('工作流定义缺少有效的 name')
     }
 
-    if (!Array.isArray(definition.steps) || definition.steps.length === 0) {
-      throw new Error('工作流定义必须包含至少一个步骤')
+    if (!Array.isArray(definition.steps)) {
+      throw new Error('工作流定义的 steps 必须是数组')
+    }
+
+    // DefTemplate 是节点编辑器模板，允许 steps 为空
+    // 其他工作流类型必须至少包含一个步骤
+    if (definition.steps.length === 0 && definition.type !== 'DefTemplate') {
+      throw new Error('工作流定义必须包含至少一个步骤（DefTemplate 除外）')
     }
 
     // 验证步骤

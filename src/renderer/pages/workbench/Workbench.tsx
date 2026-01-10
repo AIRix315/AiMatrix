@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pin, Trash2, Settings as SettingsIcon, RefreshCw, Workflow as WorkflowIcon } from 'lucide-react';
 import { Card, Button, Toast, Loading, ViewSwitcher, TaskQueueSheet, ConfirmDialog, type Task } from '../../components/common';
-import { WorkflowListItem } from '../../components/workflow/WorkflowListItem';
+import { FlowListItem } from '../../components/flow/FlowListItem';
 import type { ToastType } from '../../components/common/Toast';
 import { ShortcutType } from '../../../common/types';
 import { refreshGlobalNav } from '../../utils/globalNavHelper';
-import './Workflows.css';
+import './Workbench.css';
 
 interface Workflow {
   id: string;
@@ -17,7 +17,7 @@ interface Workflow {
   status: 'draft' | 'running' | 'completed';
 }
 
-const Workflows: React.FC = () => {
+const Workbench: React.FC = () => {
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
@@ -64,12 +64,11 @@ const Workflows: React.FC = () => {
   };
 
   const handleCreateWorkflow = () => {
-    navigate('/workflows/new');
+    navigate('/workbench/new');
   };
 
   const handleOpenWorkflow = (workflowId: string) => {
-    // 所有工作流都使用 WorkflowEditor（可视化流程图编辑器）
-    navigate(`/workflows/editor/${workflowId}`);
+    navigate(`/workbench/editor/${workflowId}`);
   };
 
   const handlePinWorkflow = async (e: React.MouseEvent, workflow: Workflow) => {
@@ -83,7 +82,7 @@ const Workflows: React.FC = () => {
       });
       setToast({
         type: 'success',
-        message: `工作流 "${workflow.name}" 已添加到菜单栏`
+        message: `流程图 "${workflow.name}" 已添加到菜单栏`
       });
       // 立即刷新菜单栏
       await refreshGlobalNav();
@@ -113,7 +112,7 @@ const Workflows: React.FC = () => {
 
       setToast({
         type: 'success',
-        message: '工作流删除成功'
+        message: '流程图删除成功'
       });
 
       // 刷新列表
@@ -121,7 +120,7 @@ const Workflows: React.FC = () => {
     } catch (error) {
       setToast({
         type: 'error',
-        message: `删除工作流失败: ${error instanceof Error ? error.message : String(error)}`
+        message: `删除流程图失败: ${error instanceof Error ? error.message : String(error)}`
       });
     } finally {
       setDeleteConfirm(null);
@@ -156,13 +155,13 @@ const Workflows: React.FC = () => {
   };
 
   if (isLoading && workflows.length === 0) {
-    return <Loading size="lg" message="加载工作流..." fullscreen />;
+    return <Loading size="lg" message="加载流程图..." fullscreen />;
   }
 
   return (
     <div className="dashboard">
       <div className="dashboard-header">
-        <div className="view-title">工作流 <small>| 流程管理 (Workflow Management)</small></div>
+        <div className="view-title">工作台 <small>| 流程管理 (Flow Management)</small></div>
 
         <div className="header-actions">
           {/* 视图模式切换按钮 */}
@@ -181,18 +180,18 @@ const Workflows: React.FC = () => {
               className={`content-tab-btn ${activeTab === 'instances' ? 'active' : ''}`}
               onClick={() => setActiveTab('instances')}
             >
-              我的工作流
+              我的流程图
             </button>
             <button
               className={`content-tab-btn ${activeTab === 'definitions' ? 'active' : ''}`}
               onClick={() => setActiveTab('definitions')}
             >
-              工作流模板
+              流程模板
             </button>
           </div>
           {activeTab === 'instances' && (
             <Button variant="primary" onClick={handleCreateWorkflow}>
-              + 自定义工作流
+              + 自定义流程图
             </Button>
           )}
         </div>
@@ -204,13 +203,13 @@ const Workflows: React.FC = () => {
               <div className="empty-icon">
                 <SettingsIcon className="h-16 w-16 text-muted-foreground" />
               </div>
-              <h2>暂无工作流</h2>
-              <p>点击右上角"+ 自定义工作流"按钮创建您的第一个工作流</p>
+              <h2>暂无流程图</h2>
+              <p>点击右上角"+ 自定义流程图"按钮创建您的第一个流程图</p>
             </div>
           ) : viewMode === 'list' ? (
             <div className="workflow-list">
               {workflows.map((workflow) => (
-                <WorkflowListItem
+                <FlowListItem
                   key={workflow.id}
                   id={workflow.id}
                   name={workflow.name}
@@ -229,7 +228,7 @@ const Workflows: React.FC = () => {
                       });
                       setToast({
                         type: 'success',
-                        message: `工作流 "${workflow.name}" 已添加到菜单栏`
+                        message: `流程图 "${workflow.name}" 已添加到菜单栏`
                       });
                       await refreshGlobalNav();
                     } catch (error) {
@@ -277,7 +276,7 @@ const Workflows: React.FC = () => {
                         e.stopPropagation();
                         setDeleteConfirm({ workflowId: workflow.id, workflowName: workflow.name });
                       }}
-                      title="删除工作流"
+                      title="删除流程图"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -290,8 +289,8 @@ const Workflows: React.FC = () => {
           // 工作流模板视图
           <div className="empty-state">
             <div className="empty-icon">🚧</div>
-            <h2>工作流模板开发中</h2>
-            <p>工作流模板功能正在开发中，敬请期待</p>
+            <h2>流程模板开发中</h2>
+            <p>流程模板功能正在开发中，敬请期待</p>
           </div>
         )}
       </div>
@@ -300,8 +299,8 @@ const Workflows: React.FC = () => {
       {deleteConfirm && (
         <ConfirmDialog
           isOpen={true}
-          title="删除工作流"
-          message={`确定要删除工作流 "${deleteConfirm.workflowName}" 吗？`}
+          title="删除流程图"
+          message={`确定要删除流程图 "${deleteConfirm.workflowName}" 吗？`}
           type="warning"
           confirmText="删除"
           cancelText="取消"
@@ -334,4 +333,4 @@ const Workflows: React.FC = () => {
   );
 };
 
-export default Workflows;
+export default Workbench;

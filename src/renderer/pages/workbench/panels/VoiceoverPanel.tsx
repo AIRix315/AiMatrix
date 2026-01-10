@@ -10,7 +10,7 @@ import { Play, RefreshCw, Mic } from 'lucide-react';
 // import { Pause, Volume2 } from 'lucide-react'; // 暂时未使用
 import { Button, Loading, Toast } from '../../../components/common';
 import type { ToastType } from '../../../components/common/Toast';
-import { VoiceoverListItem } from '../../../components/workflow/VoiceoverListItem';
+import { VoiceoverListItem } from '../../../components/flow/VoiceoverListItem';
 import './VoiceoverPanel.css';
 
 interface Voiceover {

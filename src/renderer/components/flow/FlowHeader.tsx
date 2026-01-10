@@ -1,17 +1,11 @@
-/**
- * WorkflowHeader - 工作流执行器统一头部组件（两行布局）
- * 第一行：项目选择 + 文字步骤按钮 + 视图切换 + 全屏按钮
- * 第二行：子步骤选项卡（动态显示）
- */
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize2 } from 'lucide-react';
 import { Button, ViewSwitcher } from '../common';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import './WorkflowHeader.css';
+import './FlowHeader.css';
 
-interface WorkflowHeaderProps {
+interface FlowHeaderProps {
   // 项目相关
   currentProjectId: string;
   projects: Array<{ id: string; name: string; status?: string }>;
@@ -41,7 +35,7 @@ interface WorkflowHeaderProps {
   onToggleFullscreen: () => void;
 }
 
-export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
+export const FlowHeader: React.FC<FlowHeaderProps> = ({
   currentProjectId,
   projects,
   onProjectChange,
