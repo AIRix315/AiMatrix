@@ -4,6 +4,7 @@
 
 | 版本 | 日期 | 变更类型 | 变更内容 |
 |------|------|----------|----------|
+| 0.4.0.1 | 2026-01-11 | BUG修复 | 修复Dashboard新建项目自动跳转功能、优化Toast弹窗位置 |
 | 0.4.0 | 2026-01-11 | BUG修复 | 修复插件路由逻辑、重命名WorkflowExecutor方法、优化代码可读性 |
 | 0.3.9.9 | 2026-01-08 | 架构重构 | Adapter架构实现、模型优先路由、插件层解耦、Stage4视频生成完善、代码质量优化（0错误） |
 | 0.3.9.8 | 2026-01-06 | 功能增强 | 工作流状态持久化、双重存储架构、TaskScheduler进度事件、DeepSeek JSON清理 |
@@ -22,6 +23,33 @@
 | 0.3.8 | 2025-12-29 | BUG修复 | 修复工作流和插件快捷方式路由问题，修复WorkflowExecutor硬编码问题，修复插件页面启动工作流功能 |
 | 0.3.7 | 2025-12-29 | UI优化 | 完成全局明暗主题切换系统，优化视图切换控件样式，修复菜单栏双分割线问题 |
 | 0.0.1 | 2025-12-23 | 初始版本 | 创建修改日志规范文档，包含版本号规则、变更类型分类、日志格式规范、提交信息规范、发布流程和维护策略 |
+
+---
+
+## [0.4.0.1] - 2026-01-11
+
+### BUG修复
+- **Dashboard 新建项目自动跳转功能**
+  - 修复新建项目后停留在 Dashboard 页面的问题
+  - 实现创建项目后自动跳转到对应工作页面
+  - 小说转视频项目 → 自动进入插件页面 `/plugins/novel-to-video`
+  - 节点编辑器项目 → 自动进入节点编辑器 `/workbench/editor/:workflowId`
+  - 修复路由跳转错误：使用插件ID而非工作流UUID
+  - 修复"项目不存在"警告：直接使用 createProject 返回的 project 对象导航
+  - 修复 PluginRunner 加载时序问题：等待 currentProjectId 被设置后再加载工作流
+
+### UI优化
+- **Toast 弹窗位置调整**
+  - Toast 弹窗位置从距离顶部 20px 调整为 30px（下移10像素）
+  - 优化全局横幅弹窗的视觉层次
+
+### 技术细节
+- 修改文件：
+  - `src/renderer/pages/dashboard/Dashboard.tsx` - 项目创建和跳转逻辑
+  - `src/renderer/pages/workbench/PluginRunner.tsx` - 工作流加载时序
+  - `src/renderer/components/common/Toast.css` - Toast 位置样式
+- TypeScript 编译通过
+- ESLint 检查通过
 
 ---
 

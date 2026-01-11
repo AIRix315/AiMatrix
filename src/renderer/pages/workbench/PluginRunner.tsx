@@ -169,19 +169,10 @@ const PluginRunner: React.FC = () => {
   }, [_viewMode, workflowState]);
 
   const loadWorkflow = async () => {
-    if (pluginId && !workflowId) {
-      await loadProjects();
-      const matchedProjects = projects.filter(p => p.pluginId === pluginId || p.workflowType === pluginId);
-
-      if (matchedProjects.length === 1) {
-        setCurrentProjectId(matchedProjects[0].id);
-      } else if (matchedProjects.length === 0) {
-        setLoading(false);
-        return;
-      } else {
-        setLoading(false);
-        return;
-      }
+    // 如果通过 pluginId 访问但还没有 currentProjectId，等待 loadProjects 设置
+    if (pluginId && !workflowId && !currentProjectId) {
+      setLoading(false);
+      return;
     }
 
     if (!currentProjectId && !workflowId) {

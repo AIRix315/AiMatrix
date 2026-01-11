@@ -125,7 +125,7 @@ const Dashboard: React.FC = () => {
       setIsCreating(true);
       if (window.electronAPI?.createProject) {
         // 传递模板参数
-        await window.electronAPI.createProject(newProjectName, selectedTemplate);
+        const project = await window.electronAPI.createProject(newProjectName, selectedTemplate);
 
         // 关闭对话框并清空状态
         setShowNewProjectModal(false);
@@ -139,6 +139,24 @@ const Dashboard: React.FC = () => {
 
         // 重新加载项目列表
         await loadProjects();
+
+        // 自动跳转到项目工作页面（直接使用返回的 project 对象，不依赖 projects 状态）
+        if (!project.workflows || project.workflows.length === 0) {
+          setToast({
+            type: 'error',
+            message: '项目创建成功，但没有关联的工作流'
+          });
+          return;
+        }
+
+        const workflowId = project.workflows[0];
+        if (project.workflowType === 'novel-to-video') {
+          // 跳转到插件页面（使用插件ID）
+          navigate(`/plugins/novel-to-video`);
+        } else {
+          // 跳转到节点编辑器（使用工作流ID）
+          navigate(`/workbench/editor/${workflowId}`);
+        }
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -197,9 +215,11 @@ const Dashboard: React.FC = () => {
 
     // 根据工作流类型跳转到不同的页面
     if (project.workflowType === 'novel-to-video') {
-      navigate(`/workflows/${workflowId}`);
+      // 跳转到插件页面（使用插件ID，不是工作流ID）
+      navigate(`/plugins/novel-to-video`);
     } else {
-      navigate(`/workflows/editor/${workflowId}`);
+      // 跳转到节点编辑器（使用工作流ID）
+      navigate(`/workbench/editor/${workflowId}`);
     }
   };
 

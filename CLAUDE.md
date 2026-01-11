@@ -102,10 +102,10 @@ MATRIX Studio 是一个基于 Electron 的 AI 视频生成工作流管理平台�
 - **FileSystemService**: 文件系统操作封装（路径管理、JSON读写）
 - **ConfigManager**: 应用配置管理
 
-**工作流服务**:
-- **WorkflowRegistry**: 工作流注册和管理
-- **WorkflowStateManager**: 工作流状态管理和执行追踪
-- **FlowStateManager**: 工作流执行状态管理
+**流程编排服务**:
+- **WorkflowRegistry**: 流程注册和管理
+- **WorkflowStateManager**: 流程状态管理和执行追踪
+- **FlowStateManager**: 流程执行状态管理
 - **SchemaRegistry**: Schema 验证和类型系统
 - **ModelRegistry**: AI 模型注册和管理
 
@@ -137,7 +137,7 @@ MATRIX Studio 是一个基于 Electron 的 AI 视频生成工作流管理平台�
 - `window:*`: 窗口控制（最小化、最大化、关闭）
 - `project:*`: 项目操作（创建、加载、保存、删除、列表）
 - `asset:*`: 物料操作（添加、移除、更新、搜索、预览）
-- `workflow:*`: 工作流执行和管理
+- `workflow:*`: 流程执行和管理
 - `plugin:*`: 插件安装和管理
 - `task:*`: 任务调度和执行
 - `api:*`: 外部 API 集成（Provider 管理）
@@ -260,7 +260,7 @@ Webpack 配置必须镜像这些别名。
 参考 UI 设计: `docs/references/UI/matrix`
 项目归档文档: `docs/ref/` (已完成的实现报告和计划)
 
-## 开发工作流
+## 开发流程
 
 1. **理解架构**: 修改前务必先阅读相关文件和 `docs/00-global-requirements-v1.0.0.md`
 2. **代码质量**:
@@ -292,8 +292,8 @@ Webpack 配置必须镜像这些别名。
   - 基础组件: 完整实现 (Button, Card, Modal, Toast, Loading、ProgressOrb 等)
   - 高级组件: Sheet, Dialog, Tabs, Switch, Checkbox、Select 等 Radix UI 组件
   - 页面实现: Dashboard、Assets、Workflows、Plugins、Settings、About 全功能实现
-  - 工作流编辑器: 基于 @xyflow/react 的节点编辑器，支持拖拽和连接
-  - 工作流控制面板: ChapterSplitPanel、SceneCharacterPanel、StoryboardPanel、VoiceoverPanel、ExportPanel、RemoteControlPanel
+  - 流程编辑器: 基于 @xyflow/react 的节点编辑器，支持拖拽和连接
+  - 插件流程控制面板: ChapterSplitPanel、SceneCharacterPanel、StoryboardPanel、VoiceoverPanel、ExportPanel、RemoteControlPanel
 - **测试覆盖**:
   - 单元测试: 服务层、工具函数
   - 集成测试: IPC 通道、服务间交互、工作流执行
@@ -310,7 +310,7 @@ Webpack 配置必须镜像这些别名。
 - **工作流系统**:
   - Schema 验证（Zod）和状态管理
   - 双重存储架构（内存 + 持久化）
-  - 5阶段 Novel-to-Video 工作流（AI场景拆解、并行素材生成、场景摘要、分镜脚本、批量资产生成）
+  - 5阶段 Novel-to-Video 插件流程（AI场景拆解、并行素材生成、场景摘要、分镜脚本、批量资产生成）
   - 进度追踪和缺失项检测
   - Gate 机制（阀门条件验证）
 
@@ -346,7 +346,7 @@ Webpack 配置必须镜像这些别名。
   - 支持多个 AI API Provider（OpenAI、Anthropic、DeepSeek、Jiekou AI 等）统一管理
   - Provider 永远是全局的，通过 ProviderHub 统一注册和调度
   - 支持 Provider Template 系统（8个核心类型）
-- **工作流进度管理**:
+- **插件流程进度管理**:
   - 进度文件持久化（workflow-progress-{workflowId}.json）
   - 支持缺失项检测和自动补全
   - Gate 机制确保阶段间数据完整性
